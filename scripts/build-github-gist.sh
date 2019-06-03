@@ -1,6 +1,6 @@
 #!/bin/sh
-pattern_name=Strategy
-source_dir="C:/Nikiforov/dev/design-patterns-playground/$pattern_name/src/*.cs"
+pattern_name=TemplateMethod
+source_dir="C:/Nikiforov/dev/design-patterns-playground/$pattern_name/src/$pattern_name/*.cs"
 usings="/tmp/usings.$pattern_name.txt"
 code="/tmp/code.$pattern_name.cs"
 for filename in $source_dir; do

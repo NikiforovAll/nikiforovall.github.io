@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;">
-	<title>Design Patterns. Creational Patterns. Part I.</title>
+	<title>Design Patterns. Behavioral Patterns. Part I.</title>
 	
 	<meta name="author" content="Alexey Nikiforov">
 
@@ -147,28 +147,31 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-  <h1>Design Patterns. Creational Patterns. Part I. </h1>
+  <h1>Design Patterns. Behavioral Patterns. Part I. </h1>
 </div>
-	
+
 <article>
 
 	<div class="col-sm-10">
+
 	 <span class="post-date">
 	   
-	   May 
-	   27th,
-	   
+	   June
+	   3rd,
+	     
 	   2019
 	 </span>
+	 <h3>UrlList</h3>
+	 <a href="https://www.theurlist.com/design-patterns" target="_blank">https://www.theurlist.com/design-patterns</a>
 	  <div class="article_body">
-	  <p>Yes, you might say that blogging about design patterns is boring and dull. And you are probably right 😋. But what about version with live examples?</p>
+	  <p>Yes, you might say that blogging about design patterns is boring and dull. And you are probably right. But what about version with live examples?</p>
 
 <h1> TOC </h1>
 
 <ul>
   <li><a href="#strategy">Strategy</a></li>
-  <li><a href="#visitor">Visitor</a></li>
   <li><a href="#template-method">Template Method</a></li>
+  <li><a href="#visitor">Visitor</a></li>
   <li><a href="#state">State</a></li>
   <li><a href="#mediator">Mediator</a></li>
   <li><a href="#observer">Observer</a></li>
@@ -181,9 +184,33 @@
 
 <h2 id="strategy">Strategy</h2>
 
-<p>Defines a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it.</p>
+<p>Defines a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it. Strategy adapts behavior at runtime to requirements that are not known in advance.</p>
 
-<p>Frequency of use: <strong>High</strong></p>
+<p>In general case Pattern Strategy doesn’t restrict the number of operations in defined interface. So it could be one operation (<em>Sort</em> in <em>ISortable</em>) or family of operations (<em>Encode/Decode</em> in <em>IMessageProcessor</em>). In case when it is one operation, it is possible to use .NET specific implementation that relies on delegate Funct&lt;T1, T2,…&gt; or Action&lt;T1, T2,…&gt;.</p>
+
+<p><strong>Use case</strong></p>
+
+<ul>
+  <li>When you want to encapsulate some behavior or part of algorithm.</li>
+  <li>When you want to change behavior of runtime.</li>
+</ul>
+
+<p><strong>Tradeoff:</strong> Flexibility vs complexity</p>
+
+<p><strong>Frequency of use:</strong> High</p>
+
+<p><strong>Diagram</strong></p>
+
+<p><img src="/assets/design-patterns/strategy-1.png" alt="strategy-diagram" /></p>
+
+<p><strong>Examples in .NET</strong></p>
+
+<ul>
+  <li>Many extension methods in LINQ accepts strategy methods. For example <em>IComparer&lt;T&gt;</em> or <em>IEqualityComparer&lt;T&gt;</em>.</li>
+  <li>WCF contains a lot of examples of strategy pattern: <em>IErrorHandler</em>, <em>IDispatchMessageFormatter</em>, <em>MessageFilter</em>.</li>
+</ul>
+
+<hr />
 
 <p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Strategy">Strategy</a></p>
 
@@ -213,21 +240,46 @@
 </code></pre></div></div>
 <!-- <iframe src="https://try.dot.net/?fromGist=5054b18c0d8710d9ed9b888d5c0c76ff" markdown = "0"></iframe> -->
 
+<h2 id="template-method">Template Method</h2>
+
+<p>Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm’s structure. It is possible to use .NET specific implementation that relies on extension methods and namespaces. So template method is defined by public extension methods, implementation is determined by compile-time.</p>
+
+<p><strong>Frequency of use:</strong> Medium</p>
+
+<p><strong>Diagram</strong></p>
+
+<p><img src="/assets/design-patterns/template-method-1.png" alt="strategy-diagram" /></p>
+
+<hr />
+
+<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/TemplateMethod">Template Method</a>.</p>
+
+<p>Example: <a href="https://try.dot.net/?fromGist=07a88aff3888b777015a574eb067960f">Try .NET</a></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Program</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">items</span> <span class="p">=</span> <span class="k">new</span> <span class="p">[]</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="p">};</span>
+        <span class="c1">// define behavior via subclassing</span>
+        <span class="n">AbstractClass</span> <span class="n">processor</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ConcreteProcessor1</span><span class="p">();</span>
+        <span class="kt">int</span> <span class="n">result1</span> <span class="p">=</span> <span class="n">processor</span><span class="p">.</span><span class="nf">Process</span><span class="p">(</span><span class="n">items</span><span class="p">);</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="m">24</span><span class="p">,</span> <span class="n">result1</span><span class="p">);</span>
+        <span class="n">processor</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ConcreteProcessor2</span><span class="p">();</span>
+        <span class="kt">int</span> <span class="n">result2</span> <span class="p">=</span> <span class="n">processor</span><span class="p">.</span><span class="nf">Process</span><span class="p">(</span><span class="n">items</span><span class="p">);</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="m">15</span><span class="p">,</span> <span class="n">result2</span><span class="p">);</span>
+        <span class="n">TestRunner</span><span class="p">.</span><span class="nf">Print</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
+
 <h2 id="visitor">Visitor</h2>
 
 <p>Frequency of use:</p>
 
 <p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Visitor">Visitor</a></p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="template-method">Template Method</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/TemplateMethod">Template Method</a>.</p>
 
 <p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
 
@@ -320,32 +372,32 @@
 		  <li><i class="fa fa-folder-open"></i></li>
 		  
 		  
-			 
+			
 				<li><a href="/categories.html#general-ref">
-					general <span>(1)</span>
+					general <span>(2)</span>
 					
 				</a></li>
 			
 		  
 		</ul>
-		  
+		
 
 		
 		<ul class="list-inline">
 		  <li><i class="fa fa-tags"></i></li>
 		  
 		  
-			 
+			
 				<li>
 					<a href="/tags.html#.NET-ref">
-					.NET <span>(1)</span>
+					.NET <span>(2)</span>
 					,
 					</a>
 				</li>
-			 
+			
 				<li>
 					<a href="/tags.html#design-patterns-ref">
-					design-patterns <span>(1)</span>
+					design-patterns <span>(2)</span>
 					
 					</a>
 				</li>
@@ -353,14 +405,14 @@
 		  
 		  
 		</ul>
-		  
+		
 
 		<hr>
 
 		<div>
       <section class="share col-sm-6">
         <h4 class="section-title">Share Post</h4>
-        <a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?text=Design Patterns. Creational Patterns. Part I.&via=nikiforovall"
+        <a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?text=Design Patterns. Behavioral Patterns. Part I.&via=nikiforovall"
            onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
           <i class="fa fa-twitter fa-lg"></i>
           Twitter
@@ -391,18 +443,19 @@
 		  <li class="previous disabled"><a>&larr; Previous</a></li>
 		  
 		  
-			<li class="next disabled"><a>Next &rarr;</a>
+		  <li class="next"><a href="/general/2019/06/03/design-patterns-second-part.html" title="Design Patterns. Creational Patterns. Part II.">Next &rarr;</a></li>
 		  
 		</ul>
 
 		<hr>
 	</div>
-	
+
 	<div class="col-sm-2 sidebar-2">
-	
+
 	</div>
 </article>
 <div class="clearfix"></div>
+
 
 
 

@@ -1,19 +1,20 @@
 ---
 layout: post
-title: Design Patterns. Creational Patterns. Part I.
+title: Design Patterns. Behavioral Patterns. Part I.
 categories: [general]
 tags: [.NET, design-patterns]
 fullview: true
 comments: false
+link-list: https://www.theurlist.com/design-patterns
 ---
 
-Yes, you might say that blogging about design patterns is boring and dull. And you are probably right 😋. But what about version with live examples?
+Yes, you might say that blogging about design patterns is boring and dull. And you are probably right. But what about version with live examples?
 
 <h1> TOC </h1>
 
 - [Strategy](#strategy)
-- [Visitor](#visitor)
 - [Template Method](#template-method)
+- [Visitor](#visitor)
 - [State](#state)
 - [Mediator](#mediator)
 - [Observer](#observer)
@@ -25,9 +26,29 @@ Yes, you might say that blogging about design patterns is boring and dull. And y
 
 ## Strategy
 
-Defines a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it.
+Defines a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it. Strategy adapts behavior at runtime to requirements that are not known in advance.
 
-Frequency of use: **High**
+In general case Pattern Strategy doesn't restrict the number of operations in defined interface. So it could be one operation (*Sort* in *ISortable*) or family of operations (*Encode/Decode* in *IMessageProcessor*). In case when it is one operation, it is possible to use .NET specific implementation that relies on delegate Funct<T1, T2,...> or Action<T1, T2,...>.
+
+**Use case**
+
+* When you want to encapsulate some behavior or part of algorithm.
+* When you want to change behavior of runtime.
+
+**Tradeoff:** Flexibility vs complexity
+
+**Frequency of use:** High
+
+**Diagram**
+
+![strategy-diagram](/assets/design-patterns/strategy-1.png)
+
+**Examples in .NET**
+
+* Many extension methods in LINQ accepts strategy methods. For example *IComparer\<T\>* or *IEqualityComparer\<T\>*.
+* WCF contains a lot of examples of strategy pattern: *IErrorHandler*, *IDispatchMessageFormatter*, *MessageFilter*.
+
+---
 
 Source code: [Strategy](https://github.com/NikiforovAll/design-patterns-playground/tree/master/Strategy)
 
@@ -58,21 +79,47 @@ public class Program
 ```
 <!-- <iframe src="https://try.dot.net/?fromGist=5054b18c0d8710d9ed9b888d5c0c76ff" markdown = "0"></iframe> -->
 
+## Template Method
+
+Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure. It is possible to use .NET specific implementation that relies on extension methods and namespaces. So template method is defined by public extension methods, implementation is determined by compile-time.
+
+**Frequency of use:** Medium
+
+**Diagram**
+
+![strategy-diagram](/assets/design-patterns/template-method-1.png)
+
+---
+
+Source code: [Template Method](https://github.com/NikiforovAll/design-patterns-playground/tree/master/TemplateMethod).
+
+Example: [Try .NET](https://try.dot.net/?fromGist=07a88aff3888b777015a574eb067960f)
+
+``` csharp
+public class Program
+{
+    public static void Main()
+    {
+        var items = new [] { 1, 2, 3, 4, 5 };
+        // define behavior via subclassing
+        AbstractClass processor = new ConcreteProcessor1();
+        int result1 = processor.Process(items);
+        Assert.Equal(24, result1);
+        processor = new ConcreteProcessor2();
+        int result2 = processor.Process(items);
+        Assert.Equal(15, result2);
+        TestRunner.Print();
+    }
+}
+```
+
+<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
+
 ## Visitor
 
 Frequency of use:
 
 Source code: [Visitor](https://github.com/NikiforovAll/design-patterns-playground/tree/master/Visitor)
-
-Example: [Try .NET](https://try.dot.net/?fromGist=)
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-## Template Method
-
-Frequency of use:
-
-Source code: [Template Method](https://github.com/NikiforovAll/design-patterns-playground/tree/master/TemplateMethod).
 
 Example: [Try .NET](https://try.dot.net/?fromGist=)
 
