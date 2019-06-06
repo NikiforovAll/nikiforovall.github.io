@@ -18,3 +18,4 @@ jekyll serve --force_polling
 
 * Repository is based on: <https://github.com/dbtek/dbyll>
 * <https://northstack.com/create-static-blog-jekyll/>
+* Related posts: https://blog.webjeda.com/jekyll-related-posts/

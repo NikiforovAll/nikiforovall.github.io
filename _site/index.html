@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;">
-	<title>Nikiforov Alexey. Blog</title>
+	<title>nikiforovall.blog</title>
 	
 	<meta name="author" content="Alexey Nikiforov">
 
@@ -60,7 +60,7 @@
 			
 			<a class="navbar-brand" href="/">
 				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
-				Jibber-jabbering about programming and IT.
+				Nikiforov Alexey. Blog
 			</a>
 		</div>
 
@@ -95,10 +95,14 @@
 		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
 	</a>
 	<h3 class="title">
-        <a href="/">Jibber-jabbering about programming and IT.</a>
+        <a href="/">Nikiforov Alexey. Blog</a>
     </h3>
 </header>
 
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
 
 
 <div id="contact-list" class="text-center">
@@ -147,7 +151,7 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-  <h1>Nikiforov Alexey. Blog </h1>
+  <h1>nikiforovall.blog </h1>
 </div>
 
 
@@ -169,7 +173,9 @@
   <div>
     
     
+    <p>Let me know if want to see this one 😛.</p>
 
+    
     
   </div>
 
@@ -187,212 +193,16 @@
   </span>
 
   <h2>
-    <a href="/general/2019/06/03/design-patterns-first-part.html">Design Patterns. Behavioral Patterns. Part I.</a>
+    <a href="/general/2019/06/03/design-patterns-first-part.html">Design Patterns. Behavioral Patterns. Part I</a>
   </h2>
 
   <div>
     
-    <p>Yes, you might say that blogging about design patterns is boring and dull. And you are probably right. But what about version with live examples?</p>
+    
+    <p>Yes, you might say that blogging about design patterns is boring. But what about interactive version with live examples and  <a href="[https://link](https://github.com/dotnet/try)">Try .NET</a>? Let’s delve into it.</p>
 
-<h1> TOC </h1>
 
-<ul>
-  <li><a href="#strategy">Strategy</a></li>
-  <li><a href="#template-method">Template Method</a></li>
-  <li><a href="#visitor">Visitor</a></li>
-  <li><a href="#state">State</a></li>
-  <li><a href="#mediator">Mediator</a></li>
-  <li><a href="#observer">Observer</a></li>
-  <li><a href="#memento">Memento</a></li>
-  <li><a href="#iterator">Iterator</a></li>
-  <li><a href="#interpreter">Interpreter</a></li>
-  <li><a href="#command">Command</a></li>
-  <li><a href="#chainofresponsibility">ChainOfResponsibility</a></li>
-</ul>
-
-<h2 id="strategy">Strategy</h2>
-
-<p>Defines a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it. Strategy adapts behavior at runtime to requirements that are not known in advance.</p>
-
-<p>In general case Pattern Strategy doesn’t restrict the number of operations in defined interface. So it could be one operation (<em>Sort</em> in <em>ISortable</em>) or family of operations (<em>Encode/Decode</em> in <em>IMessageProcessor</em>). In case when it is one operation, it is possible to use .NET specific implementation that relies on delegate Funct&lt;T1, T2,…&gt; or Action&lt;T1, T2,…&gt;.</p>
-
-<p><strong>Use case</strong></p>
-
-<ul>
-  <li>When you want to encapsulate some behavior or part of algorithm.</li>
-  <li>When you want to change behavior of runtime.</li>
-</ul>
-
-<p><strong>Tradeoff:</strong> Flexibility vs complexity</p>
-
-<p><strong>Frequency of use:</strong> High</p>
-
-<p><strong>Diagram</strong></p>
-
-<p><img src="/assets/design-patterns/strategy-1.png" alt="strategy-diagram" /></p>
-
-<p><strong>Examples in .NET</strong></p>
-
-<ul>
-  <li>Many extension methods in LINQ accepts strategy methods. For example <em>IComparer&lt;T&gt;</em> or <em>IEqualityComparer&lt;T&gt;</em>.</li>
-  <li>WCF contains a lot of examples of strategy pattern: <em>IErrorHandler</em>, <em>IDispatchMessageFormatter</em>, <em>MessageFilter</em>.</li>
-</ul>
-
-<hr />
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Strategy">Strategy</a></p>
-
-<!-- <script src="https://gist.github.com/NikiforovAll/5054b18c0d8710d9ed9b888d5c0c76ff.js"></script> -->
-
-<p>Example: <a href="https://try.dot.net/?fromGist=5054b18c0d8710d9ed9b888d5c0c76ff">Try .NET</a></p>
-
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Program</span>
-<span class="p">{</span>
-    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">()</span>
-    <span class="p">{</span>
-            <span class="n">ILogReader</span> <span class="n">logReader</span><span class="p">;</span>
-            <span class="c1">// log storage number one</span>
-            <span class="n">logReader</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">LogFileReader</span><span class="p">();</span>
-            <span class="n">List</span><span class="p">&lt;</span><span class="n">LogEntry</span><span class="p">&gt;</span> <span class="n">logEntryList1</span> <span class="p">=</span> <span class="n">logReader</span><span class="p">.</span><span class="nf">Read</span><span class="p">();</span>
-            <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="n">logEntryList1</span><span class="p">.</span><span class="n">Count</span><span class="p">);</span>
-            <span class="n">Assert</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s">"LogFileReader"</span><span class="p">,</span> <span class="n">logEntryList1</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">Message</span><span class="p">);</span>
-            <span class="c1">// log storage number two</span>
-            <span class="n">logReader</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">WindowsEventLogReader</span><span class="p">();</span>
-            <span class="n">List</span><span class="p">&lt;</span><span class="n">LogEntry</span><span class="p">&gt;</span> <span class="n">logEntryList2</span> <span class="p">=</span> <span class="n">logReader</span><span class="p">.</span><span class="nf">Read</span><span class="p">();</span>
-            <span class="n">Assert</span><span class="p">.</span><span class="nf">Single</span><span class="p">(</span><span class="n">logEntryList2</span><span class="p">);</span>
-            <span class="n">Assert</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s">"WindowsEventLogReader"</span><span class="p">,</span> <span class="n">logEntryList2</span><span class="p">[</span><span class="m">0</span><span class="p">].</span><span class="n">Message</span><span class="p">);</span>
-            <span class="n">TestRunner</span><span class="p">.</span><span class="nf">Print</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-</code></pre></div></div>
-<!-- <iframe src="https://try.dot.net/?fromGist=5054b18c0d8710d9ed9b888d5c0c76ff" markdown = "0"></iframe> -->
-
-<h2 id="template-method">Template Method</h2>
-
-<p>Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm’s structure. It is possible to use .NET specific implementation that relies on extension methods and namespaces. So template method is defined by public extension methods, implementation is determined by compile-time.</p>
-
-<p><strong>Frequency of use:</strong> Medium</p>
-
-<p><strong>Diagram</strong></p>
-
-<p><img src="/assets/design-patterns/template-method-1.png" alt="strategy-diagram" /></p>
-
-<hr />
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/TemplateMethod">Template Method</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=07a88aff3888b777015a574eb067960f">Try .NET</a></p>
-
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Program</span>
-<span class="p">{</span>
-    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">()</span>
-    <span class="p">{</span>
-        <span class="kt">var</span> <span class="n">items</span> <span class="p">=</span> <span class="k">new</span> <span class="p">[]</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="p">};</span>
-        <span class="c1">// define behavior via subclassing</span>
-        <span class="n">AbstractClass</span> <span class="n">processor</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ConcreteProcessor1</span><span class="p">();</span>
-        <span class="kt">int</span> <span class="n">result1</span> <span class="p">=</span> <span class="n">processor</span><span class="p">.</span><span class="nf">Process</span><span class="p">(</span><span class="n">items</span><span class="p">);</span>
-        <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="m">24</span><span class="p">,</span> <span class="n">result1</span><span class="p">);</span>
-        <span class="n">processor</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ConcreteProcessor2</span><span class="p">();</span>
-        <span class="kt">int</span> <span class="n">result2</span> <span class="p">=</span> <span class="n">processor</span><span class="p">.</span><span class="nf">Process</span><span class="p">(</span><span class="n">items</span><span class="p">);</span>
-        <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="m">15</span><span class="p">,</span> <span class="n">result2</span><span class="p">);</span>
-        <span class="n">TestRunner</span><span class="p">.</span><span class="nf">Print</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="visitor">Visitor</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Visitor">Visitor</a></p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="state">State</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/State">State</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="mediator">Mediator</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Mediator">Mediator</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="observer">Observer</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Observer">Observer</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="memento">Memento</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Memento">Memento</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="iterator">Iterator</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Iterator">Iterator</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="interpreter">Interpreter</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Interpreter">Interpreter</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="command">Command</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Command">Command</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
-<h2 id="chainofresponsibility">ChainOfResponsibility</h2>
-
-<p>Frequency of use:</p>
-
-<p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/ChainOfResponsibility">ChainOfResponsibility</a>.</p>
-
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
-
-<!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
-
+    
     
   </div>
 

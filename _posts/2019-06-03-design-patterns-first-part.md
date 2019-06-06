@@ -1,14 +1,14 @@
 ---
 layout: post
-title: Design Patterns. Behavioral Patterns. Part I.
+title: Design Patterns. Behavioral Patterns. Part I
 categories: [general]
 tags: [.NET, design-patterns]
-fullview: true
+fullview: false
 comments: false
 link-list: https://www.theurlist.com/design-patterns
 ---
 
-Yes, you might say that blogging about design patterns is boring and dull. And you are probably right. But what about version with live examples?
+Yes, you might say that blogging about design patterns is boring. But what about interactive version with live examples and  [Try .NET]([https://link](https://github.com/dotnet/try))? Let's delve into it.
 
 <h1> TOC </h1>
 
@@ -81,13 +81,20 @@ public class Program
 
 ## Template Method
 
-Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure. It is possible to use .NET specific implementation that relies on extension methods and namespaces. So template method is defined by public extension methods, implementation is determined by compile-time.
+Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure. In some cases this pattern is better when you have plenty of functionality to reuse or you have complicated hierarchy of behaviors to implement so you could use sliding version of template method.
+
+It is possible to use .NET specific implementation that relies on extension methods and namespaces. So template method is defined by public extension methods, implementation is determined by compile-time.
 
 **Frequency of use:** Medium
 
 **Diagram**
 
 ![strategy-diagram](/assets/design-patterns/template-method-1.png)
+
+**Examples in .NET**
+
+* WCF contains a lot of examples of template method pattern: *CommunicationObject*, *ServiceHostBase*, *MessageHeader*, *ChannelBase*.
+* System.Runtime.InteropServices.SafeHandle represents a wrapper class for operating system handles.
 
 ---
 
@@ -96,6 +103,24 @@ Source code: [Template Method](https://github.com/NikiforovAll/design-patterns-p
 Example: [Try .NET](https://try.dot.net/?fromGist=07a88aff3888b777015a574eb067960f)
 
 ``` csharp
+
+public abstract class AbstractClass
+{
+    // TemplateMethod
+    public int Process(IEnumerable<int> items)
+    {
+        return items
+            .Where<int>(this.Filter)
+            .Select(this.ProcessUnit)
+            .Aggregate((item, acc) =>
+                {
+                    acc += item;
+                    return acc;
+                });
+    }
+    protected abstract bool Filter(int item);
+    protected abstract int ProcessUnit(int i);
+}
 public class Program
 {
     public static void Main()
