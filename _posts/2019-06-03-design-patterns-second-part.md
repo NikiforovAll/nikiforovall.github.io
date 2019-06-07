@@ -4,7 +4,7 @@ title: Design Patterns. Creational Patterns. Part II.
 categories: [general]
 tags: [.NET, design-patterns]
 fullview: false
-comments: false
+comments: true
 link-list: https://www.theurlist.com/design-patterns
 
 ---

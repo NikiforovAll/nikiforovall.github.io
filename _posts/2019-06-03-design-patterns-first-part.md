@@ -4,7 +4,7 @@ title: Design Patterns. Behavioral Patterns. Part I
 categories: [general]
 tags: [.NET, design-patterns]
 fullview: false
-comments: false
+comments: true
 link-list: https://www.theurlist.com/design-patterns
 ---
 
@@ -81,9 +81,14 @@ public class Program
 
 ## Template Method
 
-Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure. In some cases this pattern is better when you have plenty of functionality to reuse or you have complicated hierarchy of behaviors to implement so you could use sliding version of template method.
+Defines the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure. In some cases this pattern is better when you have plenty of functionality to reuse or you have complicated hierarchy of behaviors to implement so you could use sliding version of template method.
 
 It is possible to use .NET specific implementation that relies on extension methods and namespaces. So template method is defined by public extension methods, implementation is determined by compile-time.
+
+**Use case**
+
+* When you want to encapsulate some behavior or part of algorithm.
+* When you want to define strict contract for developers to reuse some functionality by using inheritance over composition.
 
 **Frequency of use:** Medium
 
@@ -162,11 +167,53 @@ Example: [Try .NET](https://try.dot.net/?fromGist=)
 
 ## Mediator
 
-Frequency of use:
+Define an object that encapsulates how a set of objects interact. Mediator promotes loose coupling by keeping objects from referring to each other explicitly, and it lets you vary their interaction independently.
+
+Mediator could be used at different level of application. It could be class as mediator, component as mediator, application-layer as mediator. For example, components could be connected in *Composition Root* by applying Mediator pattern.
+
+**Use case**
+
+* When you want to describe interaction between autonomous components in loose-coupled way. Implicit mediator vs explicit mediator.
+
+**Frequency of use:** Medium
+
+**Diagram**
+
+![strategy-diagram](/assets/design-patterns/mediator-1.png)
+
+**Examples in .NET**
+
+* *EventAggregator* class in WPF.
+* In MVC, *Controller* is actually a mediator.
+
+---
 
 Source code: [Mediator](https://github.com/NikiforovAll/design-patterns-playground/tree/master/Mediator).
 
-Example: [Try .NET](https://try.dot.net/?fromGist=)
+Example: [Try .NET](https://try.dot.net/?fromGist=7317a1315a966b82927622fb90c2f7fb)
+
+``` csharp
+
+public class Chatroom : AbstractChatroom {
+    private Dictionary<string, User> _users = new Dictionary<string, User> ();
+    public override void Register (User user) {
+        if (!_users.ContainsValue (user)) {
+            _users[user.Name] = user;
+        }
+        user.Chatroom = this;
+    }
+
+    public override void Send (string from, string to, string message) {
+        User participant = _users[to];
+
+        if (participant != null) {
+            participant.Receive (from, message);
+        } else {
+            throw new KeyNotFoundException ("User not found");
+        }
+    }
+}
+```
 
 <!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
 

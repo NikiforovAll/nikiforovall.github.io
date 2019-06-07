@@ -165,13 +165,14 @@
 			
 			2019
 		</span>
-		<!-- <h3>UrlList</h3>
-	 <a href="https://www.theurlist.com/design-patterns" target="_blank">https://www.theurlist.com/design-patterns</a> -->
+
 	</div>
 
 	<div class="col-sm-12"></div>
 	<h3 style="margin-top: 30px;">Related posts</h3>
 	<div class="col-sm-12"></div>
+
+
 
 	
 	
@@ -202,6 +203,10 @@
 	
 
 	
+
+	<div class="col-sm-12"></div>
+	<h3 style="margin-top: 30px;">UrlList</h3>
+	<a href="https://www.theurlist.com/design-patterns" target="_blank">https://www.theurlist.com/design-patterns</a>
 
 	<div class="article_body" style="margin-top: 30px;">
 		<p>Yes, you might say that blogging about design patterns is boring. But what about interactive version with live examples and  <a href="[https://link](https://github.com/dotnet/try)">Try .NET</a>? Let’s delve into it.</p>
@@ -282,9 +287,16 @@
 
 <h2 id="template-method">Template Method</h2>
 
-<p>Define the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm’s structure. In some cases this pattern is better when you have plenty of functionality to reuse or you have complicated hierarchy of behaviors to implement so you could use sliding version of template method.</p>
+<p>Defines the skeleton of an algorithm in an operation, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps of an algorithm without changing the algorithm’s structure. In some cases this pattern is better when you have plenty of functionality to reuse or you have complicated hierarchy of behaviors to implement so you could use sliding version of template method.</p>
 
 <p>It is possible to use .NET specific implementation that relies on extension methods and namespaces. So template method is defined by public extension methods, implementation is determined by compile-time.</p>
+
+<p><strong>Use case</strong></p>
+
+<ul>
+  <li>When you want to encapsulate some behavior or part of algorithm.</li>
+  <li>When you want to define strict contract for developers to reuse some functionality by using inheritance over composition.</li>
+</ul>
 
 <p><strong>Frequency of use:</strong> Medium</p>
 
@@ -364,11 +376,56 @@
 
 <h2 id="mediator">Mediator</h2>
 
-<p>Frequency of use:</p>
+<p>Define an object that encapsulates how a set of objects interact. Mediator promotes loose coupling by keeping objects from referring to each other explicitly, and it lets you vary their interaction independently.</p>
+
+<p>Mediator could be used at different level of application. It could be class as mediator, component as mediator, application-layer as mediator. For example, components could be connected in <em>Composition Root</em> by applying Mediator pattern.</p>
+
+<p><strong>Use case</strong></p>
+
+<ul>
+  <li>When you want to describe interaction between autonomous components in loose-coupled way. Implicit mediator vs explicit mediator.</li>
+</ul>
+
+<p><strong>Frequency of use:</strong> Medium</p>
+
+<p><strong>Diagram</strong></p>
+
+<p><img src="/assets/design-patterns/mediator-1.png" alt="strategy-diagram" /></p>
+
+<p><strong>Examples in .NET</strong></p>
+
+<ul>
+  <li><em>EventAggregator</em> class in WPF.</li>
+  <li>In MVC, <em>Controller</em> is actually a mediator.</li>
+</ul>
+
+<hr />
 
 <p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Mediator">Mediator</a>.</p>
 
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
+<p>Example: <a href="https://try.dot.net/?fromGist=7317a1315a966b82927622fb90c2f7fb">Try .NET</a></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">Chatroom</span> <span class="p">:</span> <span class="n">AbstractChatroom</span> <span class="p">{</span>
+    <span class="k">private</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">User</span><span class="p">&gt;</span> <span class="n">_users</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">User</span><span class="p">&gt;</span> <span class="p">();</span>
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Register</span> <span class="p">(</span><span class="n">User</span> <span class="n">user</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(!</span><span class="n">_users</span><span class="p">.</span><span class="nf">ContainsValue</span> <span class="p">(</span><span class="n">user</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">_users</span><span class="p">[</span><span class="n">user</span><span class="p">.</span><span class="n">Name</span><span class="p">]</span> <span class="p">=</span> <span class="n">user</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">user</span><span class="p">.</span><span class="n">Chatroom</span> <span class="p">=</span> <span class="k">this</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Send</span> <span class="p">(</span><span class="kt">string</span> <span class="k">from</span><span class="p">,</span> <span class="kt">string</span> <span class="n">to</span><span class="p">,</span> <span class="kt">string</span> <span class="n">message</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">User</span> <span class="n">participant</span> <span class="p">=</span> <span class="n">_users</span><span class="p">[</span><span class="n">to</span><span class="p">];</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">participant</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">participant</span><span class="p">.</span><span class="nf">Receive</span> <span class="p">(</span><span class="k">from</span><span class="p">,</span> <span class="n">message</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">KeyNotFoundException</span> <span class="p">(</span><span class="s">"User not found"</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
 
 <!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
 
@@ -524,6 +581,23 @@
 	</div>
 </article>
 <div class="clearfix"></div>
+
+
+
+    
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'dbyll';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 
 
 
