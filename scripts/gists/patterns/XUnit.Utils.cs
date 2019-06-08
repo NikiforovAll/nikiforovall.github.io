@@ -26,6 +26,37 @@ public static class Assert {
         }
     }
 
+    public static void Equal<T> (IEnumerable<T> a,
+        IEnumerable<T> b, [CallerMemberName] string callerName = "", [CallerLineNumber] int callerLine = 0) {
+        if (a.Count () != b.Count ()) {
+            TestRunner.AddResult (
+                new TestRunResult () {
+                    CallerName = callerName,
+                        CallerLine = callerLine.ToString (),
+                        Success = false,
+                        Assertion = "Equal<T>",
+                        ErrorMessage = $"a.{a.Count()} != b.{b.Count()}"
+                });
+        } else if (!a.SequenceEqual (b)) {
+            TestRunner.AddResult (
+                new TestRunResult () {
+                    CallerName = callerName,
+                        CallerLine = callerLine.ToString (),
+                        Success = false,
+                        Assertion = "SequenceEqual<T>",
+                        ErrorMessage = $"Different sequences"
+                });
+        } else {
+            TestRunner.AddResult (
+                new TestRunResult () {
+                    CallerName = callerName,
+                        CallerLine = callerLine.ToString (),
+                        Success = true,
+                        Assertion = "Equal<T>"
+                });
+        }
+    }
+
     public static void Single<T> (IEnumerable<T> collection, [CallerMemberName] string callerName = "", [CallerLineNumber] int callerLine = 0) {
         if (collection.Count () != 1) {
             // throw new Exception ("Collection doesn't contain 1 element");
@@ -70,6 +101,20 @@ public static class Assert {
             }
         } else {
             throw new Exception ("It is not possible to use .Contains() method");
+        }
+    }
+
+    public static void All<T> (IEnumerable<T> collection, Func<T, bool> predicate, [CallerMemberName] string callerName = "", [CallerLineNumber] int callerLine = 0) {
+        bool res = collection.All (predicate);
+        var tr = new TestRunResult () {
+                CallerName = callerName,
+                    CallerLine = callerLine.ToString (),
+                    Success = res,
+                    Assertion = "All<T>"
+            };
+        TestRunner.AddResult (tr);
+        if(!res) {
+            tr.ErrorMessage = "Condition is not met for all members";
         }
     }
 

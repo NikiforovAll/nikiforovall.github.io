@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
 	<title>Design Patterns. Behavioral Patterns. Part I</title>
 	
 	<meta name="author" content="Alexey Nikiforov">
@@ -70,6 +70,7 @@
 				<li class="active"><a href="/">Home</a></li>
 				<li><a href="/categories.html">Categories</a></li>
 				<li><a href="/tags.html">Tags</a></li>
+				<li><a href="/about.html">About</a></li>
 			</ul>
 		</div><!-- /.navbar-collapse -->
 	</nav>
@@ -83,6 +84,7 @@
 			<li><a href="/"><i class="fa fa-home"></i>Home</a></li>
 			<li><a href="/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
 			<li><a href="/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="/about.html"><i class="fa fa-pencil"></i>About</a></li>
 			<li class="divider"></li>
 			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
 		</ul>
@@ -139,7 +141,7 @@
 		</li>
 		
 		<li>
-			<a class="btn btn-default btn-sm" href="/">
+			<a class="btn btn-default btn-sm" href="/feed.xml">
 				<i class="fa fa-rss fa-lg"></i>
 			</a>
 		</li>
@@ -166,7 +168,6 @@
 			2019
 		</span>
 
-	</div>
 
 	<div class="col-sm-12"></div>
 	<h3 style="margin-top: 30px;">Related posts</h3>
@@ -187,7 +188,7 @@
 
 	
 	<div>
-		<h5><a href="/general/2019/06/03/design-patterns-second-part.html">Design Patterns. Creational Patterns. Part II. <span class="label label-default">.NET</span>  <span class="label label-default">design-patterns</span> </a></h5>
+		<h5><a href="/general/2019/06/03/design-patterns-second-part.html">Design Patterns. Creational Patterns. Part II. <span class="label label-default">.NET</span>  <span class="label label-default">design-patterns</span>  <span class="label label-default">trydotnet</span> </a></h5>
 	</div>
 	
 	
@@ -431,11 +432,42 @@
 
 <h2 id="observer">Observer</h2>
 
-<p>Frequency of use:</p>
+<p>Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.</p>
+
+<p><strong>Frequency of use:</strong> High</p>
+
+<p><strong>Diagram</strong></p>
+
+<p><img src="/assets/design-patterns/observer-1.gif" alt="strategy-diagram" /></p>
+
+<p><strong>Examples in .NET</strong></p>
+
+<hr />
 
 <p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Observer">Observer</a>.</p>
 
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
+<p>Example: <a href="https://try.dot.net/?fromGist=4c2a9b41ac08a5a0ab61bd0c75f7132a">Try .NET</a></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Program</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">()</span>
+    <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">subject</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ConcreteSubject</span><span class="p">();</span>
+            <span class="kt">var</span> <span class="n">observers</span> <span class="p">=</span> <span class="k">new</span><span class="p">[]</span> <span class="p">{</span> <span class="k">new</span> <span class="nf">ConcreteObserver</span><span class="p">(),</span> <span class="k">new</span> <span class="nf">ConcreteObserver</span><span class="p">(),</span> <span class="k">new</span> <span class="nf">ConcreteObserver</span><span class="p">()</span> <span class="p">};</span>
+            <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">observer</span> <span class="k">in</span> <span class="n">observers</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">subject</span><span class="p">.</span><span class="nf">Attach</span><span class="p">(</span><span class="n">observer</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="n">subject</span><span class="p">.</span><span class="n">SubjectState</span> <span class="p">=</span> <span class="s">"init"</span><span class="p">;</span>
+            <span class="n">subject</span><span class="p">.</span><span class="nf">Notify</span><span class="p">();</span>
+            <span class="n">Assert</span><span class="p">.</span><span class="nf">All</span><span class="p">(</span><span class="n">observers</span><span class="p">,</span> <span class="p">(</span><span class="n">el</span> <span class="p">=&gt;</span> <span class="s">"init"</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">el</span><span class="p">.</span><span class="n">State</span><span class="p">)));</span>
+            <span class="n">subject</span><span class="p">.</span><span class="n">SubjectState</span> <span class="p">=</span> <span class="s">"changed"</span><span class="p">;</span>
+            <span class="n">subject</span><span class="p">.</span><span class="nf">Notify</span><span class="p">();</span>
+            <span class="n">Assert</span><span class="p">.</span><span class="nf">All</span><span class="p">(</span><span class="n">observers</span><span class="p">,</span> <span class="p">(</span><span class="n">el</span> <span class="p">=&gt;</span> <span class="s">"changed"</span><span class="p">.</span><span class="nf">Equals</span><span class="p">(</span><span class="n">el</span><span class="p">.</span><span class="n">State</span><span class="p">)));</span>
+            <span class="n">TestRunner</span><span class="p">.</span><span class="nf">Print</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
 
 <!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
 
@@ -451,12 +483,55 @@
 
 <h2 id="iterator">Iterator</h2>
 
-<p>Frequency of use:</p>
+<p>Provide a way to access the elements of an aggregate object sequentially without exposing its underlying representation.</p>
+
+<p>Iterators in .NET are unidirectional and lazy, every time you invoke <em>GetEnumerator()</em> new instance is returned. Also, iterators are mutable by default, so it is better to use struct iterators and save yourself from potential issues.</p>
+
+<p><strong>Use case</strong></p>
+
+<ul>
+  <li>Use iterator when you want to provide uniform way to perform custom and stateful iteration of a collection of objects.</li>
+</ul>
+
+<p><strong>Frequency of use:</strong> High</p>
+
+<p><strong>Diagram</strong></p>
+
+<p><img src="/assets/design-patterns/iterator-1.png" alt="strategy-diagram" /></p>
+
+<p><strong>Examples in .NET</strong></p>
+
+<ul>
+  <li><em>IEnumerable/IEnumerator</em> - collections in .NET.</li>
+  <li>Any object that has GetEnumerator method could play a role of Iterator in .NET.</li>
+  <li><em>yield return</em> construction is used to implement generators in .NET.</li>
+</ul>
+
+<hr />
 
 <p>Source code: <a href="https://github.com/NikiforovAll/design-patterns-playground/tree/master/Iterator">Iterator</a>.</p>
 
-<p>Example: <a href="https://try.dot.net/?fromGist=">Try .NET</a></p>
+<p>Example: <a href="https://try.dot.net/?fromGist=2619980fdd524d700956f65825176f17">Try .NET</a></p>
 
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Program</span> <span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">collection</span> <span class="p">=</span> <span class="k">new</span> <span class="n">CustomCollection</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="p">};</span>
+        <span class="kt">var</span> <span class="n">iterator</span> <span class="p">=</span> <span class="n">collection</span><span class="p">.</span><span class="nf">CreateIterator</span> <span class="p">();</span>
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span> <span class="p">(</span><span class="k">new</span> <span class="kt">int</span><span class="p">[]</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">5</span> <span class="p">},</span> <span class="n">iterator</span><span class="p">.</span><span class="nf">getCollectionFromIterator</span> <span class="p">().</span><span class="nf">ToList</span> <span class="p">());</span>
+        <span class="n">TestRunner</span><span class="p">.</span><span class="nf">Print</span> <span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1">// part of iterator implementation</span>
+<span class="c1">//Step = 2;</span>
+<span class="k">public</span> <span class="k">override</span> <span class="n">T</span> <span class="nf">Next</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="n">T</span> <span class="n">result</span> <span class="p">=</span> <span class="k">default</span> <span class="p">(</span><span class="n">T</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(!</span><span class="nf">IsDone</span> <span class="p">())</span> <span class="p">{</span>
+        <span class="n">result</span> <span class="p">=</span> <span class="n">_collection</span><span class="p">[</span><span class="n">_currentIndex</span><span class="p">];</span>
+        <span class="n">_currentIndex</span> <span class="p">+=</span> <span class="n">Step</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
 <!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
 
 <h2 id="interpreter">Interpreter</h2>
@@ -522,6 +597,13 @@
 		<li>
 			<a href="/tags.html#design-patterns-ref">
 				design-patterns <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="/tags.html#trydotnet-ref">
+				trydotnet <span>(2)</span>
 				
 			</a>
 		</li>
@@ -579,16 +661,19 @@
 	<div class="col-sm-2 sidebar-2">
 
 	</div>
+
 </article>
 <div class="clearfix"></div>
 
 
 
     
+
 <div id="disqus_thread"></div>
+
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
-    var disqus_shortname = 'dbyll';
+    var disqus_shortname = 'nikiforovall';
 
     /* * * DON'T EDIT BELOW THIS LINE * * */
     (function() {
