@@ -2,7 +2,7 @@
 layout: post
 title: Design Patterns. Behavioral Patterns. Part I
 categories: [general]
-tags: [.NET, design-patterns]
+tags: [.NET, design-patterns, trydotnet]
 fullview: false
 comments: true
 link-list: https://www.theurlist.com/design-patterns
@@ -219,11 +219,44 @@ public class Chatroom : AbstractChatroom {
 
 ## Observer
 
-Frequency of use:
+Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.
+
+**Frequency of use:** High
+
+**Diagram**
+
+![strategy-diagram](/assets/design-patterns/observer-1.gif)
+
+
+**Examples in .NET**
+
+---
 
 Source code: [Observer](https://github.com/NikiforovAll/design-patterns-playground/tree/master/Observer).
 
-Example: [Try .NET](https://try.dot.net/?fromGist=)
+Example: [Try .NET](https://try.dot.net/?fromGist=4c2a9b41ac08a5a0ab61bd0c75f7132a)
+
+``` csharp
+public class Program
+{
+    public static void Main()
+    {
+            var subject = new ConcreteSubject();
+            var observers = new[] { new ConcreteObserver(), new ConcreteObserver(), new ConcreteObserver() };
+            foreach (var observer in observers)
+            {
+                subject.Attach(observer);
+            }
+            subject.SubjectState = "init";
+            subject.Notify();
+            Assert.All(observers, (el => "init".Equals(el.State)));
+            subject.SubjectState = "changed";
+            subject.Notify();
+            Assert.All(observers, (el => "changed".Equals(el.State)));
+            TestRunner.Print();
+    }
+}
+```
 
 <!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
 
@@ -239,12 +272,52 @@ Example: [Try .NET](https://try.dot.net/?fromGist=)
 
 ## Iterator
 
-Frequency of use:
+Provide a way to access the elements of an aggregate object sequentially without exposing its underlying representation.
+
+Iterators in .NET are unidirectional and lazy, every time you invoke *GetEnumerator()* new instance is returned. Also, iterators are mutable by default, so it is better to use struct iterators and save yourself from potential issues.
+
+**Use case**
+
+* Use iterator when you want to provide uniform way to perform custom and stateful iteration of a collection of objects.
+
+**Frequency of use:** High
+
+**Diagram**
+
+![strategy-diagram](/assets/design-patterns/iterator-1.png)
+
+**Examples in .NET**
+
+* *IEnumerable/IEnumerator* - collections in .NET.
+* Any object that has GetEnumerator method could play a role of Iterator in .NET.
+* *yield return* construction is used to implement generators in .NET.
+
+---
 
 Source code: [Iterator](https://github.com/NikiforovAll/design-patterns-playground/tree/master/Iterator).
 
-Example: [Try .NET](https://try.dot.net/?fromGist=)
+Example: [Try .NET](https://try.dot.net/?fromGist=2619980fdd524d700956f65825176f17)
 
+``` csharp
+public class Program {
+    public static void Main () {
+        var collection = new CustomCollection<int> { 1, 2, 3, 4, 5 };
+        var iterator = collection.CreateIterator ();
+        Assert.Equal (new int[] { 1, 3, 5 }, iterator.getCollectionFromIterator ().ToList ());
+        TestRunner.Print ();
+    }
+}
+// part of iterator implementation
+//Step = 2;
+public override T Next () {
+    T result = default (T);
+    if (!IsDone ()) {
+        result = _collection[_currentIndex];
+        _currentIndex += Step;
+    }
+    return result;
+}
+```
 <!-- <iframe src="https://try.dot.net/?fromGist=" markdown = "0"></iframe> -->
 
 ## Interpreter
