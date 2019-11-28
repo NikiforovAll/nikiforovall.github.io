@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Design Patterns. Behavioral Patterns. Part I
-categories: [general]
+categories: [desing-patterns]
 tags: [.NET, design-patterns, trydotnet]
 fullview: false
 comments: true

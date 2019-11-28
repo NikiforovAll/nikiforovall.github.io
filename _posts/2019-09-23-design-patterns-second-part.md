@@ -4,6 +4,7 @@ title: Design Patterns. Creational Patterns. Part II.
 categories: [general]
 tags: [.NET, design-patterns, trydotnet]
 fullview: false
+published: false
 comments: true
 link-list: https://www.theurlist.com/design-patterns
 
@@ -19,12 +20,11 @@ Ensure a class has only one instance and provide a global point of access to it.
 
 **Use case**
 
-*
+*****
 
 **Tradeoff:** Testability vs simplicity
 
 **Frequency of use:** Medium high
-
 
 **Examples in .NET**
 
