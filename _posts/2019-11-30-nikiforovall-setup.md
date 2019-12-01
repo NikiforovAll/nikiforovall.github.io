@@ -64,7 +64,10 @@ We can login to WSL via Windows Terminal by specifying `"source": "Windows.Termi
 
 🔧 If it is a brand-new WSL instance you might want to run `apt upgrade`. In the demo below I've already had everything.
 
-Let's see how it this bash one-liner works:
+Let's see how the bash one-liner works:
+
+`bash -c "$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh)"`
+
 ![setup-3](/assets/nikiforovall-setup/test3.gif)
 
 It installs a bunch of [essentials](https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh) for development environment: utils, tools and [dotnet sdk](https://dotnet.microsoft.com/download). Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don't need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀
