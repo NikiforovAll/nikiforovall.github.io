@@ -18,7 +18,7 @@ It is a good time to be a .NET developer. It is not only mature and enterprise-r
 
 So I use Windows Terminal. It is a modern terminal emulator for windows. I switched from a really nice terminal emulator [cmder](https://cmder.net/) to Windows Terminal (Preview). And I don't regret it, especially after the release of [Windows Terminal Preview v0.7 Release](https://devblogs.microsoft.com/commandline/windows-terminal-preview-v0-7-release/). This release includes PowerLine fonts for Cascadia Fonts, tab reordering splitting of tab windows into panes. Sweat!
 
-Windows Terminal is highly configurable, so you could adjust *keybindings*, *color schemes* and *profiles*. So Windows Terminal terminal .
+Windows Terminal is highly configurable, so you could adjust *keybindings*, *color schemes*, and *profiles*.
 
 You can install Windows Terminal from Microsoft Store or by using [chocolatey](https://chocolatey.org/) windows package manager.
 
@@ -28,7 +28,7 @@ choco install microsoft-windows-terminal -y
 
 Also, see my Windows Terminal *profiles.json* <https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json>.
 
-I use [Visual Studio Code](https://code.visualstudio.com/) as the main editor and development environment. Although, it is possible to use dotfiles for synchronization concept for `vscode` I encourage you to use [Settings Sync](https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync) extension. It uses GitHub as storage and makes use of API key in order to authorize and manage your configurations. You could install it like this:
+I use [Visual Studio Code](https://code.visualstudio.com/) as the main editor and development environment. Although, it is possible to use dotfiles for synchronization concept for `vscode` I encourage you to use [Settings Sync](https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync) extension. It uses GitHub as storage and makes use of API key to authorize and manage your configurations. You could install it like this:
 
 ```bash
 choco install vscode -y
@@ -43,7 +43,7 @@ bash -c "$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/ws
 
 ### WSL Setup
 
-But first, let's see how we set up brand new WSL instance. Here I list available linux distros and unregister ubuntu-18.04
+But first, let's see how we set up brand new WSL instance. Here I list available Linux distros and unregister ubuntu-18.04
 
 ![setup-1](/assets/nikiforovall-setup/test1.gif)
 
@@ -70,7 +70,7 @@ Let's see how the bash one-liner works:
 
 ![setup-3](/assets/nikiforovall-setup/test3.gif)
 
-It installs a bunch of [essentials](https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh) for development environment: utils, tools and [dotnet sdk](https://dotnet.microsoft.com/download). Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don't need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀
+It installs a bunch of [essentials](https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh) for development environment: utils, tools, and [dotnet sdk](https://dotnet.microsoft.com/download). Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don't need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀
 
 ## Demo
 
@@ -80,4 +80,4 @@ At the demonstration below I create a folder for the new *dotnet console* projec
 
 ## Summary
 
-It was brief overview of my dotfiles setup. I encourage you to investigate internals of my dotfiles repository for mode details. Feel free to fork and work on dream setup of your own. Let me know what you think about it!
+It was a brief overview of my dotfiles setup. I encourage you to investigate the internals of my dotfiles repository for mode details. Feel free to fork and work on dream setup of your own. Let me know what you think about it!
