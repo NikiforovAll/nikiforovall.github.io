@@ -74,7 +74,7 @@ It installs a bunch of [essentials](https://github.com/NikiforovAll/dotfiles/blo
 
 ## Demo
 
-At the demonstration below I create a folder for the new *dotnet console* project. I slightly modify *Program.cs* and run the application inside WSL. There are a lot of details that make the process of development easier and promote productivity. I just mention a few of them: simplicity of setup, syntax, and commands highlighting and autocompletion.
+At the demonstration below I create a folder for the new *dotnet console* project. I slightly modify *Program.cs* and run the application inside WSL. There are a lot of details that make the process of development easier and promote productivity. I just mention a few of them: simplicity of setup, syntax and commands highlighting and autocompletion.
 
 ![setup-4](/assets/nikiforovall-setup/test4.gif)
 
