@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
-	<title>Development environment based on Windows Terminal + WSL + ZSH + dotfiles</title>
+	<title>Catch up with .NET Core - System.IO.Pipelines</title>
 	
 	<meta name="author" content="Alexey Nikiforov">
 
@@ -153,7 +153,7 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-	<h1>Development environment based on Windows Terminal + WSL + ZSH + dotfiles </h1>
+	<h1>Catch up with .NET Core - System.IO.Pipelines </h1>
 </div>
 
 <article>
@@ -162,12 +162,16 @@
 
 		<span class="post-date">
 			
-			November
-			30th,
+			April
+			21st,
 			
-			2019
+			2020
 		</span>
 
+	
+	<div class="col-sm-12"></div>
+	<h3 style="margin-top: 30px;">Related posts</h3>
+	<div class="col-sm-12"></div>
 	
 
 
@@ -215,79 +219,38 @@
 	
 
 	<div class="article_body" style="margin-top: 30px;">
-		<h2 id="introduction">Introduction</h2>
+		<h3 id="tldr">TL;DR</h3>
 
-<p>I would like to share with you how to implement <a href="[https://link](https://dotfiles.github.io/)">dotfiles</a> concept for your working environment lightning fast. This post is based on my <strong>dotfiles</strong> repository - <a href="https://github.com/NikiforovAll/dotfiles">nikiforovall/dotifles</a>.</p>
+<p>Quick reference and a collection of links to learn <strong>System.IO.Pipelines</strong>.</p>
 
-<p>It is a good time to be a .NET developer. It is not only mature and enterprise-ready ecosystem but vibrant and active community. I feel like guys from Microsoft doing a lot to support and encourage .NET community. In particular, that is why we have something like <a href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsystem For Linux</a>, <a href="https://github.com/Microsoft/Terminal">Windows Terminal</a> and many more.</p>
+<hr />
 
-<p>So I use Windows Terminal. It is a modern terminal emulator for windows. I switched from a really nice terminal emulator <a href="https://cmder.net/">cmder</a> to Windows Terminal (Preview). And I don’t regret it, especially after the release of <a href="https://devblogs.microsoft.com/commandline/windows-terminal-preview-v0-7-release/">Windows Terminal Preview v0.7 Release</a>. This release includes PowerLine fonts for Cascadia Fonts, tab reordering splitting of tab windows into panes. Sweat!</p>
+<p><a href="https://www.nuget.org/packages/System.IO.Pipelines/">System.IO.Pipelines</a> is a library that is designed to make it easier to do high performance IO shipped in .NET Standard 2.1 as a first class BCL API.</p>
 
-<p>Windows Terminal is highly configurable, so you could adjust <em>keybindings</em>, <em>color schemes</em>, and <em>profiles</em>.</p>
+<p>Provides programming model to perform high performance parsing of streaming data. Developers are free from having to manage buffers. A <em>Pipeline</em> is like a <em>Stream</em> that pushes data to you. Networking is the primary use case for this API, the whole thing emerged from Kestrel as implementation detail.</p>
 
-<p>You can install Windows Terminal from Microsoft Store or by using <a href="https://chocolatey.org/">chocolatey</a> windows package manager.</p>
+<p>There are no explicit buffers allocated. All buffer management is delegated to the <code class="highlighter-rouge">PipeReader</code> and <code class="highlighter-rouge">PipeWriter</code> implementations. Delegating buffer management makes it easier for consuming code to focus solely on the business logic.</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>choco <span class="nb">install </span>microsoft-windows-terminal <span class="nt">-y</span>
-</code></pre></div></div>
+<p><strong>Simple example:</strong> <a href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#pipe-basic-usage">https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#pipe-basic-usage</a></p>
 
-<p>Also, see my Windows Terminal <em>profiles.json</em> <a href="https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json">https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json</a>.</p>
+<p><strong>Tackle backpressure:</strong> <a href="https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#backpressure-and-flow-control">https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#backpressure-and-flow-control</a></p>
 
-<p>I use <a href="https://code.visualstudio.com/">Visual Studio Code</a> as the main editor and development environment. Although, it is possible to use dotfiles for synchronization concept for <code class="highlighter-rouge">vscode</code> I encourage you to use <a href="https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync">Settings Sync</a> extension. It uses GitHub as storage and makes use of API key to authorize and manage your configurations. You could install it like this:</p>
+<h3 id="stream--pipe">Stream → Pipe</h3>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>choco <span class="nb">install </span>vscode <span class="nt">-y</span>
-code <span class="nt">--intall-extension</span> Shan.code-settings-sync
-</code></pre></div></div>
+<p>When working with a stream it is possible to create wrappers/adapters around <em>Stream</em>. Use
+<a href="https://docs.microsoft.com/en-us/dotnet/api/system.io.pipelines.pipewriter.create">PipeWriter.Create</a> / <a href="https://docs.microsoft.com/en-us/dotnet/api/system.io.pipelines.pipereader.create">PipeReader.Create</a></p>
 
-<p>And now, here where the fun begins. The end goal is to bootstrap and configure working environment with the minimum effort. Basically, we want to run bash one-liner and have everything arranged nice and clean. Something like:</p>
+<p><strong>Example:</strong> <a href="https://github.com/davidfowl/TcpEcho">https://github.com/davidfowl/TcpEcho</a></p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash <span class="nt">-c</span> <span class="s2">"</span><span class="k">$(</span>wget <span class="nt">-qO</span> - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh<span class="k">)</span><span class="s2">"</span>
-</code></pre></div></div>
+<h3 id="pipe--stream">Pipe → Stream</h3>
 
-<h3 id="wsl-setup">WSL Setup</h3>
-
-<p>But first, let’s see how we set up brand new WSL instance. Here I list available Linux distros and unregister ubuntu-18.04</p>
-
-<p><img src="/assets/nikiforovall-setup/test1.gif" alt="setup-1" /></p>
-
-<p>Let’s register new user in Ubuntu-18.04 LTS.
-<img src="/assets/nikiforovall-setup/test2.gif" alt="setup-2" /></p>
-
-<p>And set default distro <em>“Ubuntu-18.04”</em></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># $wsl -h</span>
-<span class="c"># -setdefault, -s &lt;DistributionName&gt;</span>
-wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
-</code></pre></div></div>
-
-<p>We can login to WSL via Windows Terminal by specifying <code class="highlighter-rouge">"source": "Windows.Terminal.Wsl"</code> in corresponding Windows Terminal <em>profile</em>.</p>
-
-<h2 id="installation">Installation</h2>
-
-<p>🔧 If it is a brand-new WSL instance you might want to run <code class="highlighter-rouge">apt upgrade</code>. In the demo below I’ve already had everything.</p>
-
-<p>Let’s see how the bash one-liner works:</p>
-
-<p><code class="highlighter-rouge">bash -c "$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh)"</code></p>
-
-<p><img src="/assets/nikiforovall-setup/test3.gif" alt="setup-3" /></p>
-
-<p>It installs a bunch of <a href="https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh">essentials</a> for development environment: utils, tools, and <a href="https://dotnet.microsoft.com/download">dotnet sdk</a>. Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don’t need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀</p>
-
-<h2 id="demo">Demo</h2>
-
-<p>At the demonstration below I create a folder for the new <em>dotnet console</em> project. I slightly modify <em>Program.cs</em> and run the application inside WSL. There are a lot of details that make the process of development easier and promote productivity. I just mention a few of them: simplicity of setup, syntax and commands highlighting and autocompletion.</p>
-
-<p><img src="/assets/nikiforovall-setup/test4.gif" alt="setup-4" /></p>
-
-<h2 id="summary">Summary</h2>
-
-<p>It was a brief overview of my dotfiles setup. I encourage you to investigate the internals of my dotfiles repository for mode details. Feel free to fork and work on dream setup of your own. Let me know what you think about it!</p>
+<p>When reading or writing stream data, you typically read data using a de-serializer and write data using a serializer. Most of these read and write stream APIs have a Stream parameter. To make it easier <code class="highlighter-rouge">PipeReader</code> and <code class="highlighter-rouge">PipeWriter</code> expose an <em>AsStream</em>. <em>AsStream</em> returns a Stream implementation around the PipeReader or PipeWriter.</p>
 
 	</div>
 
 	
 	<h3 style="margin-top: 30px;">UrlList</h3>
-	<a href="https://www.theurlist.com/os-bootstrap" target="_blank">https://www.theurlist.com/os-bootstrap</a>
+	<a href="https://www.theurlist.com/catch-up-with-dotnet-pipelines" target="_blank">https://www.theurlist.com/catch-up-with-dotnet-pipelines</a>
 	<div class="col-sm-12" style="margin-bottom: 30px;"></div>
 	
 
@@ -297,8 +260,8 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 		
 		
 		
-		<li><a href="/categories.html#productivity-ref">
-				productivity <span>(1)</span>
+		<li><a href="/categories.html#dotnet-core-ref">
+				dotnet-core <span>(1)</span>
 				
 			</a></li>
 		
@@ -313,36 +276,15 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 		
 		
 		<li>
-			<a href="/tags.html#windows-terminal-ref">
-				windows-terminal <span>(1)</span>
+			<a href="/tags.html#.NET-ref">
+				.NET <span>(2)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
-			<a href="/tags.html#git-ref">
-				git <span>(1)</span>
-				,
-			</a>
-		</li>
-		
-		<li>
-			<a href="/tags.html#zsh-ref">
-				zsh <span>(1)</span>
-				,
-			</a>
-		</li>
-		
-		<li>
-			<a href="/tags.html#dotfiles-ref">
-				dotfiles <span>(1)</span>
-				,
-			</a>
-		</li>
-		
-		<li>
-			<a href="/tags.html#wsl-ref">
-				wsl <span>(1)</span>
+			<a href="/tags.html#dotnet-core-new-api-ref">
+				dotnet-core-new-api <span>(1)</span>
 				
 			</a>
 		</li>
@@ -358,7 +300,7 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 		<section class="share col-sm-6">
 			<h4 class="section-title">Share Post</h4>
 			<a class="btn btn-default btn-sm twitter"
-				href="http://twitter.com/share?text=Development environment based on Windows Terminal + WSL + ZSH + dotfiles&via=nikiforovall"
+				href="http://twitter.com/share?text=Catch up with .NET Core - System.IO.Pipelines&via=nikiforovall"
 				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
 				<i class="fa fa-twitter fa-lg"></i>
 				Twitter
@@ -386,13 +328,12 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 
 	<ul class="pager">
 		
-		<li class="previous"><a href="/desing-patterns/2019/06/09/design-patterns-first-part.html" title="Design Patterns. Behavioral Patterns. Part I">&larr;
+		<li class="previous"><a href="/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html" title="Sorting algorithms with C# 8, Span<T> and Try .NET">&larr;
 				Previous</a></li>
 		
 		
-		<li class="next"><a href="/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html" title="Sorting algorithms with C# 8, Span<T> and Try .NET">Next &rarr;</a>
-		</li>
-		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
 	</ul>
 
 	<hr>
