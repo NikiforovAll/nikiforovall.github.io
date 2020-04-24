@@ -111,7 +111,7 @@ Reading...
 01d.074.08c.07b.!
 ```
 
-See full example at GitHub: [blog-examples/pipelines](https://github.com/NikiforovAll/nikiforovall.github.io/blog-examples/pipelines)
+See full example at GitHub: [blog-examples/pipelines](https://github.com/NikiforovAll/nikiforovall.blog.examples/tree/master/pipelines)
 
 <!-- **Tackle backpressure:** <https://docs.microsoft.com/en-us/dotnet/standard/io/pipelines#backpressure-and-flow-control> -->
 
