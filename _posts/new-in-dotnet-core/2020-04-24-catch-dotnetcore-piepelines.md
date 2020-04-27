@@ -3,7 +3,7 @@ layout: post
 title: Catch up with .NET Core - System.IO.Pipelines
 categories: [dotnet-core]
 tags: [.NET, dotnet-core-modern-api]
-shortinfo: Quick reference and a collection of links to learn <b>System.IO.Pipelines</b>.
+shortinfo: Introduction to <b>System.IO.Pipelines</b>.
 fullview: false
 comments: true
 link-list: https://www.theurlist.com/catch-up-with-dotnet-pipelines
