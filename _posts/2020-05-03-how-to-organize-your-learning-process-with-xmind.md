@@ -122,6 +122,6 @@ Sometimes it is hard to pick a bite that I can chew on 😆.
 
 I've introduced lightweight approach to organize your learning process. Personally, I find it useful because learning is essential part of my craft and you better do it well 😉.
 
-If you want to organize you learning process the way I do, please feel free to use: [template.xlsx](https://github.com/NikiforovAll/nikiforovall.github.io/blob/master/assets/edu-scope/Template.xlsx) + [edu-scope-to-mindmap](https://github.com/NikiforovAll/edu-scope-to-mindmap)
+If you want to organize your learning process the way I do, please feel free to use: [template.xlsx](https://github.com/NikiforovAll/nikiforovall.github.io/blob/master/assets/edu-scope/Template.xlsx) + [edu-scope-to-mindmap](https://github.com/NikiforovAll/edu-scope-to-mindmap)
 
 ---
