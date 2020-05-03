@@ -35,47 +35,47 @@ Here is the the list of really good books to consider:
   </thead>
   <tbody>
         <tr>
-      <th scope="row"><a href="https://www.mazon.com/C-Depth-Jon-Skeet/dp/1617294535">C# in Depth (4th) - 2019</a></th>
+      <th scope="row"><a href="https://www.amazon.com/C-Depth-Jon-Skeet/dp/1617294535">C# in Depth (4th) - 2019</a></th>
       <td colspan="2">Jon Skeet</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/8-0-NET-Core-3-0-Cross-Platform/dp/1788478126">C# 8.0 and .NET Core 3.0</a></th>
+      <th scope="row"><a href="https://www.amazon.com/8-0-NET-Core-3-0-Cross-Platform/dp/1788478126">C# 8.0 and .NET Core 3.0</a></th>
       <td colspan="2">Mark J. Price</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/Programming-8-0-Windows-Desktop-Applications/dp/1492056812">Programming C# 8.0 - Build Cloud, Web, and Desktop Applications</a></th>
+      <th scope="row"><a href="https://www.amazon.com/Programming-8-0-Windows-Desktop-Applications/dp/1492056812">Programming C# 8.0 - Build Cloud, Web, and Desktop Applications</a></th>
       <td colspan="2">Ian Griffiths</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/NET-Core-Action-Dustin-Metzgar/dp/1617294276">.NET Core in Action</a></th>
+      <th scope="row"><a href="https://www.amazon.com/NET-Core-Action-Dustin-Metzgar/dp/1617294276">.NET Core in Action</a></th>
       <td colspan="2">Dustin Metzgar</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/Unit-Testing-Principles-Practices-Patterns/dp/1617296279">Unit Testing Principles, Practices, and Patterns</a></th>
+      <th scope="row"><a href="https://www.amazon.com/Unit-Testing-Principles-Practices-Patterns/dp/1617296279">Unit Testing Principles, Practices, and Patterns</a></th>
       <td colspan="2">Vladimir Khorikov</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/Concurrency-Cookbook-Asynchronous-Multithreaded-Programming-ebook/dp/B07WRN3SSK">Concurrency in C# Cookbook: Asynchronous, Parallel, and Multithreaded Programming</a></th>
+      <th scope="row"><a href="https://www.amazon.com/Concurrency-Cookbook-Asynchronous-Multithreaded-Programming-ebook/dp/B07WRN3SSK">Concurrency in C# Cookbook: Asynchronous, Parallel, and Multithreaded Programming</a></th>
       <td colspan="2">Stephen Cleary</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/Under-Hood-NET-Memory-Management/dp/1906434751">Under the Hood of .NET Memory Management</a></th>
+      <th scope="row"><a href="https://www.amazon.com/Under-Hood-NET-Memory-Management/dp/1906434751">Under the Hood of .NET Memory Management</a></th>
       <td colspan="2">Chris Farrell</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/Designing-Data-Intensive-Applications-Reliable-Maintainable/dp/1449373321">Designing Data-Intensive Applications</a></th>
+      <th scope="row"><a href="https://www.amazon.com/Designing-Data-Intensive-Applications-Reliable-Maintainable/dp/1449373321">Designing Data-Intensive Applications</a></th>
       <td colspan="2">Martin Kleppmann</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://docs.icrosoft.com/en-us/dotnet/architecture/microservices/">.NET Microservices: Architecture for Containerized .NET Applications</a></th>
+      <th scope="row"><a href="https://docs.microsoft.com/en-us/dotnet/architecture/microservices/">.NET Microservices: Architecture for Containerized .NET Applications</a></th>
       <td colspan="2">Cesar de la Torre</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://zure.microsoft.com/en-us/resources/designing-distributed-systems/">Designing Distributed Systems</a></th>
+      <th scope="row"><a href="https://azure.microsoft.com/en-us/resources/designing-distributed-systems/">Designing Distributed Systems</a></th>
       <td colspan="2">Brendan Burns</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://www.mazon.com/Agile-Principles-Patterns-Practices-C/dp/0131857258">Agile Principles, Patterns, and Practices in C#</a></th>
+      <th scope="row"><a href="https://www.amazon.com/Agile-Principles-Patterns-Practices-C/dp/0131857258">Agile Principles, Patterns, and Practices in C#</a></th>
       <td colspan="2">Robert C. Martin</td>
     </tr>
     <tr>
