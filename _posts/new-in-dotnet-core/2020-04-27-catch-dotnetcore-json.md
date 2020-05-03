@@ -12,7 +12,7 @@ link-list: https://www.theurlist.com/catch-up-with-dotnent-system-text-json
 
 ## TL;DR
 
-Introduction to **System.Text.Json**. Basically, the article is a projection of documentation from microsoft documentation, you might want to skip this one 😛. It was created due to the habit of learning new stuff that I practice.
+Introduction to **System.Text.Json**. Basically, the article is a projection of documentation from microsoft docs, you might want to skip this one 😛. It was created due to the habit of learning new stuff that I practice.
 
 ---
 
