@@ -67,7 +67,7 @@ Here is the the list of really good books to consider:
       <td colspan="2">Martin Kleppmann</td>
     </tr>
     <tr>
-      <th scope="row"><a href="https://docs.icrosoft.com/en-us/dotnet/architecture/microservices/">.NET Microservices: Architecture for Containerized .NET Applications</a></th>
+      <th scope="row"><a href="https://docs.microsoft.com/en-us/dotnet/architecture/microservices/">.NET Microservices: Architecture for Containerized .NET Applications</a></th>
       <td colspan="2">Cesar de la Torre</td>
     </tr>
     <tr>
