@@ -10,10 +10,10 @@ hide-related: true
 link-list: 
 ---
 
-Quite often, in my day-to-day workflow, I want to wrap some code section in well-known code snippet. I hate these moments. Usually, you want to *cut and paste* some code and after that formatting goes wrong and all of that 😱. So...
+Quite often, in my day-to-day workflow, I want to wrap up some code section in a well-known code snippet. I hate these moments. Usually, you want to *cut and paste* some code, and after that formatting goes wrong and all of that 😱. So...
 
 I would like to share with you extension for *vscode* that I wrote for personal use. ([marketplace.visualstudio.com/surround-with-csharp](https://marketplace.visualstudio.com/items?itemName=nikiforovall.surround-with-csharp))
-The goal of this extensions is to provide capability to wrap up selected text in a C# code snippet.
+The goal of this extension is to provide the capability to wrap up selected text in a C# code snippet.
 
 This extension supports different concepts to trigger functionally to surround your code.
 
@@ -33,7 +33,7 @@ If your favorite *command-pallette*. You can invoke command **"C#: Surround With
 
 ### Customize Keybindings
 
-Here is a list of keybindings provided by extension for quicker access to commands to use particular snippet. You can assign your own keybindings, if you want to.
+Here is a list of keybindings provided by extension for quicker access to commands to use a particular snippet. You can assign your own keybindings if you want to.
 
 <table class="table table-sm table-responsive table-striped table-hover">
   <thead>
