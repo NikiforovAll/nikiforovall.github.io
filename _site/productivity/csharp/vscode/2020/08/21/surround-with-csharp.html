@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
-	<title>Development environment based on Windows Terminal + WSL + ZSH + dotfiles</title>
+	<title>Bringing "surround with" functionality to vscode. Checkout out this extension for vscode.</title>
 	
 	<meta name="author" content="Alexey Nikiforov">
 
@@ -153,7 +153,7 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-	<h1>Development environment based on Windows Terminal + WSL + ZSH + dotfiles </h1>
+	<h1>Bringing "surround with" functionality to vscode. Checkout out this extension for vscode. </h1>
 </div>
 <article>
 
@@ -161,10 +161,10 @@
 
 		<span class="post-date">
 			
-			November
-			30th,
+			August
+			21st,
 			
-			2019
+			2020
 		</span>
 
 	
@@ -241,80 +241,91 @@
 	
 
 	<div class="article_body" style="margin-top: 30px;">
-		<h2 id="introduction">Introduction</h2>
+		<p>Quite often, in my day-to-day workflow, I want to wrap some code section in well-known code snippet. I hate these moments. Usually, you want to <em>cut and paste</em> some code and after that formatting goes wrong and all of that 😱. So…</p>
 
-<p>I would like to share with you how to implement <a href="[https://link](https://dotfiles.github.io/)">dotfiles</a> concept for your working environment lightning fast. This post is based on my <strong>dotfiles</strong> repository - <a href="https://github.com/NikiforovAll/dotfiles">nikiforovall/dotifles</a>.</p>
+<p>I would like to share with you extension for <em>vscode</em> that I wrote for personal use. (<a href="https://marketplace.visualstudio.com/items?itemName=nikiforovall.surround-with-csharp">marketplace.visualstudio.com/surround-with-csharp</a>)
+The goal of this extensions is to provide capability to wrap up selected text in a C# code snippet.</p>
 
-<p>It is a good time to be a .NET developer. It is not only mature and enterprise-ready ecosystem but vibrant and active community. I feel like guys from Microsoft doing a lot to support and encourage .NET community. In particular, that is why we have something like <a href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsystem For Linux</a>, <a href="https://github.com/Microsoft/Terminal">Windows Terminal</a> and many more.</p>
+<p>This extension supports different concepts to trigger functionally to surround your code.</p>
 
-<p>So I use Windows Terminal. It is a modern terminal emulator for windows. I switched from a really nice terminal emulator <a href="https://cmder.net/">cmder</a> to Windows Terminal (Preview). And I don’t regret it, especially after the release of <a href="https://devblogs.microsoft.com/commandline/windows-terminal-preview-v0-7-release/">Windows Terminal Preview v0.7 Release</a>. This release includes PowerLine fonts for Cascadia Fonts, tab reordering splitting of tab windows into panes. Sweat!</p>
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/surround-with-csharp">https://github.com/NikiforovAll/surround-with-csharp</a></p>
 
-<p>Windows Terminal is highly configurable, so you could adjust <em>keybindings</em>, <em>color schemes</em>, and <em>profiles</em>.</p>
+<h2 id="completionprovider">CompletionProvider</h2>
 
-<p>You can install Windows Terminal from Microsoft Store or by using <a href="https://chocolatey.org/">chocolatey</a> windows package manager.</p>
+<p>You can just simply hit <code class="highlighter-rouge">CTRL + SPACE</code> and if you have some code selected, you will get completion items that you can choose from by using arrow keys:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>choco <span class="nb">install </span>microsoft-windows-terminal <span class="nt">-y</span>
-</code></pre></div></div>
+<p><img src="/assets/surround-with-csharp/surr-w-cs-d2.gif" alt="demo1" /></p>
 
-<p>Also, see my Windows Terminal <em>profiles.json</em> <a href="https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json">https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json</a>.</p>
+<h2 id="commands">Commands</h2>
 
-<p>I use <a href="https://code.visualstudio.com/">Visual Studio Code</a> as the main editor and development environment. Although, it is possible to use dotfiles for synchronization concept for <code class="highlighter-rouge">vscode</code> I encourage you to use <a href="https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync">Settings Sync</a> extension. It uses GitHub as storage and makes use of API key to authorize and manage your configurations. You could install it like this:</p>
+<p>If your favorite <em>command-pallette</em>. You can invoke command <strong>“C#: Surround With”</strong> (or <code class="highlighter-rouge">CTRL+SHIFT+S, CTRL+SHIFT+S</code>) and you will be prompted for a code snippet.</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>choco <span class="nb">install </span>vscode <span class="nt">-y</span>
-code <span class="nt">--intall-extension</span> Shan.code-settings-sync
-</code></pre></div></div>
+<p><img src="/assets/surround-with-csharp/surr-w-cs-d1.gif" alt="demo2" /></p>
 
-<p>And now, here where the fun begins. The end goal is to bootstrap and configure working environment with the minimum effort. Basically, we want to run bash one-liner and have everything arranged nice and clean. Something like:</p>
+<h3 id="customize-keybindings">Customize Keybindings</h3>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash <span class="nt">-c</span> <span class="s2">"</span><span class="k">$(</span>wget <span class="nt">-qO</span> - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh<span class="k">)</span><span class="s2">"</span>
-</code></pre></div></div>
+<p>Here is a list of keybindings provided by extension for quicker access to commands to use particular snippet. You can assign your own keybindings, if you want to.</p>
 
-<h3 id="wsl-setup">WSL Setup</h3>
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Snippet</th>
+      <th scope="col">Keybinding</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">surround.with.namespace</th>
+      <td colspan="2">ctrl+shift+S N</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.for</th>
+      <td colspan="2">ctrl+shift+S F</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.foreach</th>
+      <td colspan="2">ctrl+shift+S ctrl+F</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.do</th>
+      <td colspan="2">ctrl+shift+S D</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.while</th>
+      <td colspan="2">ctrl+shift+S W</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.if</th>
+      <td colspan="2">ctrl+shift+S I</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.else</th>
+      <td colspan="2">ctrl+shift+S E</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.try</th>
+      <td colspan="2">ctrl+shift+S T</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.tryf</th>
+      <td colspan="2">ctrl+shift+S ctrl+T</td>
+    </tr>
+    <tr>
+      <th scope="row">surround.with.lock</th>
+      <td colspan="2">ctrl+shift+S L</td>
+    </tr>
+  </tbody>
+</table>
+<p>Some commands are not bound at all. So if you are “I want to wrap all my code in regions” kind of guy, you can go to “Keyboard Shortcuts” and find all subcommands. Usually, the name starts with “surround.with”.</p>
 
-<p>But first, let’s see how we set up brand new WSL instance. Here I list available Linux distros and unregister ubuntu-18.04</p>
+<hr />
 
-<p><img src="/assets/nikiforovall-setup/test1.gif" alt="setup-1" /></p>
+<p>Hope you find this useful, have fun! 🎉</p>
 
-<p>Let’s register new user in Ubuntu-18.04 LTS.
-<img src="/assets/nikiforovall-setup/test2.gif" alt="setup-2" /></p>
-
-<p>And set default distro <em>“Ubuntu-18.04”</em></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># $wsl -h</span>
-<span class="c"># -setdefault, -s &lt;DistributionName&gt;</span>
-wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
-</code></pre></div></div>
-
-<p>We can login to WSL via Windows Terminal by specifying <code class="highlighter-rouge">"source": "Windows.Terminal.Wsl"</code> in corresponding Windows Terminal <em>profile</em>.</p>
-
-<h2 id="installation">Installation</h2>
-
-<p>🔧 If it is a brand-new WSL instance you might want to run <code class="highlighter-rouge">apt upgrade</code>. In the demo below I’ve already had everything.</p>
-
-<p>Let’s see how the bash one-liner works:</p>
-
-<p><code class="highlighter-rouge">bash -c "$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh)"</code></p>
-
-<p><img src="/assets/nikiforovall-setup/test3.gif" alt="setup-3" /></p>
-
-<p>It installs a bunch of <a href="https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh">essentials</a> for development environment: utils, tools, and <a href="https://dotnet.microsoft.com/download">dotnet sdk</a>. Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don’t need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀</p>
-
-<h2 id="demo">Demo</h2>
-
-<p>At the demonstration below I create a folder for the new <em>dotnet console</em> project. I slightly modify <em>Program.cs</em> and run the application inside WSL. There are a lot of details that make the process of development easier and promote productivity. I just mention a few of them: simplicity of setup, syntax and commands highlighting and autocompletion.</p>
-
-<p><img src="/assets/nikiforovall-setup/test4.gif" alt="setup-4" /></p>
-
-<h2 id="summary">Summary</h2>
-
-<p>It was a brief overview of my dotfiles setup. I encourage you to investigate the internals of my dotfiles repository for mode details. Feel free to fork and work on dream setup of your own. Let me know what you think about it!</p>
+<hr />
 
 	</div>
 
-	
-	<h3 style="margin-top: 30px;">Reference</h3>
-	<a href="https://www.theurlist.com/os-bootstrap" target="_blank">https://www.theurlist.com/os-bootstrap</a>
-	<div class="col-sm-12" style="margin-bottom: 30px;"></div>
 	
 
 	
@@ -325,6 +336,16 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 		
 		<li><a href="/categories.html#productivity-ref">
 				productivity <span>(3)</span>
+				,
+			</a></li>
+		
+		<li><a href="/categories.html#csharp-ref">
+				csharp <span>(1)</span>
+				,
+			</a></li>
+		
+		<li><a href="/categories.html#vscode-ref">
+				vscode <span>(1)</span>
 				
 			</a></li>
 		
@@ -339,36 +360,15 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 		
 		
 		<li>
-			<a href="/tags.html#windows-terminal-ref">
-				windows-terminal <span>(1)</span>
+			<a href="/tags.html#vscode-ref">
+				vscode <span>(1)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
-			<a href="/tags.html#git-ref">
-				git <span>(1)</span>
-				,
-			</a>
-		</li>
-		
-		<li>
-			<a href="/tags.html#zsh-ref">
-				zsh <span>(1)</span>
-				,
-			</a>
-		</li>
-		
-		<li>
-			<a href="/tags.html#dotfiles-ref">
-				dotfiles <span>(1)</span>
-				,
-			</a>
-		</li>
-		
-		<li>
-			<a href="/tags.html#wsl-ref">
-				wsl <span>(1)</span>
+			<a href="/tags.html#productivity-ref">
+				productivity <span>(1)</span>
 				
 			</a>
 		</li>
@@ -384,7 +384,7 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 		<section class="share col-sm-6">
 			<h4 class="section-title">Share Post</h4>
 			<a class="btn btn-default btn-sm twitter"
-				href="http://twitter.com/share?text=Development environment based on Windows Terminal + WSL + ZSH + dotfiles&via=nikiforovall"
+				href="http://twitter.com/share?text=Bringing "surround with" functionality to vscode. Checkout out this extension for vscode.&via=nikiforovall"
 				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
 				<i class="fa fa-twitter fa-lg"></i>
 				Twitter
@@ -412,13 +412,12 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 
 	<ul class="pager">
 		
-		<li class="previous"><a href="/desing-patterns/2019/06/09/design-patterns-first-part.html" title="Design Patterns. Behavioral Patterns. Part I">&larr;
+		<li class="previous"><a href="/productivity/2020/05/03/how-to-organize-your-learning-process-with-xmind.html" title="How to organize learning process with mindmaps, spreadsheets and .NET Core">&larr;
 				Previous</a></li>
 		
 		
-		<li class="next"><a href="/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html" title="Sorting algorithms with C# 8, Span<T> and Try .NET">Next &rarr;</a>
-		</li>
-		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
 	</ul>
 
 	<hr>
