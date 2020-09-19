@@ -42,7 +42,13 @@ I've pushed a containerized image of [dotnet-script](https://github.com/filipw/d
 
 For now, GitHub doesn't provide search and discovery capabilities for images, but you already can find some UI to see image details from UI, if you know the name.
 
-You can find packaged [dotnet-script](https://github.com/filipw/dotnet-script) here: <https://github.com/users/NikiforovAll/packages/container/package/dotnet-script>
+You can find packaged [dotnet-script](https://github.com/filipw/dotnet-script) here:
+
+<https://github.com/users/NikiforovAll/packages/container/package/dotnet-script>
+
+<center>
+    <img src="/assets/ghcr.png" alt="ghcr-example">
+</center>
 
 🚀  Let's download and run it:
 
@@ -50,3 +56,4 @@ You can find packaged [dotnet-script](https://github.com/filipw/dotnet-script) h
 docker image pull ghcr.io/nikiforovall/dotnet-script:latest
 docker container run --it --rm ghcr.io/nikiforovall/dotnet-script
 ```
+
