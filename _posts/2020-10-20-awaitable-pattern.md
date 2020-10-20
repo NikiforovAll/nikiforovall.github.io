@@ -4,7 +4,7 @@ title: Awaitable/awaiter pattern and logical micro-threading in C#
 categories: [ csharp, compcsi, dotnet ]
 tags: [ csharp, dotnet, asynchronous-programming ]
 published: true
-shortinfo: Let's build a state machine based on awaitable pattern. The code that you probably never you in production.
+shortinfo: Let's build a state machine based on awaitable/awaiter pattern.
 fullview: false
 comments: true
 hide-related: false
@@ -283,7 +283,7 @@ public class StrategyResult
 public enum StrategyStatus { InProgress, Done, Failed }
 ```
 
-We want to make it awaitable and you it like this `await myAwesomeStrategy`
+We want to make it awaitable and you do it like this `await myAwesomeStrategy`
 
 *StrategyExtensions.cs*:
 
