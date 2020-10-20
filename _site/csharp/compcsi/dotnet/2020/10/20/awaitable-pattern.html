@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Awaitable/awaiter pattern and logical micro-threading in C#</title>
+	
+	<meta name="author" content="Alexey Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:nikiforovalekcey@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				n+1 IT blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">n+1 IT blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:nikiforovalekcey@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/alexey-nikiforov-430259111">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Awaitable/awaiter pattern and logical micro-threading in C# </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			October
+			20th,
+			
+			2020
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>We’ll focus on the extensibility points of the C# compiler to customize the behavior of async methods and task-like types. As result, we will be able to write linear, concise, and composable code with the possibility to have control over task scheduling. 🤓</p>
+
+<hr />
+
+<h2 id="c--patterns">C# 💜 patterns</h2>
+
+<p>Numerous <em>C#</em> features are based on <a href="http://en.wikipedia.org/wiki/Duck_typing">duck-typing</a> and patterns inferred by the compiler. Basically, it means that a developer doesn’t need to implement interfaces or inherit classes explicitly to achieve some pluggable behavior. Instead, we could follow some well-known conventions inferred by the compiler to plug or glue some functionality together. Duck-typing is great when strongly-typed approach impedes too many limitations or you want to keep your code clean and tidy. So if you’ve got a pattern right, than, the compiler will do its magic and generate some code for you. Let’s see examples of such patterns in <em>C#</em>.</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Pattern</th>
+      <th scope="col">How to use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Foreach</th>
+      <td colspan="2">Implement <code>GetEnumerator</code> method to make you custom type work with <code>foreach</code>.</td>
+    </tr>
+    <tr>
+      <th scope="row">LINQ Queries</th>
+      <td colspan="2">Implement <code>SelectMany</code>, <code>Select</code>,<code>Where</code>, <code>GroupBy</code>, <code>OrderBy</code>, <code>ThenBy</code>, <code>Join</code>. <i>C#</i> compiler creates a series of method calls. As long as these methods are found, you are good.</td>
+    </tr>
+    <tr>
+      <th scope="row">Deconstructors</th>
+      <td colspan="2">Implement the <code>Deconstruct</code> method with a bunch out parameters. The result of deconstruction could be consumed as <code>ValueTuple</code> or as separately initialized variables.</td>
+    </tr>
+    <tr>
+      <th scope="row">Dynamic</th>
+      <td colspan="2">The <i>C#</i> compiler invokes a whole reflection machinery which by default can invoke methods, properties, and fields. As soon as the object implements <code>IDynamicMetaObjectProvider</code> the object gets runtime control on what is invoked.</td>
+    </tr>
+    <tr>
+      <th scope="row">Async/Await</th>
+      <td colspan="2">The only thing required is a <code>GetAwaiter</code> method which returns an object having an <code>IsComplete</code> and <code>GetResult()</code> method and implementing the <a href="https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.inotifycompletion">INotifyCompletion</a> interface.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="examples">Examples</h3>
+
+<p>Before we delve into the main part, I would like you to warm you up and provide some examples of how C# compiler infers patterns in various cases.</p>
+
+<h4 id="foreach">Foreach</h4>
+
+<p>Usually, we implement <code class="highlighter-rouge">IEnumerable</code> to support collection-like behavior. As result, it is possible to use <code class="highlighter-rouge">foreach</code> over user-defined types. But, in order for type to be consumed by <code class="highlighter-rouge">foreach</code> you just need to implement <code class="highlighter-rouge">GetEnumerator</code> method. Beside that, <em>C# 9</em> introduces nice little feature. You can iterate over <code class="highlighter-rouge">System.Range</code> by implementing extension method. This enables a bunch of new opportunities, e.g.:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">IEnumerator</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">GetEnumerator</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="k">this</span> <span class="n">System</span><span class="p">.</span><span class="n">Range</span> <span class="n">range</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">enumerator</span><span class="p">;</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Usage</span>
+<span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">i</span> <span class="k">in</span> <span class="m">1.</span><span class="p">.</span><span class="m">10</span><span class="p">)</span> <span class="p">{}</span>
+</code></pre></div></div>
+
+<h4 id="linq-queries">LINQ Queries</h4>
+
+<p>Generate permutations for a list of words and write LINQ quires over it.
+See full version on Github: <a href="https://gist.github.com/NikiforovAll/b4a8e22b088644dbd0bc885b19ffb72b#file-permutationssource-cs">PermutationsSource.cs</a>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Implementation</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">PermutationsSource</span>
+<span class="p">{</span>
+    <span class="c1">//...</span>
+    <span class="k">public</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">SelectMany</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span>
+        <span class="n">Func</span><span class="p">&lt;</span><span class="n">PermutationsSource</span><span class="p">,</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;&gt;</span> <span class="n">selector</span><span class="p">,</span> <span class="n">Func</span><span class="p">&lt;</span><span class="n">PermutationsSource</span><span class="p">,</span> <span class="kt">string</span><span class="p">,</span> <span class="n">T</span><span class="p">&gt;</span> <span class="n">resultSelector</span><span class="p">)</span> <span class="p">=&gt;</span>
+            <span class="nf">selector</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nf">Select</span><span class="p">(</span><span class="n">i</span> <span class="p">=&gt;</span> <span class="nf">resultSelector</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="n">i</span><span class="p">));</span>
+
+    <span class="k">public</span> <span class="n">PermutationsSource</span> <span class="nf">Select</span><span class="p">(</span><span class="n">Func</span><span class="p">&lt;</span><span class="n">PermutationsSource</span><span class="p">,</span> <span class="n">PermutationsSource</span><span class="p">&gt;</span> <span class="n">selection</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nf">selection</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+    <span class="c1">//...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Usage</span>
+<span class="kt">var</span> <span class="n">q</span> <span class="p">=</span> <span class="k">from</span> <span class="n">ps</span> <span class="k">in</span> <span class="k">new</span> <span class="nf">PermutationsSource</span><span class="p">(</span><span class="s">"test"</span><span class="p">,</span> <span class="s">"test"</span><span class="p">,</span> <span class="s">"new"</span><span class="p">)</span>
+    <span class="k">from</span> <span class="n">perm</span> <span class="k">in</span> <span class="n">ps</span><span class="p">.</span><span class="nf">Permute</span><span class="p">()</span>
+    <span class="k">where</span> <span class="n">perm</span><span class="p">.</span><span class="n">Length</span> <span class="p">&lt;</span> <span class="m">4</span>
+    <span class="k">select</span> <span class="n">perm</span><span class="p">;</span>
+<span class="n">Debug</span><span class="p">.</span><span class="nf">Assert</span><span class="p">(</span><span class="n">q</span><span class="p">.</span><span class="nf">Count</span><span class="p">()</span> <span class="p">==</span> <span class="m">6</span><span class="p">);</span>
+</code></pre></div></div>
+
+<!-- <noscript><pre>400: Invalid request</pre></noscript><script src="https://gist.github.com/b4a8e22b088644dbd0bc885b19ffb72b.js?file=PermutationsSource.cs"> </script> -->
+
+<h4 id="deconstructors">Deconstructors</h4>
+
+<p>Besides tuples, you can deconstruct custom types that have <code class="highlighter-rouge">Deconstruct</code> method implement as class member or extension method.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Person</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">FirstName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">LastName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">int</span> <span class="n">Age</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="nf">Person</span><span class="p">(</span><span class="kt">string</span> <span class="n">fName</span><span class="p">,</span> <span class="kt">string</span> <span class="n">lName</span><span class="p">,</span> <span class="kt">int</span> <span class="n">age</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">(</span><span class="n">FirstName</span><span class="p">,</span> <span class="n">LastName</span><span class="p">,</span> <span class="n">Age</span><span class="p">)</span> <span class="p">=</span> <span class="p">(</span><span class="n">fName</span><span class="p">,</span> <span class="n">lName</span><span class="p">,</span> <span class="n">age</span><span class="p">);</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Deconstruct</span><span class="p">(</span><span class="k">out</span> <span class="kt">string</span> <span class="n">fName</span><span class="p">,</span> <span class="k">out</span> <span class="kt">string</span> <span class="n">lName</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">(</span><span class="n">fName</span><span class="p">,</span> <span class="n">lName</span><span class="p">)</span> <span class="p">=</span> <span class="p">(</span><span class="n">FirstName</span><span class="p">,</span> <span class="n">LastName</span><span class="p">);</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">Deconstruct</span><span class="p">(</span><span class="k">out</span> <span class="kt">string</span> <span class="n">fName</span><span class="p">,</span> <span class="k">out</span> <span class="kt">string</span> <span class="n">lName</span><span class="p">,</span> <span class="k">out</span> <span class="kt">int</span> <span class="n">age</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">(</span><span class="n">fName</span><span class="p">,</span> <span class="n">lName</span><span class="p">,</span> <span class="n">age</span><span class="p">)</span> <span class="p">=</span> <span class="p">(</span><span class="n">FirstName</span><span class="p">,</span> <span class="n">LastName</span><span class="p">,</span> <span class="n">Age</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Usage</span>
+<span class="kt">var</span> <span class="n">p</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Person</span><span class="p">(</span><span class="s">"John"</span><span class="p">,</span> <span class="s">"Doe"</span><span class="p">,</span> <span class="m">42</span><span class="p">);</span>
+<span class="p">(</span><span class="kt">string</span> <span class="n">firstName</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="p">=</span> <span class="n">p</span><span class="p">;</span>
+<span class="kt">var</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">_</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="p">=</span> <span class="n">p</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h4 id="asyncawait">Async/Await</h4>
+
+<p>You can implement simplistic awaitable/awaiter pattern based on extension methods. Like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">TaskAwaiter</span> <span class="nf">GetAwaiter</span><span class="p">(</span><span class="k">this</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="n">tasks</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="n">TaskEx</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">tasks</span><span class="p">).</span><span class="nf">GetAwaiter</span><span class="p">();</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Usage</span>
+<span class="k">await</span> <span class="k">from</span> <span class="n">url</span> <span class="k">in</span> <span class="n">urls</span> <span class="k">select</span> <span class="nf">DownloadAsync</span><span class="p">(</span><span class="n">url</span><span class="p">);</span>
+</code></pre></div></div>
+
+<hr />
+
+<p>🚀 Let’s see how we can use this in something that I call logical micro-threading.</p>
+
+<h2 id="problem-largest-series-product">Problem: Largest series product</h2>
+
+<p>Occasionally, I use coding platforms to practice my craft. I really like the idea of doing <a href="https://en.wikipedia.org/wiki/Kata_(programming)">Katas</a> to hone coding skills, because you truly know something when you’ve implemented it and get hands-on experience. Katas is part of the thing. 🐱‍👤</p>
+
+<blockquote>
+  <p>A code kata is an exercise in programming which helps programmers hone their skills through practice and repetition.</p>
+</blockquote>
+
+<p>Let’s solve this one: <a href="https://exercism.io/tracks/csharp/exercises/largest-series-product">exercism.io/tracks/csharp/exercises/largest-series-product</a>.</p>
+
+<blockquote>
+  <p>Given a string of digits, calculate the largest product for a contiguous substring of digits of length n.</p>
+</blockquote>
+
+<p>The problem itself is really straightforward and we could solve it by iterating over the input array and calculating the local maximum every time the window has a length of a given value (span).</p>
+
+<p>Here is my first take on it: <a href="https://exercism.io/my/solutions/3860f6ea813f4697971e0cb004ff90f5">largest-series-product/solution</a>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">max</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">curr</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">array</span> <span class="p">=</span> <span class="nf">ToDigits</span><span class="p">(</span><span class="n">digits</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">length</span> <span class="p">=</span> <span class="n">array</span><span class="p">.</span><span class="n">Count</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">start</span> <span class="p">=</span> <span class="m">0</span><span class="p">,</span> <span class="n">end</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">length</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span>
+<span class="p">{</span>
+    <span class="n">end</span> <span class="p">=</span> <span class="n">i</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">start</span> <span class="p">=</span> <span class="n">i</span> <span class="p">+</span> <span class="m">1</span><span class="p">;</span>
+        <span class="n">end</span> <span class="p">=</span> <span class="n">start</span><span class="p">;</span>
+        <span class="n">curr</span> <span class="p">=</span> <span class="m">1</span><span class="p">;</span>
+        <span class="k">continue</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kt">var</span> <span class="n">full</span> <span class="p">=</span> <span class="n">end</span> <span class="p">-</span> <span class="n">start</span> <span class="p">&gt;=</span> <span class="n">span</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">full</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">curr</span> <span class="p">/=</span> <span class="n">array</span><span class="p">[</span><span class="n">start</span><span class="p">];</span>
+        <span class="n">curr</span> <span class="p">*=</span> <span class="n">array</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+        <span class="n">start</span><span class="p">++;</span>
+    <span class="p">}</span>
+    <span class="k">else</span>
+        <span class="n">curr</span> <span class="p">*=</span> <span class="n">array</span><span class="p">[</span><span class="n">end</span><span class="p">];</span>
+    <span class="n">max</span> <span class="p">=</span> <span class="n">curr</span> <span class="p">&gt;</span> <span class="n">max</span> <span class="p">&amp;&amp;</span> <span class="p">(</span><span class="n">end</span> <span class="p">-</span> <span class="n">start</span> <span class="p">+</span> <span class="m">1</span> <span class="p">==</span> <span class="n">span</span><span class="p">)</span> <span class="p">?</span> <span class="n">curr</span> <span class="p">:</span> <span class="n">max</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">return</span> <span class="n">max</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>I hate to read code like this 🤮. It takes you quite some time and effort to really figure out what is going on. With great confidence, we can describe this code as <em>write-only</em>.</p>
+
+<blockquote>
+  <p><a href="https://en.wikipedia.org/wiki/Write-only_language">Write-only code</a> code is source code so arcane, complex, or ill-structured that it cannot be reliably modified or even comprehended by anyone with the possible exception of the author.</p>
+</blockquote>
+
+<p>Let’s formulate how we could tackle the complexity of a relatively simple problems in utterly hyperbolical manner.</p>
+
+<p>My goal is to share with you the technique. I deliberately chose a simple problem so we could try to understand the micro-threading approach without delving into details.</p>
+
+<h3 id="micro-threading">Micro-threading</h3>
+
+<p><em>C# 5</em> language made a huge step forward by introducing async/await. Async/await helps to compose tasks and gives the user an ability to use well-known constructs like try/catch, using etc. A regular method has just one entry point and one exit point. But async methods and iterators are different. In the case of async method, a method caller get the (e.g. Task-like type or <code class="highlighter-rouge">Task</code>) result immediately and then “await” the actual result of the method via the resulting task-like type.</p>
+
+<h4 id="async-machinery">Async machinery</h4>
+
+<p>Methods marked by async are undergoing subtle transformations performed by the compiler. To make everything work together, the compiler makes use of:</p>
+
+<ol>
+  <li>Generated state machine that acts like a stack frame for an asynchronous method and contains all the logic from the original async method</li>
+  <li><a href="http://referencesource.microsoft.com/#mscorlib/system/runtime/compilerservices/AsyncMethodBuilder.cs,5916df9e324fc0a1">AsyncTaskMethodBuilder&lt;T&gt;</a> that keeps the completed task (very similar to <a href="https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.taskcompletionsource-1">TaskCompletionSource&lt;T&gt;</a> type) and manages the state transition of the state machine.</li>
+  <li><a href="http://referencesource.microsoft.com/#mscorlib/system/runtime/compilerservices/TaskAwaiter.cs,2c48fb3bdfc69022">TaskAwaiter&lt;T&gt;</a> that wraps a task and schedules continuations of it if needed.</li>
+  <li><a href="http://referencesource.microsoft.com/#mscorlib/system/runtime/compilerservices/AsyncMethodBuilder.cs,c7b2691b131812c7">MoveNextRunner</a> that calls <a href="http://referencesource.microsoft.com/#mscorlib/system/runtime/compilerservices/IAsyncStateMachine.cs,22e8d7df64651ee3">IAsyncStateMachine.MoveNextmethod</a> in the correct execution context.</li>
+</ol>
+
+<p>The fascinating part is you use extensibility points the C# compiler provides for customizing the behavior of async methods:</p>
+
+<ol>
+  <li>Provide your own default async method builder in the <code class="highlighter-rouge">System.Runtime.CompilerServices namespace</code>.</li>
+  <li>Use custom task awaiters.</li>
+  <li>Define your own task-like types. Starting from <em>C# 7.2</em>.</li>
+</ol>
+
+<p>Later, we will see how the last two options could be used in more detail.</p>
+
+<hr />
+
+<p>Let’s get back to kata problem, shall we?</p>
+
+<p>If we take a look from the different angle we can spot different states in which the sliding window can be: “reduced”, “expanded”, and “shifted”.</p>
+
+<p>So, the idea is to move the window from left to right and calculate local product every time the window is “expanded” or “shifted”.</p>
+
+<p><img src="/assets/awaitable-pattern/state-machine.png" alt="state-machine" /></p>
+
+<h2 id="solution-of-the-largest-series-product-with-awaitableawaiter-patten">Solution of the largest series product with awaitable/awaiter patten</h2>
+
+<p>My goal is to come up with the solution write highly composable and linear code and at the same time have control of how building blocks are executed and scheduled.</p>
+
+<p>The solution consists of next building blocks:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>tree <span class="nt">-L</span> 2 lib
+lib
+├── Core
+│   ├── AsyncTicker.cs
+│   ├── IStrategy.cs
+│   ├── StrategyAwaiter.cs
+│   ├── StrategyBuilder.cs
+│   ├── Strategy.cs
+│   ├── StrategyExtensions.cs
+│   ├── StrategyResult.cs
+│   ├── StrategyStatus.cs
+│   └── StrategyTask.cs
+├── LargestSeriesProductV2.cs
+├── lib.csproj
+└── StrategyImplementations
+    ├── ChaosWindowStrategy.cs
+    ├── ExpandStrategy.cs
+    ├── MultipleSlidingWindowsStrategy.cs
+    ├── ShiftStrategy.cs
+    ├── SkipStrategy.cs
+    ├── SlideStrategy.cs
+    ├── SlidingWindowStrategy.cs
+    └── Solver.cs
+
+2 directories, 19 files
+</code></pre></div></div>
+
+<p>Full source code: <a href="https://github.com/NikiforovAll/exercism-playground/tree/master/csharp/largest-series-product">/exercism-playground/csharp/largest-series-product</a></p>
+
+<h3 id="core">Core</h3>
+
+<p>In order to use async/await for task-like types we need to introduce a bunch of extensibility points.</p>
+
+<p>A strategy represents a discrete and composable algorithm:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">interface</span> <span class="nc">IStrategy</span>
+<span class="p">{</span>
+    <span class="n">StrategyStatus</span> <span class="n">Status</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+    <span class="n">IStrategy</span><span class="p">[]</span> <span class="nf">Tick</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">StrategyResult</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="n">StrategyStatus</span> <span class="n">Status</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="n">IStrategy</span><span class="p">[]</span> <span class="n">Strategies</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">public</span> <span class="k">enum</span> <span class="n">StrategyStatus</span> <span class="p">{</span> <span class="n">InProgress</span><span class="p">,</span> <span class="n">Done</span><span class="p">,</span> <span class="n">Failed</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>We want to make it awaitable and you it like this <code class="highlighter-rouge">await myAwesomeStrategy</code></p>
+
+<p><em>StrategyExtensions.cs</em>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">AwaitableExtensions</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">StrategyAwaiter</span> <span class="nf">GetAwaiter</span><span class="p">(</span><span class="k">this</span> <span class="n">IStrategy</span> <span class="n">strategy</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">new</span> <span class="nf">StrategyAwaiter</span><span class="p">(</span><span class="k">new</span><span class="p">[]</span> <span class="p">{</span> <span class="n">strategy</span> <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>As mentioned before, <em>C#</em> compiler could do it’s magic if we implement awaitable/awaiter patter.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">StrategyAwaiter</span> <span class="p">:</span> <span class="n">INotifyCompletion</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="nf">StrategyAwaiter</span><span class="p">(</span><span class="n">IStrategy</span><span class="p">[]</span> <span class="n">strategies</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">Strategies</span> <span class="p">=</span> <span class="n">strategies</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">IStrategy</span><span class="p">[]</span> <span class="n">Strategies</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">bool</span> <span class="n">IsCompleted</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">private</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">bool</span> <span class="nf">GetResult</span><span class="p">()</span> <span class="p">=&gt;</span>
+        <span class="n">Strategies</span> <span class="p">==</span> <span class="k">null</span> <span class="p">||</span> <span class="n">Strategies</span><span class="p">.</span><span class="nf">All</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Status</span> <span class="p">==</span> <span class="n">StrategyStatus</span><span class="p">.</span><span class="n">Done</span><span class="p">);</span>
+
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">OnCompleted</span><span class="p">(</span><span class="n">Action</span> <span class="n">continuation</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">IsCompleted</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+        <span class="nf">continuation</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">StrategyTask</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">IStrategy</span><span class="p">[]</span> <span class="n">strategies</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="n">StrategyAwaiter</span> <span class="nf">GetAwaiter</span><span class="p">()</span> <span class="p">=&gt;</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">StrategyAwaiter</span><span class="p">(</span><span class="n">strategies</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="na">[AsyncMethodBuilder(typeof(StrategyTaskBuilder&lt;&gt;))]</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">StrategyTask</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="n">IStrategy</span><span class="p">[]</span> <span class="n">Strategies</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">T</span> <span class="n">Result</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">bool</span> <span class="n">IsComplete</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">Action</span> <span class="n">Continue</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">StrategyTaskBuilder</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span>
+<span class="p">{</span>
+  <span class="c1">// skipped for brevity</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>That’s a lot, I know. But, bare with me, I will show how it works:</p>
+
+<ol>
+  <li>Driver do the <code class="highlighter-rouge">.Tick()</code></li>
+  <li><code class="highlighter-rouge">AsyncTicker</code> runs a fresh strategy/task. (<code class="highlighter-rouge">run()</code>)</li>
+  <li>Code executes normally until first <code class="highlighter-rouge">await</code></li>
+  <li><code class="highlighter-rouge">GetAwaiter</code> unwraps task-like type</li>
+  <li><code class="highlighter-rouge">AsyncMethodBuilder</code> initializes state machine</li>
+  <li><code class="highlighter-rouge">AsyncTicker</code> runs continuation (<code class="highlighter-rouge">continue()</code>)</li>
+  <li><code class="highlighter-rouge">stateMachine.MoveNext()</code> is invoked</li>
+  <li>If <code class="highlighter-rouge">StrategyTask</code> is completed, the result is returned and control flow is resumed</li>
+</ol>
+
+<p><img src="/assets/awaitable-pattern/awaitable-flow.png" alt="awaitable-flow" /></p>
+
+<p>I suggest you to spin up the debugger and investigate on your own 😉.</p>
+
+<hr />
+
+<p>Let’s say we want to define a top-level strategy that is based on sliding windows giving us a valid span for every type we await a sub-strategy to slide:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// SlidingWindowStrategy.cs</span>
+<span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">StrategyTask</span><span class="p">&lt;</span><span class="kt">long</span><span class="p">&gt;</span> <span class="nf">Run</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">bool</span> <span class="n">success</span><span class="p">;</span>
+    <span class="kt">long</span> <span class="n">max</span> <span class="p">=</span> <span class="kt">long</span><span class="p">.</span><span class="n">MinValue</span><span class="p">;</span>
+    <span class="n">Range</span> <span class="n">scan</span> <span class="p">=</span> <span class="p">..;</span>
+    <span class="kt">var</span> <span class="n">mem</span> <span class="p">=</span> <span class="n">Digits</span><span class="p">;</span>
+    <span class="k">do</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">slide</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">SlideStrategy</span><span class="p">(</span><span class="n">mem</span><span class="p">,</span> <span class="n">scan</span><span class="p">,</span> <span class="n">span</span><span class="p">);</span>
+        <span class="n">success</span> <span class="p">=</span> <span class="k">await</span> <span class="n">slide</span> <span class="p">&amp;&amp;</span> <span class="n">slide</span><span class="p">.</span><span class="n">Scanned</span><span class="p">.</span><span class="n">End</span><span class="p">.</span><span class="n">Value</span> <span class="p">!=</span> <span class="m">0</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">success</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">mul</span> <span class="p">=</span> <span class="nf">MultiplyDigits</span><span class="p">(</span><span class="n">mem</span><span class="p">[</span><span class="n">slide</span><span class="p">.</span><span class="n">Scanned</span><span class="p">]);</span>
+            <span class="n">max</span> <span class="p">=</span> <span class="n">Math</span><span class="p">.</span><span class="nf">Max</span><span class="p">(</span><span class="n">max</span><span class="p">,</span> <span class="n">mul</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="n">scan</span> <span class="p">=</span> <span class="n">slide</span><span class="p">.</span><span class="n">Scanned</span><span class="p">;</span>
+        <span class="n">mem</span> <span class="p">=</span> <span class="n">mem</span><span class="p">[</span><span class="n">scan</span><span class="p">.</span><span class="n">Start</span><span class="p">.</span><span class="n">Value</span><span class="p">..];</span>
+    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">success</span><span class="p">);</span>
+    <span class="n">Result</span> <span class="p">=</span> <span class="n">max</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">max</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>A valid slide could look something like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// SlideStrategy.cs</span>
+<span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">StrategyTask</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">&gt;</span> <span class="nf">Run</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">skipped</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">newSource</span> <span class="p">=</span> <span class="n">Scanned</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">source</span><span class="p">.</span><span class="n">Span</span><span class="p">[</span><span class="m">0</span><span class="p">]</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">skip</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">SkipStrategy</span><span class="p">(</span><span class="n">source</span><span class="p">);</span>
+        <span class="n">skipped</span> <span class="p">=</span> <span class="k">await</span> <span class="n">skip</span><span class="p">;</span>
+        <span class="n">Scanned</span> <span class="p">=</span> <span class="n">skip</span><span class="p">.</span><span class="n">Scanned</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">skipped</span> <span class="p">&amp;&amp;</span> <span class="n">newSource</span><span class="p">.</span><span class="n">End</span><span class="p">.</span><span class="n">Value</span> <span class="p">==</span> <span class="m">0</span> <span class="p">&amp;&amp;</span> <span class="p">!</span><span class="n">newSource</span><span class="p">.</span><span class="n">End</span><span class="p">.</span><span class="n">IsFromEnd</span><span class="p">)</span>
+            <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Scanned</span><span class="p">.</span><span class="n">End</span><span class="p">.</span><span class="n">Value</span> <span class="p">-</span> <span class="n">Scanned</span><span class="p">.</span><span class="n">Start</span><span class="p">.</span><span class="n">Value</span> <span class="p">!=</span> <span class="n">span</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">expand</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ExpandStrategy</span><span class="p">(</span><span class="n">source</span><span class="p">[</span><span class="n">newSource</span><span class="p">.</span><span class="n">Start</span><span class="p">.</span><span class="n">Value</span><span class="p">..],</span> <span class="n">span</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">expanded</span> <span class="p">=</span> <span class="k">await</span> <span class="n">expand</span><span class="p">;</span>
+        <span class="n">Scanned</span> <span class="p">=</span> <span class="n">expand</span><span class="p">.</span><span class="n">Scanned</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">expanded</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">else</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">shift</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ShiftStrategy</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">span</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">shifted</span> <span class="p">=</span> <span class="k">await</span> <span class="n">shift</span><span class="p">;</span>
+        <span class="n">Scanned</span> <span class="p">=</span> <span class="n">shift</span><span class="p">.</span><span class="n">Scanned</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">shifted</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>And the building blocks:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// ExpandStrategy.cs</span>
+<span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">StrategyTask</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">&gt;</span> <span class="nf">Run</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">end</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">start</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">end</span> <span class="p">&lt;</span> <span class="n">source</span><span class="p">.</span><span class="n">Length</span> <span class="p">&amp;&amp;</span> <span class="p">(</span><span class="n">end</span> <span class="p">-</span> <span class="n">start</span><span class="p">)</span> <span class="p">&lt;</span> <span class="n">span</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">source</span><span class="p">.</span><span class="n">Span</span><span class="p">[</span><span class="n">end</span><span class="p">]</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">skip</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">SkipStrategy</span><span class="p">(</span><span class="n">source</span><span class="p">);</span>
+            <span class="kt">var</span> <span class="n">skipped</span> <span class="p">=</span> <span class="k">await</span> <span class="n">skip</span><span class="p">;</span>
+            <span class="n">start</span> <span class="p">=</span> <span class="n">skip</span><span class="p">.</span><span class="n">Scanned</span><span class="p">.</span><span class="n">Start</span><span class="p">.</span><span class="n">Value</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(!</span><span class="n">skipped</span><span class="p">)</span>
+                <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">Scanned</span> <span class="p">=</span> <span class="n">start</span><span class="p">..(</span><span class="n">end</span> <span class="p">+</span> <span class="m">1</span><span class="p">);</span>
+        <span class="n">end</span><span class="p">++;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">// ShiftStrategy.cs</span>
+<span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">StrategyTask</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">&gt;</span> <span class="nf">Run</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">span</span> <span class="p">&gt;=</span> <span class="n">source</span><span class="p">.</span><span class="n">Length</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">Scanned</span> <span class="p">=</span> <span class="k">default</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">source</span><span class="p">.</span><span class="n">Span</span><span class="p">[</span><span class="n">span</span><span class="p">]</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">expand</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ExpandStrategy</span><span class="p">(</span><span class="n">source</span><span class="p">[(</span><span class="n">span</span> <span class="p">+</span> <span class="m">1</span><span class="p">)..],</span> <span class="n">span</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">expanded</span> <span class="p">=</span> <span class="k">await</span> <span class="n">expand</span><span class="p">;</span>
+        <span class="kt">var</span> <span class="n">shiftedRange</span> <span class="p">=</span> <span class="p">(</span><span class="n">expand</span><span class="p">.</span><span class="n">Scanned</span><span class="p">.</span><span class="n">Start</span><span class="p">.</span><span class="n">Value</span> <span class="p">+</span> <span class="n">span</span><span class="p">)..(</span><span class="n">expand</span><span class="p">.</span><span class="n">Scanned</span><span class="p">.</span><span class="n">End</span><span class="p">.</span><span class="n">Value</span> <span class="p">+</span> <span class="n">span</span><span class="p">);</span>
+        <span class="n">Scanned</span> <span class="p">=</span> <span class="n">shiftedRange</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">expanded</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="n">Scanned</span> <span class="p">=</span> <span class="m">1.</span><span class="p">.(</span><span class="n">span</span> <span class="p">+</span> <span class="m">1</span><span class="p">);</span>
+    <span class="k">return</span> <span class="k">true</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="c1">// SkipStrategy.cs</span>
+<span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">StrategyTask</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">&gt;</span> <span class="nf">Run</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">cnt</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">wasSkipped</span> <span class="p">=</span> <span class="k">false</span><span class="p">;</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">source</span><span class="p">.</span><span class="n">Span</span><span class="p">[</span><span class="n">cnt</span><span class="p">]</span> <span class="p">==</span> <span class="m">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">wasSkipped</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+        <span class="n">Scanned</span> <span class="p">=</span> <span class="p">++</span><span class="n">cnt</span><span class="p">..;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">wasSkipped</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>And now, when we have the solution assembled, we can write a “Driver” code to trigger task machinery. Control flow is returned to the driver every time we <code class="highlighter-rouge">await</code> something. This means, that we can change the way strategies are scheduled without modification of the actual algorithm. We may say that scheduling is moved out to a separate layer and adheres Open-Closed Principle (OCP) in this regard.</p>
+
+<p>Having this layer we can enhance the solution with:</p>
+
+<ul>
+  <li>Interception logic</li>
+  <li>Fine-grained control over strategy scheduling</li>
+  <li>Cancellation logic without the necessity to throw an <code class="highlighter-rouge">Exception</code></li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Solver</span>
+  <span class="p">{</span>
+    <span class="k">private</span> <span class="k">void</span> <span class="n">SequentialScheduling</span><span class="p">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">K</span><span class="p">&gt;(</span><span class="n">T</span> <span class="n">strategy</span><span class="p">)</span> <span class="k">where</span> <span class="n">T</span> <span class="p">:</span> <span class="n">Strategy</span><span class="p">&lt;</span><span class="n">K</span><span class="p">&gt;</span>
+    <span class="p">{</span>
+        <span class="nf">RecursiveTick</span><span class="p">(</span><span class="n">strategy</span><span class="p">:</span> <span class="n">strategy</span><span class="p">,</span> <span class="n">indentation</span><span class="p">:</span> <span class="m">0</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">// The simplest approach is to make use of thread pool to introduce concurrency, but if we wanted to</span>
+    <span class="c1">// we would implement a scheduler that has complete supervision over control flow</span>
+    <span class="k">private</span> <span class="k">void</span> <span class="n">ThreadpoolScheduling</span><span class="p">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">K</span><span class="p">&gt;(</span><span class="k">params</span> <span class="n">T</span><span class="p">[]</span> <span class="n">strategies</span><span class="p">)</span> <span class="k">where</span> <span class="n">T</span> <span class="p">:</span> <span class="n">Strategy</span><span class="p">&lt;</span><span class="n">K</span><span class="p">&gt;</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">tasks</span> <span class="p">=</span> <span class="n">strategies</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="nf">RecursiveTick</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="m">0</span><span class="p">)));</span>
+        <span class="n">Task</span><span class="p">.</span><span class="nf">WaitAll</span><span class="p">(</span><span class="n">tasks</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">());</span>
+    <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">bool</span> <span class="n">RunDriver</span><span class="p">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">K</span><span class="p">&gt;(</span><span class="k">params</span> <span class="n">T</span><span class="p">[]</span> <span class="n">strategies</span><span class="p">)</span> <span class="k">where</span> <span class="n">T</span> <span class="p">:</span> <span class="n">Strategy</span><span class="p">&lt;</span><span class="n">K</span><span class="p">&gt;</span>
+    <span class="p">{</span>
+        <span class="n">SequentialScheduling</span><span class="p">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">K</span><span class="p">&gt;(</span><span class="n">strategies</span><span class="p">[</span><span class="m">0</span><span class="p">]);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">StrategyTask</span><span class="p">(</span><span class="n">strategies</span><span class="p">).</span><span class="nf">GetAwaiter</span><span class="p">().</span><span class="nf">GetResult</span><span class="p">();</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</code></pre></div></div>
+
+<p>If we run we can see the output based on simple interceptor logic:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//entry point</span>
+<span class="kt">var</span> <span class="n">input</span> <span class="p">=</span> <span class="s">"290010345"</span><span class="p">;</span>
+<span class="n">Solution</span><span class="p">.</span><span class="n">GetLargestProduct</span><span class="p">&lt;</span><span class="n">SlideStrategy</span><span class="p">&gt;(</span><span class="n">input</span><span class="p">,</span> <span class="n">span</span><span class="p">:</span> <span class="m">2</span><span class="p">,</span> <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">);</span>
+
+<span class="c1">// GetLargestProduct</span>
+<span class="kt">var</span> <span class="n">strategy</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">SlidingWindowStrategy</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">span</span><span class="p">);</span>
+<span class="n">solver</span><span class="p">.</span><span class="n">RunDriver</span><span class="p">&lt;</span><span class="n">SlidingWindowStrategy</span><span class="p">,</span> <span class="kt">long</span><span class="p">&gt;(</span><span class="n">strategy</span><span class="p">);</span>
+<span class="k">return</span> <span class="n">strategy</span><span class="p">.</span><span class="n">Result</span><span class="p">;</span>
+
+</code></pre></div></div>
+
+<p><img src="/assets/awaitable-pattern/awaitable-example1.png" alt="simple-example" /></p>
+
+<p>Let’s parallelize our solution by adding new strategy that will make use of existing building blocks:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//entry point</span>
+<span class="kt">var</span> <span class="n">input</span> <span class="p">=</span> <span class="s">"290010345"</span><span class="p">;</span>
+<span class="n">Solution</span><span class="p">.</span><span class="n">GetLargestProduct</span><span class="p">&lt;</span><span class="n">MultipleSlidingWindowsStrategy</span><span class="p">&gt;(</span><span class="n">input</span><span class="p">,</span> <span class="n">span</span><span class="p">:</span> <span class="m">2</span><span class="p">,</span> <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">);</span>
+
+<span class="c1">// GetLargestProduct</span>
+<span class="kt">var</span> <span class="n">strategy</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MultipleSlidingWindowsStrategy</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">span</span><span class="p">);</span>
+<span class="n">solver</span><span class="p">.</span><span class="n">RunDriver</span><span class="p">&lt;</span><span class="n">MultipleSlidingWindowsStrategy</span><span class="p">,</span> <span class="kt">long</span><span class="p">&gt;(</span><span class="n">strategy</span><span class="p">);</span>
+<span class="k">return</span> <span class="n">strategy</span><span class="p">.</span><span class="n">Result</span><span class="p">;</span>
+
+<span class="c1">// MultipleSlidingWindowsStrategy.cs</span>
+<span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">StrategyTask</span><span class="p">&lt;</span><span class="kt">long</span><span class="p">&gt;</span> <span class="nf">Run</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">mid</span> <span class="p">=</span> <span class="n">Digits</span><span class="p">.</span><span class="n">Length</span> <span class="p">/</span> <span class="m">2</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">strat1</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">SlidingWindowStrategy</span><span class="p">(</span><span class="n">Digits</span><span class="p">[..(</span><span class="n">mid</span> <span class="p">+</span> <span class="n">span</span><span class="p">)],</span> <span class="m">2</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">start2</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">SlidingWindowStrategy</span><span class="p">(</span><span class="n">Digits</span><span class="p">[(</span><span class="n">mid</span> <span class="p">-</span> <span class="n">span</span><span class="p">)..],</span> <span class="m">2</span><span class="p">);</span>
+    <span class="k">await</span> <span class="nf">WhenAll</span><span class="p">(</span><span class="n">strat1</span><span class="p">,</span> <span class="n">start2</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">res</span> <span class="p">=</span> <span class="n">Math</span><span class="p">.</span><span class="nf">Max</span><span class="p">(</span><span class="n">strat1</span><span class="p">.</span><span class="n">Result</span><span class="p">,</span> <span class="n">start2</span><span class="p">.</span><span class="n">Result</span><span class="p">);</span>
+    <span class="n">Result</span> <span class="p">=</span> <span class="n">res</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">protected</span> <span class="n">StrategyTask</span> <span class="nf">WhenAll</span><span class="p">(</span><span class="k">params</span> <span class="n">IStrategy</span><span class="p">[]</span> <span class="n">strategies</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">StrategyTask</span><span class="p">(</span><span class="n">strategies</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><img src="/assets/awaitable-pattern/awaitable-example2.png" alt="simple-example" /></p>
+
+<p>We could take another route and parallelize based on “Driver”</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//entry point</span>
+<span class="kt">var</span> <span class="n">input</span> <span class="p">=</span> <span class="s">"290010345"</span><span class="p">;</span>
+<span class="n">Solution</span><span class="p">.</span><span class="n">GetLargestProduct</span><span class="p">&lt;</span><span class="n">ChaosWindowStrategy</span><span class="p">&gt;(</span><span class="n">input</span><span class="p">,</span> <span class="n">span</span><span class="p">:</span> <span class="m">2</span><span class="p">,</span> <span class="n">Console</span><span class="p">.</span><span class="n">Out</span><span class="p">);</span>
+
+<span class="c1">// GetLargestProduct</span>
+<span class="kt">var</span> <span class="n">mid</span> <span class="p">=</span> <span class="n">source</span><span class="p">.</span><span class="n">Length</span> <span class="p">/</span> <span class="m">2</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">strategies</span> <span class="p">=</span> <span class="k">new</span> <span class="n">SlidingWindowStrategy</span><span class="p">[]{</span>
+    <span class="k">new</span> <span class="nf">SlidingWindowStrategy</span><span class="p">(</span><span class="n">source</span><span class="p">[..(</span><span class="n">mid</span> <span class="p">+</span> <span class="n">span</span><span class="p">)],</span> <span class="n">span</span><span class="p">),</span>
+    <span class="k">new</span> <span class="nf">SlidingWindowStrategy</span><span class="p">(</span><span class="n">source</span><span class="p">[(</span><span class="n">mid</span> <span class="p">-</span> <span class="n">span</span><span class="p">)..],</span> <span class="n">span</span><span class="p">),</span>
+<span class="p">};</span>
+<span class="n">solver</span><span class="p">.</span><span class="n">RunDriver</span><span class="p">&lt;</span><span class="n">ChaosWindowStrategy</span><span class="p">,</span> <span class="kt">long</span><span class="p">&gt;(</span><span class="n">strategies</span><span class="p">);</span>
+<span class="k">return</span> <span class="n">strategies</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span><span class="p">.</span><span class="n">Result</span><span class="p">).</span><span class="nf">Max</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p><img src="/assets/awaitable-pattern/awaitable-example3.png" alt="simple-example" /></p>
+
+<p>The beautiful thing is that we don’t need to change the actual implementation of the algorithm to have control over execution and scheduling. Which you may or may not find useful, but I find the approach interesting.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>This is a tremendous over-engineering for such a simple problem. But I hope you’ve got this idea and how we could use custom task-like types to build our own async machinery.</p>
+
+	</div>
+
+	
+	<h3 style="margin-top: 30px;">Reference</h3>
+	<a href="https://www.theurlist.com/awaitable-pattern" target="_blank">https://www.theurlist.com/awaitable-pattern</a>
+	<div class="col-sm-12" style="margin-bottom: 30px;"></div>
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#csharp-ref">
+				csharp <span>(2)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#compcsi-ref">
+				compcsi <span>(1)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(1)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#csharp-ref">
+				csharp <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#asynchronous-programming-ref">
+				asynchronous-programming <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Awaitable/awaiter pattern and logical micro-threading in C#&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Alexey Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/docker/2020/09/19/publish-package-to-ghcr.html" title="Publish images to GitHub Container Registry (ghcr)">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2020 Alexey Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
