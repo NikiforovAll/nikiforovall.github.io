@@ -54,7 +54,7 @@ Numerous *C#* features are based on [duck-typing](http://en.wikipedia.org/wiki/D
 
 ### Examples
 
-Before we delve into the main part, I would like you to warm you up and provide some examples of how C# compiler infers patterns in various cases.
+Before we delve into the main part, I would like to warm you up and provide some examples of how C# compiler infers patterns in various cases.
 
 #### Foreach
 
@@ -142,7 +142,7 @@ await from url in urls select DownloadAsync(url);
 
 ---
 
-🚀 Let's see how we can use this in something that I call logical micro-threading.
+🚀 Let's see how we can use this in something, that I call logical micro-threading.
 
 ## Problem: Largest series product
 
@@ -295,7 +295,7 @@ public static class AwaitableExtensions
 }
 ```
 
-As mentioned before, *C#* compiler could do it's magic if we implement awaitable/awaiter patter.
+As mentioned before, *C#* compiler could do **its** magic if we implement awaitable/awaiter patter.
 
 ```csharp
 public class StrategyAwaiter : INotifyCompletion
@@ -577,4 +577,4 @@ The beautiful thing is that we don't need to change the actual implementation of
 
 ### Conclusion
 
-This is a tremendous over-engineering for such a simple problem. But I hope you've got this idea and how we could use custom task-like types to build our own async machinery.
+This is a tremendous over-engineering for such a simple problem. But I hope you've got this idea and how it could used to build custom async machinery.
