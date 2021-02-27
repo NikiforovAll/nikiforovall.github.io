@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Task-based asynchronous Pattern and Composition (aka Task Combinators)</title>
+	
+	<meta name="author" content="Alexey Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:nikiforovalekcey@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				n+1 IT blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">n+1 IT blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:nikiforovalekcey@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/alexey-nikiforov-430259111">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Task-based asynchronous Pattern and Composition (aka Task Combinators) </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			February
+			26th,
+			
+			2021
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Concurrency with TPL is fairly simple. In this blog post, I will reiterate over fundamentals and share with you some common patterns that you could use to compose your solutions. This blog post is focused on the concurrent processing of a collection of tasks and possible semantics that could be considered during the design of a solution.</p>
+
+<p>Examples and source code can be found here: <a href="https://github.com/NikiforovAll/nikiforovall.blog.examples/tree/master/tap-composition">nikiforovall.blog.examples/tap-composition</a></p>
+
+<hr />
+
+<h2 id="part-i-fundamentals">Part I: Fundamentals</h2>
+
+<p>The <a href="https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task">Task</a> class provides a life cycle for asynchronous operations, and that cycle is represented by the <code class="highlighter-rouge">TaskStatus</code> enumeration. Exceptions occurring during the execution of an asynchronous method are assigned to the returned <code class="highlighter-rouge">Task</code>. If the cancellation request is honored such that work is ended prematurely, the <code class="highlighter-rouge">Task</code> returned from the TAP method will end in the <code class="highlighter-rouge">TaskStatus.Canceled</code> state. Finally, <code class="highlighter-rouge">await</code> operator unwraps the result of executing depending on <code class="highlighter-rouge">TaskStatus</code>.</p>
+
+<p>Built-in task combinators: <code class="highlighter-rouge">Task.Run</code>, <code class="highlighter-rouge">Task.FromResult</code>, <code class="highlighter-rouge">Task.WhenAll</code>, <code class="highlighter-rouge">Task.WhenAny</code>, <code class="highlighter-rouge">Task.Delay</code>.</p>
+
+<h3 id="taskwhenall--taskwhenany">Task.WhenAll &amp; Task.WhenAny</h3>
+
+<p><code class="highlighter-rouge">Task.WhenAll</code> returns a brand-new <code class="highlighter-rouge">Task</code>. It represents the final result of batch execution. If a cancellation (or exception) happens during <code class="highlighter-rouge">Task.WhenAll</code> the result will be in <code class="highlighter-rouge">TaskStatus.Canceled</code> (<code class="highlighter-rouge">TaskStatus.Faulted</code>), but other tasks are not terminated.</p>
+
+<p>The <code class="highlighter-rouge">Task.WhenAny</code> is used to asynchronously wait on multiple asynchronous operations represented as Tasks, asynchronously waiting for just one of them to complete. Unlike <code class="highlighter-rouge">Task.WhenAll</code>, which in the case of successful completion of all tasks returns a list of their unwrapped results, <code class="highlighter-rouge">Task.WhenAny</code> returns the <code class="highlighter-rouge">Task</code> that completed.</p>
+
+<p>I suggest you investigate the behavior of <a href="#appendix---taskwhenall">Task.WhenAll</a> and <a href="#appendix---taskwhenany">Task.WhenAny</a> by exploring Unit Tests, so you understand how it behaves in certain scenarios.</p>
+
+<h2 id="part-ii-combinators">Part II: Combinators</h2>
+
+<p>Let’s compare processing algorithms by the following qualities:</p>
+
+<ul>
+  <li>Order of processing. Indicates how tasks are scheduled and executed relative to each other.</li>
+  <li>Process as Complete. Describes how and when the results are processed.</li>
+  <li>Throttled. Possibility to control the amount of workload at a given point in time.</li>
+  <li>Batch Cancellation. Possibility to cancel other tasks in case of cancellation request.</li>
+  <li>Interleaving. Isolated result processing.</li>
+</ul>
+
+<h3 id="vanilla-taskwhenall">Vanilla Task.WhenAll</h3>
+
+<p>When<code class="highlighter-rouge">Task.WhenAll</code> is used on a collection of tasks, all tasks are run to completion, i.e.: <a href="https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.iscompleted">Task.IsCompleted</a> = <code class="highlighter-rouge">true</code>. Results could be unwrapped from <code class="highlighter-rouge">Task&lt;TResult[]&gt;</code>.</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Order of processing</th>
+      <th scope="col">Process as Complete</th>
+      <th scope="col">Throttled</th>
+      <th scope="col">Batch Cancellation</th>
+      <th scope="col">Interleaving</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Task.WhenAll</code></td>
+      <td>Concurrent ⭐</td>
+      <td><code>false</code></td>
+      <td><code>false</code></td>
+      <td>Pass cancellation token to each task</td>
+      <td>N/A, results are aggregated and it is up to implementor how to process them</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>E.g.:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_Result_Unwrapped</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">300</span><span class="p">,</span> <span class="m">2</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">results</span> <span class="p">=</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="k">new</span> <span class="kt">int</span><span class="p">[]</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span> <span class="p">},</span> <span class="n">results</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">IsCompletedSuccessfully</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">RanToCompletion</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Cancellation variation:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_SharedCancellationToken_AllCancelled</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">cancellationTokenSource</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CancellationTokenSource</span><span class="p">(</span><span class="m">50</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">t</span> <span class="p">=</span> <span class="n">cancellationTokenSource</span><span class="p">.</span><span class="n">Token</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">150</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job3</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">200</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+    <span class="n">List</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="n">batch</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">,</span> <span class="n">job3</span> <span class="p">};</span>
+
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">{</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">All</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">t</span> <span class="p">=&gt;</span> <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">IsCanceled</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="sequential-foreachasync">Sequential ForEachAsync</h3>
+
+<p>Very simple implementation, just to demonstrate the different sides of the problem.</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Order of processing</th>
+      <th scope="col">Process as Complete</th>
+      <th scope="col">Throttled</th>
+      <th scope="col">Batch Cancellation</th>
+      <th scope="col">Interleaving</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>SequentialBlockingForEachAsync</code></td>
+      <td>Sequential</td>
+      <td><code>false</code>, sequential nature of processing impedes this</td>
+      <td><code>true</code>, not possible to control concurrency level</td>
+      <td>N/A, easy to add on demand</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">SequentialBlockingForEachAsync</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span> <span class="n">ForEachAsync</span><span class="p">&lt;</span><span class="n">TResult</span><span class="p">,</span> <span class="n">TSource</span><span class="p">&gt;(</span>
+        <span class="k">this</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">&gt;</span> <span class="n">list</span><span class="p">,</span>
+        <span class="n">Func</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">TResult</span><span class="p">&gt;&gt;</span> <span class="n">taskSelector</span><span class="p">,</span>
+        <span class="n">Action</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">TResult</span><span class="p">&gt;</span> <span class="n">resultProcessor</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="k">value</span> <span class="k">in</span> <span class="n">list</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="nf">resultProcessor</span><span class="p">(</span><span class="k">value</span><span class="p">,</span> <span class="k">await</span> <span class="nf">taskSelector</span><span class="p">(</span><span class="k">value</span><span class="p">));</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>💡 Note, you can change the parameter <code class="highlighter-rouge">resultProcessor</code> to run continuation or adjust to your needs.</p>
+
+<p>Run the code:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">GenerateData</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">3</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">2</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="na">[Benchmark]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">SequentialBlocking</span><span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="k">await</span> <span class="nf">GenerateData</span><span class="p">().</span><span class="nf">ForEachAsync</span><span class="p">(</span>
+        <span class="nf">GenerateData</span><span class="p">(),</span> <span class="k">async</span> <span class="n">i</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">i</span> <span class="p">*</span> <span class="m">100</span><span class="p">);</span>
+            <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+        <span class="p">},</span> <span class="n">Empty</span><span class="p">);</span>
+
+<span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="n">Empty</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="n">T</span> <span class="n">source</span><span class="p">,</span> <span class="n">T</span> <span class="n">result</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="c1">// |             Method |     Mean |   Error |  StdDev |</span>
+<span class="c1">// |------------------- |---------:|--------:|--------:|</span>
+<span class="c1">// | SequentialBlocking | 600.8 ms | 0.19 ms | 0.18 ms |</span>
+</code></pre></div></div>
+
+<h3 id="concurrent-interleaved-foreachasync">Concurrent Interleaved ForEachAsync</h3>
+
+<p>The goal of this implementation is to achieve the maximum concurrency, but process results separate from each other:</p>
+
+<p>Can be described as following: (<a href="https://devblogs.microsoft.com/pfxteam/implementing-a-simple-foreachasync/">ref</a>)</p>
+
+<ul>
+  <li>
+    <p>For each element in an enumerable, run a function that returns a Task{TResult} to represent the completion of processing that element. All of these functions may run asynchronously concurrently.</p>
+  </li>
+  <li>
+    <p>As each task completes, run a second processing action over the results.  All of these actions must be run sequentially, but order doesn’t matter.</p>
+  </li>
+</ul>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Order of processing</th>
+      <th scope="col">Process as Complete</th>
+      <th scope="col">Throttled</th>
+      <th scope="col">Batch Cancellation</th>
+      <th scope="col">Interleaving</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ConcurrentInterleavedForEachAsync</code></td>
+      <td>Concurrent ⭐</td>
+      <td><code>true</code></td>
+      <td><code>false</code></td>
+      <td>N/A, easy to add on demand</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">ConcurrentIsolatedForEachAsync</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">Task</span> <span class="n">ForEachAsync</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">TResult</span><span class="p">&gt;(</span>
+        <span class="k">this</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">,</span>
+        <span class="n">Func</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">TResult</span><span class="p">&gt;&gt;</span> <span class="n">taskSelector</span><span class="p">,</span> <span class="n">Action</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">TResult</span><span class="p">&gt;</span> <span class="n">resultProcessor</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">SemaphoreSlim</span> <span class="n">oneAtATime</span> <span class="p">=</span> <span class="k">new</span><span class="p">(</span><span class="n">initialCount</span><span class="p">:</span> <span class="m">1</span><span class="p">,</span> <span class="n">maxCount</span><span class="p">:</span> <span class="m">1</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span>
+            <span class="k">from</span> <span class="n">item</span> <span class="k">in</span> <span class="n">source</span>
+            <span class="k">select</span> <span class="nf">ProcessAsync</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">taskSelector</span><span class="p">,</span> <span class="n">resultProcessor</span><span class="p">,</span> <span class="n">oneAtATime</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span> <span class="n">ProcessAsync</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">TResult</span><span class="p">&gt;(</span>
+        <span class="n">TSource</span> <span class="n">item</span><span class="p">,</span>
+        <span class="n">Func</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">TResult</span><span class="p">&gt;&gt;</span> <span class="n">taskSelector</span><span class="p">,</span> <span class="n">Action</span><span class="p">&lt;</span><span class="n">TSource</span><span class="p">,</span> <span class="n">TResult</span><span class="p">&gt;</span> <span class="n">resultProcessor</span><span class="p">,</span>
+        <span class="n">SemaphoreSlim</span> <span class="n">oneAtATime</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">TResult</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="nf">taskSelector</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+        <span class="k">await</span> <span class="n">oneAtATime</span><span class="p">.</span><span class="nf">WaitAsync</span><span class="p">();</span>
+        <span class="k">try</span>
+        <span class="p">{</span> <span class="nf">resultProcessor</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">result</span><span class="p">);</span> <span class="p">}</span>
+        <span class="k">finally</span> <span class="p">{</span> <span class="n">oneAtATime</span><span class="p">.</span><span class="nf">Release</span><span class="p">();</span> <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>💡 Note, you can change the parameter <code class="highlighter-rouge">resultProcessor</code> to run continuation or adjust to your needs.</p>
+
+<p>Run the code:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">GenerateData</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">3</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">2</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="na">[Benchmark]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">ConcurrentIsolated</span><span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="k">await</span> <span class="nf">GenerateData</span><span class="p">().</span><span class="nf">ForEachAsync</span><span class="p">(</span>
+        <span class="nf">GenerateData</span><span class="p">(),</span> <span class="k">async</span> <span class="n">i</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">i</span> <span class="p">*</span> <span class="m">100</span><span class="p">);</span>
+            <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+        <span class="p">},</span> <span class="n">Empty</span><span class="p">);</span>
+
+<span class="k">private</span> <span class="k">static</span> <span class="k">void</span> <span class="n">Empty</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="n">T</span> <span class="n">source</span><span class="p">,</span> <span class="n">T</span> <span class="n">result</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="c1">// |             Method |     Mean |   Error |  StdDev |</span>
+<span class="c1">// |------------------- |---------:|--------:|--------:|</span>
+<span class="c1">// | ConcurrentIsolated | 299.1 ms | 1.42 ms | 1.26 ms |</span>
+</code></pre></div></div>
+
+<h3 id="concurrent-interleaved-combinator">Concurrent Interleaved Combinator</h3>
+
+<p>For those who don’t like working with lambdas and <code class="highlighter-rouge">ForEach</code> LINQ operator. Personally, I really like this approach because it produces better stack traces.</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Order of processing</th>
+      <th scope="col">Process as Complete</th>
+      <th scope="col">Throttled</th>
+      <th scope="col">Batch Cancellation</th>
+      <th scope="col">Interleaving</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ConcurrentInterleavedCombinator</code></td>
+      <td>Concurrent ⭐</td>
+      <td><code>true</code></td>
+      <td><code>false</code></td>
+      <td>N/A, easy to add on demand</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">ConcurrentInterleavedCombinator</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;&gt;[]</span> <span class="n">Interleaved</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;&gt;</span> <span class="n">tasks</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">inputTasks</span> <span class="p">=</span> <span class="n">tasks</span><span class="p">.</span><span class="nf">ToList</span><span class="p">();</span>
+
+        <span class="kt">var</span> <span class="n">buckets</span> <span class="p">=</span> <span class="k">new</span> <span class="n">TaskCompletionSource</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;&gt;[</span><span class="n">inputTasks</span><span class="p">.</span><span class="n">Count</span><span class="p">];</span>
+        <span class="kt">var</span> <span class="n">results</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;&gt;[</span><span class="n">buckets</span><span class="p">.</span><span class="n">Length</span><span class="p">];</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">var</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="n">buckets</span><span class="p">.</span><span class="n">Length</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span>
+        <span class="p">{</span>
+            <span class="n">buckets</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="k">new</span> <span class="n">TaskCompletionSource</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;&gt;();</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="p">=</span> <span class="n">buckets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">Task</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kt">var</span> <span class="n">nextTaskIndex</span> <span class="p">=</span> <span class="p">-</span><span class="m">1</span><span class="p">;</span>
+        <span class="k">void</span> <span class="nf">continuation</span><span class="p">(</span><span class="n">Task</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">completed</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">bucket</span> <span class="p">=</span> <span class="n">buckets</span><span class="p">[</span><span class="n">Interlocked</span><span class="p">.</span><span class="nf">Increment</span><span class="p">(</span><span class="k">ref</span> <span class="n">nextTaskIndex</span><span class="p">)];</span>
+            <span class="n">_</span> <span class="p">=</span> <span class="n">bucket</span><span class="p">.</span><span class="nf">TrySetResult</span><span class="p">(</span><span class="n">completed</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">inputTask</span> <span class="k">in</span> <span class="n">inputTasks</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">_</span> <span class="p">=</span> <span class="n">inputTask</span><span class="p">.</span><span class="nf">ContinueWith</span><span class="p">(</span>
+                <span class="n">continuation</span><span class="p">,</span>
+                <span class="n">CancellationToken</span><span class="p">.</span><span class="n">None</span><span class="p">,</span>
+                <span class="n">TaskContinuationOptions</span><span class="p">.</span><span class="n">ExecuteSynchronously</span><span class="p">,</span>
+                <span class="n">TaskScheduler</span><span class="p">.</span><span class="n">Default</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">results</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here, we create <code class="highlighter-rouge">TaskCompletionSource&lt;Task&lt;T&gt;&gt;</code> instances to represent the buckets, one bucket per each of the tasks that will eventually complete. Then, we hook up a continuation to each input task. This continuation will get the next available bucket and store the newly completed task into it. <a href="https://devblogs.microsoft.com/pfxteam/processing-tasks-as-they-complete/">ref</a></p>
+
+<p>Run the code:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">GenerateData</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">3</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">2</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="na">[Benchmark]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">ConcurrentInterleavedCombinator</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">tasks</span> <span class="p">=</span> <span class="nf">GenerateData</span><span class="p">().</span><span class="nf">Select</span><span class="p">(</span><span class="k">async</span> <span class="n">i</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">i</span> <span class="p">*</span> <span class="m">100</span><span class="p">);</span>
+        <span class="k">return</span> <span class="n">i</span><span class="p">;</span>
+    <span class="p">});</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">bucket</span> <span class="k">in</span> <span class="nf">Interleaved</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">t</span> <span class="p">=</span> <span class="k">await</span> <span class="n">bucket</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// |                          Method |     Mean |   Error |  StdDev |</span>
+<span class="c1">// |-------------------------------- |---------:|--------:|--------:|</span>
+<span class="c1">// | ConcurrentInterleavedCombinator | 299.4 ms | 1.01 ms | 0.94 ms |</span>
+</code></pre></div></div>
+
+<h3 id="throttled-interleaved-whenall">Throttled Interleaved WhenAll</h3>
+
+<p>Before this, we don’t really have control over consumed resources. It is a common task to implement throttling, here is how you can do that.</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Order of processing</th>
+      <th scope="col">Process as Complete</th>
+      <th scope="col">Throttled</th>
+      <th scope="col">Batch Cancellation</th>
+      <th scope="col">Interleaving</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>WhenAllThrottled</code></td>
+      <td>Concurrent*</td>
+      <td><code>true</code></td>
+      <td><code>true</code> ⭐</td>
+      <td>N/A</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">WhenAllThrottledExtensions</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAllThrottled</span><span class="p">(</span><span class="k">this</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">,</span> <span class="kt">int</span> <span class="n">throttled</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">tasks</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;();</span>
+        <span class="n">throttled</span><span class="p">--;</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">task</span> <span class="k">in</span> <span class="n">source</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">tasks</span><span class="p">.</span><span class="n">Count</span> <span class="p">==</span> <span class="n">throttled</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">finishedTask</span> <span class="p">=</span> <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAny</span><span class="p">(</span><span class="n">tasks</span><span class="p">);</span>
+                <span class="n">_</span> <span class="p">=</span> <span class="n">tasks</span><span class="p">.</span><span class="nf">Remove</span><span class="p">(</span><span class="n">finishedTask</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="n">tasks</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">task</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">tasks</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>For more details, please see corresponding Unit Tests: <a href="#appendix---runwhenallthrottled">Appendix - RunWhenAllThrottled</a>.</p>
+
+<p>💡 This is a simplified version without result processing. Try to convert this snippet to <code class="highlighter-rouge">ThrottledForEachAsync</code> version.</p>
+
+<p>Run the code:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">GenerateData</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">2</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">2</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="na">[Benchmark]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">ThrottledInterleaved</span><span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="k">await</span> <span class="nf">GenerateData</span><span class="p">().</span><span class="nf">Select</span><span class="p">(</span><span class="n">i</span> <span class="p">=&gt;</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">i</span> <span class="p">*</span> <span class="m">100</span><span class="p">)).</span><span class="nf">WhenAllThrottled</span><span class="p">(</span><span class="m">2</span><span class="p">);</span>
+
+<span class="c1">// |               Method |     Mean |   Error |  StdDev |</span>
+<span class="c1">// |--------------------- |---------:|--------:|--------:|</span>
+<span class="c1">// | ThrottledInterleaved | 300.6 ms | 0.06 ms | 0.05 ms |</span>
+</code></pre></div></div>
+
+<h3 id="throttled-controldegreeofparallelism-foreachasync">Throttled ControlDegreeOfParallelism ForEachAsync</h3>
+
+<p>You don’t always need interleaving. Let’s see the approach based on <code class="highlighter-rouge">System.Collections.Concurrent.Partitioner</code>.</p>
+
+<p>It limits the number of operations that are able to run in parallel. One way to achieve that is to partition the input data set into <em>N</em> partitions, where <em>N</em> is the desired maximum degree of parallelism, and schedule a separate task to begin the execution for each partition. <a href="https://devblogs.microsoft.com/pfxteam/implementing-a-simple-foreachasync-part-2/">ref</a>.</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Order of processing</th>
+      <th scope="col">Process as Complete</th>
+      <th scope="col">Throttled</th>
+      <th scope="col">Batch Cancellation</th>
+      <th scope="col">Interleaving</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ControlParallelismForEachAsync</code></td>
+      <td>Concurrent*</td>
+      <td><code>true</code></td>
+      <td><code>true</code> ⭐</td>
+      <td>N/A</td>
+      <td><code>false</code> ⭐</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">ControlParallelismForEachAsyncExtensions</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">Task</span> <span class="n">ForEachAsync</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="k">this</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">,</span> <span class="kt">int</span> <span class="n">dop</span><span class="p">,</span> <span class="n">Func</span><span class="p">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">Task</span><span class="p">&gt;</span> <span class="n">body</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span>
+            <span class="k">from</span> <span class="n">partition</span> <span class="k">in</span> <span class="n">Partitioner</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="n">source</span><span class="p">).</span><span class="nf">GetPartitions</span><span class="p">(</span><span class="n">dop</span><span class="p">)</span>
+            <span class="k">select</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="k">delegate</span> <span class="p">{</span>
+                <span class="k">using</span> <span class="p">(</span><span class="n">partition</span><span class="p">)</span>
+                    <span class="k">while</span> <span class="p">(</span><span class="n">partition</span><span class="p">.</span><span class="nf">MoveNext</span><span class="p">())</span>
+                        <span class="k">await</span> <span class="nf">body</span><span class="p">(</span><span class="n">partition</span><span class="p">.</span><span class="n">Current</span><span class="p">);</span>
+        <span class="p">}));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Run the code:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">GenerateData</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">2</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">2</span><span class="p">;</span>
+    <span class="k">yield</span> <span class="k">return</span> <span class="m">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="na">[Benchmark]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">ControlParallelismForEachAsync</span><span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="k">await</span> <span class="nf">GenerateData</span><span class="p">().</span><span class="nf">ForEachAsync</span><span class="p">(</span><span class="n">dop</span><span class="p">:</span> <span class="m">2</span><span class="p">,</span> <span class="n">i</span> <span class="p">=&gt;</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">i</span> <span class="p">*</span> <span class="m">100</span><span class="p">));</span>
+
+<span class="c1">// |                         Method |     Mean |   Error |  StdDev |</span>
+<span class="c1">// |------------------------------- |---------:|--------:|--------:|</span>
+<span class="c1">// | ControlParallelismForEachAsync | 300.5 ms | 0.86 ms | 0.76 ms |</span>
+</code></pre></div></div>
+
+<h2 id="summary">Summary</h2>
+
+<p>Here is the final comparison table:</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Order of processing</th>
+      <th scope="col">Process as Complete</th>
+      <th scope="col">Throttled</th>
+      <th scope="col">Batch Cancellation</th>
+      <th scope="col">Interleaving</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Task.WhenAll</code></td>
+      <td>Concurrent ⭐</td>
+      <td><code>false</code></td>
+      <td><code>false</code></td>
+      <td><code>true</code></td>
+      <td>N/A</td>
+    </tr>
+    <tr>
+      <td><code>SequentialBlockingForEachAsync</code></td>
+      <td>Sequential</td>
+      <td><code>false</code></td>
+      <td><code>true</code>*</td>
+      <td>on demand</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+    <tr>
+      <td><code>ConcurrentInterleavedForEachAsync</code></td>
+      <td>Concurrent ⭐</td>
+      <td><code>true</code></td>
+      <td><code>false</code></td>
+      <td>on demand</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+    <tr>
+      <td><code>ConcurrentInterleavedCombinator</code></td>
+      <td>Concurrent ⭐</td>
+      <td><code>true</code></td>
+      <td><code>false</code></td>
+      <td>on demand</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+    <tr>
+      <td><code>WhenAllThrottled</code></td>
+      <td>Concurrent*</td>
+      <td><code>true</code></td>
+      <td><code>true</code> ⭐</td>
+      <td>N/A</td>
+      <td><code>true</code> ⭐</td>
+    </tr>
+    <tr>
+      <td><code>ControlParallelismForEachAsync</code></td>
+      <td>Concurrent*</td>
+      <td><code>true</code></td>
+      <td><code>true</code> ⭐</td>
+      <td>N/A</td>
+      <td><code>false</code> ⭐</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For now, you have enough knowledge to build more complex combinators to meet your requirements. I suggest you to check <a href="https://www.theurlist.com/tap-composition">Reference</a> for more information.</p>
+
+<p>Hope you find this blog useful. Let me know what you think!</p>
+
+<hr />
+
+<h2 id="appendix">Appendix</h2>
+
+<h3 id="appendix---example-tasks">Appendix - Example Tasks</h3>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">RunJob</span><span class="p">(</span><span class="kt">int</span> <span class="n">milliseconds</span><span class="p">,</span> <span class="kt">int</span> <span class="n">taskId</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">milliseconds</span><span class="p">,</span> <span class="n">cancellationToken</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">taskId</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="kt">int</span> <span class="n">milliseconds</span> <span class="p">=</span> <span class="m">100</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">milliseconds</span><span class="p">);</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">InvalidOperationException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">ThrowJob</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">CanceledJob</span><span class="p">(</span><span class="kt">int</span> <span class="n">milliseconds</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">cancellationTokenSource</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CancellationTokenSource</span><span class="p">(</span><span class="n">milliseconds</span><span class="p">);</span>
+    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">milliseconds</span> <span class="p">*</span> <span class="m">2</span><span class="p">,</span> <span class="n">cancellationTokenSource</span><span class="p">.</span><span class="n">Token</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="appendix---taskwhenall">Appendix - Task.WhenAll</h3>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_Result_Unwrapped</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">300</span><span class="p">,</span> <span class="m">2</span><span class="p">);</span>
+    <span class="n">Task</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">[</span><span class="k">]&gt;</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">results</span> <span class="p">=</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="k">new</span> <span class="kt">int</span><span class="p">[]</span> <span class="p">{</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span> <span class="p">},</span> <span class="n">results</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">IsCompletedSuccessfully</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">RanToCompletion</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">void</span> <span class="nf">WhenAll_ExceptionsThrown_ExceptionsAggregated</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job3</span> <span class="p">=</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job4</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">150</span><span class="p">,</span> <span class="m">4</span><span class="p">);</span>
+    <span class="n">AggregateException</span> <span class="n">captured</span> <span class="p">=</span> <span class="k">default</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">,</span> <span class="n">job3</span><span class="p">,</span> <span class="n">job4</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="nf">Wait</span><span class="p">();</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="n">AggregateException</span> <span class="n">ae</span><span class="p">)</span> <span class="p">{</span> <span class="n">captured</span> <span class="p">=</span> <span class="n">ae</span><span class="p">;</span> <span class="p">};</span>
+
+    <span class="kt">var</span> <span class="n">whenAllException</span> <span class="p">=</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Exception</span><span class="p">;</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">IsFaulted</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="n">captured</span><span class="p">.</span><span class="nf">Flatten</span><span class="p">().</span><span class="n">InnerExceptions</span><span class="p">.</span><span class="n">Count</span><span class="p">);</span>
+    <span class="c1">// this is interesting</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">NotSame</span><span class="p">(</span><span class="n">whenAllException</span><span class="p">,</span> <span class="n">captured</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">whenAllException</span><span class="p">.</span><span class="n">Message</span><span class="p">,</span> <span class="n">captured</span><span class="p">.</span><span class="n">Message</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_ExceptionsThrown_ExceptionUnwrapped</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job3</span> <span class="p">=</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+    <span class="n">List</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="n">batch</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">,</span> <span class="n">job3</span> <span class="p">};</span>
+    <span class="n">InvalidOperationException</span> <span class="n">captured</span> <span class="p">=</span> <span class="k">default</span><span class="p">;</span>
+
+    <span class="c1">// t_all = whenall(t1, t2-&gt;throws, t3-&gt;throws)</span>
+    <span class="c1">// t_all.Exception = AggregateException(t2.Exception, t3.Exception)</span>
+    <span class="c1">// await t_all -&gt; unwrap t_all.AggregateException -&gt; select (t2 | t3) as t_selected</span>
+    <span class="c1">// -&gt; unwrap t_selected</span>
+
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="n">InvalidOperationException</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="n">captured</span> <span class="p">=</span> <span class="n">e</span><span class="p">;</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">IsFaulted</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Faulted</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">RanToCompletion</span><span class="p">,</span> <span class="n">job1</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Exception</span><span class="p">.</span><span class="nf">Flatten</span><span class="p">().</span><span class="n">InnerExceptions</span><span class="p">.</span><span class="n">Count</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">aggregatedException</span> <span class="p">=</span> <span class="n">Assert</span><span class="p">.</span><span class="n">IsType</span><span class="p">&lt;</span><span class="n">AggregateException</span><span class="p">&gt;(</span><span class="n">job2</span><span class="p">.</span><span class="n">Exception</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="n">captured</span><span class="p">,</span> <span class="n">batch</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span><span class="p">.</span><span class="n">Exception</span><span class="p">?.</span><span class="n">InnerException</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_ExceptionsThrown_UnwrappedChildTask</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+    <span class="n">List</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="n">batch</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">job1</span><span class="p">,</span> <span class="n">job2</span> <span class="p">};</span>
+    <span class="n">InvalidOperationException</span> <span class="n">captured1</span> <span class="p">=</span> <span class="k">default</span><span class="p">;</span>
+    <span class="n">InvalidOperationException</span> <span class="n">captured2</span> <span class="p">=</span> <span class="k">default</span><span class="p">;</span>
+
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="n">InvalidOperationException</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="n">captured1</span> <span class="p">=</span> <span class="n">e</span><span class="p">;</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Faulted</span><span class="p">,</span> <span class="n">job2</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">job2</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="n">InvalidOperationException</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="n">captured2</span> <span class="p">=</span> <span class="n">e</span><span class="p">;</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Same</span><span class="p">(</span><span class="n">captured1</span><span class="p">,</span> <span class="n">captured2</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">captured1</span><span class="p">.</span><span class="n">Message</span><span class="p">,</span> <span class="n">captured2</span><span class="p">.</span><span class="n">Message</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_CanceledTask_ExceptionThrown</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">CanceledJob</span><span class="p">(</span><span class="m">50</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job3</span> <span class="p">=</span> <span class="nf">CanceledJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+
+    <span class="n">TaskCanceledException</span> <span class="n">captured</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">,</span> <span class="n">job3</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="n">TaskCanceledException</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span> <span class="n">captured</span> <span class="p">=</span> <span class="n">e</span><span class="p">;</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">IsCompleted</span> <span class="p">&amp;&amp;</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">IsCanceled</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Canceled</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">NotNull</span><span class="p">(</span><span class="n">captured</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Null</span><span class="p">(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">Exception</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Null</span><span class="p">(</span><span class="n">job2</span><span class="p">.</span><span class="n">Exception</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Null</span><span class="p">(</span><span class="n">job3</span><span class="p">.</span><span class="n">Exception</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Canceled</span><span class="p">,</span> <span class="n">job2</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Canceled</span><span class="p">,</span> <span class="n">job3</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_CanceledAndFaulted_ExceptionOverCancellation</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">CanceledJob</span><span class="p">(</span><span class="m">50</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job3</span> <span class="p">=</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">,</span> <span class="n">job3</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">{</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">IsFaulted</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Faulted</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">RanToCompletion</span><span class="p">,</span> <span class="n">job1</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Canceled</span><span class="p">,</span> <span class="n">job2</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Faulted</span><span class="p">,</span> <span class="n">job3</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="n">IsType</span><span class="p">&lt;</span><span class="n">InvalidOperationException</span><span class="p">&gt;(</span><span class="n">whenAllTask</span><span class="p">.</span><span class="n">Exception</span><span class="p">.</span><span class="n">InnerException</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Null</span><span class="p">(</span><span class="n">job2</span><span class="p">.</span><span class="n">Exception</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAll_SharedCancellationToken_AllCancelled</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">cancellationTokenSource</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CancellationTokenSource</span><span class="p">(</span><span class="m">50</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">t</span> <span class="p">=</span> <span class="n">cancellationTokenSource</span><span class="p">.</span><span class="n">Token</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">150</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job3</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">200</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="n">t</span><span class="p">);</span>
+    <span class="n">List</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="n">batch</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">,</span> <span class="n">job3</span> <span class="p">};</span>
+
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">{</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">All</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">t</span> <span class="p">=&gt;</span> <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="n">IsCanceled</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="appendix---taskwhenany">Appendix - Task.WhenAny</h3>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAny_FirstCanceled</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">job1</span> <span class="p">=</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job2</span> <span class="p">=</span> <span class="nf">CanceledJob</span><span class="p">(</span><span class="m">50</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">job3</span> <span class="p">=</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">70</span><span class="p">);</span>
+    <span class="n">List</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="n">batch</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">job1</span><span class="p">,</span> <span class="n">job2</span><span class="p">,</span> <span class="n">job3</span> <span class="p">};</span>
+
+    <span class="kt">var</span> <span class="n">waitForAnyTaskTask</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAny</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">someTask</span> <span class="p">=</span> <span class="k">await</span> <span class="n">waitForAnyTaskTask</span><span class="p">;</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">RanToCompletion</span><span class="p">,</span> <span class="n">waitForAnyTaskTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Canceled</span><span class="p">,</span> <span class="n">someTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+
+    <span class="kt">var</span> <span class="n">someTask2</span> <span class="p">=</span> <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAny</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Same</span><span class="p">(</span><span class="n">someTask</span><span class="p">,</span> <span class="n">someTask2</span><span class="p">);</span>
+
+    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="m">100</span><span class="p">);</span> <span class="c1">// let other tasks to complete</span>
+    <span class="kt">var</span> <span class="n">someTask3</span> <span class="p">=</span> <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAny</span><span class="p">(</span><span class="n">batch</span><span class="p">);</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">NotSame</span><span class="p">(</span><span class="n">someTask</span><span class="p">,</span> <span class="n">someTask3</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="appendix---runwhenallthrottled">Appendix - RunWhenAllThrottled</h3>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAllThrottled_AllGood</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">batch</span> <span class="p">=</span> <span class="nf">Generate</span><span class="p">();</span>
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">batch</span><span class="p">.</span><span class="nf">WhenAllThrottled</span><span class="p">(</span><span class="m">2</span><span class="p">);</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">WaitingForActivation</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+
+    <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">RanToCompletion</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+
+    <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="nf">Generate</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">2</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">3</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">4</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAllThrottled_ExceptionPropagated</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">batch</span> <span class="p">=</span> <span class="nf">Generate</span><span class="p">();</span>
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">batch</span><span class="p">.</span><span class="nf">WhenAllThrottled</span><span class="p">(</span><span class="m">2</span><span class="p">);</span>
+
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">{</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Faulted</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+
+    <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="nf">Generate</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">3</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">ThrowJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">5</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="na">[Fact]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WhenAllThrottled_CancellationPropagated</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">batch</span> <span class="p">=</span> <span class="nf">Generate</span><span class="p">();</span>
+    <span class="kt">var</span> <span class="n">whenAllTask</span> <span class="p">=</span> <span class="n">batch</span><span class="p">.</span><span class="nf">WhenAllThrottled</span><span class="p">(</span><span class="m">2</span><span class="p">);</span>
+
+    <span class="k">try</span>
+    <span class="p">{</span> <span class="k">await</span> <span class="n">whenAllTask</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">{</span> <span class="p">};</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">Equal</span><span class="p">(</span><span class="n">TaskStatus</span><span class="p">.</span><span class="n">Canceled</span><span class="p">,</span> <span class="n">whenAllTask</span><span class="p">.</span><span class="n">Status</span><span class="p">);</span>
+
+    <span class="k">static</span> <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Task</span><span class="p">&gt;</span> <span class="nf">Generate</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">1</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">CanceledJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">RunJob</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">3</span><span class="p">);</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="nf">CanceledJob</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+	</div>
+
+	
+	<h3 style="margin-top: 30px;">Reference</h3>
+	<a href="https://www.theurlist.com/tap-composition" target="_blank">https://www.theurlist.com/tap-composition</a>
+	<div class="col-sm-12" style="margin-bottom: 30px;"></div>
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(2)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#async-ref">
+				async <span>(1)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#async-ref">
+				async <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#TPL-ref">
+				TPL <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Task-based asynchronous Pattern and Composition (aka Task Combinators)&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Alexey Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/csharp/compcsi/dotnet/2020/10/20/awaitable-pattern.html" title="Awaitable/awaiter pattern and logical micro-threading in C#">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2021 Alexey Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
