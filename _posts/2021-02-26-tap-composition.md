@@ -165,8 +165,7 @@ private static IEnumerable<int> GenerateData()
 }
 [Benchmark]
 public async Task SequentialBlocking() =>
-    await GenerateData().ForEachAsync(
-        GenerateData(), async i =>
+    await GenerateData().ForEachAsync( async i =>
         {
             await Task.Delay(i * 100);
             return i;
@@ -185,7 +184,7 @@ The goal of this implementation is to achieve the maximum concurrency, but proce
 
 Can be described as following: ([ref](https://devblogs.microsoft.com/pfxteam/implementing-a-simple-foreachasync/))
 
-* For each element in an enumerable, run a function that returns a Task{TResult} to represent the completion of processing that element. All of these functions may run asynchronously concurrently.
+* For each element in an enumerable, run a function that returns a `Task{TResult}` to represent the completion of processing that element. All of these functions may run asynchronously concurrently.
 
 * As each task completes, run a second processing action over the results.  All of these actions must be run sequentially, but order doesn’t matter.
 
