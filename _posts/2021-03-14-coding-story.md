@@ -27,13 +27,15 @@ Sometimes it is frustrating to find an interesting article, but not to be able t
 
 ## Wring *my* first coding story
 
-Before starting coding, I investigated [coding.stories - author guide](https://codingstories.io/become-author/guide). It gave me a somewhat understanding of a coding story and the potential ways I could write one.
+Before starting coding, I investigated [coding.stories - author guide](https://codingstories.io/become-author/guide). It gave me somewhat understanding of a coding story and the potential ways I could write one.
 
 My first coding story was about *Dependency Inversion Principle* (D from *SOLID*). I started with not terrible but still hardly testable version and gradually improved it to a more testable and clean solution.
 
-Basically, I copied the initial solution and used the copy as a draft version. The draft version was based on the commit history but is served as a draft for a coding story that I threw away at some point. Anyway, having this draft helped to understand the coding story structure better, so it is was easy to reproduce the solution one more time. The coding story author should introduce coding story instructions as part of a commit. So every step is essentially code changes and instructions defined in a dedicated file called `.story.md`.
+Basically, I copied the initial solution and used the copy as a draft version. The draft version was based on the preliminary commit history. It is not final coding story. Anyway, having this draft helped me to understand the solution and project structure better. After that, it is was easy to reproduce the solution one more time.
 
-I will not go through the details of the coding story. Everything you need is there (kinda). I encourage you to try the interactive version, you may find it here:
+A coding story author should introduce coding story instructions as part of a commit. So every step is essentially code changes and instructions defined in a dedicated file called `.story.md`.
+
+I will not go through the details of the coding story (`discount-calculation-story-csharp`). Everything you need is there (kinda). I encourage you to try the interactive version, you may find it here:
 
 > <https://codingstories.io/story/https:%2F%2Fgitlab.com%2FNikiforovAll%2Fdiscount-calculation-story-csharp>.
 
@@ -48,10 +50,10 @@ More coding stories: <https://codingstories.io/stories>
 Here is a list of principle that I quite valuable after writing my first story:
 
 * Keep git commit history clean and write concise commits
-* Every commit should compile and pass unit tests built without errors
+* Every commit should compile and pass unit tests
 * Do not try to be perfect, focus on the goal of a coding story
 * Do not hurry to write a coding story from the first try. It is better to figure out how the end solution will look like. Consider writing a coding story at the very end.
-* Try to follow common coding story structure and code formatting guidelines. Examples can be found at <https://gitlab.com/codingstories>.
+* Try to follow common project structure and code formatting guidelines. Examples can be found at <https://gitlab.com/codingstories>.
 
 ## Writing *your* first coding story
 
@@ -65,7 +67,7 @@ I've prepared project template for *C#* and *Java*. It helps you to get started 
 
 You can find it here <https://github.com/NikiforovAll/codingstories-template>, here is the changelog: <https://github.com/NikiforovAll/codingstories-template/blob/main/CHANGELOG.md>.
 
-All you need to do is to install it via *dotnet sdk*. I've prepared a docker wrapper for those who don't want to install dotnet sdk, for more details, please see (ghcr.io/nikiforovall/coding-stories-scaffolder).
+All you need to do is to install it via *dotnet-sdk*. I've prepared a docker wrapper for those who don't want to install *dotnet-sdk*, for more details, please see (ghcr.io/nikiforovall/coding-stories-scaffolder).
 
 ```bash
 dotnet new --install CodingStories.Template::1.3.0
