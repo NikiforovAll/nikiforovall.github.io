@@ -165,7 +165,7 @@ private static IEnumerable<int> GenerateData()
 }
 [Benchmark]
 public async Task SequentialBlocking() =>
-    await GenerateData().ForEachAsync( async i =>
+    await GenerateData().ForEachAsync(async i =>
         {
             await Task.Delay(i * 100);
             return i;
