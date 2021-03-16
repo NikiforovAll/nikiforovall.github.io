@@ -25,7 +25,7 @@ If you think about the regular experience of learning something new and practica
 
 Sometimes it is frustrating to find an interesting article, but not to be able to reproduce it or learn from it. But, It is nobody's fault 😉. It is hard to describe step-by-step code changes and stick to the topic. *CodingStories* solves the problem by introducing a useful medium to consume coding stories. From a user perspective, you have a nice and handy UI to go through coding stories and experience how to solve a particular task. Every coding story is based on a git repository. It is essential for a coding story to have a meaningful and clean git history. Additionally, you can always open a coding story locally and work with a git repository on your own.
 
-## Wring *my* first coding story
+## Writing *my* first coding story
 
 Before starting coding, I investigated [coding.stories - author guide](https://codingstories.io/become-author/guide). It gave me somewhat understanding of a coding story and the potential ways I could write one.
 
