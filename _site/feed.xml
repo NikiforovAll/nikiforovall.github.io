@@ -7,6 +7,196 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;You can use extension method (e.g. &lt;code class=&quot;highlighter-rouge&quot;&gt;IEndpointConventionBuilder Map{FeatureToMap}(this IEndpointRouteBuilder endpoints&lt;/code&gt;) to add a middleware to specific endpoint.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;middleware&quot;&gt;Middleware&lt;/h2&gt;
+
+&lt;p&gt;As you know, it is possible to extend ASP.NET Core pipeline via &lt;a href=&quot;https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-5.0#create-a-middleware-pipeline-with-iapplicationbuilder&quot;&gt;IApplicationBuilder&lt;/a&gt;. Also, &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.endpointhttpcontextextensions.getendpoint&quot;&gt;HttpContext.GetEndpoint&lt;/a&gt; was added to ASP.NET Core 3.0, so you can retrieve selected endpoint, e.g.:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Before routing runs, endpoint is always null here&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Use&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;next&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteLine&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;Endpoint: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()?.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DisplayName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;??&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;(null)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseRouting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// After routing runs, endpoint will be non-null if routing found a match&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Use&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;next&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteLine&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;Endpoint: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()?.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DisplayName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;??&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;(null)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If you don’t like &lt;code class=&quot;highlighter-rouge&quot;&gt;RequestDelegate&lt;/code&gt; notation/form. You can use &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.usemiddlewareextensions.usemiddleware&quot;&gt;IApplicationBuilder.UseMiddleware&lt;/a&gt; extension method to add middleware as a class and access an endpoint from parameter (&lt;code class=&quot;highlighter-rouge&quot;&gt;HttpContext&lt;/code&gt;).&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Startup.cs&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UseMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MyAwesomeMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// MyAwesomeMiddleware.cs&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;InvokeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HttpContext&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;httpContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endpoint&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;httpContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;endpoint&quot;&gt;Endpoint&lt;/h2&gt;
+
+&lt;p&gt;If you need something more fine-grained, powerful and you need to determine you logic based on a selected route, you can use &lt;code class=&quot;highlighter-rouge&quot;&gt;IApplicationBuilder.UseEndpoints&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseEndpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// Configure another endpoint, with authorization.&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;Hello from &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithMetadata&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AuditPolicyAttribute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;needsAudit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The big picture:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/endpoint-route/aspnet-core-pipeline.png&quot; alt=&quot;aspnet-core-pipeline&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;practical-example&quot;&gt;Practical Example&lt;/h2&gt;
+
+&lt;p&gt;Recently, I’ve stumbled upon &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.extensions.configuration.configurationrootextensions.getdebugview&quot;&gt;IConfigurationRoot.GetDebugView&lt;/a&gt;. Basically, it allows you to dump configuration values and reason about how configuration settings are resolved. Personally, I find this a really useful and productive way of reading the component configuration. You can enable a special endpoint to check your configuration by adding the following code to your &lt;code class=&quot;highlighter-rouge&quot;&gt;UseEndpoints&lt;/code&gt; method (as part of Startup.cs).&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseEndpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/config&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Configuration&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IConfigurationRoot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetDebugView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here is an example output:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/endpoint-route/config-endpoint.png&quot; alt=&quot;config-endpoint&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;nikiforovallconfigurationdebugviewendpoint&quot;&gt;NikiforovAll.ConfigurationDebugViewEndpoint&lt;/h3&gt;
+
+&lt;p&gt;The example above works and everything, but I took a chance and wrapped this functionality into NuGet package - &lt;a href=&quot;https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint&quot;&gt;https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;It is an example of how to organize code base and apply the same technique to make your &lt;code class=&quot;highlighter-rouge&quot;&gt;Startup.cs&lt;/code&gt; more readable and composable. I will guide you through the process.&lt;/p&gt;
+
+&lt;p&gt;Our goal is to have an extension method that will allow us to plug &lt;code class=&quot;highlighter-rouge&quot;&gt;/config&lt;/code&gt; endpoint. Something like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseEndpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapConfigurationDebugView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/config&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AllowDevelopmentOnly&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s start with the &lt;code class=&quot;highlighter-rouge&quot;&gt;ConfigurationDebugViewMiddleware&lt;/code&gt;. We want to write IConfiguration debug view output to &lt;code class=&quot;highlighter-rouge&quot;&gt;Response&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ConfigurationDebugViewMiddleware&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ConfigurationDebugViewMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RequestDelegate&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;InvokeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HttpContext&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;httpContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;httpContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RequestServices&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IConfigurationRoot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetDebugView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;httpContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The trick is to create &lt;code class=&quot;highlighter-rouge&quot;&gt;EndpointRouteBuilderExtensions.cs&lt;/code&gt; and write small extension method that will allow us to plug &lt;code class=&quot;highlighter-rouge&quot;&gt;ConfigurationDebugViewMiddleware&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Generally, we follow the next approach/signature&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;IEndpointConventionBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FeatureToMap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IEndpointRouteBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pattern&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;defaultPattern&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FeatureOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The actual implementation is based on the fact that you can create a sub-pipeline using the same abstraction - &lt;code class=&quot;highlighter-rouge&quot;&gt;IApplicationBuilder&lt;/code&gt; that you use for your &lt;code class=&quot;highlighter-rouge&quot;&gt;Startup.cs&lt;/code&gt; pipeline. &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.routing.iendpointroutebuilder.createapplicationbuilder&quot;&gt;IEndpointRouteBuilder.CreateApplicationBuilder&lt;/a&gt; creates a &lt;code class=&quot;highlighter-rouge&quot;&gt;IApplicationBuilder&lt;/code&gt; that you can use and configure.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateApplicationBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UseMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;LoggingMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UseMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CachingMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UseMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SOAPEndpointMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Complete implementation:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;/// &amp;lt;summary&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;/// Provides extension methods for &amp;lt;see cref=&quot;IEndpointRouteBuilder&quot;/&amp;gt; to add routes.&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;/// &amp;lt;/summary&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;EndpointRouteBuilderExtensions&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// Adds a configuration endpoint to the &amp;lt;see cref=&quot;IEndpointRouteBuilder&quot;/&amp;gt; with the specified template.&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;/summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;param name=&quot;endpoints&quot;&amp;gt;The &amp;lt;see cref=&quot;IEndpointRouteBuilder&quot;/&amp;gt; to add endpoint to.&amp;lt;/param&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;param name=&quot;pattern&quot;&amp;gt;The URL pattern of the endpoint.&amp;lt;/param&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;param name=&quot;optionsDelegate&quot;&amp;gt;&amp;lt;/param&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;returns&amp;gt;A route for the endpoint.&amp;lt;/returns&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IEndpointConventionBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MapConfigurationDebugView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IEndpointRouteBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pattern&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;config&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ConfigurationDebugViewOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;optionsDelegate&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ArgumentNullException&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;nameof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ConfigurationDebugViewOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;optionsDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Invoke&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MapConfigurationDebugViewCore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pattern&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IEndpointConventionBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MapConfigurationDebugViewCore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IEndpointRouteBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pattern&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ConfigurationDebugViewOptions&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;environment&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ServiceProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetRequiredService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IHostEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateApplicationBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AllowDevelopmentOnly&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;environment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;IsDevelopment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pipeline&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UseMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ConfigurationDebugViewMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;()&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Map&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pattern&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pipeline&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;I’ve shared with you a simple but yet useful technique to organize your codebase. It allows you to keep your endpoint-related code nice and clean, developers can easily find extensions by conventions. Do you have other best practices to organize &lt;code class=&quot;highlighter-rouge&quot;&gt;Startup.cs&lt;/code&gt;? Feel free to list them in the comments, I would like to hear from you!&lt;/p&gt;
+
+&lt;p&gt;You might want to try the configuration-debug-view NuGet package. &lt;a href=&quot;https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint&quot;&gt;https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;reference&quot;&gt;Reference&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/&quot;&gt;ASP.NET Core Middleware&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/en-us/aspnet/core/fundamentals/routing&quot;&gt;Routing in ASP.NET Core&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=fSSPEM3e7yY&quot;&gt;ASP.NET Core Series: Endpoint Routing&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=j-33Uz32hG0&quot;&gt;ASP.NET Core Series: Route To Code&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Tue, 23 Mar 2021 00:00:00 -0500</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/aspnetcore/2021/03/23/endpoint-route-builder-extension-pattern.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/aspnetcore/2021/03/23/endpoint-route-builder-extension-pattern.html</guid>
+			</item>
+		
+			<item>
 				<title>Advance the practical side of your coding skills with CodingStories</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -2038,81 +2228,6 @@ dotnet try
 				<pubDate>Wed, 15 Apr 2020 00:00:00 -0500</pubDate>
 				<link>https://nikiforovall.github.io/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html</guid>
-			</item>
-		
-			<item>
-				<title>Development environment based on Windows Terminal + WSL + ZSH + dotfiles</title>
-				<description>&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;I would like to share with you how to implement &lt;a href=&quot;[https://link](https://dotfiles.github.io/)&quot;&gt;dotfiles&lt;/a&gt; concept for your working environment lightning fast. This post is based on my &lt;strong&gt;dotfiles&lt;/strong&gt; repository - &lt;a href=&quot;https://github.com/NikiforovAll/dotfiles&quot;&gt;nikiforovall/dotifles&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;It is a good time to be a .NET developer. It is not only mature and enterprise-ready ecosystem but vibrant and active community. I feel like guys from Microsoft doing a lot to support and encourage .NET community. In particular, that is why we have something like &lt;a href=&quot;https://docs.microsoft.com/en-us/windows/wsl/about&quot;&gt;Windows Subsystem For Linux&lt;/a&gt;, &lt;a href=&quot;https://github.com/Microsoft/Terminal&quot;&gt;Windows Terminal&lt;/a&gt; and many more.&lt;/p&gt;
-
-&lt;p&gt;So I use Windows Terminal. It is a modern terminal emulator for windows. I switched from a really nice terminal emulator &lt;a href=&quot;https://cmder.net/&quot;&gt;cmder&lt;/a&gt; to Windows Terminal (Preview). And I don’t regret it, especially after the release of &lt;a href=&quot;https://devblogs.microsoft.com/commandline/windows-terminal-preview-v0-7-release/&quot;&gt;Windows Terminal Preview v0.7 Release&lt;/a&gt;. This release includes PowerLine fonts for Cascadia Fonts, tab reordering splitting of tab windows into panes. Sweat!&lt;/p&gt;
-
-&lt;p&gt;Windows Terminal is highly configurable, so you could adjust &lt;em&gt;keybindings&lt;/em&gt;, &lt;em&gt;color schemes&lt;/em&gt;, and &lt;em&gt;profiles&lt;/em&gt;.&lt;/p&gt;
-
-&lt;p&gt;You can install Windows Terminal from Microsoft Store or by using &lt;a href=&quot;https://chocolatey.org/&quot;&gt;chocolatey&lt;/a&gt; windows package manager.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;choco &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;microsoft-windows-terminal &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Also, see my Windows Terminal &lt;em&gt;profiles.json&lt;/em&gt; &lt;a href=&quot;https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json&quot;&gt;https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;I use &lt;a href=&quot;https://code.visualstudio.com/&quot;&gt;Visual Studio Code&lt;/a&gt; as the main editor and development environment. Although, it is possible to use dotfiles for synchronization concept for &lt;code class=&quot;highlighter-rouge&quot;&gt;vscode&lt;/code&gt; I encourage you to use &lt;a href=&quot;https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync&quot;&gt;Settings Sync&lt;/a&gt; extension. It uses GitHub as storage and makes use of API key to authorize and manage your configurations. You could install it like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;choco &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;vscode &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
-code &lt;span class=&quot;nt&quot;&gt;--intall-extension&lt;/span&gt; Shan.code-settings-sync
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;And now, here where the fun begins. The end goal is to bootstrap and configure working environment with the minimum effort. Basically, we want to run bash one-liner and have everything arranged nice and clean. Something like:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bash &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;wget &lt;span class=&quot;nt&quot;&gt;-qO&lt;/span&gt; - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;wsl-setup&quot;&gt;WSL Setup&lt;/h3&gt;
-
-&lt;p&gt;But first, let’s see how we set up brand new WSL instance. Here I list available Linux distros and unregister ubuntu-18.04&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/nikiforovall-setup/test1.gif&quot; alt=&quot;setup-1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Let’s register new user in Ubuntu-18.04 LTS.
-&lt;img src=&quot;/assets/nikiforovall-setup/test2.gif&quot; alt=&quot;setup-2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;And set default distro &lt;em&gt;“Ubuntu-18.04”&lt;/em&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# $wsl -h&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# -setdefault, -s &amp;lt;DistributionName&amp;gt;&lt;/span&gt;
-wsl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Ubuntu-18.04&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We can login to WSL via Windows Terminal by specifying &lt;code class=&quot;highlighter-rouge&quot;&gt;&quot;source&quot;: &quot;Windows.Terminal.Wsl&quot;&lt;/code&gt; in corresponding Windows Terminal &lt;em&gt;profile&lt;/em&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;installation&quot;&gt;Installation&lt;/h2&gt;
-
-&lt;p&gt;🔧 If it is a brand-new WSL instance you might want to run &lt;code class=&quot;highlighter-rouge&quot;&gt;apt upgrade&lt;/code&gt;. In the demo below I’ve already had everything.&lt;/p&gt;
-
-&lt;p&gt;Let’s see how the bash one-liner works:&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bash -c &quot;$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh)&quot;&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/nikiforovall-setup/test3.gif&quot; alt=&quot;setup-3&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;It installs a bunch of &lt;a href=&quot;https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh&quot;&gt;essentials&lt;/a&gt; for development environment: utils, tools, and &lt;a href=&quot;https://dotnet.microsoft.com/download&quot;&gt;dotnet sdk&lt;/a&gt;. Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don’t need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀&lt;/p&gt;
-
-&lt;h2 id=&quot;demo&quot;&gt;Demo&lt;/h2&gt;
-
-&lt;p&gt;At the demonstration below I create a folder for the new &lt;em&gt;dotnet console&lt;/em&gt; project. I slightly modify &lt;em&gt;Program.cs&lt;/em&gt; and run the application inside WSL. There are a lot of details that make the process of development easier and promote productivity. I just mention a few of them: simplicity of setup, syntax and commands highlighting and autocompletion.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/nikiforovall-setup/test4.gif&quot; alt=&quot;setup-4&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
-
-&lt;p&gt;It was a brief overview of my dotfiles setup. I encourage you to investigate the internals of my dotfiles repository for mode details. Feel free to fork and work on dream setup of your own. Let me know what you think about it!&lt;/p&gt;
-</description>
-				<pubDate>Sat, 30 Nov 2019 00:00:00 -0600</pubDate>
-				<link>https://nikiforovall.github.io/productivity/2019/11/30/nikiforovall-setup.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/productivity/2019/11/30/nikiforovall-setup.html</guid>
 			</item>
 		
 	</channel>
