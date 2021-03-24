@@ -19,7 +19,7 @@ You can use extension method (e.g. `IEndpointConventionBuilder Map{FeatureToMap}
 
 ## Middleware
 
-Middleware forms the basic building blocks of the HTTP Pipeline. It is a really good concept to implement cross-cutting concerns and weave re-usable piece of code to the ASP.NET pipeline.Middleware provides application level features. For example, you might need Middleware to implement features like: *Routing*, *Cookies*, *Session*, *CORS*, *Authentication*, *HTTPS Redirection*, *Caching*, *Response Compression*, *Exception Handling*. Most of the time, you've got [out-of-the-box](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/#built-in-middleware) option provided by framework.
+Middleware forms the basic building blocks of the HTTP Pipeline. It is a really good concept to implement cross-cutting concerns and weave a re-usable piece of code to the ASP.NET pipeline. Middleware provides application-level features. For example, you might need Middleware to implement features like: *Routing*, *Cookies*, *Session*, *CORS*, *Authentication*, *HTTPS Redirection*, *Caching*, *Response Compression*, *Exception Handling*. Most of the time, you've got [out-of-the-box](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/#built-in-middleware) option provided by the framework.
 
 To extend ASP.NET Core pipeline we use [IApplicationBuilder](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?#create-a-middleware-pipeline-with-iapplicationbuilder) injected in `Startup.cs`.
 
@@ -73,7 +73,7 @@ app.UseEndpoints(endpoints =>
 });
 ```
 
-As you can see, `Endpoint` contains a `EndpointMetadataCollection` that holds various data put and managed during pipeline execution.
+As you can see, `Endpoint` contains an `EndpointMetadataCollection` that holds various data put and managed during pipeline execution.
 
 ```csharp
 /// <summary>
@@ -159,7 +159,7 @@ public class ConfigurationDebugViewMiddleware
 }
 ```
 
-The trick is to create `EndpointRouteBuilderExtensions.cs` and write small extension method that will allow us to plug `ConfigurationDebugViewMiddleware`.
+The trick is to create `EndpointRouteBuilderExtensions.cs` and write a small extension method that will allow us to plug `ConfigurationDebugViewMiddleware`.
 
 Generally, we follow the next approach/signature
 
