@@ -436,11 +436,15 @@
 
 <p>The actual implementation is based on the fact that you can create a sub-pipeline using the same abstraction - <code class="highlighter-rouge">IApplicationBuilder</code> that you use for your <code class="highlighter-rouge">Startup.cs</code> pipeline. <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.routing.iendpointroutebuilder.createapplicationbuilder">IEndpointRouteBuilder.CreateApplicationBuilder</a> creates a <code class="highlighter-rouge">IApplicationBuilder</code> that you can use and configure.</p>
 
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">endpoints</span><span class="p">.</span><span class="nf">CreateApplicationBuilder</span><span class="p">()</span>
+<p>For example, here is a definition of an imaginary pipeline that handles SOAP requests:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">endpoints</span><span class="p">.</span><span class="nf">CreateApplicationBuilder</span><span class="p">()</span>
     <span class="p">.</span><span class="n">UseMiddleware</span><span class="p">&lt;</span><span class="n">LoggingMiddleware</span><span class="p">&gt;()</span>
     <span class="p">.</span><span class="n">UseMiddleware</span><span class="p">&lt;</span><span class="n">CachingMiddleware</span><span class="p">&gt;()</span>
     <span class="p">.</span><span class="n">UseMiddleware</span><span class="p">&lt;</span><span class="n">SOAPEndpointMiddleware</span><span class="p">&gt;()</span>
     <span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="k">return</span> <span class="n">endpoints</span><span class="p">.</span><span class="nf">Map</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">pipeline</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>Complete implementation:</p>

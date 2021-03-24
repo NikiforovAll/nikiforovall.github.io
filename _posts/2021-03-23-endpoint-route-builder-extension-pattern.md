@@ -169,12 +169,16 @@ IEndpointConventionBuilder Map{FeatureToMap}(this IEndpointRouteBuilder endpoint
 
 The actual implementation is based on the fact that you can create a sub-pipeline using the same abstraction - `IApplicationBuilder` that you use for your `Startup.cs` pipeline. [IEndpointRouteBuilder.CreateApplicationBuilder](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.routing.iendpointroutebuilder.createapplicationbuilder) creates a `IApplicationBuilder` that you can use and configure.
 
+For example, here is a definition of an imaginary pipeline that handles SOAP requests:
+
 ```csharp
-endpoints.CreateApplicationBuilder()
+var pipeline = endpoints.CreateApplicationBuilder()
     .UseMiddleware<LoggingMiddleware>()
     .UseMiddleware<CachingMiddleware>()
     .UseMiddleware<SOAPEndpointMiddleware>()
     .Build();
+
+return endpoints.Map(pattern, pipeline)
 ```
 
 Complete implementation:
