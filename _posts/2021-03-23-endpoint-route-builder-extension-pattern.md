@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method
+title: ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method
 categories: [ dotnet, aspnetcore ]
 tags: [ dotnet, aspnetcore, aspnetcore-pipeline ]
 published: true
@@ -19,7 +19,11 @@ You can use extension method (e.g. `IEndpointConventionBuilder Map{FeatureToMap}
 
 ## Middleware
 
-As you know, it is possible to extend ASP.NET Core pipeline via [IApplicationBuilder](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-5.0#create-a-middleware-pipeline-with-iapplicationbuilder). Also, [HttpContext.GetEndpoint](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.endpointhttpcontextextensions.getendpoint) was added to ASP.NET Core 3.0, so you can retrieve selected endpoint, e.g.:
+Middleware forms the basic building blocks of the HTTP Pipeline. It is a really good concept to implement cross-cutting concerns and weave re-usable piece of code to the ASP.NET pipeline.Middleware provides application level features. For example, you might need Middleware to implement features like: *Routing*, *Cookies*, *Session*, *CORS*, *Authentication*, *HTTPS Redirection*, *Caching*, *Response Compression*, *Exception Handling*. Most of the time, you've got [out-of-the-box](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/#built-in-middleware) option provided by framework.
+
+To extend ASP.NET Core pipeline we use [IApplicationBuilder](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?#create-a-middleware-pipeline-with-iapplicationbuilder) injected in `Startup.cs`.
+
+Furthermore, since ASP.NET Core 3.0 you could use [HttpContext.GetEndpoint](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.endpointhttpcontextextensions.getendpoint) to retrieve selected endpoint/metadata, e.g.:
 
 ```csharp
 // Before routing runs, endpoint is always null here
@@ -39,7 +43,7 @@ app.Use(next => context =>
 });
 ```
 
-If you don't like `RequestDelegate` notation/form. You can use [IApplicationBuilder.UseMiddleware](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.usemiddlewareextensions.usemiddleware) extension method to add middleware as a class and access an endpoint from parameter (`HttpContext`).
+Middleware can exist as simple inline methods or as complex, reusable classes. If you don't like `RequestDelegate` notation/form. You can use [IApplicationBuilder.UseMiddleware](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.usemiddlewareextensions.usemiddleware) extension method to add middleware as a class and access an endpoint from parameter (`HttpContext`).
 
 ```csharp
 // Startup.cs
@@ -52,9 +56,11 @@ public async Task InvokeAsync(HttpContext httpContext)
 }
 ```
 
-## Endpoint
+If you need something more fine-grained and, probably, more powerful you can use `Endpoint` concept.
 
-If you need something more fine-grained, powerful and you need to determine you logic based on a selected route, you can use `IApplicationBuilder.UseEndpoints`.
+## Routing and Endpoints
+
+Routing is responsible for matching incoming HTTP requests and dispatching those requests to the app's executable endpoints. You can use `IApplicationBuilder.UseEndpoints` to define pipeline logic based on a selected route. Many of ASP.NET Core features/aspects are implemented with the routing concept in mind. For example, you can [IEndpointRouteBuilder.MapControllers](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.controllerendpointroutebuilderextensions.mapcontrollers) or [IEndpointRouteBuilder.MapGrpcService](https://docs.microsoft.com/en-us/aspnet/core/grpc/aspnetcore?view=aspnetcore-5.0) or you can build your own framework based on this extension capabilities.
 
 ```csharp
 app.UseEndpoints(endpoints =>
@@ -63,8 +69,40 @@ app.UseEndpoints(endpoints =>
     endpoints.MapGet("/", async context =>
     {
         await context.Response.WriteAsync($"Hello from {context.GetEndpoint()}!");
-    }).RequireAuthorization().WithMetadata(new AuditPolicyAttribute(needsAudit: true));;
+    }).RequireAuthorization().WithMetadata(new AuditPolicyAttribute(needsAudit: true));
 });
+```
+
+As you can see, `Endpoint` contains a `EndpointMetadataCollection` that holds various data put and managed during pipeline execution.
+
+```csharp
+/// <summary>
+/// Represents a logical endpoint in an application.
+/// </summary>
+public class Endpoint
+{
+    public Endpoint(
+        RequestDelegate? requestDelegate,
+        EndpointMetadataCollection? metadata,
+        string? displayName)
+    {
+        RequestDelegate = requestDelegate;
+        Metadata = metadata ?? EndpointMetadataCollection.Empty;
+        DisplayName = displayName;
+    }
+    /// <summary>
+    /// Gets the informational display name of this endpoint.
+    /// </summary>
+    public string? DisplayName { get; }
+    /// <summary>
+    /// Gets the collection of metadata associated with this endpoint.
+    /// </summary>
+    public EndpointMetadataCollection Metadata { get; }
+    /// <summary>
+    /// Gets the delegate used to process requests for the endpoint.
+    /// </summary>
+    public RequestDelegate? RequestDelegate { get; }
+}
 ```
 
 The big picture:
@@ -94,7 +132,7 @@ Here is an example output:
 
 The example above works and everything, but I took a chance and wrapped this functionality into NuGet package - <https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint>.
 
-It is an example of how to organize code base and apply the same technique to make your `Startup.cs` more readable and composable. I will guide you through the process.
+It is an example of how to organize code base and apply the technique to make your `Startup.cs` more readable and composable. I will guide you through the process.
 
 Our goal is to have an extension method that will allow us to plug `/config` endpoint. Something like this:
 
