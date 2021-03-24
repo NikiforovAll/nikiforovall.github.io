@@ -7,7 +7,7 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
-				<title>Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method</title>
+				<title>ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
 &lt;p&gt;You can use extension method (e.g. &lt;code class=&quot;highlighter-rouge&quot;&gt;IEndpointConventionBuilder Map{FeatureToMap}(this IEndpointRouteBuilder endpoints&lt;/code&gt;) to add a middleware to specific endpoint.&lt;/p&gt;
@@ -16,7 +16,11 @@
 
 &lt;h2 id=&quot;middleware&quot;&gt;Middleware&lt;/h2&gt;
 
-&lt;p&gt;As you know, it is possible to extend ASP.NET Core pipeline via &lt;a href=&quot;https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-5.0#create-a-middleware-pipeline-with-iapplicationbuilder&quot;&gt;IApplicationBuilder&lt;/a&gt;. Also, &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.endpointhttpcontextextensions.getendpoint&quot;&gt;HttpContext.GetEndpoint&lt;/a&gt; was added to ASP.NET Core 3.0, so you can retrieve selected endpoint, e.g.:&lt;/p&gt;
+&lt;p&gt;Middleware forms the basic building blocks of the HTTP Pipeline. It is a really good concept to implement cross-cutting concerns and weave re-usable piece of code to the ASP.NET pipeline.Middleware provides application level features. For example, you might need Middleware to implement features like: &lt;em&gt;Routing&lt;/em&gt;, &lt;em&gt;Cookies&lt;/em&gt;, &lt;em&gt;Session&lt;/em&gt;, &lt;em&gt;CORS&lt;/em&gt;, &lt;em&gt;Authentication&lt;/em&gt;, &lt;em&gt;HTTPS Redirection&lt;/em&gt;, &lt;em&gt;Caching&lt;/em&gt;, &lt;em&gt;Response Compression&lt;/em&gt;, &lt;em&gt;Exception Handling&lt;/em&gt;. Most of the time, you’ve got &lt;a href=&quot;https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/#built-in-middleware&quot;&gt;out-of-the-box&lt;/a&gt; option provided by framework.&lt;/p&gt;
+
+&lt;p&gt;To extend ASP.NET Core pipeline we use &lt;a href=&quot;https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?#create-a-middleware-pipeline-with-iapplicationbuilder&quot;&gt;IApplicationBuilder&lt;/a&gt; injected in &lt;code class=&quot;highlighter-rouge&quot;&gt;Startup.cs&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Furthermore, since ASP.NET Core 3.0 you could use &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.endpointhttpcontextextensions.getendpoint&quot;&gt;HttpContext.GetEndpoint&lt;/a&gt; to retrieve selected endpoint/metadata, e.g.:&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Before routing runs, endpoint is always null here&lt;/span&gt;
 &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Use&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;next&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
@@ -35,7 +39,7 @@
 &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;If you don’t like &lt;code class=&quot;highlighter-rouge&quot;&gt;RequestDelegate&lt;/code&gt; notation/form. You can use &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.usemiddlewareextensions.usemiddleware&quot;&gt;IApplicationBuilder.UseMiddleware&lt;/a&gt; extension method to add middleware as a class and access an endpoint from parameter (&lt;code class=&quot;highlighter-rouge&quot;&gt;HttpContext&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;Middleware can exist as simple inline methods or as complex, reusable classes. If you don’t like &lt;code class=&quot;highlighter-rouge&quot;&gt;RequestDelegate&lt;/code&gt; notation/form. You can use &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.usemiddlewareextensions.usemiddleware&quot;&gt;IApplicationBuilder.UseMiddleware&lt;/a&gt; extension method to add middleware as a class and access an endpoint from parameter (&lt;code class=&quot;highlighter-rouge&quot;&gt;HttpContext&lt;/code&gt;).&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Startup.cs&lt;/span&gt;
 &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UseMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MyAwesomeMiddleware&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
@@ -47,9 +51,11 @@
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h2 id=&quot;endpoint&quot;&gt;Endpoint&lt;/h2&gt;
+&lt;p&gt;If you need something more fine-grained and, probably, more powerful you can use &lt;code class=&quot;highlighter-rouge&quot;&gt;Endpoint&lt;/code&gt; concept.&lt;/p&gt;
 
-&lt;p&gt;If you need something more fine-grained, powerful and you need to determine you logic based on a selected route, you can use &lt;code class=&quot;highlighter-rouge&quot;&gt;IApplicationBuilder.UseEndpoints&lt;/code&gt;.&lt;/p&gt;
+&lt;h2 id=&quot;routing-and-endpoints&quot;&gt;Routing and Endpoints&lt;/h2&gt;
+
+&lt;p&gt;Routing is responsible for matching incoming HTTP requests and dispatching those requests to the app’s executable endpoints. You can use &lt;code class=&quot;highlighter-rouge&quot;&gt;IApplicationBuilder.UseEndpoints&lt;/code&gt; to define pipeline logic based on a selected route. Many of ASP.NET Core features/aspects are implemented with the routing concept in mind. For example, you can &lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.controllerendpointroutebuilderextensions.mapcontrollers&quot;&gt;IEndpointRouteBuilder.MapControllers&lt;/a&gt; or &lt;a href=&quot;https://docs.microsoft.com/en-us/aspnet/core/grpc/aspnetcore?view=aspnetcore-5.0&quot;&gt;IEndpointRouteBuilder.MapGrpcService&lt;/a&gt; or you can build your own framework based on this extension capabilities.&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseEndpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -57,8 +63,39 @@
     &lt;span class=&quot;n&quot;&gt;endpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
         &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;Hello from &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithMetadata&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AuditPolicyAttribute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;needsAudit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithMetadata&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AuditPolicyAttribute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;needsAudit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As you can see, &lt;code class=&quot;highlighter-rouge&quot;&gt;Endpoint&lt;/code&gt; contains a &lt;code class=&quot;highlighter-rouge&quot;&gt;EndpointMetadataCollection&lt;/code&gt; that holds various data put and managed during pipeline execution.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;/// &amp;lt;summary&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;/// Represents a logical endpoint in an application.&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;/// &amp;lt;/summary&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Endpoint&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Endpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;RequestDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;EndpointMetadataCollection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;metadata&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;displayName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;RequestDelegate&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Metadata&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;metadata&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;??&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;EndpointMetadataCollection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;DisplayName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;displayName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// Gets the informational display name of this endpoint.&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;/summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DisplayName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// Gets the collection of metadata associated with this endpoint.&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;/summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;EndpointMetadataCollection&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Metadata&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// Gets the delegate used to process requests for the endpoint.&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;/// &amp;lt;/summary&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RequestDelegate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RequestDelegate&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The big picture:&lt;/p&gt;
@@ -87,7 +124,7 @@
 
 &lt;p&gt;The example above works and everything, but I took a chance and wrapped this functionality into NuGet package - &lt;a href=&quot;https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint&quot;&gt;https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;It is an example of how to organize code base and apply the same technique to make your &lt;code class=&quot;highlighter-rouge&quot;&gt;Startup.cs&lt;/code&gt; more readable and composable. I will guide you through the process.&lt;/p&gt;
+&lt;p&gt;It is an example of how to organize code base and apply the technique to make your &lt;code class=&quot;highlighter-rouge&quot;&gt;Startup.cs&lt;/code&gt; more readable and composable. I will guide you through the process.&lt;/p&gt;
 
 &lt;p&gt;Our goal is to have an extension method that will allow us to plug &lt;code class=&quot;highlighter-rouge&quot;&gt;/config&lt;/code&gt; endpoint. Something like this:&lt;/p&gt;
 

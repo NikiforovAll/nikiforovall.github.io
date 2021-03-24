@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
-	<title>Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method</title>
+	<title>ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method</title>
 	
 	<meta name="author" content="Alexey Nikiforov">
 
@@ -153,7 +153,7 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-	<h1>Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method </h1>
+	<h1>ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method </h1>
 </div>
 <article>
 
@@ -294,7 +294,11 @@
 
 <h2 id="middleware">Middleware</h2>
 
-<p>As you know, it is possible to extend ASP.NET Core pipeline via <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-5.0#create-a-middleware-pipeline-with-iapplicationbuilder">IApplicationBuilder</a>. Also, <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.endpointhttpcontextextensions.getendpoint">HttpContext.GetEndpoint</a> was added to ASP.NET Core 3.0, so you can retrieve selected endpoint, e.g.:</p>
+<p>Middleware forms the basic building blocks of the HTTP Pipeline. It is a really good concept to implement cross-cutting concerns and weave re-usable piece of code to the ASP.NET pipeline.Middleware provides application level features. For example, you might need Middleware to implement features like: <em>Routing</em>, <em>Cookies</em>, <em>Session</em>, <em>CORS</em>, <em>Authentication</em>, <em>HTTPS Redirection</em>, <em>Caching</em>, <em>Response Compression</em>, <em>Exception Handling</em>. Most of the time, you’ve got <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/#built-in-middleware">out-of-the-box</a> option provided by framework.</p>
+
+<p>To extend ASP.NET Core pipeline we use <a href="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?#create-a-middleware-pipeline-with-iapplicationbuilder">IApplicationBuilder</a> injected in <code class="highlighter-rouge">Startup.cs</code>.</p>
+
+<p>Furthermore, since ASP.NET Core 3.0 you could use <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.endpointhttpcontextextensions.getendpoint">HttpContext.GetEndpoint</a> to retrieve selected endpoint/metadata, e.g.:</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Before routing runs, endpoint is always null here</span>
 <span class="n">app</span><span class="p">.</span><span class="nf">Use</span><span class="p">(</span><span class="n">next</span> <span class="p">=&gt;</span> <span class="n">context</span> <span class="p">=&gt;</span>
@@ -313,7 +317,7 @@
 <span class="p">});</span>
 </code></pre></div></div>
 
-<p>If you don’t like <code class="highlighter-rouge">RequestDelegate</code> notation/form. You can use <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.usemiddlewareextensions.usemiddleware">IApplicationBuilder.UseMiddleware</a> extension method to add middleware as a class and access an endpoint from parameter (<code class="highlighter-rouge">HttpContext</code>).</p>
+<p>Middleware can exist as simple inline methods or as complex, reusable classes. If you don’t like <code class="highlighter-rouge">RequestDelegate</code> notation/form. You can use <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.usemiddlewareextensions.usemiddleware">IApplicationBuilder.UseMiddleware</a> extension method to add middleware as a class and access an endpoint from parameter (<code class="highlighter-rouge">HttpContext</code>).</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Startup.cs</span>
 <span class="n">app</span><span class="p">.</span><span class="n">UseMiddleware</span><span class="p">&lt;</span><span class="n">MyAwesomeMiddleware</span><span class="p">&gt;();</span>
@@ -325,9 +329,11 @@
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h2 id="endpoint">Endpoint</h2>
+<p>If you need something more fine-grained and, probably, more powerful you can use <code class="highlighter-rouge">Endpoint</code> concept.</p>
 
-<p>If you need something more fine-grained, powerful and you need to determine you logic based on a selected route, you can use <code class="highlighter-rouge">IApplicationBuilder.UseEndpoints</code>.</p>
+<h2 id="routing-and-endpoints">Routing and Endpoints</h2>
+
+<p>Routing is responsible for matching incoming HTTP requests and dispatching those requests to the app’s executable endpoints. You can use <code class="highlighter-rouge">IApplicationBuilder.UseEndpoints</code> to define pipeline logic based on a selected route. Many of ASP.NET Core features/aspects are implemented with the routing concept in mind. For example, you can <a href="https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.controllerendpointroutebuilderextensions.mapcontrollers">IEndpointRouteBuilder.MapControllers</a> or <a href="https://docs.microsoft.com/en-us/aspnet/core/grpc/aspnetcore?view=aspnetcore-5.0">IEndpointRouteBuilder.MapGrpcService</a> or you can build your own framework based on this extension capabilities.</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">app</span><span class="p">.</span><span class="nf">UseEndpoints</span><span class="p">(</span><span class="n">endpoints</span> <span class="p">=&gt;</span>
 <span class="p">{</span>
@@ -335,8 +341,39 @@
     <span class="n">endpoints</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="k">async</span> <span class="n">context</span> <span class="p">=&gt;</span>
     <span class="p">{</span>
         <span class="k">await</span> <span class="n">context</span><span class="p">.</span><span class="n">Response</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="s">$"Hello from </span><span class="p">{</span><span class="n">context</span><span class="p">.</span><span class="nf">GetEndpoint</span><span class="p">()}</span><span class="s">!"</span><span class="p">);</span>
-    <span class="p">}).</span><span class="nf">RequireAuthorization</span><span class="p">().</span><span class="nf">WithMetadata</span><span class="p">(</span><span class="k">new</span> <span class="nf">AuditPolicyAttribute</span><span class="p">(</span><span class="n">needsAudit</span><span class="p">:</span> <span class="k">true</span><span class="p">));;</span>
+    <span class="p">}).</span><span class="nf">RequireAuthorization</span><span class="p">().</span><span class="nf">WithMetadata</span><span class="p">(</span><span class="k">new</span> <span class="nf">AuditPolicyAttribute</span><span class="p">(</span><span class="n">needsAudit</span><span class="p">:</span> <span class="k">true</span><span class="p">));</span>
 <span class="p">});</span>
+</code></pre></div></div>
+
+<p>As you can see, <code class="highlighter-rouge">Endpoint</code> contains a <code class="highlighter-rouge">EndpointMetadataCollection</code> that holds various data put and managed during pipeline execution.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// Represents a logical endpoint in an application.</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">Endpoint</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="nf">Endpoint</span><span class="p">(</span>
+        <span class="n">RequestDelegate</span><span class="p">?</span> <span class="n">requestDelegate</span><span class="p">,</span>
+        <span class="n">EndpointMetadataCollection</span><span class="p">?</span> <span class="n">metadata</span><span class="p">,</span>
+        <span class="kt">string</span><span class="p">?</span> <span class="n">displayName</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">RequestDelegate</span> <span class="p">=</span> <span class="n">requestDelegate</span><span class="p">;</span>
+        <span class="n">Metadata</span> <span class="p">=</span> <span class="n">metadata</span> <span class="p">??</span> <span class="n">EndpointMetadataCollection</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+        <span class="n">DisplayName</span> <span class="p">=</span> <span class="n">displayName</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// Gets the informational display name of this endpoint.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="kt">string</span><span class="p">?</span> <span class="n">DisplayName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// Gets the collection of metadata associated with this endpoint.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="n">EndpointMetadataCollection</span> <span class="n">Metadata</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+    <span class="c1">/// &lt;summary&gt;</span>
+    <span class="c1">/// Gets the delegate used to process requests for the endpoint.</span>
+    <span class="c1">/// &lt;/summary&gt;</span>
+    <span class="k">public</span> <span class="n">RequestDelegate</span><span class="p">?</span> <span class="n">RequestDelegate</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div></div>
 
 <p>The big picture:</p>
@@ -365,7 +402,7 @@
 
 <p>The example above works and everything, but I took a chance and wrapped this functionality into NuGet package - <a href="https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint">https://github.com/NikiforovAll/ConfigurationDebugViewEndpoint</a>.</p>
 
-<p>It is an example of how to organize code base and apply the same technique to make your <code class="highlighter-rouge">Startup.cs</code> more readable and composable. I will guide you through the process.</p>
+<p>It is an example of how to organize code base and apply the technique to make your <code class="highlighter-rouge">Startup.cs</code> more readable and composable. I will guide you through the process.</p>
 
 <p>Our goal is to have an extension method that will allow us to plug <code class="highlighter-rouge">/config</code> endpoint. Something like this:</p>
 
@@ -531,7 +568,7 @@
 		<section class="share col-sm-6">
 			<h4 class="section-title">Share Post</h4>
 			<a class="btn btn-default btn-sm twitter"
-				href="http://twitter.com/share?text=Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method&via=nikiforovall"
+				href="http://twitter.com/share?text=ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method&via=nikiforovall"
 				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
 				<i class="fa fa-twitter fa-lg"></i>
 				Twitter
