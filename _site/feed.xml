@@ -7,6 +7,161 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Publish NuGet packages via Docker Release Container</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;You can use Docker to push packages to a NuGet feed. This blog post shows how to release a NuGet package to Amazon CodeArtifact via Docker. Source code can be found at &lt;a href=&quot;https://github.com/NikiforovAll/docker-release-container-sample&quot;&gt;https://github.com/NikiforovAll/docker-release-container-sample&lt;/a&gt;.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;general&quot;&gt;General&lt;/h2&gt;
+
+&lt;p&gt;The idea behind having a release container is pretty straightforward - you can bundle artifacts and tools so the release mechanism is portable and unified because of Docker. Also, another advantage of building NuGet packages in Docker is that you don’t need any dependencies installed on the build-server itself. I invite you to read Andrew’s Lock post to get more details about the use case (&lt;a href=&quot;https://andrewlock.net/pushing-nuget-packages-built-in-docker-by-running-the-container/&quot;&gt;https://andrewlock.net/pushing-nuget-packages-built-in-docker-by-running-the-container/&lt;/a&gt;). This blog post is focused on the practical side, let’s dive into it by reviewing the Dockerfile:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Base layer is used for publishing. It contains &lt;code class=&quot;highlighter-rouge&quot;&gt;aws-cli&lt;/code&gt; and credential provider (&lt;code class=&quot;highlighter-rouge&quot;&gt;AWS.CodeArtifact.NuGet.CredentialProvider&lt;/code&gt;) so we can deploy to private NuGet feed as described in &lt;a href=&quot;https://docs.aws.amazon.com/codeartifact/latest/ug/nuget-cli.html&quot;&gt;here&lt;/a&gt;. Please see the excellent guide on how to work with Docker and NuGet feeds &lt;a href=&quot;https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md&quot;&gt;https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;Build layer is used for building and packing.&lt;/li&gt;
+  &lt;li&gt;Entrypoint defines custom publishing script, essentially, &lt;code class=&quot;highlighter-rouge&quot;&gt;dotnet nuget push&lt;/code&gt; is called. Note that, you can specify additional arguments. (e.g: override &lt;code class=&quot;highlighter-rouge&quot;&gt;--source&lt;/code&gt; or provide &lt;code class=&quot;highlighter-rouge&quot;&gt;--api-key&lt;/code&gt;).&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Dockerfile&quot;&gt;FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS base
+RUN apt-get update &amp;amp;&amp;amp; apt install unzip &amp;amp;&amp;amp; apt-get install -y curl
+RUN curl &quot;https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip&quot; -o &quot;awscliv2.zip&quot;
+RUN unzip awscliv2.zip &amp;amp;&amp;amp; ./aws/install
+
+WORKDIR /artifacts
+RUN dotnet new tool-manifest --name manifest
+RUN dotnet tool install --ignore-failed-sources AWS.CodeArtifact.NuGet.CredentialProvider
+RUN dotnet codeartifact-creds install
+
+FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build
+ARG Configuration=&quot;Release&quot;
+
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=true \
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+
+WORKDIR /src
+
+COPY [&quot;src/ReleaseContainerSample/ReleaseContainerSample.csproj&quot;, &quot;src/ReleaseContainerSample/&quot;]
+COPY [&quot;tests/ReleaseContainerSample.Tests/ReleaseContainerSample.Tests.csproj&quot;, &quot;tests/ReleaseContainerSample.Tests/&quot;]
+
+RUN dotnet restore &quot;src/ReleaseContainerSample/ReleaseContainerSample.csproj&quot;
+
+COPY . .
+
+RUN dotnet build &quot;src/ReleaseContainerSample&quot; \
+    --configuration $Configuration
+    # --no-restore
+
+RUN dotnet test &quot;tests/ReleaseContainerSample.Tests&quot; \
+    --configuration $Configuration \
+    --no-build
+
+FROM build AS publish
+
+ARG Configuration=&quot;Release&quot;
+ARG Version=1.0.0
+
+RUN dotnet pack &quot;src/ReleaseContainerSample&quot;\
+    -p:Version=$Version \
+    --configuration $Configuration \
+    --output /artifacts \
+    --include-symbols
+
+FROM base AS final
+
+WORKDIR /artifacts
+COPY --from=publish /artifacts .
+
+COPY ./build/publish-nuget.sh ./publish-nuget.sh
+
+LABEL org.opencontainers.image.title=&quot;ReleaseContainerSample&quot; \
+    org.opencontainers.image.description=&quot;&quot; \
+    org.opencontainers.image.documentation=&quot;https://github.com/NikiforovAll/docker-release-container-sample&quot; \
+    org.opencontainers.image.source=&quot;https://github.com/NikiforovAll/docker-release-container-sample.git&quot; \
+    org.opencontainers.image.url=&quot;https://github.com/NikiforovAll/docker-release-container-sample&quot; \
+    org.opencontainers.image.vendor=&quot;&quot;
+
+ENTRYPOINT [&quot;./publish-nuget.sh&quot;]
+CMD [&quot;--source&quot;, &quot;https://api.nuget.org/v3/index.json&quot;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Before we produce artifact, we need to specify version. Let’s use &lt;code class=&quot;highlighter-rouge&quot;&gt;GitVersion&lt;/code&gt; to get the build version.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ Version&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;pwd&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:/repo&quot;&lt;/span&gt; gittools/gitversion:5.6.6 /repo &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    | &lt;span class=&quot;nb&quot;&gt;tr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\n'&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;tr&lt;/span&gt; , &lt;span class=&quot;s1&quot;&gt;'\n'&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;tr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\n'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    | &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;NuGetVersion&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    | &lt;span class=&quot;nb&quot;&gt;awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&quot;'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'{print $4}'&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-n1&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$Version&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# out&lt;/span&gt;
+1.0.1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;After that, we are ready to build the release container (image)&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker build &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ./src/ReleaseContainerSample/Dockerfile &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;--build-arg&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;Version&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$Version&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; release-container-example &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# check the result&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker image list 
+REPOSITORY                                                          TAG              IMAGE ID       CREATED          SIZE
+release-container-example                                           latest           7ca4acd3845b   43 seconds ago   1.12GB
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You can peek inside release container by running:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--entrypoint&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'/bin/ls'&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; release-container-sample release-container-example
+&lt;span class=&quot;c&quot;&gt;# out&lt;/span&gt;
+ReleaseContainerSample.1.0.1.nupkg
+ReleaseContainerSample.1.0.1.symbols.nupkg
+publish-nuget.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;🚀 Publish.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;AWS_ACCESS_KEY_ID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;AWS_SECRET_ACCESS_KEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;AWS_DEFAULT_REGION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;eu-central-1&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; release-container-sample release-container-example &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;--source&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;https://codeartifact.eu-central-1.amazonaws.com/nuget/codeartifact-repository/v3/index.json&quot;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Alternatively, you can use public  NuGet repository.&lt;/span&gt;
+docker run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; release-container-sample release-container-example &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;--source&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;https://api.nuget.org/v3/index.json&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--api-key&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;https://www.youtube.com/watch?v=dQw4w9WgXcQ&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;In this blog post, I showed how you can build NuGet packages via Docker, and push them to your NuGet feed when you run the container.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Pros&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Easy to release. The solution is portable. It’s our goal after all.&lt;/li&gt;
+  &lt;li&gt;Extendable approach. You are in charge of how to build NuGet package and can install all required tools and dependencies when you need it.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Cons&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Images can be quite sizable. Additional space is required to release containers, so a retention policy should be applied.&lt;/li&gt;
+  &lt;li&gt;Adds unnecessary complexity if you already use dotnet toolchain and you have all dependencies installed on build server.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;reference&quot;&gt;Reference&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.aws.amazon.com/codeartifact/latest/ug/nuget-cli.html&quot;&gt;https://docs.aws.amazon.com/codeartifact/latest/ug/nuget-cli.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md&quot;&gt;https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://andrewlock.net/pushing-nuget-packages-built-in-docker-by-running-the-container&quot;&gt;https://andrewlock.net/pushing-nuget-packages-built-in-docker-by-running-the-container&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sun, 09 May 2021 00:00:00 -0500</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/nuget/docker/2021/05/09/nuget-release-container.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/nuget/docker/2021/05/09/nuget-release-container.html</guid>
+			</item>
+		
+			<item>
 				<title>ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -2248,27 +2403,6 @@ Reading...
 				<pubDate>Fri, 24 Apr 2020 00:00:00 -0500</pubDate>
 				<link>https://nikiforovall.github.io/dotnet-core/2020/04/24/catch-dotnetcore-piepelines.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet-core/2020/04/24/catch-dotnetcore-piepelines.html</guid>
-			</item>
-		
-			<item>
-				<title>Sorting algorithms with C# 8, Span{T} and Try .NET</title>
-				<description>&lt;p&gt;I would like to share with you something fun. The right way to write interactive documentation - &lt;a href=&quot;https://github.com/dotnet/try&quot;&gt;Try .NET&lt;/a&gt;. It is an awesome project maintained by Microsoft. It allows you to embed C# code inside your markdown documentation and run it locally. The absolute best way to learn it is to use it. So I encourage you to fork &lt;a href=&quot;https://github.com/NikiforovAll/intro-to-algorithms&quot;&gt;https://github.com/NikiforovAll/intro-to-algorithms&lt;/a&gt; and play with it.&lt;/p&gt;
-
-&lt;p&gt;All you need to do is to navigate to root directory and run:&lt;/p&gt;
-
-&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;go&quot;&gt;dotnet tool install -g dotnet-try
-dotnet try
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;On the demo below you can find implementation of standard sorting algorithms with C# 8 and &lt;code class=&quot;highlighter-rouge&quot;&gt;Span&amp;lt;T&amp;gt;&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/try-dotnet-and-sorting/demo.gif&quot; alt=&quot;demo&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Non-interactive version: &lt;a href=&quot;https://github.com/NikiforovAll/intro-to-algorithms/blob/master/docs/Sorting.md&quot;&gt;https://github.com/NikiforovAll/intro-to-algorithms/blob/master/docs/Sorting.md&lt;/a&gt;&lt;/p&gt;
-</description>
-				<pubDate>Wed, 15 Apr 2020 00:00:00 -0500</pubDate>
-				<link>https://nikiforovall.github.io/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html</guid>
 			</item>
 		
 	</channel>
