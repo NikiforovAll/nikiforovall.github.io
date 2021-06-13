@@ -2,7 +2,7 @@
 layout: post
 title: Design Patterns. Creational Patterns. Part II.
 categories: [general]
-tags: [.NET, design-patterns]
+tags: [dotnet, csharp, design-patterns]
 fullview: false
 published: false
 comments: true
