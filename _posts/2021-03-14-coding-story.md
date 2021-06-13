@@ -1,8 +1,8 @@
 ---
 layout: post
 title: Advance the practical side of your coding skills with CodingStories
-categories: [  engx, coding-stories ]
-tags: [ engx, coding-stories ]
+categories: [  dotnet, coding-stories ]
+tags: [ dotnet, engx, coding-stories ]
 published: true
 shortinfo: In this blog post, I share my experience of writing a coding story and give you instructions on how to get started.
 fullview: false

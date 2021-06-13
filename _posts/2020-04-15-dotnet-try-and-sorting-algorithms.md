@@ -2,7 +2,7 @@
 layout: post
 title: "Sorting algorithms with C# 8, Span{T} and Try .NET"
 categories: [ algorithms ]
-tags: [ dotnet-try, algorithms, csharp8 ]
+tags: [ dotnet, dotnet-try, algorithms, csharp8 ]
 fullview: false
 published: true
 comments: true

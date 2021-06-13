@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>How to add OpenAPI to ASP.NET Core project. A coding story.</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				n+1 IT blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">n+1 IT blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>How to add OpenAPI to ASP.NET Core project. A coding story. </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			June
+			13th,
+			
+			2021
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/coding-stories/2021/03/14/coding-story.html">Advance the practical side of your coding skills with CodingStories <span class="label label-default">dotnet</span>  <span class="label label-default">engx</span>  <span class="label label-default">coding-stories</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>OpenAPI is de facto standard that you should use to increase explorability of your ASP.NET Core projects.</p>
+
+<hr />
+
+<p>Previously, I’ve <a href="https://nikiforovall.github.io/engx/coding-stories/2021/03/14/coding-story.html">shared with</a> you (<a href="https://codingstories.io/">https://codingstories.io/</a>) - a tool to share real programming experience and step-by-step guides. In this blog post, I want to share a coding story that describes the process of adding OpenAPI support to a ASP.NET Core project.</p>
+
+<p><img src="/assets/add-openapi/copding-story-openapi-banner.png" alt="openapi-banner" /></p>
+
+<p>Please see: <a href="https://codingstories.io/story/https%3A%2F%2Fgitlab.com%2FNikiforovAll%2Fhow-to-add-openapi-to-aspnetcore">https://codingstories.io/story/https%3A%2F%2Fgitlab.com%2FNikiforovAll%2Fhow-to-add-openapi-to-aspnetcore</a>.</p>
+
+<h3 id="the-result">The result</h3>
+
+<p>By the end of the coding story, you will see something like following:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Startup</span>
+<span class="p">{</span>
+   <span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="n">services</span><span class="p">.</span><span class="nf">AddControllers</span><span class="p">();</span>
+      <span class="n">services</span><span class="p">.</span><span class="nf">AddApiVersioning</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+      <span class="p">{</span>
+            <span class="n">options</span><span class="p">.</span><span class="n">ReportApiVersions</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+            <span class="n">options</span><span class="p">.</span><span class="n">DefaultApiVersion</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ApiVersion</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="m">0</span><span class="p">);</span>
+            <span class="n">options</span><span class="p">.</span><span class="n">AssumeDefaultVersionWhenUnspecified</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+      <span class="p">});</span>
+      <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+      <span class="p">{</span>
+            <span class="n">options</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span> <span class="k">new</span> <span class="nf">OpenApiInfo</span><span class="p">()</span>
+            <span class="p">{</span>
+               <span class="n">Title</span> <span class="p">=</span> <span class="s">"Sample API"</span><span class="p">,</span>
+               <span class="n">Version</span> <span class="p">=</span> <span class="s">"v1"</span><span class="p">,</span>
+               <span class="n">Description</span> <span class="p">=</span> <span class="s">"A sample application with Swagger, Swashbuckle, and API versioning."</span><span class="p">,</span>
+               <span class="n">Contact</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">OpenApiContact</span><span class="p">()</span> <span class="p">{</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Sample User"</span><span class="p">,</span> <span class="n">Email</span> <span class="p">=</span> <span class="s">"sample@user.com"</span> <span class="p">},</span>
+               <span class="n">License</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">OpenApiLicense</span><span class="p">()</span> <span class="p">{</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"MIT"</span><span class="p">,</span> <span class="n">Url</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="s">"https://opensource.org/licenses/MIT"</span><span class="p">)</span> <span class="p">}</span>
+            <span class="p">});</span>
+
+            <span class="n">options</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v2"</span><span class="p">,</span> <span class="k">new</span> <span class="nf">OpenApiInfo</span><span class="p">()</span>
+            <span class="p">{</span>
+               <span class="n">Title</span> <span class="p">=</span> <span class="s">"Sample API"</span><span class="p">,</span>
+               <span class="n">Version</span> <span class="p">=</span> <span class="s">"v2"</span><span class="p">,</span>
+               <span class="n">Description</span> <span class="p">=</span> <span class="s">"A sample application with Swagger, Swashbuckle, and API versioning."</span><span class="p">,</span>
+               <span class="n">Contact</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">OpenApiContact</span><span class="p">()</span> <span class="p">{</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"Sample User"</span><span class="p">,</span> <span class="n">Email</span> <span class="p">=</span> <span class="s">"sample@user.com"</span> <span class="p">},</span>
+               <span class="n">License</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">OpenApiLicense</span><span class="p">()</span> <span class="p">{</span> <span class="n">Name</span> <span class="p">=</span> <span class="s">"MIT"</span><span class="p">,</span> <span class="n">Url</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="s">"https://opensource.org/licenses/MIT"</span><span class="p">)</span> <span class="p">}</span>
+            <span class="p">});</span>
+
+            <span class="n">options</span><span class="p">.</span><span class="n">OperationFilter</span><span class="p">&lt;</span><span class="n">SwaggerDefaultValues</span><span class="p">&gt;();</span>
+
+      <span class="p">});</span>
+      <span class="n">services</span><span class="p">.</span><span class="nf">AddVersionedApiExplorer</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+      <span class="p">{</span>
+            <span class="c1">// Add the versioned api explorer, which also adds IApiVersionDescriptionProvider service</span>
+            <span class="c1">// Note: the specified format code will format the version as "'v'major[.minor][-status]"</span>
+            <span class="n">options</span><span class="p">.</span><span class="n">GroupNameFormat</span> <span class="p">=</span> <span class="s">"'v'VVV"</span><span class="p">;</span>
+      <span class="p">});</span>
+   <span class="p">}</span>
+
+   <span class="k">public</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span>
+      <span class="n">IApplicationBuilder</span> <span class="n">app</span><span class="p">,</span>
+      <span class="n">IWebHostEnvironment</span> <span class="n">env</span><span class="p">,</span>
+      <span class="n">IApiVersionDescriptionProvider</span> <span class="n">apiVersionDescriptionProvider</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">env</span><span class="p">.</span><span class="nf">IsDevelopment</span><span class="p">())</span>
+      <span class="p">{</span>
+            <span class="n">app</span><span class="p">.</span><span class="nf">UseDeveloperExceptionPage</span><span class="p">();</span>
+      <span class="p">}</span>
+
+      <span class="n">app</span><span class="p">.</span><span class="nf">UseRouting</span><span class="p">();</span>
+
+      <span class="n">app</span><span class="p">.</span><span class="nf">UseEndpoints</span><span class="p">(</span><span class="n">endpoints</span> <span class="p">=&gt;</span> <span class="n">endpoints</span><span class="p">.</span><span class="nf">MapControllers</span><span class="p">());</span>
+      <span class="n">app</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">();</span>
+      <span class="n">app</span><span class="p">.</span><span class="nf">UseSwaggerUI</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+      <span class="p">{</span>
+            <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">description</span> <span class="k">in</span> <span class="n">apiVersionDescriptionProvider</span><span class="p">.</span><span class="n">ApiVersionDescriptions</span><span class="p">.</span><span class="nf">Reverse</span><span class="p">())</span>
+            <span class="p">{</span>
+               <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerEndpoint</span><span class="p">(</span><span class="s">$"/swagger/</span><span class="p">{</span><span class="n">description</span><span class="p">.</span><span class="n">GroupName</span><span class="p">}</span><span class="s">/swagger.json"</span><span class="p">,</span>
+                  <span class="n">description</span><span class="p">.</span><span class="n">GroupName</span><span class="p">.</span><span class="nf">ToUpperInvariant</span><span class="p">());</span>
+            <span class="p">}</span>
+            <span class="n">c</span><span class="p">.</span><span class="n">RoutePrefix</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+      <span class="p">});</span>
+   <span class="p">}</span>
+
+   <span class="k">static</span> <span class="kt">string</span> <span class="n">XmlCommentsFilePath</span>
+   <span class="p">{</span>
+      <span class="k">get</span>
+      <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">basePath</span> <span class="p">=</span> <span class="n">PlatformServices</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">Application</span><span class="p">.</span><span class="n">ApplicationBasePath</span><span class="p">;</span>
+            <span class="kt">var</span> <span class="n">fileName</span> <span class="p">=</span> <span class="k">typeof</span><span class="p">(</span><span class="n">Startup</span><span class="p">).</span><span class="nf">GetTypeInfo</span><span class="p">().</span><span class="n">Assembly</span><span class="p">.</span><span class="nf">GetName</span><span class="p">().</span><span class="n">Name</span> <span class="p">+</span> <span class="s">".xml"</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">Path</span><span class="p">.</span><span class="nf">Combine</span><span class="p">(</span><span class="n">basePath</span><span class="p">,</span> <span class="n">fileName</span><span class="p">);</span>
+      <span class="p">}</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<p>Please let me know what you think about this coding story. A feedback is very much appreciated 👍.</p>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger">https://docs.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger</a></li>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle">https://docs.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle</a></li>
+  <li><a href="https://github.com/microsoft/aspnet-api-versioning/tree/master/samples/aspnetcore">https://github.com/microsoft/aspnet-api-versioning/tree/master/samples/aspnetcore</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(7)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspnetcore-ref">
+				aspnetcore <span>(2)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#coding-stories-ref">
+				coding-stories <span>(2)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(12)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#openapi-ref">
+				openapi <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#coding-stories-ref">
+				coding-stories <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#engx-ref">
+				engx <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#csharp-ref">
+				csharp <span>(3)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=How to add OpenAPI to ASP.NET Core project. A coding story.&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/cli/2021/06/06/clean-cli.html" title="Develop Clean Command Line Applications with System.CommandLine. Clean CLI.">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2021 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+

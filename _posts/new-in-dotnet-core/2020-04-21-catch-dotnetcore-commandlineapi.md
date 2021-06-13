@@ -1,8 +1,8 @@
 ---
 layout: post
 title: Catch up with .NET Core - System.CommandLine;
-categories: [dotnet-core]
-tags: [.NET, dotnet-core-modern-api]
+categories: [dotnet]
+tags: [dotnet, dotnet-core-modern-api]
 # shortinfo: Overview of behavioral patterns with Try.NET
 fullview: false
 published: false
