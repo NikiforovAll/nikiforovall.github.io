@@ -16,13 +16,13 @@ OpenAPI is de facto standard that you should use to increase explorability of yo
 
 ---
 
-Previously, I've [shared with](https://nikiforovall.github.io/engx/coding-stories/2021/03/14/coding-story.html) you (<https://codingstories.io/>) - a tool to share real programming experience and step-by-step guides. In this blog post, I want to share a coding story that describes the process of adding OpenAPI support to a ASP.NET Core project.
+Previously, I [blogged about](https://nikiforovall.github.io/dotnet/coding-stories/2021/03/14/coding-story.html) the tool <https://codingstories.io/> to share step-by-step guides and real programming experience in general. In this blog post, I you will find a coding story that describes the process of adding OpenAPI support to a ASP.NET Core project.
+
+OpenAPI is great and you should definitely consider it. From this point, please navigate to the actual coding story [how-to-add-openapi-to-aspnetcore](https://codingstories.io/story/https%3A%2F%2Fgitlab.com%2FNikiforovAll%2Fhow-to-add-openapi-to-aspnetcore), it is supposed to be self-contained and easy to understand. I'll see you there!
 
 ![openapi-banner](/assets/add-openapi/copding-story-openapi-banner.png)
 
-Please see: <https://codingstories.io/story/https%3A%2F%2Fgitlab.com%2FNikiforovAll%2Fhow-to-add-openapi-to-aspnetcore>.
-
-### The result
+### Sneak peek the result
 
 By the end of the coding story, you will see something like following:
 
