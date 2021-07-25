@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>How to add Health Checks to ASP.NET Core project. A coding story.</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				n+1 IT blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">n+1 IT blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>How to add Health Checks to ASP.NET Core project. A coding story. </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			July
+			25th,
+			
+			2021
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html">How to add OpenAPI to ASP.NET Core project. A coding story. <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">coding-stories</span>  <span class="label label-default">engx</span>  <span class="label label-default">csharp</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/coding-stories/2021/03/14/coding-story.html">Advance the practical side of your coding skills with CodingStories <span class="label label-default">dotnet</span>  <span class="label label-default">engx</span>  <span class="label label-default">coding-stories</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Health checks are valuable and it is pretty straightforward to use them in ASP.NET Core. I’ve created a coding story to show you how to add and use them in different scenarios. (database, rabbitmq, downstream services).</p>
+
+<hr />
+
+<p>Observability of the system is crucial for successful maintenance and monitoring. Health checks help you with that!</p>
+
+<p>Below, you can find a coding story that describes the process of adding health checks support to ASP.NET Core project.</p>
+
+<blockquote>
+  <p>https://codingstories.io/story/https:%2F%2Fgitlab.com%2FNikiforovAll%2Fhow-to-add-health-checks-to-aspnetcore</p>
+</blockquote>
+
+<p><img src="/assets/add-health-check/healh-checks-coding-story.png" alt="healthchecks-banner" /></p>
+
+<h3 id="sneak-peek-the-result">Sneak peek the result</h3>
+
+<p>By the end of the coding story, you will see something like the following:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">Startup</span>
+<span class="p">{</span>
+   <span class="k">public</span> <span class="n">IConfiguration</span> <span class="n">Configuration</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+   <span class="k">public</span> <span class="nf">Startup</span><span class="p">(</span><span class="n">IConfiguration</span> <span class="n">configuration</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="k">this</span><span class="p">.</span><span class="n">Configuration</span> <span class="p">=</span> <span class="n">configuration</span><span class="p">;</span>
+   <span class="p">}</span>
+
+   <span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="kt">var</span> <span class="n">connectionString</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">GetConnectionString</span><span class="p">(</span><span class="s">"DefaultConnection"</span><span class="p">);</span>
+      <span class="kt">var</span> <span class="n">rabbitMqConnectionString</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">GetConnectionString</span><span class="p">(</span><span class="s">"RabbitMQ"</span><span class="p">);</span>
+      <span class="kt">var</span> <span class="n">downstreamServiceUrl</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">Configuration</span><span class="p">[</span><span class="s">"DownstreamService:BaseUrl"</span><span class="p">];</span>
+      <span class="n">services</span><span class="p">.</span><span class="nf">AddHealthChecks</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddSqlServer</span><span class="p">(</span>
+               <span class="n">connectionString</span><span class="p">,</span>
+               <span class="n">name</span><span class="p">:</span> <span class="s">"Database"</span><span class="p">,</span>
+               <span class="n">failureStatus</span><span class="p">:</span> <span class="n">HealthStatus</span><span class="p">.</span><span class="n">Degraded</span><span class="p">,</span>
+               <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="m">1</span><span class="p">),</span>
+               <span class="n">tags</span><span class="p">:</span> <span class="k">new</span> <span class="kt">string</span><span class="p">[]</span> <span class="p">{</span> <span class="s">"services"</span> <span class="p">})</span>
+            <span class="p">.</span><span class="nf">AddRabbitMQ</span><span class="p">(</span>
+               <span class="n">rabbitMqConnectionString</span><span class="p">,</span>
+               <span class="n">name</span><span class="p">:</span> <span class="s">"RabbitMQ"</span><span class="p">,</span>
+               <span class="n">failureStatus</span><span class="p">:</span> <span class="n">HealthStatus</span><span class="p">.</span><span class="n">Degraded</span><span class="p">,</span>
+               <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="m">1</span><span class="p">),</span>
+               <span class="n">tags</span><span class="p">:</span> <span class="k">new</span> <span class="kt">string</span><span class="p">[]</span> <span class="p">{</span> <span class="s">"services"</span> <span class="p">})</span>
+            <span class="p">.</span><span class="nf">AddUrlGroup</span><span class="p">(</span>
+               <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">downstreamServiceUrl</span><span class="p">}</span><span class="s">/health"</span><span class="p">),</span>
+               <span class="n">name</span><span class="p">:</span> <span class="s">"Downstream API Health Check"</span><span class="p">,</span>
+               <span class="n">failureStatus</span><span class="p">:</span> <span class="n">HealthStatus</span><span class="p">.</span><span class="n">Unhealthy</span><span class="p">,</span>
+               <span class="n">timeout</span><span class="p">:</span> <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="m">3</span><span class="p">),</span>
+               <span class="n">tags</span><span class="p">:</span> <span class="k">new</span> <span class="kt">string</span><span class="p">[]</span> <span class="p">{</span> <span class="s">"services"</span> <span class="p">});</span>
+   <span class="p">}</span>
+
+   <span class="k">public</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span><span class="n">IApplicationBuilder</span> <span class="n">app</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="n">app</span><span class="p">.</span><span class="nf">UseRouting</span><span class="p">();</span>
+
+      <span class="n">app</span><span class="p">.</span><span class="nf">UseEndpoints</span><span class="p">(</span><span class="n">endpoints</span> <span class="p">=&gt;</span>
+      <span class="p">{</span>
+            <span class="n">endpoints</span><span class="p">.</span><span class="nf">MapCustomHealthCheck</span><span class="p">();</span>
+
+            <span class="n">endpoints</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/{**path}"</span><span class="p">,</span> <span class="k">async</span> <span class="n">context</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+               <span class="k">await</span> <span class="n">context</span><span class="p">.</span><span class="n">Response</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span>
+                  <span class="s">"Navigate to /health to see the health status."</span><span class="p">);</span>
+            <span class="p">});</span>
+      <span class="p">});</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">EndpointRouteBuilderExtensions</span>
+<span class="p">{</span>
+   <span class="c1">/// &lt;summary&gt;</span>
+   <span class="c1">/// Adds a Health Check endpoint to the &lt;see cref="IEndpointRouteBuilder"/&gt; with the specified template.</span>
+   <span class="c1">/// &lt;/summary&gt;</span>
+   <span class="c1">/// &lt;param name="endpoints"&gt;The &lt;see cref="IEndpointRouteBuilder"/&gt; to add endpoint to.&lt;/param&gt;</span>
+   <span class="c1">/// &lt;param name="pattern"&gt;The URL pattern of the liveness endpoint.&lt;/param&gt;</span>
+   <span class="c1">/// &lt;param name="servicesPattern"&gt;The URL pattern of the readiness endpoint.&lt;/param&gt;</span>
+   <span class="c1">/// &lt;returns&gt;A route for the endpoint.&lt;/returns&gt;</span>
+   <span class="k">public</span> <span class="k">static</span> <span class="n">IEndpointRouteBuilder</span> <span class="nf">MapCustomHealthCheck</span><span class="p">(</span>
+      <span class="k">this</span> <span class="n">IEndpointRouteBuilder</span> <span class="n">endpoints</span><span class="p">,</span>
+      <span class="kt">string</span> <span class="n">pattern</span> <span class="p">=</span> <span class="s">"/health"</span><span class="p">,</span>
+      <span class="kt">string</span> <span class="n">servicesPattern</span> <span class="p">=</span> <span class="s">"/health/ready"</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">endpoints</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+      <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">ArgumentNullException</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">endpoints</span><span class="p">));</span>
+      <span class="p">}</span>
+
+      <span class="n">endpoints</span><span class="p">.</span><span class="nf">MapHealthChecks</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="k">new</span> <span class="nf">HealthCheckOptions</span><span class="p">()</span>
+      <span class="p">{</span>
+            <span class="n">Predicate</span> <span class="p">=</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">!</span><span class="n">check</span><span class="p">.</span><span class="n">Tags</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="s">"services"</span><span class="p">),</span>
+            <span class="n">AllowCachingResponses</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
+            <span class="n">ResponseWriter</span> <span class="p">=</span> <span class="n">WriteResponse</span><span class="p">,</span>
+      <span class="p">});</span>
+      <span class="n">endpoints</span><span class="p">.</span><span class="nf">MapHealthChecks</span><span class="p">(</span><span class="n">servicesPattern</span><span class="p">,</span> <span class="k">new</span> <span class="nf">HealthCheckOptions</span><span class="p">()</span>
+      <span class="p">{</span>
+            <span class="n">Predicate</span> <span class="p">=</span> <span class="p">(</span><span class="n">check</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="k">true</span><span class="p">,</span>
+            <span class="n">AllowCachingResponses</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
+            <span class="n">ResponseWriter</span> <span class="p">=</span> <span class="n">WriteResponse</span><span class="p">,</span>
+      <span class="p">});</span>
+
+      <span class="k">return</span> <span class="n">endpoints</span><span class="p">;</span>
+   <span class="p">}</span>
+
+   <span class="k">private</span> <span class="k">static</span> <span class="n">Task</span> <span class="nf">WriteResponse</span><span class="p">(</span><span class="n">HttpContext</span> <span class="n">context</span><span class="p">,</span> <span class="n">HealthReport</span> <span class="n">result</span><span class="p">)</span>
+   <span class="p">{</span>
+      <span class="n">context</span><span class="p">.</span><span class="n">Response</span><span class="p">.</span><span class="n">ContentType</span> <span class="p">=</span> <span class="s">"application/json; charset=utf-8"</span><span class="p">;</span>
+
+      <span class="kt">var</span> <span class="n">options</span> <span class="p">=</span> <span class="k">new</span> <span class="n">JsonWriterOptions</span>
+      <span class="p">{</span>
+            <span class="n">Indented</span> <span class="p">=</span> <span class="k">true</span>
+      <span class="p">};</span>
+
+      <span class="k">using</span> <span class="nn">var</span> <span class="n">stream</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MemoryStream</span><span class="p">();</span>
+      <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">writer</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Utf8JsonWriter</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">options</span><span class="p">))</span>
+      <span class="p">{</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">WriteStartObject</span><span class="p">();</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">Status</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">WriteStartObject</span><span class="p">(</span><span class="s">"results"</span><span class="p">);</span>
+            <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">entry</span> <span class="k">in</span> <span class="n">result</span><span class="p">.</span><span class="n">Entries</span><span class="p">)</span>
+            <span class="p">{</span>
+               <span class="n">writer</span><span class="p">.</span><span class="nf">WriteStartObject</span><span class="p">(</span><span class="n">entry</span><span class="p">.</span><span class="n">Key</span><span class="p">);</span>
+               <span class="n">writer</span><span class="p">.</span><span class="nf">WriteString</span><span class="p">(</span><span class="s">"status"</span><span class="p">,</span> <span class="n">entry</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">Status</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+               <span class="n">writer</span><span class="p">.</span><span class="nf">WriteEndObject</span><span class="p">();</span>
+            <span class="p">}</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">WriteEndObject</span><span class="p">();</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">WriteEndObject</span><span class="p">();</span>
+      <span class="p">}</span>
+
+      <span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetString</span><span class="p">(</span><span class="n">stream</span><span class="p">.</span><span class="nf">ToArray</span><span class="p">());</span>
+
+      <span class="k">return</span> <span class="n">context</span><span class="p">.</span><span class="n">Response</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="n">json</span><span class="p">);</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<hr />
+
+<p>Please let me know what you think about this coding story. Feedback is very much appreciated 👍.</p>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks">https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks</a></li>
+  <li><a href="https://gitlab.com/NikiforovAll/how-to-add-health-checks-to-aspnetcore">https://gitlab.com/NikiforovAll/how-to-add-health-checks-to-aspnetcore</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(8)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspnetcore-ref">
+				aspnetcore <span>(3)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#coding-stories-ref">
+				coding-stories <span>(3)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(13)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#healthchecks-ref">
+				healthchecks <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#coding-stories-ref">
+				coding-stories <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#engx-ref">
+				engx <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#csharp-ref">
+				csharp <span>(4)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=How to add Health Checks to ASP.NET Core project. A coding story.&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html" title="How to add OpenAPI to ASP.NET Core project. A coding story.">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2021 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
