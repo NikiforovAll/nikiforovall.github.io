@@ -34,11 +34,9 @@ One of the problems with Minimal API is that `Program.cs` can get to big. So ini
 
 ### Coding Story: Building Minimal API
 
-I've prepared a coding story for you so you can see how to build Minimal API step-by-step. I strongly recommend checking it before you move further.
+I've prepared a demo application. I strongly recommend checking it before you move further.
 
 Source code can be found at GitHub: [NikiforovAll/minimal-api-example](https://github.com/NikiforovAll/minimal-api-example)
-
-> https://codingstories.io/story/https%3A%2F%2Fgitlab.com%2FNikiforovAll%2Fmodular-minimal-api
 
 ![minimal-api-banner](/assets/minimal-api/minimal-api-blogpost-cover.png)
 
