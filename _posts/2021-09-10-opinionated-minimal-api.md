@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Opinionated look at Minimal API in .NET 6
+title: An opinionated look at Minimal API in .NET 6
 categories: [  dotnet, aspnetcore ]
 tags: [ dotnet, aspnetcore, minimal-api, coding-stories ]
 published: true
@@ -230,7 +230,7 @@ Go check out Carter on GitHub, [give them a Star](https://github.com/CarterCommu
 
 ### High cohesion
 
-Modules approach goes well together with [Vertical Slice Architecture](https://jimmybogard.com/vertical-slice-architecture/). Simply start with `./Features` folder and keep related models, services, factories, etc. together.
+Modules go well together with [Vertical Slice Architecture](https://jimmybogard.com/vertical-slice-architecture/). Simply start with `./Features` folder and keep related models, services, factories, etc. together.
 
 ## Conclusion
 
