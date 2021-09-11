@@ -32,7 +32,7 @@ Presumably, this kind of style gives you a productivity boost and flattens the l
 
 One of the problems with Minimal API is that `Program.cs` can get to big. So initial simplicity may lead you to the [big ball of mud](https://en.wikipedia.org/wiki/Big_ball_of_mud) type of solution. At this point, you want to use refactoring techniques and my goal is to share some ideas on how to tackle emerging challenges.
 
-### Coding Story: Building Minimal API
+### Example: Building Minimal API
 
 I've prepared a demo application. I strongly recommend checking it before you move further.
 
