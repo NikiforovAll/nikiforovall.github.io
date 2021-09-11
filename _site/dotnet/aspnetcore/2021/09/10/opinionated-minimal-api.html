@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Opinionated look at Minimal API in .NET 6</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				n+1 IT blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">n+1 IT blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Opinionated look at Minimal API in .NET 6 </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			September
+			10th,
+			
+			2021
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/coding-stories/2021/07/25/add-health-checks-to-aspnetcore.html">How to add Health Checks to ASP.NET Core project. A coding story. <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">coding-stories</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html">How to add OpenAPI to ASP.NET Core project. A coding story. <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">coding-stories</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>In this blog post, I share my thoughts on how to organize Minimal API projects to keep code structure under control and still get benefits from the low-ceremony approach.</p>
+
+<hr />
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Minimal API is a refreshing and promising application model for building lightweight Web APIs. Now you can create a microservice and start prototyping without the necessity to create lots of boilerplate code and worrying about too much about code structure.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">Create</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="s">"Hello World!"</span><span class="p">);</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Presumably, this kind of style gives you a productivity boost and flattens the learning curve for newcomers. So it is considered as a more lightweight version, but using Minimal API doesn’t mean you have to write small applications. It is rather a different application model that one day will be as much powerful as MVC counterpart.</p>
+
+<h2 id="problem-statement">Problem Statement</h2>
+
+<p>One of the problems with Minimal API is that <code class="highlighter-rouge">Program.cs</code> can get to big. So initial simplicity may lead you to the <a href="https://en.wikipedia.org/wiki/Big_ball_of_mud">big ball of mud</a> type of solution. At this point, you want to use refactoring techniques and my goal is to share some ideas on how to tackle emerging challenges.</p>
+
+<h3 id="coding-story-building-minimal-api">Coding Story: Building Minimal API</h3>
+
+<p>I’ve prepared a coding story for you so you can see how to build Minimal API step-by-step. I strongly recommend checking it before you move further.</p>
+
+<p>Source code can be found at GitHub: <a href="https://github.com/NikiforovAll/minimal-api-example">NikiforovAll/minimal-api-example</a></p>
+
+<blockquote>
+  <p>https://codingstories.io/story/https%3A%2F%2Fgitlab.com%2FNikiforovAll%2Fmodular-minimal-api</p>
+</blockquote>
+
+<p><img src="/assets/minimal-api/minimal-api-blogpost-cover.png" alt="minimal-api-banner" /></p>
+
+<h2 id="recommendations">Recommendations</h2>
+
+<p>My general recommendation is to write something that may be called Modular Minimal API or Vertical Slice Minimal API.</p>
+
+<h3 id="keep-programcs-aka-composition-root-small">Keep Program.cs aka Composition Root small</h3>
+
+<p>A Composition Root is a unique location in an application where modules are composed together. You should have a good understanding of what this application is about just by looking at it.</p>
+
+<p>You want to keep Program.cs clean and focus on high-level modules.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddSerilog</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddSwagger</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddAuthentication</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddAuthorization</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddCors</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddStorage</span><span class="p">();</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddCarter</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+<span class="kt">var</span> <span class="n">environment</span> <span class="p">=</span> <span class="n">app</span><span class="p">.</span><span class="n">Environment</span><span class="p">;</span>
+
+<span class="n">app</span>
+    <span class="p">.</span><span class="nf">UseExceptionHandling</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">UseSwaggerEndpoints</span><span class="p">(</span><span class="n">routePrefix</span><span class="p">:</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">UseAppCors</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">UseAuthentication</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">UseAuthorization</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapCarter</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>💡Tip: One of the techniques you can apply here is to create extension methods for <code class="highlighter-rouge">IServiceCollection</code>, <code class="highlighter-rouge">IApplicationBuilder</code>. For Minimal API I would suggest using “file-per-concern” organization. See <em>ApplicationBuilderExtensions</em> and <em>ServiceCollectionExtensions</em> folders.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>tree
+<span class="nb">.</span>
+├── ApplicationBuilderExtensions
+│   ├── ApplicationBuilderExtensions.cs
+│   └── ApplicationBuilderExtensions.OpenAPI.cs
+├── assets
+│   └── run.http
+├── Features
+│   ├── HomeModule.cs
+│   └── TodosModule.cs
+├── GlobalUsing.cs
+├── MinimalAPI.csproj
+├── Program.cs
+├── Properties
+│   └── launchSettings.json
+├── ServiceCollectionExtensions
+│   ├── ServiceCollectionExtensions.Auth.cs
+│   ├── ServiceCollectionExtensions.Logging.cs
+│   ├── ServiceCollectionExtensions.OpenAPI.cs
+│   └── ServiceCollectionExtensions.Persistence.cs
+└── todos.db
+</code></pre></div></div>
+
+<p>And here is an example of how to add OpenAPI/Swagger concern:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nn">Microsoft.Extensions.DependencyInjection</span><span class="p">;</span>
+
+<span class="k">using</span> <span class="nn">Microsoft.OpenApi.Models</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">static</span> <span class="k">partial</span> <span class="k">class</span> <span class="nc">ServiceCollectionExtensions</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">WebApplicationBuilder</span> <span class="nf">AddSwagger</span><span class="p">(</span><span class="k">this</span> <span class="n">WebApplicationBuilder</span> <span class="n">builder</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddSwagger</span><span class="p">();</span>
+
+        <span class="k">return</span> <span class="n">builder</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="n">IServiceCollection</span> <span class="nf">AddSwagger</span><span class="p">(</span><span class="k">this</span> <span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">services</span><span class="p">.</span><span class="nf">AddEndpointsApiExplorer</span><span class="p">();</span>
+        <span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">c</span><span class="p">.</span><span class="nf">SwaggerDoc</span><span class="p">(</span><span class="s">"v1"</span><span class="p">,</span> <span class="k">new</span> <span class="nf">OpenApiInfo</span><span class="p">()</span>
+            <span class="p">{</span>
+                <span class="n">Description</span> <span class="p">=</span> <span class="s">"Minimal API Demo"</span><span class="p">,</span>
+                <span class="n">Title</span> <span class="p">=</span> <span class="s">"Minimal API Demo"</span><span class="p">,</span>
+                <span class="n">Version</span> <span class="p">=</span> <span class="s">"v1"</span><span class="p">,</span>
+                <span class="n">Contact</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">OpenApiContact</span><span class="p">()</span>
+                <span class="p">{</span>
+                    <span class="n">Name</span> <span class="p">=</span> <span class="s">"Oleksii Nikiforov"</span><span class="p">,</span>
+                    <span class="n">Url</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="s">"https://github.com/nikiforovall"</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">});</span>
+
+        <span class="k">return</span> <span class="n">services</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="organize-endpoints-around-features">Organize endpoints around features</h3>
+
+<p>A <a href="https://github.com/DamianEdwards/MinimalApiPlayground">MinimalApiPlayground</a> from Damian Edwards is a really good place to start learning more about Minimal API, but things start to get hairy (<a href="https://github.com/DamianEdwards/MinimalApiPlayground/blob/main/src/Todo.Dapper/Program.cs">https://github.com/DamianEdwards/MinimalApiPlayground/blob/main/src/Todo.Dapper/Program.cs</a>). Functionality by functionality you turn into a scrolling machine more and more - no good 😛. It means we need to organize code into manageable components/modules.</p>
+
+<p>Modular approach allows us to focus on cohesive units of functionality. Luckily, there is an awesome open source project - <a href="https://github.com/CarterCommunity/Carter">Carter</a>. It supports some essential missing features (Minimal API .NET 6) and one of them is module registration <code class="highlighter-rouge">ICarterModule</code>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nn">MinimalAPI</span><span class="p">;</span>
+
+<span class="k">using</span> <span class="nn">Dapper</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Microsoft.Data.Sqlite</span><span class="p">;</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">TodosModule</span> <span class="p">:</span> <span class="n">ICarterModule</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">AddRoutes</span><span class="p">(</span><span class="n">IEndpointRouteBuilder</span> <span class="n">app</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/api/todos"</span><span class="p">,</span> <span class="n">GetTodos</span><span class="p">);</span>
+        <span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/api/todos/{id}"</span><span class="p">,</span> <span class="n">GetTodo</span><span class="p">);</span>
+        <span class="n">app</span><span class="p">.</span><span class="nf">MapPost</span><span class="p">(</span><span class="s">"/api/todos"</span><span class="p">,</span> <span class="n">CreateTodo</span><span class="p">);</span>
+        <span class="n">app</span><span class="p">.</span><span class="nf">MapPut</span><span class="p">(</span><span class="s">"/api/todos/{id}/mark-complete"</span><span class="p">,</span> <span class="n">MarkComplete</span><span class="p">);</span>
+        <span class="n">app</span><span class="p">.</span><span class="nf">MapDelete</span><span class="p">(</span><span class="s">"/api/todos/{id}"</span><span class="p">,</span> <span class="n">DeleteTodo</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">private</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IResult</span><span class="p">&gt;</span> <span class="nf">GetTodo</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="n">SqliteConnection</span> <span class="n">db</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">QuerySingleOrDefaultAsync</span><span class="p">&lt;</span><span class="n">Todo</span><span class="p">&gt;(</span>
+            <span class="s">"SELECT * FROM Todos WHERE Id = @id"</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">id</span> <span class="p">})</span>
+            <span class="k">is</span> <span class="n">Todo</span> <span class="n">todo</span>
+                <span class="p">?</span> <span class="n">Results</span><span class="p">.</span><span class="nf">Ok</span><span class="p">(</span><span class="n">todo</span><span class="p">)</span>
+                <span class="p">:</span> <span class="n">Results</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">();</span>
+
+    <span class="k">private</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Todo</span><span class="p">&gt;&gt;</span> <span class="nf">GetTodos</span><span class="p">(</span><span class="n">SqliteConnection</span> <span class="n">db</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">QueryAsync</span><span class="p">&lt;</span><span class="n">Todo</span><span class="p">&gt;(</span><span class="s">"SELECT * FROM Todos"</span><span class="p">);</span>
+
+    <span class="k">private</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IResult</span><span class="p">&gt;</span> <span class="nf">CreateTodo</span><span class="p">(</span><span class="n">Todo</span> <span class="n">todo</span><span class="p">,</span> <span class="n">SqliteConnection</span> <span class="n">db</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">newTodo</span> <span class="p">=</span> <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">QuerySingleAsync</span><span class="p">&lt;</span><span class="n">Todo</span><span class="p">&gt;(</span>
+            <span class="s">"INSERT INTO Todos(Title, IsComplete) Values(@Title, @IsComplete) RETURNING * "</span><span class="p">,</span> <span class="n">todo</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">Results</span><span class="p">.</span><span class="nf">Created</span><span class="p">(</span><span class="s">$"/todos/</span><span class="p">{</span><span class="n">newTodo</span><span class="p">.</span><span class="n">Id</span><span class="p">}</span><span class="s">"</span><span class="p">,</span> <span class="n">newTodo</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">private</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IResult</span><span class="p">&gt;</span> <span class="nf">DeleteTodo</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="n">SqliteConnection</span> <span class="n">db</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="nf">ExecuteAsync</span><span class="p">(</span>
+            <span class="s">"DELETE FROM Todos WHERE Id = @id"</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">id</span> <span class="p">})</span> <span class="p">==</span> <span class="m">1</span>
+            <span class="p">?</span> <span class="n">Results</span><span class="p">.</span><span class="nf">NoContent</span><span class="p">()</span>
+            <span class="p">:</span> <span class="n">Results</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">();</span>
+    <span class="k">private</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IResult</span><span class="p">&gt;</span> <span class="nf">MarkComplete</span><span class="p">(</span><span class="kt">int</span> <span class="n">id</span><span class="p">,</span> <span class="n">SqliteConnection</span> <span class="n">db</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="nf">ExecuteAsync</span><span class="p">(</span>
+            <span class="s">"UPDATE Todos SET IsComplete = true WHERE Id = @Id"</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">Id</span> <span class="p">=</span> <span class="n">id</span> <span class="p">})</span> <span class="p">==</span> <span class="m">1</span>
+            <span class="p">?</span> <span class="n">Results</span><span class="p">.</span><span class="nf">NoContent</span><span class="p">()</span>
+            <span class="p">:</span> <span class="n">Results</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">Todo</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="kt">int</span> <span class="n">Id</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">string</span><span class="p">?</span> <span class="n">Title</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+    <span class="k">public</span> <span class="kt">bool</span> <span class="n">IsComplete</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>💡Tip: You can use <em>Method Group</em> (C#) instead of lambda expression to avoid formatting issues and keep code clean. Also, it provides automatic endpoint metadata <a href="https://github.com/dotnet/aspnetcore/issues/34540">aspnetcore#34540</a>, that’s cool.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// FROM</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/todos"</span><span class="p">,</span> <span class="k">async</span> <span class="p">(</span><span class="n">SqliteConnection</span> <span class="n">db</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">QueryAsync</span><span class="p">&lt;</span><span class="n">Todo</span><span class="p">&gt;(</span><span class="s">"SELECT * FROM Todos"</span><span class="p">));</span>
+
+<span class="c1">// TO</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/api/todos"</span><span class="p">,</span> <span class="n">GetTodos</span><span class="p">);</span>
+
+<span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Todo</span><span class="p">&gt;&gt;</span> <span class="nf">GetTodos</span><span class="p">(</span><span class="n">SqliteConnection</span> <span class="n">db</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">await</span> <span class="n">db</span><span class="p">.</span><span class="n">QueryAsync</span><span class="p">&lt;</span><span class="n">Todo</span><span class="p">&gt;(</span><span class="s">"SELECT * FROM Todos"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>To register modules you simply need to add two lines of code in <code class="highlighter-rouge">Program.cs</code>. Modules are registered based on assemblies scanning and added to DI automatically, <a href="https://github.com/CarterCommunity/Carter/blob/net6/src/Carter/CarterExtensions.cs">see</a>. You can go even further and split Carter modules into separate assemblies.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddCarter</span><span class="p">();</span>
+<span class="c1">// ...</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapCarter</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>I recommend you to enhance your Minimal APIs with <em>Carter</em> because it tries to close the gap between Minimal API and full-fledged ASP.NET MVC version. 
+Go check out Carter on GitHub, <a href="https://github.com/CarterCommunity/Carter">give them a Star</a>, try it out!</p>
+
+<h3 id="high-cohesion">High cohesion</h3>
+
+<p>Modules approach goes well together with <a href="https://jimmybogard.com/vertical-slice-architecture/">Vertical Slice Architecture</a>. Simply start with <code class="highlighter-rouge">./Features</code> folder and keep related models, services, factories, etc. together.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Minimal API does mean your application has to be small. In this blog post, I’ve shared some ideas on how to handle project complexity. Personally, I like this style and believe that one day Minimal API will be as much powerful as much ASP.NET MVC.</p>
+
+<hr />
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://www.hanselman.com/blog/carter-community-for-aspnet-core-means-enjoyable-web-apis-on-the-cutting-edge">https://www.hanselman.com/blog/carter-community-for-aspnet-core-means-enjoyable-web-apis-on-the-cutting-edge</a></li>
+  <li><a href="https://github.com/CarterCommunity/Carter">https://github.com/CarterCommunity/Carter</a></li>
+  <li><a href="https://github.com/AnthonyGiretti/aspnetcore-minimal-api">https://github.com/AnthonyGiretti/aspnetcore-minimal-api</a></li>
+  <li><a href="https://www.youtube.com/watch?v=4ORO-KOufeU&amp;ab_channel=NickChapsas">https://www.youtube.com/watch?v=4ORO-KOufeU&amp;ab_channel=NickChapsas</a></li>
+  <li><a href="https://www.youtube.com/watch?v=bSJ5n7alhTs&amp;ab_channel=dotNET">https://www.youtube.com/watch?v=bSJ5n7alhTs&amp;ab_channel=dotNET</a></li>
+  <li><a href="https://benfoster.io/blog/mvc-to-minimal-apis-aspnet-6/">https://benfoster.io/blog/mvc-to-minimal-apis-aspnet-6/</a></li>
+  <li><a href="https://blog.ploeh.dk/2011/07/28/CompositionRoot/">https://blog.ploeh.dk/2011/07/28/CompositionRoot/</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(9)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspnetcore-ref">
+				aspnetcore <span>(4)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(14)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(4)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#minimal-api-ref">
+				minimal-api <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#coding-stories-ref">
+				coding-stories <span>(4)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Opinionated look at Minimal API in .NET 6&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/aspnetcore/coding-stories/2021/07/25/add-health-checks-to-aspnetcore.html" title="How to add Health Checks to ASP.NET Core project. A coding story.">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2021 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
