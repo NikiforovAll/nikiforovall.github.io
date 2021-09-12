@@ -232,7 +232,7 @@ Modules go well together with [Vertical Slice Architecture](https://jimmybogard.
 
 ## Conclusion
 
-Minimal API does mean your application has to be small. In this blog post, I've shared some ideas on how to handle project complexity. Personally, I like this style and believe that one day Minimal API will be as much powerful as much ASP.NET MVC.
+Minimal API doesn't mean your application has to be small. In this blog post, I've shared some ideas on how to handle project complexity. Personally, I like this style and believe that one day Minimal API will be as much powerful as ASP.NET MVC.
 
 ---
 
