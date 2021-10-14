@@ -7,6 +7,167 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Try out .NET 6 inside your own development environment built with devcontainers, docker, and vscode</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;In this blog post, I provide an example of how to organize/dockerize your personal development setup. Also, you may want to use one of my devcontainers to try .NET 6. Everything is baked inside the devcontainer, so you don’t have to install SDK and other tooling on your host machine.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;As you may know, .NET 6 Release Candidate 2 has been &lt;a href=&quot;https://devblogs.microsoft.com/aspnet/asp-net-core-updates-in-net-6-rc-2/&quot;&gt;announced&lt;/a&gt; and it is very close to the final build of .NET 6 that will be shipped in November this year in time for &lt;a href=&quot;https://dotnetconf.net/&quot;&gt;.NET Conf 2021&lt;/a&gt;. It is the perfect time to start playing with .NET 5 and C# 10 and all of its goodness.&lt;/p&gt;
+
+&lt;p&gt;This is why I’ve created sandbox &lt;a href=&quot;https://github.com/NikiforovAll/devcontainer-for-dotnet6-demo&quot;&gt;https://github.com/NikiforovAll/devcontainer-for-dotnet6-demo&lt;/a&gt;. This is &lt;code class=&quot;highlighter-rouge&quot;&gt;dotnet new webapi -minimal&lt;/code&gt; packed inside devcontainer. So, all you need to do is to get the source code and compile the devcontainer. You can do it by downloading via VSCode URL launcher or clone via git. I suggest you go straight to &lt;a href=&quot;https://code.visualstudio.com/docs/remote/create-dev-container&quot;&gt;documentation&lt;/a&gt; for more details. My goal is to share my experience using devcontainers.&lt;/p&gt;
+
+&lt;p&gt;Here is how I do it:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/NikiforovAll/devcontainer-for-dotnet6-demo
+
+devcontainer open ./devcontainer-for-dotnet6-demo
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;💡 Tip: You can open repository in VSCode &lt;code class=&quot;highlighter-rouge&quot;&gt;code ./devcontainer-for-dotnet6-demo&lt;/code&gt; and after that, you will be prompted with a suggestion to reopen workspace in devcontainer (&lt;a href=&quot;https://code.visualstudio.com/docs/remote/devcontainer-cli#_opening-a-folder-directly-within-a-dev-container&quot;&gt;https://code.visualstudio.com/docs/remote/devcontainer-cli#_opening-a-folder-directly-within-a-dev-container&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;🚀 Run &lt;code class=&quot;highlighter-rouge&quot;&gt;dotnet run --project ./src/App/&lt;/code&gt; and enjoy your coding.&lt;/p&gt;
+
+&lt;h2 id=&quot;anatomy-of-devcontainers&quot;&gt;Anatomy of devcontainers&lt;/h2&gt;
+
+&lt;p&gt;When you generate configuration from VSCode, by default, it generates something like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;tree &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; 
+&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+└── .devcontainer
+    ├── devcontainer.json
+    ├── Dockerfile
+    └── library-scripts
+        └── azcli-debian.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Dockerfile&quot;&gt;# Dockerfile
+
+ARG VARIANT=&quot;5.0&quot;
+FROM mcr.microsoft.com/vscode/devcontainers/dotnet:0-${VARIANT}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-jsonc&quot;&gt;// .devcontainer/devcontainer.json
+
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.202.3/containers/dotnet
+{
+    &quot;name&quot;: &quot;&quot;,
+    &quot;build&quot;: {
+        &quot;dockerfile&quot;: &quot;Dockerfile&quot;,
+        &quot;args&quot;: { 
+            // Update 'VARIANT' to pick a .NET Core version: 2.1, 3.1, 5.0
+            &quot;VARIANT&quot;: &quot;5.0&quot;
+        }
+    },
+    // Set *default* container specific settings.json values on container create.
+    &quot;settings&quot;: {},
+    // Add the IDs of extensions you want installed when the container is created.
+    &quot;extensions&quot;: [
+    ],
+    &quot;remoteUser&quot;: &quot;vscode&quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;A &lt;em&gt;devcontainer.json&lt;/em&gt; file in your project tells VS Code how to access (or create) a development container with a well-defined tool and runtime stack. This container can be used to run an application or to separate tools, libraries, or runtimes needed for working with a codebase.&lt;/p&gt;
+
+&lt;p&gt;Everything you need is already added in the base docker image, but it is quite easy to extend it. You may want to pre-install some dependencies and tools in a custom Dockerfile.&lt;/p&gt;
+
+&lt;p&gt;💡Tip: You are not limited to using devcontainers for .NET 6 project, actually, you can use them pretty much for everything. For example, I’m writing this blog post from devcontainer 🙂.&lt;/p&gt;
+
+&lt;h2 id=&quot;distribute-devcontainers&quot;&gt;Distribute devcontainers&lt;/h2&gt;
+
+&lt;p&gt;Personally, I think it should be possible to easily explore the content of the devcontainer in order to change it on demand. This is why my go-to option is to create custom-tailored containers for each project based on some lightweight base images with shared tooling installed in them. For example, you might want to install something like: &lt;a href=&quot;https://github.com/rothgar/awesome-tuis&quot;&gt;https://github.com/rothgar/awesome-tuis&lt;/a&gt;, &lt;a href=&quot;https://github.com/unixorn/git-extra-commands&quot;&gt;https://github.com/unixorn/git-extra-commands&lt;/a&gt;, &lt;a href=&quot;https://github.com/junegunn/fzf&quot;&gt;https://github.com/junegunn/fzf&lt;/a&gt;, &lt;a href=&quot;https://github.com/sharkdp/fd&quot;&gt;https://github.com/sharkdp/fd&lt;/a&gt;, &lt;a href=&quot;https://github.com/ogham/exa&quot;&gt;https://github.com/ogham/exa&lt;/a&gt;, etc. 🤓&lt;/p&gt;
+
+&lt;p&gt;Here you can find my devcontainer for .NET:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Source: &lt;a href=&quot;https://github.com/NikiforovAll/dev-containers/tree/master/containers/dotnet&quot;&gt;https://github.com/NikiforovAll/dev-containers/tree/master/containers/dotnet&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;GitHub Container Registry &lt;a href=&quot;https://github.com/NikiforovAll/dev-containers/pkgs/container/devcontainers%2Fdotnet&quot;&gt;https://github.com/NikiforovAll/dev-containers/pkgs/container/devcontainers%2Fdotnet&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Docker Hub &lt;a href=&quot;https://hub.docker.com/repository/docker/nikiforovall/devcontainers-dotnet&quot;&gt;https://hub.docker.com/repository/docker/nikiforovall/devcontainers-dotnet&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;After that, you can install it directly from docker container registry by specifying “image” field inside &lt;code class=&quot;highlighter-rouge&quot;&gt;devcontainer.json&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Minimum devcontainer looks like this:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-jsonc&quot;&gt;{
+    &quot;name&quot;: &quot;.NET 6 devcontainer&quot;,
+    &quot;image&quot;: &quot;nikiforovall/devcontainers-dotnet:latest&quot;,
+    &quot;settings&quot;: {},
+    &quot;extensions&quot;: []
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;dotfiles&quot;&gt;Dotfiles&lt;/h2&gt;
+
+&lt;p&gt;You can also include your &lt;code class=&quot;highlighter-rouge&quot;&gt;dotfiles&lt;/code&gt; repository to replicate your terminal experience (configurations, aliases, customizations, tools, etc.). See user settings for the “Remote - Containers” extension.&lt;/p&gt;
+
+&lt;p&gt;Basically, you want to configure the remote git repository as the source of &lt;code class=&quot;highlighter-rouge&quot;&gt;dotfiles&lt;/code&gt; and tell vscode what to do upon installation. Here is my &lt;code class=&quot;highlighter-rouge&quot;&gt;dotfile&lt;/code&gt; for devcontainers: &lt;a href=&quot;https://github.com/NikiforovAll/dotfiles/blob/master/src/dev-container/boot/install.sh&quot;&gt;https://github.com/NikiforovAll/dotfiles/blob/master/src/dev-container/boot/install.sh&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-jsonc&quot;&gt;&quot;settings&quot;: {
+    &quot;dotfiles.installCommand&quot;: &quot;&quot;,
+    &quot;remote.containers.dotfiles.repository&quot;: &quot;https://github.com/NikiforovAll/dotfiles.git&quot;,
+    &quot;remote.containers.dotfiles.installCommand&quot;: &quot;~/dotfiles/src/dev-container/boot/install.sh&quot;,
+    &quot;remote.containers.dotfiles.targetPath&quot;: &quot;~/dotfiles&quot;,
+},
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&quot;anatomy---summary&quot;&gt;Anatomy - Summary&lt;/h3&gt;
+
+&lt;table class=&quot;table table-sm table-responsive table-striped table-hover&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th scope=&quot;col&quot;&gt;Name&lt;/th&gt;
+      &lt;th scope=&quot;col&quot;&gt;Description&lt;/th&gt;
+      &lt;th scope=&quot;col&quot;&gt;Responsibility&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;.devconatiner/devcontainer.json&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Workspace definition.&lt;/td&gt;
+      &lt;td&gt; Specify how to assemble devcontainer. Customize IDE (vscode) behavior.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;.devconatiner/Dockerfile&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Image for docker container.&lt;/td&gt;
+      &lt;td&gt;Install dependencies and tools. Configure defaults.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code&gt;dotfiles&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;External versioned source of configuration for developer environment.&lt;/td&gt;
+      &lt;td&gt;Customize the way your terminal looks and feels and developer experience in general.&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;I’ve explained to you the main building blocks of devcontainers and shared some ideas regarding how you may want to organize your development setup. Hope you find it useful.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;reference&quot;&gt;Reference&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/devcontainer-for-dotnet6-demo&quot;&gt;https://github.com/NikiforovAll/devcontainer-for-dotnet6-demo&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/docker/2020/09/19/publish-package-to-ghcr.html&quot;&gt;https://nikiforovall.github.io/docker/2020/09/19/publish-package-to-ghcr.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/productivity/2019/11/30/nikiforovall-setup.html&quot;&gt;https://nikiforovall.github.io/productivity/2019/11/30/nikiforovall-setup.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://devblogs.microsoft.com/aspnet/asp-net-core-updates-in-net-6-rc-2/&quot;&gt;https://devblogs.microsoft.com/aspnet/asp-net-core-updates-in-net-6-rc-2/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://code.visualstudio.com/docs/remote/create-dev-container&quot;&gt;https://code.visualstudio.com/docs/remote/create-dev-container&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://code.visualstudio.com/docs/remote/devcontainer-cli&quot;&gt;https://code.visualstudio.com/docs/remote/devcontainer-cli&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Thu, 14 Oct 2021 00:00:00 -0500</pubDate>
+				<link>https://nikiforovall.github.io/productivity/devcontainers/2021/10/14/devcontainer-for-dotnet6.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/productivity/devcontainers/2021/10/14/devcontainer-for-dotnet6.html</guid>
+			</item>
+		
+			<item>
 				<title>An opinionated look at Minimal API in .NET 6</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -2791,62 +2952,6 @@ lib
 				<pubDate>Tue, 20 Oct 2020 00:00:00 -0500</pubDate>
 				<link>https://nikiforovall.github.io/csharp/compcsi/dotnet/2020/10/20/awaitable-pattern.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/csharp/compcsi/dotnet/2020/10/20/awaitable-pattern.html</guid>
-			</item>
-		
-			<item>
-				<title>Publish images to GitHub Container Registry (ghcr)</title>
-				<description>&lt;p&gt;In this blog post, I would like to show you how easy is to publish your docker images to GitHub Container Registry. This topic is relevant because &lt;em&gt;Docker Hub&lt;/em&gt; has changed &lt;a href=&quot;https://www.docker.com/pricing/resource-consumption-updates&quot;&gt;retention limits&lt;/a&gt;, so might want to consider other players on the market.&lt;/p&gt;
-
-&lt;h4 id=&quot;tldr&quot;&gt;TL;DR&lt;/h4&gt;
-
-&lt;p&gt;To publish an image to ghcr:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Create a Personal Access Token&lt;/li&gt;
-  &lt;li&gt;Log-in to the container registry&lt;/li&gt;
-  &lt;li&gt;Push an image to &lt;code class=&quot;highlighter-rouge&quot;&gt;ghcr.io/GITHUB_USERNAME/IMAGE_NAME:VERSION&lt;/code&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;To access GitHub container registry you need to create Personal Access Token (PAT) on GitHub:&lt;/p&gt;
-
-&lt;p&gt;&lt;small&gt;“&lt;strong&gt;Settings &amp;gt; Developer Settings &amp;gt; Personal access tokens&lt;/strong&gt;” and create token with permissions related to “packages” (or &lt;a href=&quot;https://github.com/settings/tokens/new&quot;&gt;https://github.com/settings/tokens/new&lt;/a&gt;).&lt;/small&gt;&lt;/p&gt;
-
-&lt;p&gt;After that, you can login &lt;code class=&quot;highlighter-rouge&quot;&gt;export CR_PAT=YOUR_TOKEN ; echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Now, you want to tag your local images:&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker tag SOURCE_IMAGE_NAME:VERSION ghcr.io/TARGET_OWNER/TARGET_IMAGE_NAME:VERSION&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Push re-tagged imaged to the container registry (ghcr.io):&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;docker push ghcr.io/OWNER/IMAGE_NAME:VERSION&lt;/code&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;example&quot;&gt;Example&lt;/h3&gt;
-
-&lt;p&gt;I’ve pushed a containerized image of &lt;a href=&quot;https://github.com/filipw/dotnet-script&quot;&gt;dotnet-script&lt;/a&gt; to GitHub Registry, it allows you to run REPL-style prompt for C#.&lt;/p&gt;
-
-&lt;p&gt;For now, GitHub doesn’t provide search and discovery capabilities for images, but you already can find some UI to see image details from UI, if you know the name.&lt;/p&gt;
-
-&lt;p&gt;You can find packaged &lt;a href=&quot;https://github.com/filipw/dotnet-script&quot;&gt;dotnet-script&lt;/a&gt; here:&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/users/NikiforovAll/packages/container/package/dotnet-script&quot;&gt;https://github.com/users/NikiforovAll/packages/container/package/dotnet-script&lt;/a&gt;&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/ghcr.png&quot; alt=&quot;ghcr-example&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;🚀  Let’s download and run it:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;docker image pull ghcr.io/nikiforovall/dotnet-script:latest
-docker container run &lt;span class=&quot;nt&quot;&gt;--it&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; ghcr.io/nikiforovall/dotnet-script
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-</description>
-				<pubDate>Sat, 19 Sep 2020 00:00:00 -0500</pubDate>
-				<link>https://nikiforovall.github.io/docker/2020/09/19/publish-package-to-ghcr.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/docker/2020/09/19/publish-package-to-ghcr.html</guid>
 			</item>
 		
 	</channel>
