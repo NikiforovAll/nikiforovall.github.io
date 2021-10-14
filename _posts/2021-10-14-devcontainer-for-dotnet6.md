@@ -18,7 +18,7 @@ In this blog post, I provide an example of how to organize/dockerize your person
 
 ## Introduction
 
-As you may know, .NET 6 Release Candidate 2 has been [announced](https://devblogs.microsoft.com/aspnet/asp-net-core-updates-in-net-6-rc-2/) and it is very close to the final build of .NET 6 that will be shipped in November this year in time for [.NET Conf 2021](https://dotnetconf.net/). It is the perfect time to start playing with .NET 5 and C# 10 and all of its goodness.
+As you may know, .NET 6 Release Candidate 2 has been [announced](https://devblogs.microsoft.com/aspnet/asp-net-core-updates-in-net-6-rc-2/) and it is very close to the final build of .NET 6 that will be shipped in November this year in time for [.NET Conf 2021](https://dotnetconf.net/). It is the perfect time to start playing with .NET 6 and C# 10 and all of its goodness.
 
 This is why I've created sandbox <https://github.com/NikiforovAll/devcontainer-for-dotnet6-demo>. This is `dotnet new webapi -minimal` packed inside devcontainer. So, all you need to do is to get the source code and compile the devcontainer. You can do it by downloading via VSCode URL launcher or clone via git. I suggest you go straight to [documentation](https://code.visualstudio.com/docs/remote/create-dev-container) for more details. My goal is to share my experience using devcontainers.
 
