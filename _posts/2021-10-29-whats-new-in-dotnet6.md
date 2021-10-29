@@ -12,22 +12,20 @@ hide-related: false
 
 ## TL;DR
 
-This blog post is a compilation of latest and greatest additions from .NET 6 release. Also, I've created a coding story that will help you to learn new improvements.
+This blog post is a compilation of the latest and greatest additions from the .NET 6 release. Also, I've created a coding story that will help you to learn new improvements.
 
 ![minimal-api-banner](/assets/minimal-api/minimal-api-fun.png)
 
 ---
 
-Please check the coding story 👇:
+**Please check the coding story** 👇:
 
-> https://gitlab.com/NikiforovAll/whats-new-in-dotnet6
+> https://codingstories.io/stories/6139f4a2f2cd3d0031cd8ef1/617b06b5d2ec28001acfe618
 
-// TODO: add coding story print screen
-// replace source code to github
-
+![post-banner](/assets/whats-new-in-dotnet6-banner.png)
 Source code 👇:
 
-> https://gitlab.com/NikiforovAll/whats-new-in-dotnet6
+> https://github.com/NikiforovAll/whats-new-in-dotnet6
 
 Also, see my blog post. It explains how to run .NET 6 inside devcontainer: <https://nikiforovall.github.io/productivity/devcontainers/2021/10/14/devcontainer-for-dotnet6.html>
 
@@ -52,9 +50,9 @@ Also, see my blog post. It explains how to run .NET 6 inside devcontainer: <http
     - [Reference](#reference-6)
   - [DateOnly and TimeOnly](#dateonly-and-timeonly)
   - [System.Text.Json](#systemtextjson)
-  - [Summary](#summary)
+- [Summary](#summary)
 
-⚠👀 Please note that content below consist of excerpts from actual coding story. Please check the coding story if you haven't already.
+⚠👀 Please note that the content below consists of excerpts from the actual coding story. Please check the coding story if you haven't already.
 
 # Part 1. C# 10
 
@@ -225,6 +223,7 @@ info: Microsoft.Hosting.Lifetime[0]
 
 * Minimal APIs at a glance by davidfowl <https://gist.github.com/davidfowl/ff1addd02d239d2d26f4648a06158727>
 * Migration to ASP.NET Core in .NET 6 by davidfowl <https://gist.github.com/davidfowl/0e0372c3c1d895c3ce195ba983b1e03d>
+* <https://minimal-apis.github.io/>
 * <https://andrewlock.net/series/exploring-dotnet-6/>
 * <https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.webapplicationbuilder?view=aspnetcore-6.0>
 * <https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.builder.webapplication?view=aspnetcore-6.0>
@@ -308,7 +307,7 @@ foreach ((string i, string i2, float i3) in a1.Zip(a2, a3))
 ```
 
 ```bash
-Three way zipping
+Three-way zipping
 1-One-1
 2-Two-2
 3-Three-3
@@ -745,6 +744,6 @@ Order.Comments[0]: Cool
 }
 ```
 
-## Summary
+# Summary
 
-Thank you very much. I appreciate you coming this far 👍.
+Thank you very much. I hope you find this blog post useful 👍.
