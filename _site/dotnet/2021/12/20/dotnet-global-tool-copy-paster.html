@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				n+1 IT blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">n+1 IT blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster. </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			December
+			20th,
+			
+			2021
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Learn how to write a well-structured CLI application and pack it as a .NET tool.</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Previously, I wrote a <a href="https://nikiforovall.github.io/dotnet/cli/2021/06/06/clean-cli.html">blog post</a> that explains to you how to create something called “Clean CLI” - a combination of CLI application and Clean Architecture. This time I want to show you how to build .NET tool using the same techniques.</p>
+
+<p>The .NET CLI lets you create a console application as a tool, which others can install and run. .NET tools are NuGet packages that could be installed from the .NET CLI.</p>
+
+<p>A tool can be installed in the following ways:</p>
+
+<ul>
+  <li>As a global tool - The tool binaries are installed in a default directory that is added to the PATH environment variable.</li>
+  <li>As a local tool.</li>
+  <li>As a global tool in a custom location. The tool binaries are installed in a default directory. You invoke the tool from the installation directory or any of its subdirectories.</li>
+</ul>
+
+<h3 id="example-application---copy-paste-driven-development-with-copy-paster">Example application - Copy-paste-driven development with copy-paster</h3>
+
+<p>I like to optimize little things in my developer inner-loop. Lately, I found myself copying some code from GitHub over and over again. You may call me a copy-paste-driven development practitioner. I decided to write a tool to simplify efforts of downloading files from github - <a href="https://github.com/NikiforovAll/copy-paster">copy-paster</a> (<code class="highlighter-rouge">copa</code> for short). At first, it was a joke (<a href="https://twitter.com/nicodotgay/statuses/1458891554026930181">a meme</a> if you like), I just wanted to show you how to write a .NET tool by example, but now, I really use <code class="highlighter-rouge">copa</code> 😅.</p>
+
+<p>Usage:</p>
+
+<p><code class="highlighter-rouge">copa https://github.com/NikiforovAll/copy-paster/blob/main/LICENSE</code></p>
+
+<p>.NET tools can be found by running <code class="highlighter-rouge">dotnet tool search</code> or simply use <a href="https://nuget.org">https://nuget.org</a> (there is a filter for global tools).</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~<span class="se">\d</span>ev
+➜  dotnet tool search copy-paster
+Package ID                   Latest Version      Authors           Downloads      Verified
+<span class="nt">------------------------------------------------------------------------------------------</span>
+nikiforovall.copypaster      1.0.0               nikiforovall      0
+</code></pre></div></div>
+
+<p>Once discovered, a tool can be installed like this:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet tool <span class="nb">install</span> <span class="nt">--global</span> NikiforovAll.CopyPaster
+</code></pre></div></div>
+
+<h2 id="create-global-tool-">Create global tool 🔨</h2>
+
+<p>Let’s start off by creating simple console application.</p>
+
+<p><code class="highlighter-rouge">dotnet new console -n copy-paster</code></p>
+
+<p>Install main dependencies to build a .NET tool.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add package System.CommandLine <span class="c"># command line parsing and invocation</span>
+dotnet add package System.CommandLine.Hosting <span class="c"># Plug dependency injection container</span>
+dotnet add package Microsoft.Extensions.Hosting <span class="c"># Default DI container</span>
+dotnet add package Microsoft.Extensions.DependencyInjection.Abstractions
+dotnet add package Spectre.Console <span class="c"># Makes it easier to create beautiful console apps</span>
+</code></pre></div></div>
+
+<p>As mentioned, .NET tool is nothing but a console application packaged and distributed as a NuGet package. The only thing to do is to add special properties used by MSBuild to package .NET tools.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;Project</span> <span class="na">Sdk=</span><span class="s">"Microsoft.NET.Sdk"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;PropertyGroup&gt;</span>
+    <span class="nt">&lt;ToolCommandName&gt;</span>copa<span class="nt">&lt;/ToolCommandName&gt;</span>
+    <span class="nt">&lt;PackAsTool&gt;</span>True<span class="nt">&lt;/PackAsTool&gt;</span>
+    <span class="nt">&lt;OutputType&gt;</span>Exe<span class="nt">&lt;/OutputType&gt;</span>
+    <span class="nt">&lt;TargetFramework&gt;</span>net6<span class="nt">&lt;/TargetFramework&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+<span class="nt">&lt;/Project&gt;</span>
+</code></pre></div></div>
+
+<p>Application’s entry point looks like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">System.CommandLine</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.CommandLine.Builder</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.CommandLine.Hosting</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">System.CommandLine.Parsing</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Microsoft.Extensions.DependencyInjection</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">Microsoft.Extensions.Hosting</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">NikiforovAll.CopyPaster.Commands</span><span class="p">;</span>
+<span class="k">using</span> <span class="nn">NikiforovAll.CopyPaster.Services</span><span class="p">;</span>
+
+<span class="kt">var</span> <span class="n">runner</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CommandLineBuilder</span><span class="p">(</span><span class="k">new</span> <span class="nf">DownloadFromGithub</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">UseHost</span><span class="p">(</span><span class="n">_</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">HostBuilder</span><span class="p">(),</span> <span class="p">(</span><span class="n">builder</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">builder</span>
+        <span class="p">.</span><span class="nf">ConfigureServices</span><span class="p">((</span><span class="n">_</span><span class="p">,</span> <span class="n">services</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">services</span><span class="p">.</span><span class="n">AddHttpClient</span><span class="p">&lt;</span><span class="n">IGithubCodeDownloader</span><span class="p">,</span> <span class="n">GitHubCodeDownloader</span><span class="p">&gt;();</span>
+            <span class="n">services</span><span class="p">.</span><span class="nf">AddSingleton</span><span class="p">(</span><span class="k">new</span> <span class="nf">FileSaver</span><span class="p">());</span>
+        <span class="p">})</span>
+        <span class="p">.</span><span class="n">UseCommandHandler</span><span class="p">&lt;</span><span class="n">DownloadFromGithub</span><span class="p">,</span> <span class="n">DownloadFromGithub</span><span class="p">.</span><span class="n">Handler</span><span class="p">&gt;())</span>
+        <span class="p">.</span><span class="nf">UseDefaults</span><span class="p">().</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="k">await</span> <span class="n">runner</span><span class="p">.</span><span class="nf">InvokeAsync</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+</code></pre></div></div>
+
+<ol>
+  <li><code class="highlighter-rouge">System.CommandLine.Builder.CommandLineBuilder</code> is used to define CLI applications. It is responsible for the way your CLI looks and feels.</li>
+  <li><code class="highlighter-rouge">System.CommandLine.Hosting.HostingExtensions.UseHost</code> accepts <code class="highlighter-rouge">Microsoft.Extensions.Hosting.IHostBuilder</code> as input parameter and enables Dependency Injection configuration. For example, you can register an implementation of <code class="highlighter-rouge">System.CommandLine.Invocation.ICommandHandler</code> in DI container, so it will be automatically resolved from the DI container during command execution.</li>
+  <li><code class="highlighter-rouge">System.CommandLine.Hosting.UseCommandHandler</code> connects <code class="highlighter-rouge">System.CommandLine.Command</code> to <code class="highlighter-rouge">System.CommandLine.Invocation.ICommandHandler</code>.</li>
+  <li><code class="highlighter-rouge">CommandLineBuilder.Build()</code> returns <code class="highlighter-rouge">System.CommandLine.Parsing.Parser</code> that is used to parse arguments and to run the CLI application.</li>
+</ol>
+
+<p>The anatomy of command is pretty simple:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">DownloadFromGithub</span> <span class="p">:</span> <span class="n">RootCommand</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="nf">DownloadFromGithub</span><span class="p">()</span>
+        <span class="p">:</span> <span class="k">base</span><span class="p">(</span><span class="s">"Copies file by url"</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nf">AddArgument</span><span class="p">(</span><span class="k">new</span> <span class="n">Argument</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;(</span><span class="s">"url"</span><span class="p">,</span> <span class="s">"url"</span><span class="p">));</span>
+        <span class="k">this</span><span class="p">.</span><span class="nf">AddOption</span><span class="p">(</span><span class="k">new</span> <span class="n">Option</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;(</span>
+            <span class="k">new</span> <span class="kt">string</span><span class="p">[]</span> <span class="p">{</span> <span class="s">"--output"</span><span class="p">,</span> <span class="s">"-o"</span> <span class="p">},</span> <span class="s">"Output file path"</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">new</span> <span class="k">class</span> <span class="nc">Handler</span> <span class="p">:</span> <span class="n">ICommandHandler</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="kt">string</span><span class="p">?</span> <span class="n">Url</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+        <span class="k">public</span> <span class="kt">string</span><span class="p">?</span> <span class="n">Output</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+        <span class="k">public</span> <span class="nf">Handler</span><span class="p">(</span><span class="n">IGithubCodeDownloader</span> <span class="n">codeDownloader</span><span class="p">,</span> <span class="n">FileSaver</span> <span class="n">fileSaver</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//...</span>
+        <span class="p">}</span>
+        <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">InvokeAsync</span><span class="p">(</span><span class="n">InvocationContext</span> <span class="n">context</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">//...</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<ol>
+  <li>Arguments and options are registered in a declarative manner inside the constructor.</li>
+  <li>Every <code class="highlighter-rouge">System.CommandLine.Command</code> command contains associated handler with it. <code class="highlighter-rouge">public ICommandHandler? Handler {get; set;}</code> but in the DI scenario we want to let DI to do it for us. <code class="highlighter-rouge">ICommandHandler</code> can be declared anywhere in your project, but I prefer to locate it inside the <code class="highlighter-rouge">Command</code> declaration</li>
+  <li><code class="highlighter-rouge">ICommandHandler.InvokeAsync</code> is used to describe how the command should be processed. Note, in order to accept input parameters (arguments, options, etc.) you need to define public properties inside <code class="highlighter-rouge">ICommandHandler</code>, names of the properties should match the full names specified in a command declaration. E.g. <em>”–output”</em> option corresponds to <code class="highlighter-rouge">public string? Output { get; set; }</code>.</li>
+</ol>
+
+<h3 id="publish-">Publish 📢</h3>
+
+<p>Since every .NET tool is a NuGet package. You can specify additional build parameters to improve discoverability and overall user experience at <a href="https://nuget.org">https://nuget.org</a></p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;Project&gt;</span>
+  <span class="nt">&lt;PropertyGroup</span> <span class="na">Label=</span><span class="s">"Authoring"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Company&gt;</span>nikiforovall<span class="nt">&lt;/Company&gt;</span>
+    <span class="nt">&lt;Authors&gt;</span>nikiforovall<span class="nt">&lt;/Authors&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+
+  <span class="nt">&lt;PropertyGroup</span> <span class="na">Label=</span><span class="s">"Package"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Title&gt;</span>CopyPaster (copa)<span class="nt">&lt;/Title&gt;</span>
+    <span class="nt">&lt;Description&gt;</span>Enables copy-paste driven development. CopyPaster (aka copa)<span class="nt">&lt;/Description&gt;</span>
+    <span class="nt">&lt;PackageTags&gt;</span>global-tool;copy-paste;productivity<span class="nt">&lt;/PackageTags&gt;</span>
+    <span class="nt">&lt;PackageLicenseExpression&gt;</span>MIT<span class="nt">&lt;/PackageLicenseExpression&gt;</span>
+    <span class="nt">&lt;PackageProjectUrl&gt;</span>https://github.com/nikiforovall/copy-paster<span class="nt">&lt;/PackageProjectUrl&gt;</span>
+    <span class="nt">&lt;PackageIcon&gt;</span>Icon.jpg<span class="nt">&lt;/PackageIcon&gt;</span>
+    <span class="nt">&lt;PackageReleaseNotes&gt;</span>https://github.com/nikiforovall/copy-paster/releases<span class="nt">&lt;/PackageReleaseNotes&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+
+  <span class="nt">&lt;PropertyGroup</span> <span class="na">Label=</span><span class="s">"Repository"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;RepositoryUrl&gt;</span>https://nuget.org/packages/NikiforovAll.CopyPaster<span class="nt">&lt;/RepositoryUrl&gt;</span>
+    <span class="nt">&lt;RepositoryType&gt;</span>git<span class="nt">&lt;/RepositoryType&gt;</span>
+    <span class="nt">&lt;NeutralLanguage&gt;</span>en-US<span class="nt">&lt;/NeutralLanguage&gt;</span>
+  <span class="nt">&lt;/PropertyGroup&gt;</span>
+<span class="nt">&lt;/Project&gt;</span>
+</code></pre></div></div>
+
+<p>Once ready, all you need to do is to pack the NuGet package and upload it. I use <a href="https://cakebuild.net/docs/running-builds/runners/dotnet-tool">Cake</a> but it is totally fine to pack it with <code class="highlighter-rouge">dotnet pack</code>.</p>
+
+<pre><code class="language-cake">Task("Pack")
+    .Description("Creates NuGet packages and outputs them to the artefacts directory.")
+    .Does(() =&gt;
+    {
+        DotNetPack(
+            ".",
+            new DotNetPackSettings()
+            {
+                Configuration = configuration,
+                IncludeSymbols = true,
+                MSBuildSettings = new DotNetMSBuildSettings(),
+                NoBuild = false,
+                NoRestore = false,
+                OutputDirectory = artefactsDirectory,
+            });
+    });
+</code></pre>
+
+<p>Before publishing, you may want to install a tool from a folder:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet tool <span class="nb">install</span> <span class="nt">--global</span> <span class="nt">--add-source</span> ./Artefacts
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="summary">Summary</h2>
+
+<p>I hope this blog post motivates you to create your own .NET tools. Please feel free to contribute to <a href="https://github.com/NikiforovAll/copy-paster">copy-paster</a>. Thanks 👋.</p>
+
+<h3 id="reference">Reference</h3>
+
+<ul>
+  <li><a href="https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools">https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools</a></li>
+  <li><a href="https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create">https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create</a></li>
+  <li><a href="https://nikiforovall.github.io/dotnet/cli/2021/06/06/clean-cli.html">https://nikiforovall.github.io/dotnet/cli/2021/06/06/clean-cli.html</a></li>
+  <li><a href="https://github.com/NikiforovAll/copy-paster">https://github.com/NikiforovAll/copy-paster</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(13)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(19)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#global-tool-ref">
+				global-tool <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#productivity-ref">
+				productivity <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#cli-ref">
+				cli <span>(2)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/docker/testing/2021/11/27/testing-with-newman.html" title="A developer guide to automated testing with Postman. Run postman collections inside Docker via newman CLI.">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2021 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
