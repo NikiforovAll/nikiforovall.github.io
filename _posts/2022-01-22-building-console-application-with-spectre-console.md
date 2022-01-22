@@ -190,7 +190,7 @@ public class ExportBots : Command<ExportBotsSettings>
 
 ![scrape](/assets/spectre/scrape.png)
 
-## List bots - `ListBots.cs`
+### List bots - `ListBots.cs`
 
 Displaying tabular data is a very common task, here is how you can use `Spectre.Console.Extensions` to draw a table using Entity Framework. Basically, we want to transform the query to `System.Data.DataTable` object. You can always switch to [Spectre.Table](https://spectreconsole.net/widgets/table), it gives you full control over how you display data.
 
@@ -238,7 +238,7 @@ public class ListBots : Command<ListBotsSettings>
 
 ![list](/assets/spectre/bot-list.png)
 
-## Download and display a bot - `DownloadBot.cs`
+### Download and display a bot - `DownloadBot.cs`
 
 Let's see how to retrieve a bot by name from the database and download and display ASCII image of the bot.
 
