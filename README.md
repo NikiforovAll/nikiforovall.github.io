@@ -1,4 +1,4 @@
-# Nikiforov Alexey. Blog
+# Nikiforov Oleksii. Blog
 
 ## Getting Started
 
