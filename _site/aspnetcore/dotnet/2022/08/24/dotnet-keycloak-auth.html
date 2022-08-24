@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Use Keycloak as Identity Provider in ASP.NET Core 6</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Use Keycloak as Identity Provider in ASP.NET Core 6 </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			August
+			24th,
+			
+			2022
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction-to-keycloak">Introduction to Keycloak</a></li>
+  <li><a href="#ideas-behind-keycloakauthservicesauthentication">Ideas behind Keycloak.AuthServices.Authentication</a>
+    <ul>
+      <li><a href="#configure-keycloakauthenticationoptions">Configure KeycloakAuthenticationOptions</a></li>
+    </ul>
+  </li>
+  <li><a href="#demo">Demo</a></li>
+  <li><a href="#bonus---adding-authorization">Bonus - Adding Authorization</a></li>
+  <li><a href="#summary">Summary</a></li>
+</ul>
+
+<h2 id="tldr">TL;DR</h2>
+
+<p>Learn how to use Keycloak in ASP.NET Core 6 by using <a href="https://www.nuget.org/packages/Keycloak.AuthServices.Authentication">Keycloak.AuthServices.Authentication</a>.</p>
+
+<p>Source code: <a href="https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/blob/main/samples/AuthGettingStarted/Program.cs">https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/blob/main/samples/AuthGettingStarted/Program.cs</a></p>
+
+<h2 id="introduction-to-keycloak">Introduction to Keycloak</h2>
+
+<blockquote>
+  <p>Keycloak - Open Source Identity and Access Management. Add authentication to applications and secure services with minimum effort. No need to deal with storing users or authenticating users. Keycloak provides user federation, strong authentication, user management, fine-grained authorization, and more.</p>
+</blockquote>
+
+<p>Personally, I’m a big of Keycloak because it is a mature and full-fledged identity and access management system. It contains everything you might need for most of the scenarios. Contrary to <a href="https://duendesoftware.com/products/identityserver">IdentityServer</a> it is easy to use out-of-the-box with no code required to get things going. If <em>Azure Active Directory</em> is not an option for some reason I definitely consider Keycloak as a viable open-source option that could be installed on-prem.</p>
+
+<p><strong>Features</strong>:</p>
+
+<ul>
+  <li>Single-Sign On</li>
+  <li>Identity Brokering and Social Login</li>
+  <li>User Federation</li>
+  <li>Admin Console</li>
+  <li>Account Management Console</li>
+  <li>Authorization Services</li>
+</ul>
+
+<p>See: <a href="https://www.keycloak.org/">https://www.keycloak.org/</a></p>
+
+<h2 id="ideas-behind-keycloakauthservicesauthentication">Ideas behind Keycloak.AuthServices.Authentication</h2>
+
+<p>Keycloak is OAuth2 + OpenID Connect compliant provider so it should be easy to use it. Although, it takes some time to may Keycloak concepts and configuration to ASP.NET Core Authentication configuration model. That is the way I’ve prepared a convenience library to speed up the integration process and make using Keycloak in .NET world more enjoyable.</p>
+
+<p>Basically, we use <code class="highlighter-rouge">AddKeycloakAuthentication</code> to register and configure <code class="highlighter-rouge">JwtBearerDefaults.AuthenticationScheme</code> authentication scheme and provide <code class="highlighter-rouge">KeycloakAuthenticationOptions</code>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// Adds keycloak authentication services.</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="k">public</span> <span class="k">static</span> <span class="n">AuthenticationBuilder</span> <span class="nf">AddKeycloakAuthentication</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">,</span>
+    <span class="n">KeycloakAuthenticationOptions</span> <span class="n">keycloakOptions</span><span class="p">,</span>
+    <span class="n">Action</span><span class="p">&lt;</span><span class="n">JwtBearerOptions</span><span class="p">&gt;?</span> <span class="n">configureOptions</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span> <span class="p">{</span><span class="cm">/*...*/</span><span class="p">}</span>
+</code></pre></div></div>
+
+<div class="mermaid">
+flowchart LR
+    AddKeycloakAuthentication["AddKeycloakAuthentication"]
+    AddAuthentication["AddAuthentication"]
+    AddKeycloakAuthentication--&gt;|JwtBearerDefaults.AuthenticationScheme|AddAuthentication
+    AddAuthentication--&gt;AddJwtBearer
+    AddKeycloakAuthentication --&gt; |IClaimsTransformation|KeycloakRolesClaimsTransformation
+
+    subgraph JwtBearer
+        direction LR
+        AddJwtBearer --&gt;
+        TokenValidationParameters --&gt; NameClaimType
+        TokenValidationParameters --&gt; RoleClaimType
+    end
+</div>
+
+<p>The overall project structure looks like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">services</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">;</span>
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">authenticationOptions</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthentication</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthorization</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="p">(</span><span class="n">ClaimsPrincipal</span> <span class="n">user</span><span class="p">)</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="nf">LogInformation</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">Identity</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+<span class="p">}).</span><span class="nf">RequireAuthorization</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="configure-keycloakauthenticationoptions">Configure KeycloakAuthenticationOptions</h3>
+
+<p>The are various ways to configure Keycloak authentication. Later, I will show you how to use <em>Keycloak OIDC client adapter</em> seamlessly.</p>
+
+<p>1️⃣ Construct object</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">authenticationOptions</span> <span class="p">=</span> <span class="k">new</span> <span class="n">KeycloakAuthenticationOptions</span>
+<span class="p">{</span>
+    <span class="n">AuthServerUrl</span> <span class="p">=</span> <span class="s">"http://localhost:8088/"</span><span class="p">,</span>
+    <span class="n">Realm</span> <span class="p">=</span> <span class="s">"Test"</span><span class="p">,</span>
+    <span class="n">Resource</span> <span class="p">=</span> <span class="s">"test-client"</span><span class="p">,</span>
+<span class="p">};</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">authenticationOptions</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>2️⃣ Read manually from configuration</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">configuration</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">authenticationOptions</span> <span class="p">=</span> <span class="n">configuration</span>
+    <span class="p">.</span><span class="nf">GetSection</span><span class="p">(</span><span class="n">KeycloakAuthenticationOptions</span><span class="p">.</span><span class="n">Section</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">Get</span><span class="p">&lt;</span><span class="n">KeycloakAuthenticationOptions</span><span class="p">&gt;();</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">authenticationOptions</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>3️⃣ From configuration</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">configuration</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">;</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">KeycloakAuthenticationOptions</span><span class="p">.</span><span class="n">Section</span><span class="p">);</span>
+<span class="c1">// section is optional KeycloakAuthenticationOptions.Section = "Keycloak"</span>
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>4️⃣ From the configuration file</p>
+
+<blockquote>
+  <p>keycloak.json file used by the Keycloak OIDC client adapter to configure clients. You may also want to tweak this file after you download it.</p>
+</blockquote>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">configuration</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">host</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Host</span><span class="p">;</span>
+<span class="n">host</span><span class="p">.</span><span class="nf">ConfigureKeycloakConfigurationSource</span><span class="p">(</span><span class="s">"keycloak.json"</span><span class="p">);</span> <span class="c1">// file name is optional</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h2 id="demo">Demo</h2>
+
+<p>Before we start integrating we need to run an instance of Keycloak on a dev machine.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">-p</span> 8080:8080 <span class="se">\</span>
+    <span class="nt">-e</span> <span class="nv">KEYCLOAK_ADMIN</span><span class="o">=</span>admin <span class="nt">-e</span> <span class="nv">KEYCLOAK_ADMIN_PASSWORD</span><span class="o">=</span>admin <span class="se">\</span>
+    quay.io/keycloak/keycloak:19.0.1 start-dev
+</code></pre></div></div>
+
+<p>Please refer to <a href="https://www.keycloak.org/getting-started/getting-started-docker">https://www.keycloak.org/getting-started/getting-started-docker</a> for more details.</p>
+
+<p>Let’s create our first realm.</p>
+
+<ul>
+  <li>Open the <a href="http://localhost:8080/admin">Keycloak Admin Console</a></li>
+  <li>Hover the mouse over the dropdown in the top-left corner where it says Master, then click on Add realm</li>
+  <li>Fill in the form with the following values:
+    <ul>
+      <li>Name: Test</li>
+    </ul>
+  </li>
+  <li>Click <code class="highlighter-rouge">Create</code></li>
+</ul>
+
+<center>
+    <img src="/assets/keycloak-authz/add-realm.png" alt="add-realm" />
+</center>
+
+<p>Create a user</p>
+
+<p>Initially, there are no users in a new realm, so let’s create one:</p>
+
+<ul>
+  <li>Open the <a href="http://localhost:8080/admin">Keycloak Admin Console</a></li>
+  <li>Click <code class="highlighter-rouge">Users</code> (left-hand menu)</li>
+  <li>Click <code class="highlighter-rouge">Add user</code> (top-right corner of table)</li>
+  <li>Fill in the form with the following values:
+    <ul>
+      <li>Username: <strong>test@test.com</strong></li>
+      <li>First Name: <em>Your first name</em></li>
+      <li>Last Name: <em>Your last name</em></li>
+    </ul>
+  </li>
+  <li>Click <code class="highlighter-rouge">Save</code></li>
+</ul>
+
+<center>
+    <img src="/assets/keycloak-authz/add-user.png" alt="add-user" />
+</center>
+
+<p>Let’s try to secure our first application. The first step is to register this application with your Keycloak instance:</p>
+
+<ul>
+  <li>Open the <a href="http://localhost:8080/admin">Keycloak Admin Console</a></li>
+  <li>Click <code class="highlighter-rouge">Clients</code> (left-hand menu)</li>
+  <li>Fill in the form with the following values:
+    <ul>
+      <li>Client Type: “OpenID Connect”</li>
+      <li>Client Id: <strong>test-client</strong></li>
+    </ul>
+  </li>
+  <li>Click <code class="highlighter-rouge">Save</code></li>
+</ul>
+
+<center>
+    <img src="/assets/keycloak-authz/add-client.png" alt="add-client" />
+</center>
+
+<p>As mentioned above, Keycloak has a concept of adaptor config. It allows us to copy essential configurations. <code class="highlighter-rouge">Keycloak.AuthServices.Authentication</code> is deliberately designed to streamline the installation process, so the <code class="highlighter-rouge">KeycloakAuthenticationOptions</code> mimics the structure of the adapter config.</p>
+
+<p>Navigate the newly created client (top-right) and click “Action&gt;Download adapter config”</p>
+
+<center>
+    <img src="/assets/keycloak-authz/adapter-config.png" alt="adapter-config" />
+</center>
+
+<p>Here is what it looks like:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"realm"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Test"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"auth-server-url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:8080/"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"ssl-required"</span><span class="p">:</span><span class="w"> </span><span class="s2">"external"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"public-client"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"verify-token-audience"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"use-resource-role-mappings"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"confidential-port"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>💡 Generally, you want to use protocol mapper to configure the required audience (“resource” in the config above). To simplify the demo, we can just turn off Audience validation. Change “verify-token-audience”: false. See <a href="https://dbp-demo.tugraz.at/handbook/relay/keycloak/keycloak_audience/">https://dbp-demo.tugraz.at/handbook/relay/keycloak/keycloak_audience/</a> and <a href="https://stackoverflow.com/a/53627747/8168625">https://stackoverflow.com/a/53627747/8168625</a> for more details.</p>
+
+<p>💡 Tokens should be exchanged based on HTTPS, but for the developer environment, you can use HTTP. Change “ssl-required”: “none”</p>
+
+<p>Now, we can create keycloak.json or extend appsettings.json.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"Logging"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"LogLevel"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"Default"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Information"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"Microsoft.AspNetCore"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Warning"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"Keycloak"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"realm"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Test"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"auth-server-url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:8080/"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"ssl-required"</span><span class="p">:</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"verify-token-audience"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+    </span><span class="s2">"confidential-port"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>To use provided configuration, simply register <code class="highlighter-rouge">AddKeycloakAuthentication</code></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">services</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">configuration</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">host</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Host</span><span class="p">;</span>
+
+<span class="n">host</span><span class="p">.</span><span class="nf">ConfigureLogger</span><span class="p">();</span>
+<span class="n">services</span><span class="p">.</span><span class="nf">AddEndpointsApiExplorer</span><span class="p">().</span><span class="nf">AddSwagger</span><span class="p">();</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">appv</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">().</span><span class="nf">UseSwaggerUI</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthentication</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthorization</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="p">(</span><span class="n">ClaimsPrincipal</span> <span class="n">user</span><span class="p">)</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="nf">LogInformation</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">Identity</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+<span class="p">}).</span><span class="nf">RequireAuthorization</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Now we need to obtain an access token and make a call via swagger-ui. There are various ways you can do it. In my case, I opened “test-client” and made it confidential, and enabled “Direct access grants”. This way we can use a username and password. Please make sure you understand how to configure OAuth 2.0 and OpenId Connect before moving to production. In my case, it is just easy to demonstrate.</p>
+
+<center>
+    <img src="/assets/keycloak-authz/confidential-client.png" alt="confidential-client" />
+</center>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">--data</span> <span class="s2">"grant_type=password&amp;client_id=test-client&amp;username=test&amp;password=test&amp;client_secret=Tgx4lvbyhho7oNFmiIupDRVA8ioQY7PW"</span> <span class="se">\</span>
+    localhost:8080/realms/Test/protocol/openid-connect/token
+</code></pre></div></div>
+
+<center>
+    <img src="/assets/keycloak-authz/get-access-token.png" alt="get-access-token" />
+</center>
+
+<p>Now, we can navigate swagger <code class="highlighter-rouge">https://localhost:5001/swagger</code> and make an authentication request by providing an access token.</p>
+
+<center>
+    <img src="/assets/keycloak-authz/swagger-ok.png" alt="swagger-ok" />
+</center>
+
+<h2 id="bonus---adding-authorization">Bonus - Adding Authorization</h2>
+
+<p>Let’s see how we can use <code class="highlighter-rouge">Keycloak.AuthServices.Authorization</code> to build basic Keycloak-aware policies. See: <a href="https://docs.microsoft.com/en-us/dotnet/api/Microsoft.AspNetCore.Authorization.AuthorizationPolicy?view=aspnetcore-6.0">AuthorizationPolicy</a></p>
+
+<p>💡 Keycloak has a concept of roles. I added realm and resource roles behind the scenes. I suggest you figure it out on your own as an exercise 😛.</p>
+
+<p>In the example below we require a user to have “admin” realm role and “r-admin” resource role by using <code class="highlighter-rouge">RequireRealmRoles</code> and <code class="highlighter-rouge">RequireResourceRoles</code> respectively. Note, that resource roles are automatically mapped to <code class="highlighter-rouge">Microsoft.AspNetCore.Authorization</code> roles so <code class="highlighter-rouge">b.RequireResourceRoles("r-admin")</code> is same as <code class="highlighter-rouge">b.RequireRole("r-admin")</code>.</p>
+
+<p>⚠ The <code class="highlighter-rouge">resource</code> from <code class="highlighter-rouge">KeycloakAuthenticationOptions</code> is used as an <em>Audience</em> and as the <em>key for role mapping</em>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">services</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">configuration</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">host</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Host</span><span class="p">;</span>
+
+<span class="n">host</span><span class="p">.</span><span class="nf">ConfigureLogger</span><span class="p">();</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddEndpointsApiExplorer</span><span class="p">().</span><span class="nf">AddSwagger</span><span class="p">();</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+<span class="n">services</span><span class="p">.</span><span class="nf">AddAuthorization</span><span class="p">(</span><span class="n">o</span> <span class="p">=&gt;</span> <span class="n">o</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span><span class="s">"IsAdmin"</span><span class="p">,</span> <span class="n">b</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">b</span><span class="p">.</span><span class="nf">RequireRealmRoles</span><span class="p">(</span><span class="s">"admin"</span><span class="p">);</span>
+    <span class="n">b</span><span class="p">.</span><span class="nf">RequireResourceRoles</span><span class="p">(</span><span class="s">"r-admin"</span><span class="p">);</span> <span class="c1">// stands for "resource admin"</span>
+    <span class="c1">// resource roles are mapped to ASP.NET Core Identity roles</span>
+    <span class="n">b</span><span class="p">.</span><span class="nf">RequireRole</span><span class="p">(</span><span class="s">"r-admin"</span><span class="p">);</span> 
+<span class="p">}));</span>
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthorization</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">().</span><span class="nf">UseSwaggerUI</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthentication</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthorization</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="p">(</span><span class="n">ClaimsPrincipal</span> <span class="n">user</span><span class="p">)</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">Logger</span><span class="p">.</span><span class="nf">LogInformation</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">Identity</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+<span class="p">}).</span><span class="nf">RequireAuthorization</span><span class="p">(</span><span class="s">"IsAdmin"</span><span class="p">);</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Here is what the logs look like after a successful HTTP GET “/” request.</p>
+
+<center>
+    <img src="/assets/keycloak-authz/terminal-ok.png" alt="terminal-ok" />
+</center>
+
+<h2 id="summary">Summary</h2>
+
+<p>You can use <a href="https://github.com/NikiforovAll/keycloak-authorization-services-dotnet">Keycloak.AuthServices</a> to integrate with Keycloak. Keycloak has tons of great features and thankfully we can benefit from the Java open-source world as .NET developers.</p>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspnetcore-ref">
+				aspnetcore <span>(7)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(17)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(7)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(23)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#auth-ref">
+				auth <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#keycloak-ref">
+				keycloak <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#jwt-ref">
+				jwt <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Use Keycloak as Identity Provider in ASP.NET Core 6&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/productivity/devcontainers/2022/08/13/deaac.html" title="Dev Environment as a Code (DEaaC) with DevContainers, Dotfiles, and GitHub Codespaces">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2022 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript"
+  src="https://unpkg.com/mermaid@9.1.4/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
