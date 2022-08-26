@@ -2,7 +2,7 @@
 layout: post
 title: Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.
 categories: [ dotnet ]
-tags: [ dotnet, global-tool, productivity, cli, console ]
+tags: [ dotnet, global-tool, productivity, cli, console, systemcommandline ]
 published: true
 shortinfo: Learn how to create a .NET tool.
 fullview: false
