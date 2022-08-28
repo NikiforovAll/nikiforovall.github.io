@@ -20,7 +20,8 @@ Observability of the system is crucial for successful maintenance and monitoring
 
 Below, you can find a coding story that describes the process of adding health checks support to ASP.NET Core project.
 
-> https://codingstories.io/story/https:%2F%2Fgitlab.com%2FNikiforovAll%2Fhow-to-add-health-checks-to-aspnetcore
+> https://codingstories.io/stories/6139f4a2f2cd3d0031cd8ef1/6103bf8972273c2133d37ce6
+> https://gitlab.com/codingstories/how-to-add-health-checks-to-aspnetcore
 
 ![healthchecks-banner](/assets/add-health-check/healh-checks-coding-story.png)
 
