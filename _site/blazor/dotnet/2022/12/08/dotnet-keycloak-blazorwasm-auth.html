@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Use Keycloak as Identity Provider in Blazor WebAssembly (WASM)</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Use Keycloak as Identity Provider in Blazor WebAssembly (WASM) </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			December
+			8th,
+			
+			2022
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/aspnetcore/dotnet/2022/08/24/dotnet-keycloak-auth.html">Use Keycloak as Identity Provider in ASP.NET Core 6 <span class="label label-default">aspnetcore</span>  <span class="label label-default">dotnet</span>  <span class="label label-default">auth</span>  <span class="label label-default">keycloak</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#example-project-overview">Example project overview</a></li>
+  <li><a href="#configure-keycloak-add-authentication">Configure Keycloak. Add Authentication</a>
+    <ul>
+      <li><a href="#start-keycloak-in-a-development-mode">Start Keycloak in a development mode</a></li>
+      <li><a href="#configure-realm">Configure Realm</a></li>
+      <li><a href="#add-keycloak-to-backend">Add Keycloak to backend</a></li>
+      <li><a href="#get-access-token-from-swagger-ui">Get access token from Swagger UI</a></li>
+    </ul>
+  </li>
+  <li><a href="#frontend-blazor-wasm">Frontend. Blazor WASM</a>
+    <ul>
+      <li><a href="#integrate-with-keycloak-from-frontend-overview">Integrate with Keycloak from frontend. Overview</a></li>
+      <li><a href="#authentication-component"><code class="highlighter-rouge">Authentication</code> component</a></li>
+      <li><a href="#app-component"><code class="highlighter-rouge">App</code> Component</a></li>
+      <li><a href="#configure-frontend">Configure frontend</a></li>
+      <li><a href="#demo">Demo</a></li>
+    </ul>
+  </li>
+  <li><a href="#reference">Reference</a></li>
+</ul>
+
+<h2 id="tldr">TL;DR</h2>
+
+<p>Learn how to integrate with Keycloak from Blazor WASM. Create a public client and use built-in capabilities of <code class="highlighter-rouge">Microsoft.AspNetCore.Components.WebAssembly.Authentication</code> that integrates with OpenId Connect compliant providers.</p>
+
+<p>Source code: <a href="https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/blob/main/samples/Blazor">https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/blob/main/samples/Blazor</a></p>
+
+<h2 id="example-project-overview">Example project overview</h2>
+
+<p>Basically, we have a trimmed and modified version of the default template for Blazor WASM. You can generate the code I started from by running <code class="highlighter-rouge">dotnet new blazorwasm -n Blazor</code>.</p>
+
+<p>🚀Goal: The main point of interest is to protect “Fetch Data” tab from unauthenticated access and make it possible to access <code class="highlighter-rouge">WeatherForecast</code> data from Web API that require authentication.</p>
+
+<p>Therefore, we need to implement some sort of mechanism that unauthorized redirects users to an Identity Provider (i.e.: Keycloak) and, once they logged in successfully, propagates the token from the client to the backend.</p>
+
+<p>Here is a project structure. Note, it is a finished version of the example.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>tree <span class="nt">-L</span> 3
+<span class="nb">.</span>
+├── Client
+│   ├── App.razor
+│   ├── Blazor.Client.csproj
+│   ├── Pages
+│   │   ├── Authentication.razor
+│   │   ├── FetchData.razor
+│   │   └── Index.razor
+│   ├── Program.cs
+│   ├── Properties
+│   │   └── launchSettings.json
+│   ├── Shared
+│   │   ├── LoginDisplay.razor
+│   │   ├── MainLayout.razor
+│   │   ├── MainLayout.razor.css
+│   │   ├── NavMenu.razor
+│   │   ├── NavMenu.razor.css
+│   │   └── RedirectToLogin.razor
+│   ├── _Imports.razor
+│   └── wwwroot
+│       ├── css
+│       └── index.html
+├── Server
+│   ├── Blazor.Server.csproj
+│   ├── Controllers
+│   │   └── WeatherForecastController.cs
+│   ├── Pages
+│   │   ├── Error.cshtml
+│   │   └── Error.cshtml.cs
+│   ├── Program.cs
+│   ├── Properties
+│   │   └── launchSettings.json
+│   ├── appsettings.Development.json
+│   ├── appsettings.json
+├── Shared
+│   ├── Blazor.Shared.csproj
+│   ├── WeatherForecast.cs
+├── assets
+│   └── realm-export.json
+└── docker-compose.yml
+</code></pre></div></div>
+
+<ul>
+  <li><em>Client</em> - is a <code class="highlighter-rouge">Microsoft.NET.Sdk.BlazorWebAssembly</code> project responsible for UI, a <strong>client</strong>.</li>
+  <li><em>Server</em> - is a <code class="highlighter-rouge">Microsoft.NET.Sdk.Web</code> project responsible for API, typical <strong>backend</strong> in your SPA application.</li>
+  <li><em>Shared</em> - is a <code class="highlighter-rouge">Microsoft.NET.Sdk</code>, shared code between client and server. Usually, it is used to share data models / DTOs.</li>
+</ul>
+
+<p>A home page doesn’t require user to be authenticated and looks like this:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/app-home.png" alt="app-home.png" />
+</center>
+
+<p>Before we look at BlazorWASM (aka client-side), we need to add authentication to a backend.</p>
+
+<h2 id="configure-keycloak-add-authentication">Configure Keycloak. Add Authentication</h2>
+
+<p>Keycloak supports both OpenID Connect and SAML protocols. OpenID Connect (OIDC) is an authentication protocol that is an extension of OAuth 2.0. While OAuth 2.0 is only a framework for building authorization protocols and is mainly incomplete, OIDC is a full-fledged authentication and authorization protocol. OIDC also makes heavy use of the Json Web Token (JWT) set of standards. These standards define an identity token JSON format and ways to digitally sign and encrypt that data in a compact and web-friendly way.</p>
+
+<p>In my previous blog post - <a href="./2022-08-24-dotnet-keycloak-auth.md">Use Keycloak as Identity Provider in ASP.NET Core 6</a>, I showed you how to configure Keycloak as OAuth2 + OpenID Connect compliant provider to add <strong>authentication</strong> to Web API. Let’s go through the process one more time 💃</p>
+
+<h3 id="start-keycloak-in-a-development-mode">Start Keycloak in a development mode</h3>
+
+<p>Here is docker-compose that you can use for development purposes. Create a file named <code class="highlighter-rouge">docker-compose.yml</code> and run
+<code class="highlighter-rouge">docker compose up</code> command.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">3.9"</span>
+<span class="na">services</span><span class="pi">:</span>
+  <span class="na">keycloak</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">quay.io/keycloak/keycloak:19.0.1</span>
+    <span class="na">environment</span><span class="pi">:</span>
+      <span class="na">KEYCLOAK_ADMIN</span><span class="pi">:</span> <span class="s">admin</span>
+      <span class="na">KEYCLOAK_ADMIN_PASSWORD</span><span class="pi">:</span> <span class="s">admin</span>
+    <span class="na">command</span><span class="pi">:</span>
+      <span class="pi">[</span>
+        <span class="s1">'</span><span class="s">start-dev'</span>
+      <span class="pi">]</span>
+    <span class="na">ports</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">8080:8080</span>
+</code></pre></div></div>
+
+<h3 id="configure-realm">Configure Realm</h3>
+
+<p>In order to logically group users of your system we need to create a Realm in the Keycloak. Note, Master Realm should only be used for Keycloak administration purposes.</p>
+
+<p>To create a Realm:</p>
+
+<ol>
+  <li>Navigate at <a href="http://localhost:8080/admin/master/console">http://localhost:8080/admin/master/console</a></li>
+  <li>On the left side bar click on Realm Dropdown (“Master”)</li>
+  <li>Click “Create Realm”</li>
+  <li>Specify “Realm name” - Test</li>
+</ol>
+
+<p>You should see something like that:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/create-test-realm.png" alt="create-test-realm.png" />
+</center>
+
+<hr />
+
+<p>Keycloak allows login and sign-up of users by a wide range of social logins (e.g.: microsoft, google, github). But for the simplicity, I will create a user manually.</p>
+
+<p>To Create a user in the “Test” Realm:</p>
+
+<ol>
+  <li>On the left side bar click on “Users” item.</li>
+  <li>Click “Create new user”</li>
+  <li>Specify user information
+    <ol>
+      <li>username: user</li>
+      <li>email: user@nikiforovall.com</li>
+      <li>first name: John</li>
+      <li>last name: Doe</li>
+    </ol>
+  </li>
+  <li>Click “Create”</li>
+  <li>Go to “Credentials” tab</li>
+  <li>Click “Set password”
+    <ol>
+      <li>password: user</li>
+      <li>password confirmation: user</li>
+      <li>temporary: off</li>
+    </ol>
+  </li>
+  <li>Click “Save”; Click “Set Password”</li>
+</ol>
+
+<p>You should see something like that:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/create-user.png" alt="create-user.png" />
+</center>
+
+<hr />
+
+<p>Keycloak, by default, provides user account management functionality. It is available through the inherited role in “Role Mapping” tab in the user account.</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/user-role-mapping.png" alt="user-role-mapping.png" />
+</center>
+<p><br /></p>
+
+<p>To see a user account:</p>
+
+<ol>
+  <li>Navigate at <a href="http://localhost:8080/realms/Test/account">http://localhost:8080/realms/Test/account</a></li>
+  <li>Specify newly created user account credentials - user:user</li>
+  <li>Click “Personal Info”</li>
+</ol>
+
+<p>Here is what I see on my screen:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/user-info.png" alt="user-info.png" />
+</center>
+
+<h3 id="add-keycloak-to-backend">Add Keycloak to backend</h3>
+
+<p>Install <a href="https://nuget.org/packages/Keycloak.AuthServices.Authentication">Keycloak.AuthServices.Authentication</a> package for Blazor.Server project by running the next command from the project folder:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add package Keycloak.AuthServices.Authentication <span class="nt">--version</span> 1.2.1
+</code></pre></div></div>
+
+<p>Here is the simplest integration with Keycloak from .NET perspective:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.cs</span>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">services</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">configuration</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">;</span>
+<span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthentication</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseAuthorization</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>To hookup, the backend with Keycloak we need to create a <strong>Client</strong>. Later, this client will be used to configure details of user authorization flow.</p>
+
+<blockquote>
+  <p>Clients are entities that interact with Keycloak to authenticate users and obtain tokens. Most often, clients are applications and services acting on behalf of users that provide a single sign-on experience to their users and access other services using the tokens issued by the server. Clients can also be entities only interested in obtaining tokens and acting on their own behalf for accessing other services.</p>
+</blockquote>
+
+<p>To create a client:</p>
+
+<ol>
+  <li>Open a “Test” realm</li>
+  <li>On the left side bar click on “Clients” item.</li>
+  <li>Click “Create client”
+    <ol>
+      <li>specify client-id: test-client</li>
+    </ol>
+  </li>
+  <li>Click “Next”</li>
+  <li>Check “Implicit flow” (we will use it for swagger, useful for the development)</li>
+  <li>“Save”</li>
+</ol>
+
+<p>Now, we can download something called adapter config. On the top-right click “Action” dropdown and select “Download adapter config” option. Like this:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/test-client-config.png" alt="test-client-config.png" />
+</center>
+<p><br /></p>
+
+<p>Open <code class="highlighter-rouge">appsettings.Development.json</code> and paste as follows:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="s2">"Keycloak"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"realm"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Test"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"auth-server-url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:8080/"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"ssl-required"</span><span class="p">:</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"verify-token-audience"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"credentials"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="s2">"secret"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="s2">"confidential-port"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>💡⚠ Note, by default, <code class="highlighter-rouge">Keycloak.AuthServices.Authentication</code> assumes that the intended <em>Audience</em> is the “resource”. And it is something that we <strong>must</strong> configure additionally for <code class="highlighter-rouge">quay.io/keycloak/keycloak:19.0.1</code>. Alternatively, for development purposes, you may want to change “resource” to the audience that is provided by default - “account”.</p>
+
+<p>Let’s see how to add an audience to a client by using client scopes. Client scope defines a set of mappers that shape the content of access and id tokens. For example, all newly created clients by default have a bunch of client scopes assigned such as <em>email</em>, <em>profile</em>, <em>roles</em>. As you might guess, these client scopes are responsible for adding well-known claims as part of the OpenId Connect protocol.</p>
+
+<ol>
+  <li>On the left side bar click on “Clients” item.</li>
+  <li>Click “test-client”</li>
+  <li>Open “Client scopes” tab</li>
+  <li>Click on “test-client-dedicated”, should be on tope of the list of scopes</li>
+  <li>From the “Mappers” tab, click “Create a new mapper”</li>
+  <li>Pick “Audience” from the list
+    <ol>
+      <li>specify name: Audience</li>
+      <li>include client audience: “test-client”</li>
+    </ol>
+  </li>
+  <li>Click “Save”</li>
+</ol>
+
+<p>Here is the result:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/test-client-mapper.png" alt="test-client-mapper.png" />
+</center>
+
+<hr />
+
+<p>Besides “Setup” sub-tab, “Client Scopes” tab has “Evaluate” sub-tab. It might come in handy when you need to figure out effective protocol mappers, effective role scope mappings, the content of access, and id tokens.</p>
+
+<p>From the “Evaluate” sub-tab specify “User” = “John Doe” and client “Generate ID token” down-right corner.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="s2">"exp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1670420420</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"iat"</span><span class="p">:</span><span class="w"> </span><span class="mi">1670420120</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"jti"</span><span class="p">:</span><span class="w"> </span><span class="s2">"a5ee2c73-f3e9-495c-8d7c-eb75909b9b16"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"iss"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:8080/realms/Test"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"aud"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"account"</span><span class="w">
+    </span><span class="p">],</span><span class="w">
+    </span><span class="s2">"sub"</span><span class="p">:</span><span class="w"> </span><span class="s2">"b7fe3cec-7221-49e3-90db-3148c0467a5e"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"typ"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Bearer"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"azp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"session_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"77243a94-ed91-4d5c-a03b-d8fb988cee81"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"acr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"realm_access"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"default-roles-test"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"offline_access"</span><span class="p">,</span><span class="w">
+            </span><span class="s2">"uma_authorization"</span><span class="w">
+        </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"resource_access"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="s2">"account"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"manage-account"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"manage-account-links"</span><span class="p">,</span><span class="w">
+                </span><span class="s2">"view-profile"</span><span class="w">
+            </span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"scope"</span><span class="p">:</span><span class="w"> </span><span class="s2">"openid profile email"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"sid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"77243a94-ed91-4d5c-a03b-d8fb988cee81"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"email_verified"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"preferred_username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"given_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"family_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Doe"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user@nikiforovall.com"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Sure enough, we can see the “test-client” in the intended audience. Make sure it is specified in “resource” from the Keycloak adapter config file and we are ready to access some APIs.</p>
+
+<h3 id="get-access-token-from-swagger-ui">Get access token from Swagger UI</h3>
+
+<p><code class="highlighter-rouge">Swashbuckle.AspNetCore</code> can be configured to retrieve access tokens based on “OpenID Endpoint Configuration”. Keycloak serves at a well-known endpoint <a href="http://localhost:8080/realms/{realm}/.well-known/openid-configuration">http://localhost:8080/realms/{realm}/.well-known/openid-configuration</a>. This way, Swagger UI will add all possible flows to retrieve an access token.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.cs</span>
+<span class="n">services</span><span class="p">.</span><span class="nf">AddEndpointsApiExplorer</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">openIdConnectUrl</span> <span class="p">=</span> <span class="s">$"</span><span class="p">{</span><span class="n">configuration</span><span class="p">[</span><span class="s">"Keycloak:auth-server-url"</span><span class="p">]}</span><span class="s">"</span>
+ <span class="p">+</span> <span class="s">"realms/{configuration["</span><span class="n">Keycloak</span><span class="p">:</span><span class="n">realm</span><span class="s">"]}/"</span>
+ <span class="p">+</span> <span class="s">".well-known/openid-configuration"</span><span class="p">;</span>
+
+<span class="n">services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">securityScheme</span> <span class="p">=</span> <span class="k">new</span> <span class="n">OpenApiSecurityScheme</span>
+    <span class="p">{</span>
+        <span class="n">Name</span> <span class="p">=</span> <span class="s">"Auth"</span><span class="p">,</span>
+        <span class="n">In</span> <span class="p">=</span> <span class="n">ParameterLocation</span><span class="p">.</span><span class="n">Header</span><span class="p">,</span>
+        <span class="n">Type</span> <span class="p">=</span> <span class="n">SecuritySchemeType</span><span class="p">.</span><span class="n">OpenIdConnect</span><span class="p">,</span>
+        <span class="n">OpenIdConnectUrl</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">openIdConnectUrl</span><span class="p">),</span>
+        <span class="n">Scheme</span> <span class="p">=</span> <span class="s">"bearer"</span><span class="p">,</span>
+        <span class="n">BearerFormat</span> <span class="p">=</span> <span class="s">"JWT"</span><span class="p">,</span>
+        <span class="n">Reference</span> <span class="p">=</span> <span class="k">new</span> <span class="n">OpenApiReference</span>
+        <span class="p">{</span>
+            <span class="n">Id</span> <span class="p">=</span> <span class="s">"Bearer"</span><span class="p">,</span>
+            <span class="n">Type</span> <span class="p">=</span> <span class="n">ReferenceType</span><span class="p">.</span><span class="n">SecurityScheme</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+    <span class="n">c</span><span class="p">.</span><span class="nf">AddSecurityDefinition</span><span class="p">(</span><span class="n">securityScheme</span><span class="p">.</span><span class="n">Reference</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="n">securityScheme</span><span class="p">);</span>
+    <span class="n">c</span><span class="p">.</span><span class="nf">AddSecurityRequirement</span><span class="p">(</span><span class="k">new</span> <span class="n">OpenApiSecurityRequirement</span>
+    <span class="p">{</span>
+        <span class="p">{</span><span class="n">securityScheme</span><span class="p">,</span> <span class="n">Array</span><span class="p">.</span><span class="n">Empty</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;()}</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>For Swagger UI, I tend to use an “Implicit Flow”, therefore, we need to configure a valid redirect URI in order to prevent Keycloak from redirecting to malicious URLs.</p>
+
+<ol>
+  <li>On the left side bar click on “Clients” item.</li>
+  <li>Click “test-client”</li>
+  <li>Open “Settings” tab</li>
+  <li>Add Swagger UI URL <a href="http://localhost:5126/*">http://localhost:5126/*</a> to “Valid redirect URIs”</li>
+  <li>In “Web Origins” specify +</li>
+  <li>Click “Save”</li>
+</ol>
+
+<center>
+ <img src="/assets/keycloak-blazor/swagger-redirect-url.png" alt="swagger-redirect-url.png" />
+</center>
+
+<hr />
+
+<ol>
+  <li>Navigate <a href="http://localhost:5126/swagger/index.html">http://localhost:5126/swagger/index.html</a> and click “Authorize” button.</li>
+  <li>Scroll down to “Bearer (OAuth2, implicit)”</li>
+  <li>Specify client id: “test-client”</li>
+  <li>Click “Authorize” button</li>
+  <li>You will be redirected to Keycloak to enter the credentials  (user:user)</li>
+</ol>
+
+<center>
+ <img src="/assets/keycloak-blazor/access-token-from-swagger.png" alt="access-token-from-swagger.png" />
+</center>
+
+<hr />
+
+<p>Now, we can test the API from Swagger UI:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/api-from-swagger.png" alt="api-from-swagger.png" />
+</center>
+
+<h2 id="frontend-blazor-wasm">Frontend. Blazor WASM</h2>
+
+<p>Let’s start from basic principles, when a client (frontend) wants to gain access to remote services it asks Keycloak to obtain an access token it can use to invoke on other remote services on behalf of the user. Keycloak authenticates the user then asks the user for consent to grant access to the client requesting it. The client then receives the access token. This access token is digitally signed by the realm. The client can make HTTP invocations on remote services using this access token. The Web API extracts the access token, verifies the signature of the token, then decides based on access information within the token whether or not to process the request.</p>
+
+<p>In order to get access token in a secure manner, we need to consider various characteristics of an application performing the action. There are several different flows in the OAuth2 protocol. But for public clients (Native apps/SPAs) (i.e.: clients that can’t store secrets securely) the current recommended flow is “Authorization Code Flow with PKCE”. This flow is an extension to the “Authorization Code Flow”. Proof Key for Code Exchange (abbreviated PKCE, pronounced “pixie”) prevents CSRF and authorization code injection attacks. The technique involves the client first creating a secret on each authorization request, and then using that secret again when exchanging the authorization code for an access token. This way if the code is intercepted, it will not be useful since the token request relies on the initial secret. However PKCE is not a replacement for a client secret, and PKCE is recommended even if a client is using a client secret, since apps with a client secret are still susceptible to authorization code injection attacks.</p>
+
+<p>TODO: add diagram</p>
+
+<h3 id="integrate-with-keycloak-from-frontend-overview">Integrate with Keycloak from frontend. Overview</h3>
+
+<p>Blazor uses the existing ASP.NET Core authentication mechanisms to establish the user’s identity. The exact mechanism depends on how the Blazor app is hosted, Blazor WebAssembly or Blazor Server.</p>
+
+<p>Blazor WebAssembly supports authenticating and authorizing apps using OIDC via the <code class="highlighter-rouge">Microsoft.AspNetCore.Components.WebAssembly.Authentication</code> library. The library provides a set of primitives for seamlessly authenticating against ASP.NET Core backends. The authentication support in Blazor WebAssembly is built on top of the <code class="highlighter-rouge">oidc-client.js</code> library, which is used to handle the underlying authentication protocol details.</p>
+
+<blockquote>
+  <p>Other options for authenticating SPAs exist, such as the use of SameSite cookies. However, the engineering design of Blazor WebAssembly is settled on OAuth and OIDC as the best option for authentication in Blazor WebAssembly apps. Token-based authentication based on JSON Web Tokens (JWTs) was chosen over cookie-based authentication for functional and security reasons</p>
+</blockquote>
+
+<p>In broad terms, authentication works as follows:</p>
+
+<ul>
+  <li>When an anonymous user selects the login button or requests a page with the [Authorize] attribute applied, the user is redirected to the app’s login page (/authentication/login).</li>
+  <li>In the login page, the authentication library prepares for a redirect to the authorization endpoint. The authorization endpoint is outside of the Blazor WebAssembly app and can be hosted at a separate origin. The endpoint is responsible for determining whether the user is authenticated and for issuing one or more tokens in response. The authentication library provides a login callback to receive the authentication response.</li>
+  <li>When the Blazor WebAssembly app loads the login callback endpoint (/authentication/login-callback), the authentication response is processed.</li>
+</ul>
+
+<h3 id="authentication-component"><code class="highlighter-rouge">Authentication</code> component</h3>
+
+<p>The <code class="highlighter-rouge">Authentication</code> component handles remote authentication operations and permits the app to:</p>
+
+<ul>
+  <li>Configure app routes for authentication states.</li>
+  <li>Set UI content for authentication states.</li>
+  <li>Manage authentication state.</li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">@page</span> <span class="s">"/authentication/{action}"</span>
+<span class="n">@using</span> <span class="n">Microsoft</span><span class="p">.</span><span class="n">AspNetCore</span><span class="p">.</span><span class="n">Components</span><span class="p">.</span><span class="n">WebAssembly</span><span class="p">.</span><span class="n">Authentication</span>
+<span class="p">&lt;</span><span class="n">RemoteAuthenticatorView</span> <span class="n">Action</span><span class="p">=</span><span class="s">"@Action"</span> <span class="p">/&gt;</span>
+
+<span class="n">@code</span><span class="p">{</span>
+    <span class="p">[</span><span class="n">Parameter</span><span class="p">]</span> <span class="k">public</span> <span class="kt">string</span><span class="p">?</span> <span class="n">Action</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The Index page (wwwroot/index.html) page includes a script that defines the AuthenticationService in JavaScript. AuthenticationService handles the low-level details of the OIDC protocol. The app internally calls methods defined in the script to perform the authentication operations.</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<p>For more details and full instructions, please follow <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/standalone-with-authentication-library">https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/standalone-with-authentication-library</a>.</p>
+
+<h3 id="app-component"><code class="highlighter-rouge">App</code> Component</h3>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//App.razor</span>
+<span class="p">&lt;</span><span class="n">CascadingAuthenticationState</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="n">Router</span> <span class="n">AppAssembly</span><span class="p">=</span><span class="s">"@typeof(App).Assembly"</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="n">Found</span> <span class="n">Context</span><span class="p">=</span><span class="s">"routeData"</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="n">AuthorizeRouteView</span> <span class="n">RouteData</span><span class="p">=</span><span class="s">"@routeData"</span> <span class="n">DefaultLayout</span><span class="p">=</span><span class="s">"@typeof(MainLayout)"</span><span class="p">&gt;</span>
+                <span class="p">&lt;</span><span class="n">NotAuthorized</span><span class="p">&gt;</span>
+                    <span class="nf">@if</span> <span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">User</span><span class="p">.</span><span class="n">Identity</span><span class="p">?.</span><span class="n">IsAuthenticated</span> <span class="p">!=</span> <span class="k">true</span><span class="p">)</span>
+                    <span class="p">{</span>
+                        <span class="p">&lt;</span><span class="n">RedirectToLogin</span> <span class="p">/&gt;</span>
+                    <span class="p">}</span>
+                    <span class="k">else</span>
+                    <span class="p">{</span>
+                        <span class="p">&lt;</span><span class="n">p</span> <span class="n">role</span><span class="p">=</span><span class="s">"alert"</span><span class="p">&gt;</span><span class="n">You</span> <span class="n">are</span> <span class="n">not</span> <span class="n">authorized</span> <span class="n">to</span> <span class="n">access</span> <span class="k">this</span> <span class="n">resource</span><span class="p">.&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+                    <span class="p">}</span>
+                <span class="p">&lt;/</span><span class="n">NotAuthorized</span><span class="p">&gt;</span>
+            <span class="p">&lt;/</span><span class="n">AuthorizeRouteView</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="n">FocusOnNavigate</span> <span class="n">RouteData</span><span class="p">=</span><span class="s">"@routeData"</span> <span class="n">Selector</span><span class="p">=</span><span class="s">"h1"</span> <span class="p">/&gt;</span>
+        <span class="p">&lt;/</span><span class="n">Found</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="n">NotFound</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="n">PageTitle</span><span class="p">&gt;</span><span class="n">Not</span> <span class="n">found</span><span class="p">&lt;/</span><span class="n">PageTitle</span><span class="p">&gt;</span>
+            <span class="p">&lt;</span><span class="n">LayoutView</span> <span class="n">Layout</span><span class="p">=</span><span class="s">"@typeof(MainLayout)"</span><span class="p">&gt;</span>
+                <span class="p">&lt;</span><span class="n">p</span> <span class="n">role</span><span class="p">=</span><span class="s">"alert"</span><span class="p">&gt;</span><span class="n">Sorry</span><span class="p">,</span> <span class="n">there</span><span class="err">'</span><span class="n">s</span> <span class="n">nothing</span> <span class="n">at</span> <span class="k">this</span> <span class="n">address</span><span class="p">.&lt;/</span><span class="n">p</span><span class="p">&gt;</span>
+            <span class="p">&lt;/</span><span class="n">LayoutView</span><span class="p">&gt;</span>
+        <span class="p">&lt;/</span><span class="n">NotFound</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="n">Router</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="n">CascadingAuthenticationState</span><span class="p">&gt;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>The <code class="highlighter-rouge">CascadingAuthenticationState</code> component manages exposing the <code class="highlighter-rouge">AuthenticationState</code> to the rest of the app.</li>
+  <li>The <code class="highlighter-rouge">AuthorizeRouteView</code> component makes sure that the current user is authorized to access a given page or otherwise renders the <code class="highlighter-rouge">RedirectToLogin</code> component.</li>
+  <li>The <code class="highlighter-rouge">RedirectToLogin</code> component manages redirecting unauthorized users to the login page.</li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// RedirectToLogin.razor</span>
+<span class="n">@inject</span> <span class="n">NavigationManager</span> <span class="n">Navigation</span>
+
+<span class="n">@code</span> <span class="p">{</span>
+    <span class="k">protected</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnInitialized</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">Navigation</span><span class="p">.</span><span class="nf">NavigateTo</span><span class="p">(</span><span class="s">$"authentication/login?returnUrl=</span><span class="p">{</span><span class="n">Uri</span><span class="p">.</span><span class="nf">EscapeDataString</span><span class="p">(</span><span class="n">Navigation</span><span class="p">.</span><span class="n">Uri</span><span class="p">)}</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="configure-frontend">Configure frontend</h3>
+
+<p>Support for authenticating users is registered in the service container with the <code class="highlighter-rouge">AddOidcAuthentication</code> extension method provided by the <code class="highlighter-rouge">Microsoft.AspNetCore.Components.WebAssembly.Authentication</code> package. This method sets up the services required for the app to interact with the Identity Provider (IP).</p>
+
+<blockquote>
+  <p>❗ Note, the instructions below are not enough to reproduce the demo, please consult the source code for more details.</p>
+</blockquote>
+
+<p>The code below should be pretty self-explanatory:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.cs</span>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebAssemblyHostBuilder</span><span class="p">.</span><span class="nf">CreateDefault</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddOidcAuthentication</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">options</span><span class="p">.</span><span class="n">ProviderOptions</span><span class="p">.</span><span class="n">MetadataUrl</span> <span class="p">=</span> <span class="s">"http://localhost:8080/realms/Test/.well-known/openid-configuration"</span><span class="p">;</span>
+    <span class="n">options</span><span class="p">.</span><span class="n">ProviderOptions</span><span class="p">.</span><span class="n">Authority</span> <span class="p">=</span> <span class="s">"http://localhost:8080/realms/Test"</span><span class="p">;</span>
+    <span class="n">options</span><span class="p">.</span><span class="n">ProviderOptions</span><span class="p">.</span><span class="n">ClientId</span> <span class="p">=</span> <span class="s">"test-client"</span><span class="p">;</span>
+    <span class="n">options</span><span class="p">.</span><span class="n">ProviderOptions</span><span class="p">.</span><span class="n">ResponseType</span> <span class="p">=</span> <span class="s">"id_token token"</span><span class="p">;</span>
+
+    <span class="n">options</span><span class="p">.</span><span class="n">UserOptions</span><span class="p">.</span><span class="n">NameClaim</span> <span class="p">=</span> <span class="s">"preferred_username"</span><span class="p">;</span>
+    <span class="c1">// resource_access.${client_id}.roles was replaced to support ASP.NET Core </span>
+    <span class="n">options</span><span class="p">.</span><span class="n">UserOptions</span><span class="p">.</span><span class="n">RoleClaim</span> <span class="p">=</span> <span class="s">"roles"</span><span class="p">;</span>
+    <span class="n">options</span><span class="p">.</span><span class="n">UserOptions</span><span class="p">.</span><span class="n">ScopeClaim</span> <span class="p">=</span> <span class="s">"scope"</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>Now, we want to be able to use “client roles” as roles in ASP.NET Core Identity in Blazor WASM. In order to do that we need to create an additional mapper.</p>
+
+<ol>
+  <li>On the left side bar click on “Clients” item.</li>
+  <li>Click “test-client”</li>
+  <li>Open “Client scopes” tab</li>
+  <li>Click on “test-client-dedicated”, should be on tope of the list of scopes</li>
+  <li>From the “Mappers” tab, click “Create a new mapper”
+    <ol>
+      <li>specify Name: test-client-roles</li>
+      <li>specify Token Claim Name: roles</li>
+    </ol>
+  </li>
+  <li>Click “Save”</li>
+  <li>Open “Client scopes” tab</li>
+  <li>Click “Create role”
+    <ol>
+      <li>specify Role name: User</li>
+    </ol>
+  </li>
+</ol>
+
+<center>
+ <img src="/assets/keycloak-blazor/test-client-roles.png" alt="test-client-roles.png" />
+</center>
+<p><br /></p>
+
+<p>To assign a client role to a user:</p>
+
+<ol>
+  <li>On the left side bar click on “Users” item.</li>
+  <li>Select a “user” from the list</li>
+  <li>Open “Role mapping” tab</li>
+  <li>Click “Assign role”</li>
+  <li>Search for “User” and click “Assign”</li>
+</ol>
+
+<p>Here is how trimmed version of an access token looks like:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"realm_access"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="s2">"default-roles-test"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"offline_access"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"uma_authorization"</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"resource_access"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"test-client"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"User"</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"account"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"manage-account"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"manage-account-links"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"view-profile"</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"scope"</span><span class="p">:</span><span class="w"> </span><span class="s2">"openid profile email"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"sid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5bec6b83-d4e1-4bb9-84df-4a23292f5247"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"email_verified"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="s2">"User"</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="s2">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John Doe"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"preferred_username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"given_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"John"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"family_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Doe"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user@nikiforovall.com"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note, the “test-client” roles are duplicated into separate claim that can be used by ASP.NET Identity <code class="highlighter-rouge">options.UserOptions.RoleClaim = "roles"</code>.</p>
+
+<h3 id="demo">Demo</h3>
+
+<p>From “Home” page click “Fetch Data” tab. You will be presented with the next error:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/test-client-roles.png" alt="test-client-roles.png" />
+</center>
+<p><br /></p>
+
+<p>As you might have already guessed, we need to specify Blazor WASM application URL as a valid in order for Keycloak to trustfully redirect access tokens to it.</p>
+
+<ol>
+  <li>On the left side bar click on “Clients” item.</li>
+  <li>Click “test-client”</li>
+  <li>Open “Settings” tab</li>
+  <li>Add frontend URL <a href="https://localhost:7126/*">https://localhost:7126/*</a> to “Valid redirect URIs”</li>
+  <li>Click “Save”</li>
+</ol>
+
+<p>Now, we you can try again. This time you might see the next expected error:</p>
+
+<center>
+ <img src="/assets/keycloak-blazor/demo-no-access-token-error.png" alt="demo-no-access-token-error.png" />
+</center>
+<p><br /></p>
+
+<p>If you check the response from the backend, you will see the status <em>401 (Unauthorized)</em>. The problem is that you need to somehow propagate access token from the frontend to the backend.</p>
+
+<p>Luckily, it is quite easy to do by using built-in HTTP Client middleware. Code below shows how to add <code class="highlighter-rouge">BaseAddressAuthorizationMessageHandler</code> to the default <code class="highlighter-rouge">HttpClient</code> used throughout the application.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="k">void</span> <span class="nf">RegisterHttpClient</span><span class="p">(</span><span class="n">WebAssemblyHostBuilder</span> <span class="n">builder</span><span class="p">,</span> <span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">httpClientName</span> <span class="p">=</span> <span class="s">"Default"</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">baseAddress</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="n">HostEnvironment</span><span class="p">.</span><span class="n">BaseAddress</span><span class="p">);</span>
+
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddHttpClient</span><span class="p">(</span><span class="n">httpClientName</span><span class="p">,</span> <span class="n">client</span> <span class="p">=&gt;</span> <span class="n">client</span><span class="p">.</span><span class="n">BaseAddress</span> <span class="p">=</span> <span class="n">baseAddress</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">AddHttpMessageHandler</span><span class="p">&lt;</span><span class="n">BaseAddressAuthorizationMessageHandler</span><span class="p">&gt;();</span>
+
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddScoped</span><span class="p">(</span><span class="n">sp</span> <span class="p">=&gt;</span> <span class="n">sp</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="p">&lt;</span><span class="n">IHttpClientFactory</span><span class="p">&gt;().</span><span class="nf">CreateClient</span><span class="p">(</span><span class="n">httpClientName</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>
+ <img src="/assets/keycloak-blazor/demo-success.png" alt="demo-success.png" />
+</center>
+
+<p>🎉 Hooray. We have successfully integrated Keycloak with Blazor WebAssembly application.</p>
+
+<h2 id="reference">Reference</h2>
+
+<ul>
+  <li><a href="https://www.keycloak.org/docs/latest/securing_apps/index.html">https://www.keycloak.org/docs/latest/securing_apps/index.html</a></li>
+  <li><a href="https://www.keycloak.org/docs/latest/authorization_services/index.html">https://www.keycloak.org/docs/latest/authorization_services/index.html</a></li>
+  <li><a href="https://auth0.com/docs/get-started/authentication-and-authorization-flow">https://auth0.com/docs/get-started/authentication-and-authorization-flow</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow">https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc">https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc</a></li>
+  <li><a href="https://www.oauth.com/oauth2-servers/pkce/">https://www.oauth.com/oauth2-servers/pkce/</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/security">https://learn.microsoft.com/en-us/aspnet/core/blazor/security</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly">https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/standalone-with-authentication-library">https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/standalone-with-authentication-library</a></li>
+  <li><a href="https://github.com/NikiforovAll/keycloak-authorization-services-dotnet">https://github.com/NikiforovAll/keycloak-authorization-services-dotnet</a></li>
+</ul>
+
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#blazor-ref">
+				blazor <span>(1)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(19)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(8)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(25)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#auth-ref">
+				auth <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#keycloak-ref">
+				keycloak <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#blazor-ref">
+				blazor <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Use Keycloak as Identity Provider in Blazor WebAssembly (WASM)&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/2022/08/26/persisted-parameters-in-dotnet-cli.html" title="Add persisted parameters to CLI applications in .NET">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2022 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript"
+  src="https://unpkg.com/mermaid@9.1.4/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
