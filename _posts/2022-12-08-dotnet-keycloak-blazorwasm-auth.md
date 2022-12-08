@@ -397,7 +397,11 @@ Let's start with basic principles. When a client (frontend) wants to gain access
 
 To get an access token securely, we need to consider various characteristics of an application performing the action. There are several different flows in the OAuth2 protocol. But for public clients (clients that can't store secrets securely, e.g.:  Native apps/SPAs) the current recommended flow is "Authorization Code Flow with PKCE". This flow is an extension of the "Authorization Code Flow". Proof Key for Code Exchange (abbreviated PKCE, pronounced “pixie”) prevents CSRF and authorization code injection attacks. The technique involves the client first creating a secret on each authorization request, and then using that secret again when exchanging the authorization code for an access token. This way if the code is intercepted, it will not be useful since the token request relies on the initial secret. However PKCE is not a replacement for a client secret, and PKCE is recommended even if a client is using a client secret since apps with a client secret are still susceptible to authorization code injection attacks.
 
-TODO: add diagram
+See: <https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce>
+
+<center>
+ <img src="/assets/keycloak-blazor/auth-sequence-auth-code-pkce.png" alt="auth-sequence-auth-code-pkce">
+</center>
 
 ### Integrate with Keycloak from the frontend. Overview
 
