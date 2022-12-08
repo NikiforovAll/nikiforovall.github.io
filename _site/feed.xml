@@ -7,11 +7,11 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
-				<title>Use Keycloak as Identity Provider in Blazor WebAssembly (WASM)</title>
+				<title>Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications</title>
 				<description>&lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#example-project-overview&quot;&gt;Example project overview&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#configure-keycloak-add-authentication&quot;&gt;Configure Keycloak. Add Authentication&lt;/a&gt;
+  &lt;li&gt;&lt;a href=&quot;#example-overview&quot;&gt;Example overview&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#backend-configure-keycloak-add-authentication&quot;&gt;Backend. Configure Keycloak. Add Authentication&lt;/a&gt;
     &lt;ul&gt;
       &lt;li&gt;&lt;a href=&quot;#start-keycloak-in-a-development-mode&quot;&gt;Start Keycloak in a development mode&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#configure-realm&quot;&gt;Configure Realm&lt;/a&gt;&lt;/li&gt;
@@ -21,10 +21,10 @@
   &lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;#frontend-blazor-wasm&quot;&gt;Frontend. Blazor WASM&lt;/a&gt;
     &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#integrate-with-keycloak-from-frontend-overview&quot;&gt;Integrate with Keycloak from frontend. Overview&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#integrate-with-keycloak-from-the-frontend-overview&quot;&gt;Integrate with Keycloak from the frontend. Overview&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#authentication-component&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Authentication&lt;/code&gt; component&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#app-component&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;App&lt;/code&gt; Component&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#configure-frontend&quot;&gt;Configure frontend&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#configure-authenticationservice&quot;&gt;Configure &lt;code class=&quot;highlighter-rouge&quot;&gt;AuthenticationService&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
       &lt;li&gt;&lt;a href=&quot;#demo&quot;&gt;Demo&lt;/a&gt;&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
@@ -37,7 +37,7 @@
 
 &lt;p&gt;Source code: &lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/blob/main/samples/Blazor&quot;&gt;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/blob/main/samples/Blazor&lt;/a&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;example-project-overview&quot;&gt;Example project overview&lt;/h2&gt;
+&lt;h2 id=&quot;example-overview&quot;&gt;Example overview&lt;/h2&gt;
 
 &lt;p&gt;Basically, we have a trimmed and modified version of the default template for Blazor WASM. You can generate the code I started from by running &lt;code class=&quot;highlighter-rouge&quot;&gt;dotnet new blazorwasm -n Blazor&lt;/code&gt;.&lt;/p&gt;
 
@@ -104,7 +104,7 @@
 
 &lt;p&gt;Before we look at BlazorWASM (aka client-side), we need to add authentication to a backend.&lt;/p&gt;
 
-&lt;h2 id=&quot;configure-keycloak-add-authentication&quot;&gt;Configure Keycloak. Add Authentication&lt;/h2&gt;
+&lt;h2 id=&quot;backend-configure-keycloak-add-authentication&quot;&gt;Backend. Configure Keycloak. Add Authentication&lt;/h2&gt;
 
 &lt;p&gt;Keycloak supports both OpenID Connect and SAML protocols. OpenID Connect (OIDC) is an authentication protocol that is an extension of OAuth 2.0. While OAuth 2.0 is only a framework for building authorization protocols and is mainly incomplete, OIDC is a full-fledged authentication and authorization protocol. OIDC also makes heavy use of the Json Web Token (JWT) set of standards. These standards define an identity token JSON format and ways to digitally sign and encrypt that data in a compact and web-friendly way.&lt;/p&gt;
 
@@ -273,7 +273,9 @@
 &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;💡⚠ Note, by default, &lt;code class=&quot;highlighter-rouge&quot;&gt;Keycloak.AuthServices.Authentication&lt;/code&gt; assumes that the intended &lt;em&gt;Audience&lt;/em&gt; is the “resource”. And it is something that we &lt;strong&gt;must&lt;/strong&gt; configure additionally for &lt;code class=&quot;highlighter-rouge&quot;&gt;quay.io/keycloak/keycloak:19.0.1&lt;/code&gt;. Alternatively, for development purposes, you may want to change “resource” to the audience that is provided by default - “account”.&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;💡⚠ Note, by default, &lt;code class=&quot;highlighter-rouge&quot;&gt;Keycloak.AuthServices.Authentication&lt;/code&gt; assumes that the intended &lt;em&gt;Audience&lt;/em&gt; is the “resource”. And it is something that we &lt;strong&gt;must&lt;/strong&gt; configure additionally for &lt;code class=&quot;highlighter-rouge&quot;&gt;quay.io/keycloak/keycloak:19.0.1&lt;/code&gt;. Alternatively, for development purposes, you may want to change “resource” to the audience that is provided by default - “account”.&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;Let’s see how to add an audience to a client by using client scopes. Client scope defines a set of mappers that shape the content of access and id tokens. For example, all newly created clients by default have a bunch of client scopes assigned such as &lt;em&gt;email&lt;/em&gt;, &lt;em&gt;profile&lt;/em&gt;, &lt;em&gt;roles&lt;/em&gt;. As you might guess, these client scopes are responsible for adding well-known claims as part of the OpenId Connect protocol.&lt;/p&gt;
 
@@ -345,7 +347,7 @@
 &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Sure enough, we can see the “test-client” in the intended audience. Make sure it is specified in “resource” from the Keycloak adapter config file and we are ready to access some APIs.&lt;/p&gt;
+&lt;p&gt;Sure enough, we can see the “test-client” in the intended audience claim “aud”. Make sure it is specified in “resource” from the Keycloak adapter config file and we are ready to access some APIs.&lt;/p&gt;
 
 &lt;h3 id=&quot;get-access-token-from-swagger-ui&quot;&gt;Get access token from Swagger UI&lt;/h3&gt;
 
@@ -421,13 +423,13 @@
 
 &lt;h2 id=&quot;frontend-blazor-wasm&quot;&gt;Frontend. Blazor WASM&lt;/h2&gt;
 
-&lt;p&gt;Let’s start from basic principles, when a client (frontend) wants to gain access to remote services it asks Keycloak to obtain an access token it can use to invoke on other remote services on behalf of the user. Keycloak authenticates the user then asks the user for consent to grant access to the client requesting it. The client then receives the access token. This access token is digitally signed by the realm. The client can make HTTP invocations on remote services using this access token. The Web API extracts the access token, verifies the signature of the token, then decides based on access information within the token whether or not to process the request.&lt;/p&gt;
+&lt;p&gt;Let’s start with basic principles. When a client (frontend) wants to gain access to remote services it asks Keycloak to get an access token it can use to invoke other remote services on behalf of the user. Keycloak authenticates the user and then asks the user for consent to grant access to the client requesting it. The client then receives the access token. This access token is digitally signed by the realm. The client can make HTTP invocations on remote services using this access token. The Web API extracts the access token, verifies the signature of the token, then decides based on access information within the token whether to process the request.&lt;/p&gt;
 
-&lt;p&gt;In order to get access token in a secure manner, we need to consider various characteristics of an application performing the action. There are several different flows in the OAuth2 protocol. But for public clients (Native apps/SPAs) (i.e.: clients that can’t store secrets securely) the current recommended flow is “Authorization Code Flow with PKCE”. This flow is an extension to the “Authorization Code Flow”. Proof Key for Code Exchange (abbreviated PKCE, pronounced “pixie”) prevents CSRF and authorization code injection attacks. The technique involves the client first creating a secret on each authorization request, and then using that secret again when exchanging the authorization code for an access token. This way if the code is intercepted, it will not be useful since the token request relies on the initial secret. However PKCE is not a replacement for a client secret, and PKCE is recommended even if a client is using a client secret, since apps with a client secret are still susceptible to authorization code injection attacks.&lt;/p&gt;
+&lt;p&gt;To get an access token securely, we need to consider various characteristics of an application performing the action. There are several different flows in the OAuth2 protocol. But for public clients (clients that can’t store secrets securely, e.g.:  Native apps/SPAs) the current recommended flow is “Authorization Code Flow with PKCE”. This flow is an extension of the “Authorization Code Flow”. Proof Key for Code Exchange (abbreviated PKCE, pronounced “pixie”) prevents CSRF and authorization code injection attacks. The technique involves the client first creating a secret on each authorization request, and then using that secret again when exchanging the authorization code for an access token. This way if the code is intercepted, it will not be useful since the token request relies on the initial secret. However PKCE is not a replacement for a client secret, and PKCE is recommended even if a client is using a client secret since apps with a client secret are still susceptible to authorization code injection attacks.&lt;/p&gt;
 
 &lt;p&gt;TODO: add diagram&lt;/p&gt;
 
-&lt;h3 id=&quot;integrate-with-keycloak-from-frontend-overview&quot;&gt;Integrate with Keycloak from frontend. Overview&lt;/h3&gt;
+&lt;h3 id=&quot;integrate-with-keycloak-from-the-frontend-overview&quot;&gt;Integrate with Keycloak from the frontend. Overview&lt;/h3&gt;
 
 &lt;p&gt;Blazor uses the existing ASP.NET Core authentication mechanisms to establish the user’s identity. The exact mechanism depends on how the Blazor app is hosted, Blazor WebAssembly or Blazor Server.&lt;/p&gt;
 
@@ -441,7 +443,7 @@
 
 &lt;ul&gt;
   &lt;li&gt;When an anonymous user selects the login button or requests a page with the [Authorize] attribute applied, the user is redirected to the app’s login page (/authentication/login).&lt;/li&gt;
-  &lt;li&gt;In the login page, the authentication library prepares for a redirect to the authorization endpoint. The authorization endpoint is outside of the Blazor WebAssembly app and can be hosted at a separate origin. The endpoint is responsible for determining whether the user is authenticated and for issuing one or more tokens in response. The authentication library provides a login callback to receive the authentication response.&lt;/li&gt;
+  &lt;li&gt;On the login page, the authentication library prepares for a redirect to the authorization endpoint. The authorization endpoint is outside of the Blazor WebAssembly app and can be hosted at a separate origin. The endpoint is responsible for determining whether the user is authenticated and for issuing one or more tokens in response. The authentication library provides a login callback to receive the authentication response.&lt;/li&gt;
   &lt;li&gt;When the Blazor WebAssembly app loads the login callback endpoint (/authentication/login-callback), the authentication response is processed.&lt;/li&gt;
 &lt;/ul&gt;
 
@@ -464,7 +466,7 @@
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;The Index page (wwwroot/index.html) page includes a script that defines the AuthenticationService in JavaScript. AuthenticationService handles the low-level details of the OIDC protocol. The app internally calls methods defined in the script to perform the authentication operations.&lt;/p&gt;
+&lt;p&gt;The Index page (wwwroot/index.html) page includes a script that defines the &lt;code class=&quot;highlighter-rouge&quot;&gt;AuthenticationService&lt;/code&gt; in JavaScript. &lt;code class=&quot;highlighter-rouge&quot;&gt;AuthenticationService&lt;/code&gt; handles the low-level details of the OIDC protocol. The app internally calls methods defined in the script to perform the authentication operations.&lt;/p&gt;
 
 &lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;script &lt;/span&gt;&lt;span class=&quot;na&quot;&gt;src=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -518,13 +520,9 @@
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;h3 id=&quot;configure-frontend&quot;&gt;Configure frontend&lt;/h3&gt;
+&lt;h3 id=&quot;configure-authenticationservice&quot;&gt;Configure &lt;code class=&quot;highlighter-rouge&quot;&gt;AuthenticationService&lt;/code&gt;&lt;/h3&gt;
 
 &lt;p&gt;Support for authenticating users is registered in the service container with the &lt;code class=&quot;highlighter-rouge&quot;&gt;AddOidcAuthentication&lt;/code&gt; extension method provided by the &lt;code class=&quot;highlighter-rouge&quot;&gt;Microsoft.AspNetCore.Components.WebAssembly.Authentication&lt;/code&gt; package. This method sets up the services required for the app to interact with the Identity Provider (IP).&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;❗ Note, the instructions below are not enough to reproduce the demo, please consult the source code for more details.&lt;/p&gt;
-&lt;/blockquote&gt;
 
 &lt;p&gt;The code below should be pretty self-explanatory:&lt;/p&gt;
 
@@ -539,19 +537,18 @@
     &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ProviderOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ResponseType&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;id_token token&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
 
     &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UserOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NameClaim&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;preferred_username&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// resource_access.${client_id}.roles was replaced to support ASP.NET Core &lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UserOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RoleClaim&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;roles&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UserOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ScopeClaim&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;scope&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Now, we want to be able to use “client roles” as roles in ASP.NET Core Identity in Blazor WASM. In order to do that we need to create an additional mapper.&lt;/p&gt;
+&lt;p&gt;Now, we want to be able to use “client roles” as roles in ASP.NET Core Identity in Blazor WASM. To do that we need to create an additional mapper.&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;On the left side bar click on “Clients” item.&lt;/li&gt;
   &lt;li&gt;Click “test-client”&lt;/li&gt;
   &lt;li&gt;Open “Client scopes” tab&lt;/li&gt;
-  &lt;li&gt;Click on “test-client-dedicated”, should be on tope of the list of scopes&lt;/li&gt;
+  &lt;li&gt;Click on “test-client-dedicated”, should be on top of the list of scopes&lt;/li&gt;
   &lt;li&gt;From the “Mappers” tab, click “Create a new mapper”
     &lt;ol&gt;
       &lt;li&gt;specify Name: test-client-roles&lt;/li&gt;
@@ -582,7 +579,7 @@
   &lt;li&gt;Search for “User” and click “Assign”&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;Here is how trimmed version of an access token looks like:&lt;/p&gt;
+&lt;p&gt;Here is how a trimmed version of an access token looks like:&lt;/p&gt;
 
 &lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
   &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;realm_access&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
@@ -627,11 +624,11 @@
 &lt;p&gt;From “Home” page click “Fetch Data” tab. You will be presented with the next error:&lt;/p&gt;
 
 &lt;center&gt;
- &lt;img src=&quot;/assets/keycloak-blazor/test-client-roles.png&quot; alt=&quot;test-client-roles.png&quot; /&gt;
+ &lt;img src=&quot;/assets/keycloak-blazor/demo-redirect-error.png&quot; alt=&quot;demo-redirect-error.png&quot; /&gt;
 &lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;As you might have already guessed, we need to specify Blazor WASM application URL as a valid in order for Keycloak to trustfully redirect access tokens to it.&lt;/p&gt;
+&lt;p&gt;As you might have already guessed, we need to specify Blazor WASM application URL as valid in order for Keycloak to trustfully redirect access tokens to it.&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;On the left side bar click on “Clients” item.&lt;/li&gt;
@@ -648,9 +645,9 @@
 &lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;If you check the response from the backend, you will see the status &lt;em&gt;401 (Unauthorized)&lt;/em&gt;. The problem is that you need to somehow propagate access token from the frontend to the backend.&lt;/p&gt;
+&lt;p&gt;If you check the response from the backend, you will see the status &lt;em&gt;401 (Unauthorized)&lt;/em&gt;. The problem is that you need to somehow propagate an access token from the frontend to the backend.&lt;/p&gt;
 
-&lt;p&gt;Luckily, it is quite easy to do by using built-in HTTP Client middleware. Code below shows how to add &lt;code class=&quot;highlighter-rouge&quot;&gt;BaseAddressAuthorizationMessageHandler&lt;/code&gt; to the default &lt;code class=&quot;highlighter-rouge&quot;&gt;HttpClient&lt;/code&gt; used throughout the application.&lt;/p&gt;
+&lt;p&gt;Luckily, it is quite easy to do by using built-in HTTP Client middleware. The code below shows how to add &lt;code class=&quot;highlighter-rouge&quot;&gt;BaseAddressAuthorizationMessageHandler&lt;/code&gt; to the default &lt;code class=&quot;highlighter-rouge&quot;&gt;HttpClient&lt;/code&gt; used throughout the application.&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;RegisterHttpClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebAssemblyHostBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IServiceCollection&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -670,6 +667,10 @@
 
 &lt;p&gt;🎉 Hooray. We have successfully integrated Keycloak with Blazor WebAssembly application.&lt;/p&gt;
 
+&lt;blockquote&gt;
+  &lt;p&gt;❗ Note, the instructions above are not intended to be a step-by-step guide, please consult the source code for more details.&lt;/p&gt;
+&lt;/blockquote&gt;
+
 &lt;h2 id=&quot;reference&quot;&gt;Reference&lt;/h2&gt;
 
 &lt;ul&gt;
@@ -684,7 +685,6 @@
   &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/standalone-with-authentication-library&quot;&gt;https://learn.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/standalone-with-authentication-library&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet&quot;&gt;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
-
 </description>
 				<pubDate>Thu, 08 Dec 2022 00:00:00 -0600</pubDate>
 				<link>https://nikiforovall.github.io/blazor/dotnet/2022/12/08/dotnet-keycloak-blazorwasm-auth.html</link>
