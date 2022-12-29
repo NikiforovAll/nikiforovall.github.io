@@ -29,7 +29,7 @@ Source code: <https://github.com/NikiforovAll/keycloak-authorization-services-do
 
 > Keycloak - Open Source Identity and Access Management. Add authentication to applications and secure services with minimum effort. No need to deal with storing users or authenticating users. Keycloak provides user federation, strong authentication, user management, fine-grained authorization, and more.
 
-Personally, I'm a big of Keycloak because it is a mature and full-fledged identity and access management system. It contains everything you might need for most of the scenarios. Contrary to [IdentityServer](https://duendesoftware.com/products/identityserver) it is easy to use out-of-the-box with no code required to get things going. If *Azure Active Directory* is not an option for some reason I definitely consider Keycloak as a viable open-source option that could be installed on-prem.
+Personally, I'm a big fan of Keycloak because it is a mature and full-fledged identity and access management system. It contains everything you might need for most of the scenarios. Contrary to [IdentityServer](https://duendesoftware.com/products/identityserver) it is easy to use out-of-the-box with no code required to get things going. If *Azure Active Directory* is not an option for some reason I definitely consider Keycloak as a viable open-source option that could be installed on-prem.
 
 **Features**:
 

@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Keycloak as Authorization Server in .NET</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Keycloak as Authorization Server in .NET </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			December
+			28th,
+			
+			2022
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/blazor/dotnet/2022/12/08/dotnet-keycloak-blazorwasm-auth.html">Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications <span class="label label-default">aspnetcore</span>  <span class="label label-default">dotnet</span>  <span class="label label-default">auth</span>  <span class="label label-default">keycloak</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/aspnetcore/dotnet/2022/08/24/dotnet-keycloak-auth.html">Use Keycloak as Identity Provider in ASP.NET Core 6 <span class="label label-default">aspnetcore</span>  <span class="label label-default">dotnet</span>  <span class="label label-default">auth</span>  <span class="label label-default">keycloak</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#example-overview">Example Overview</a>
+    <ul>
+      <li><a href="#configure-keycloak">Configure Keycloak</a></li>
+      <li><a href="#authorization-based-on-aspnet-core-identity-roles">Authorization based on ASP.NET Core Identity roles</a></li>
+      <li><a href="#authorization-based-on-keycloak-realm-and-client-roles">Authorization based on Keycloak realm and client roles</a></li>
+      <li><a href="#authorization-based-on-authorization-server-permissions">Authorization based on Authorization Server permissions</a></li>
+    </ul>
+  </li>
+  <li><a href="#the-power-of-authorization-server---define-policies-and-permissions">The power of Authorization Server - define policies and permissions</a>
+    <ul>
+      <li><a href="#evaluate-permissions">Evaluate permissions</a></li>
+      <li><a href="#demo">Demo</a></li>
+    </ul>
+  </li>
+  <li><a href="#summary">Summary</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="tldr">TL;DR</h2>
+
+<p><code class="highlighter-rouge">Keycloak.AuthService.Authorization</code> provides a toolkit to use Keycloak as Authorization Server. An authorization Server is a powerful abstraction that allows to control authorization concerns. An authorization Server is also advantageous in microservices scenario because it serves as a centralized place for IAM and access control.</p>
+
+<p><code class="highlighter-rouge">Keycloak.AuthServices.Authorization</code>: <a href="https://github.com/NikiforovAll/keycloak-authorization-services-dotnet#keycloakauthservicesauthorization">https://github.com/NikiforovAll/keycloak-authorization-services-dotnet#keycloakauthservicesauthorization</a></p>
+
+<p>Example source code: <a href="https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/samples/AuthZGettingStarted">https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/samples/AuthZGettingStarted</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Authorization refers to the process that determines what a user is able to do.ASP.NET Core authorization provides a simple, declarative role and a rich policy-based model. Authorization is expressed in requirements, and handlers evaluate a user’s claims against requirements. Imperative checks can be based on simple policies or policies which evaluate both the user identity and properties of the resource that the user is attempting to access.</p>
+
+<p>Resource servers (applications or services serving protected resources) usually rely on some kind of information to decide if access should be granted to a protected resource. For RESTful-based resource servers, that information is usually obtained from a security token, usually sent as a bearer token on every request to the server. For web applications that rely on a session to authenticate users, that information is usually stored in a user’s session and retrieved from there for each request.</p>
+
+<p>Keycloak is based on a set of administrative UIs and a RESTful API, and provides the necessary means to create permissions for your protected resources and scopes, associate those permissions with authorization policies, and enforce authorization decisions in your applications and services.</p>
+
+<p>Considering that today we need to consider heterogeneous environments where users are distributed across different regions, with different local policies, using different devices, and with a high demand for information sharing, Keycloak Authorization Services can help you improve the authorization capabilities of your applications and services by providing:</p>
+
+<ul>
+  <li>Resource protection using fine-grained authorization policies and different access control mechanisms</li>
+  <li>Centralized Resource, Permission, and Policy Management</li>
+  <li>Centralized Policy Decision Point</li>
+  <li>REST security based on a set of REST-based authorization services</li>
+  <li>Authorization workflows and User-Managed Access</li>
+  <li>The infrastructure to help avoid code replication across projects (and redeploys) and quickly adapt to changes in your security requirements.</li>
+</ul>
+
+<h2 id="example-overview">Example Overview</h2>
+
+<p>In this blog post I will demonstrate how to perform authorization in two ways:</p>
+
+<ul>
+  <li>Role-based access control (RBAC) check executed by <em>Resource Server (API)</em>
+    <ul>
+      <li><code class="highlighter-rouge">/endpint1</code> - required ASP.NET Core identity role</li>
+      <li><code class="highlighter-rouge">/endpint2</code> - required realm role</li>
+      <li><code class="highlighter-rouge">/endpint3</code> - required client role</li>
+    </ul>
+  </li>
+  <li>Remote authorization policy check executed by <em>Authorization Server (Keycloak)</em>
+    <ul>
+      <li><code class="highlighter-rouge">/endpint4</code> - remotely executed policy selected for “workspace” - resource, “workspaces:read” - scope.</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span>
+    <span class="p">.</span><span class="nf">UseHttpsRedirection</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">UseApplicationSwagger</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">UseAuthentication</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">UseAuthorization</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/endpoint1"</span><span class="p">,</span> <span class="p">(</span><span class="n">ClaimsPrincipal</span> <span class="n">user</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">user</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">RequireAuthorization</span><span class="p">(</span><span class="n">RequireAspNetCoreRole</span><span class="p">);</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/endpoint2"</span><span class="p">,</span> <span class="p">(</span><span class="n">ClaimsPrincipal</span> <span class="n">user</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">user</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">RequireAuthorization</span><span class="p">(</span><span class="n">RequireRealmRole</span><span class="p">);</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/endpoint3"</span><span class="p">,</span> <span class="p">(</span><span class="n">ClaimsPrincipal</span> <span class="n">user</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">user</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">RequireAuthorization</span><span class="p">(</span><span class="n">RequireClientRole</span><span class="p">);</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/endpoint4"</span><span class="p">,</span> <span class="p">(</span><span class="n">ClaimsPrincipal</span> <span class="n">user</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">user</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">RequireAuthorization</span><span class="p">(</span><span class="n">RequireToBeInKeycloakGroupAsReader</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">app</span><span class="p">.</span><span class="nf">RunAsync</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Project structure:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>tree <span class="nt">-L</span> 2
+<span class="nb">.</span>
+├── AuthZGettingStarted.csproj
+├── Program.cs
+├── Properties
+│   └── launchSettings.json
+├── ServiceCollectionExtensions.Auth.cs
+├── ServiceCollectionExtensions.Logging.cs
+├── ServiceCollectionExtensions.OpenApi.cs
+├── appsettings.Development.json
+├── appsettings.json
+├── assets
+│   ├── realm-export.json
+│   └── run.http
+└── docker-compose.yml
+</code></pre></div></div>
+
+<p>Entry point:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">configuration</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">services</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">;</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddSerilog</span><span class="p">();</span>
+<span class="n">services</span>
+    <span class="p">.</span><span class="nf">AddApplicationSwagger</span><span class="p">(</span><span class="n">configuration</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">AddAuth</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Register AuthN and AuthZ services in Dependency Injection container:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">IServiceCollection</span> <span class="nf">AddAuth</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">IServiceCollection</span> <span class="n">services</span><span class="p">,</span> <span class="n">IConfiguration</span> <span class="n">configuration</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddKeycloakAuthentication</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddAuthorization</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+            <span class="n">Policies</span><span class="p">.</span><span class="n">RequireAspNetCoreRole</span><span class="p">,</span>
+            <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span><span class="p">.</span><span class="nf">RequireRole</span><span class="p">(</span><span class="n">Roles</span><span class="p">.</span><span class="n">AspNetCoreRole</span><span class="p">));</span>
+
+        <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+            <span class="n">Policies</span><span class="p">.</span><span class="n">RequireRealmRole</span><span class="p">,</span>
+            <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span><span class="p">.</span><span class="nf">RequireRealmRoles</span><span class="p">(</span><span class="n">Roles</span><span class="p">.</span><span class="n">RealmRole</span><span class="p">));</span>
+
+        <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+            <span class="n">Policies</span><span class="p">.</span><span class="n">RequireClientRole</span><span class="p">,</span>
+            <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span><span class="p">.</span><span class="nf">RequireResourceRoles</span><span class="p">(</span><span class="n">Roles</span><span class="p">.</span><span class="n">ClientRole</span><span class="p">));</span>
+
+        <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+            <span class="n">Policies</span><span class="p">.</span><span class="n">RequireToBeInKeycloakGroupAsReader</span><span class="p">,</span>
+            <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span>
+                <span class="p">.</span><span class="nf">RequireAuthenticatedUser</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">RequireProtectedResource</span><span class="p">(</span><span class="s">"workspace"</span><span class="p">,</span> <span class="s">"workspaces:read"</span><span class="p">));</span>
+
+    <span class="p">}).</span><span class="nf">AddKeycloakAuthorization</span><span class="p">(</span><span class="n">configuration</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">services</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">AuthorizationConstants</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">Roles</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">AspNetCoreRole</span> <span class="p">=</span> <span class="s">"realm-role"</span><span class="p">;</span>
+
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RealmRole</span> <span class="p">=</span> <span class="s">"realm-role"</span><span class="p">;</span>
+
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">ClientRole</span> <span class="p">=</span> <span class="s">"client-role"</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">Policies</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RequireAspNetCoreRole</span> <span class="p">=</span> <span class="k">nameof</span><span class="p">(</span><span class="n">RequireAspNetCoreRole</span><span class="p">);</span>
+
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RequireRealmRole</span> <span class="p">=</span> <span class="k">nameof</span><span class="p">(</span><span class="n">RequireRealmRole</span><span class="p">);</span>
+
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RequireClientRole</span> <span class="p">=</span> <span class="k">nameof</span><span class="p">(</span><span class="n">RequireClientRole</span><span class="p">);</span>
+
+        <span class="k">public</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">RequireToBeInKeycloakGroupAsReader</span> <span class="p">=</span> 
+            <span class="k">nameof</span><span class="p">(</span><span class="n">RequireToBeInKeycloakGroupAsReader</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="configure-keycloak">Configure Keycloak</h3>
+
+<p>In this post I’m going to skip basic Keycloak installation and configuration, please see my previous posts for more details <a href="https://nikiforovall.github.io/tags.html#keycloak-ref">https://nikiforovall.github.io/tags.html#keycloak-ref</a>.</p>
+
+<p>Prerequisites:</p>
+
+<ol>
+  <li>Create a realm named: <strong>Test</strong></li>
+  <li>Create a user with username/password: <strong>user/user</strong></li>
+  <li>Create a realm role: <strong>realm-role</strong></li>
+  <li>Create a client: <strong>test-client</strong>
+    <ol>
+      <li>Create an audience mapper: <strong>Audience</strong> ➡ <strong>test-client</strong></li>
+      <li>Enable <strong>Client Authentication</strong> and <strong>Authorization</strong></li>
+      <li>Enable <strong>Implicit flow</strong> and add a valid redirect URL (used by Swagger to retrieve a token)</li>
+    </ol>
+  </li>
+  <li>Create a client role: <strong>client-role</strong></li>
+  <li>Create a group called <strong>workspace</strong> and add the “user” to it</li>
+</ol>
+
+<p>Full Keycloak configuration (including the steps below) can be found at <a href="https://gist.github.com/NikiforovAll/c5524c3f1dac9249935d2a6e84b532fd">realm-export.json</a></p>
+
+<h3 id="authorization-based-on-aspnet-core-identity-roles">Authorization based on ASP.NET Core Identity roles</h3>
+
+<p><code class="highlighter-rouge">Keycloak.AuthService.Authentication</code> ads the <code class="highlighter-rouge">KeycloakRolesClaimsTransformation</code> that maps roles provided by Keycloak. The source for <code class="highlighter-rouge">role</code> claim could be one of the following:</p>
+
+<ul>
+  <li>Realm - map realm roles</li>
+  <li>ResourceAccess - map client roles</li>
+  <li>None - don’t map</li>
+</ul>
+
+<div class="mermaid">
+flowchart LR
+    AddKeycloakAuthentication --&gt; AddAuthentication
+    AddKeycloakAuthentication --&gt; KeycloakRolesClaimsTransformation
+</div>
+
+<p>Depending on your needs, you can use realm roles, client roles or skip automatic role mapping/transformation. The role claims transformation is based on the config. For example, here is how to use realms role for ASP.NET Core Identity roles. As result, you can use build-in <a href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/roles">role-based authorization</a>.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"Keycloak"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"realm"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Test"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"auth-server-url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:8080/"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"ssl-required"</span><span class="p">:</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"verify-token-audience"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"credentials"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"secret"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"confidential-port"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"RolesSource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Realm"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>So, for a user with the next access token generated by Keycloak the roles are effectively evaluated to “realm-role”, “default-roles-test”, “offline_access”, “uma_authorization”. And if you change “RolesSource” to “ResourceAccess” it would be “client-role”.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="s2">"exp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1672275584</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"iat"</span><span class="p">:</span><span class="w"> </span><span class="mi">1672275284</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"jti"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1ce527e6-b852-48e9-b27b-ed8cc01cf518"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"iss"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost:8080/realms/Test"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"aud"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"account"</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="s2">"sub"</span><span class="p">:</span><span class="w"> </span><span class="s2">"8fd9060e-9e3f-4107-94f6-6c3a242fb91a"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"typ"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Bearer"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"azp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test-client"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"session_state"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c32e4165-f9bd-4d4c-93bd-3847f4ffc697"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"acr"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"realm_access"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+      </span><span class="s2">"realm-role"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"default-roles-test"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"offline_access"</span><span class="p">,</span><span class="w">
+      </span><span class="s2">"uma_authorization"</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"resource_access"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="s2">"test-client"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"client-role"</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="s2">"account"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="s2">"roles"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"manage-account"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"manage-account-links"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"view-profile"</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="s2">"scope"</span><span class="p">:</span><span class="w"> </span><span class="s2">"openid email profile"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"sid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c32e4165-f9bd-4d4c-93bd-3847f4ffc697"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"email_verified"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"preferred_username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"given_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"family_name"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>💡 Note, you can change “RolesSource” to “None” and instead of using <code class="highlighter-rouge">KeycloakRolesClaimsTransformation</code>, use Keycloak role claim mapper and populate <code class="highlighter-rouge">role</code> claim based on configuration. Luckily, it is easy to do from Keycloak admin panel.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">services</span><span class="p">.</span><span class="nf">AddAuthorization</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+        <span class="n">Policies</span><span class="p">.</span><span class="n">RequireAspNetCoreRole</span><span class="p">,</span>
+        <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span><span class="p">.</span><span class="nf">RequireRole</span><span class="p">(</span><span class="n">Roles</span><span class="p">.</span><span class="n">AspNetCoreRole</span><span class="p">))</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="authorization-based-on-keycloak-realm-and-client-roles">Authorization based on Keycloak realm and client roles</h3>
+
+<p><code class="highlighter-rouge">AuthorizationPolicyBuilder</code> allows to register policies and <code class="highlighter-rouge">Keycloak.AuthServices.Authorization</code> adds a handy method to register rules that make use of the specific structure of access tokens generated by Keycloak.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">services</span><span class="p">.</span><span class="nf">AddAuthorization</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+        <span class="n">Policies</span><span class="p">.</span><span class="n">RequireRealmRole</span><span class="p">,</span>
+        <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span><span class="p">.</span><span class="nf">RequireRealmRoles</span><span class="p">(</span><span class="n">Roles</span><span class="p">.</span><span class="n">RealmRole</span><span class="p">));</span>
+
+    <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+        <span class="n">Policies</span><span class="p">.</span><span class="n">RequireClientRole</span><span class="p">,</span>
+        <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span><span class="p">.</span><span class="nf">RequireResourceRoles</span><span class="p">(</span><span class="n">Roles</span><span class="p">.</span><span class="n">ClientRole</span><span class="p">));</span>
+<span class="p">});</span>
+
+<span class="c1">// PoliciesBuilderExtensions.cs</span>
+<span class="k">public</span> <span class="k">static</span> <span class="n">AuthorizationPolicyBuilder</span> <span class="nf">RequireResourceRoles</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">AuthorizationPolicyBuilder</span> <span class="n">builder</span><span class="p">,</span> <span class="k">params</span> <span class="kt">string</span><span class="p">[]</span> <span class="n">roles</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="n">builder</span>
+        <span class="p">.</span><span class="nf">RequireClaim</span><span class="p">(</span><span class="n">KeycloakConstants</span><span class="p">.</span><span class="n">ResourceAccessClaimType</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">AddRequirements</span><span class="p">(</span><span class="k">new</span> <span class="nf">ResourceAccessRequirement</span><span class="p">(</span><span class="k">default</span><span class="p">,</span> <span class="n">roles</span><span class="p">));</span>
+
+<span class="k">public</span> <span class="k">static</span> <span class="n">AuthorizationPolicyBuilder</span> <span class="nf">RequireRealmRoles</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">AuthorizationPolicyBuilder</span> <span class="n">builder</span><span class="p">,</span> <span class="k">params</span> <span class="kt">string</span><span class="p">[]</span> <span class="n">roles</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="n">builder</span>
+        <span class="p">.</span><span class="nf">RequireClaim</span><span class="p">(</span><span class="n">KeycloakConstants</span><span class="p">.</span><span class="n">RealmAccessClaimType</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">AddRequirements</span><span class="p">(</span><span class="k">new</span> <span class="nf">RealmAccessRequirement</span><span class="p">(</span><span class="n">roles</span><span class="p">));</span>
+</code></pre></div></div>
+
+<h3 id="authorization-based-on-authorization-server-permissions">Authorization based on Authorization Server permissions</h3>
+
+<p>Policy Enforcement Point (PEP) is responsible for enforcing access decisions from the Keycloak server where these decisions are taken by evaluating the policies associated with a protected resource. It acts as a filter or interceptor in your application in order to check whether or not a particular request to a protected resource can be fulfilled based on the permissions granted by these decisions.</p>
+
+<p>Keycloak supports fine-grained authorization policies and is able to combine different access control mechanisms such as:</p>
+
+<ul>
+  <li>Attribute-based access control (ABAC)</li>
+  <li>Role-based access control (RBAC)</li>
+  <li>User-based access control (UBAC)</li>
+  <li>Context-based access control (CBAC)</li>
+  <li>Rule-based access control</li>
+  <li>Using JavaScript</li>
+  <li>Time-based access control</li>
+  <li>Support for custom access control mechanisms (ACMs) through a Service Provider Interface (SPI)</li>
+</ul>
+
+<p>Here is what happens when authenticated user tries to access a protected resource:</p>
+
+<div class="mermaid">
+sequenceDiagram
+    participant User
+    participant API
+    participant AuthServer as Authorization Server - PEP
+    User -&gt;&gt;+ API: access a protected endpoint
+    API-&gt;&gt;+ AuthServer : verify if user has an access to resource + scope
+    AuthServer -&gt;&gt;- API: authorization result (yes/no)
+    API -&gt;&gt;- User: response (2xx/403)
+</div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">services</span><span class="p">.</span><span class="nf">AddAuthorization</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">options</span><span class="p">.</span><span class="nf">AddPolicy</span><span class="p">(</span>
+        <span class="n">Policies</span><span class="p">.</span><span class="n">RequireToBeInKeycloakGroupAsReader</span><span class="p">,</span>
+        <span class="n">builder</span> <span class="p">=&gt;</span> <span class="n">builder</span>
+            <span class="p">.</span><span class="nf">RequireAuthenticatedUser</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">RequireProtectedResource</span><span class="p">(</span><span class="s">"workspace"</span><span class="p">,</span> <span class="s">"workspaces:read"</span><span class="p">));</span>
+<span class="p">});</span>
+
+<span class="c1">// PoliciesBuilderExtensions.cs</span>
+<span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// Adds protected resource requirement to builder.</span>
+<span class="c1">/// Makes outgoing HTTP requests to Authorization Server.</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="k">public</span> <span class="k">static</span> <span class="n">AuthorizationPolicyBuilder</span> <span class="nf">RequireProtectedResource</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">AuthorizationPolicyBuilder</span> <span class="n">builder</span><span class="p">,</span> <span class="kt">string</span> <span class="n">resource</span><span class="p">,</span> <span class="kt">string</span> <span class="n">scope</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="n">builder</span><span class="p">.</span><span class="nf">AddRequirements</span><span class="p">(</span><span class="k">new</span> <span class="nf">DecisionRequirement</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">scope</span><span class="p">));</span>
+</code></pre></div></div>
+
+<h2 id="the-power-of-authorization-server---define-policies-and-permissions">The power of Authorization Server - define policies and permissions</h2>
+
+<p>Resource management is straightforward and generic. After creating a resource server, you can start creating the resources and scopes that you want to protect. Resources and scopes can be managed by navigating to the Resource and Authorization Scopes tabs, respectively.</p>
+
+<p>So, to define a protected resource we need to create it in the Keycloak and assigned scope to it. In our case, we need to create “workspace” resource with “workspaces:read” scope.</p>
+
+<p>For more details, please see <a href="https://www.keycloak.org/docs/latest/authorization_services/#_resource_overview">https://www.keycloak.org/docs/latest/authorization_services/#_resource_overview</a>.</p>
+
+<svg aria-roledescription="mindmap" viewBox="5 5.000001907348633 627.9741821289062 270.37310791015625" style="max-width: 100%;" xmlns="http://www.w3.org/2000/svg" width="1147px" id="graph-div" height="888px" xmlns:xlink="http://www.w3.org/1999/xlink"><style>@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css");'</style><style>#graph-div{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#ccc;}#graph-div .error-icon{fill:#a44141;}#graph-div .error-text{fill:#ddd;stroke:#ddd;}#graph-div .edge-thickness-normal{stroke-width:2px;}#graph-div .edge-thickness-thick{stroke-width:3.5px;}#graph-div .edge-pattern-solid{stroke-dasharray:0;}#graph-div .edge-pattern-dashed{stroke-dasharray:3;}#graph-div .edge-pattern-dotted{stroke-dasharray:2;}#graph-div .marker{fill:lightgrey;stroke:lightgrey;}#graph-div .marker.cross{stroke:lightgrey;}#graph-div svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#graph-div .edge{stroke-width:3;}#graph-div .section--1 rect,#graph-div .section--1 path,#graph-div .section--1 circle,#graph-div .section--1 polygon,#graph-div .section--1 path{fill:#1f2020;}#graph-div .section--1 text{fill:lightgrey;}#graph-div .node-icon--1{font-size:40px;color:lightgrey;}#graph-div .section-edge--1{stroke:#1f2020;}#graph-div .edge-depth--1{stroke-width:17;}#graph-div .section--1 line{stroke:#e0dfdf;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-0 rect,#graph-div .section-0 path,#graph-div .section-0 circle,#graph-div .section-0 polygon,#graph-div .section-0 path{fill:#0b0000;}#graph-div .section-0 text{fill:lightgrey;}#graph-div .node-icon-0{font-size:40px;color:lightgrey;}#graph-div .section-edge-0{stroke:#0b0000;}#graph-div .edge-depth-0{stroke-width:14;}#graph-div .section-0 line{stroke:#f4ffff;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-1 rect,#graph-div .section-1 path,#graph-div .section-1 circle,#graph-div .section-1 polygon,#graph-div .section-1 path{fill:#4d1037;}#graph-div .section-1 text{fill:lightgrey;}#graph-div .node-icon-1{font-size:40px;color:lightgrey;}#graph-div .section-edge-1{stroke:#4d1037;}#graph-div .edge-depth-1{stroke-width:11;}#graph-div .section-1 line{stroke:#b2efc8;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-2 rect,#graph-div .section-2 path,#graph-div .section-2 circle,#graph-div .section-2 polygon,#graph-div .section-2 path{fill:#3f5258;}#graph-div .section-2 text{fill:lightgrey;}#graph-div .node-icon-2{font-size:40px;color:lightgrey;}#graph-div .section-edge-2{stroke:#3f5258;}#graph-div .edge-depth-2{stroke-width:8;}#graph-div .section-2 line{stroke:#c0ada7;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-3 rect,#graph-div .section-3 path,#graph-div .section-3 circle,#graph-div .section-3 polygon,#graph-div .section-3 path{fill:#4f2f1b;}#graph-div .section-3 text{fill:lightgrey;}#graph-div .node-icon-3{font-size:40px;color:lightgrey;}#graph-div .section-edge-3{stroke:#4f2f1b;}#graph-div .edge-depth-3{stroke-width:5;}#graph-div .section-3 line{stroke:#b0d0e4;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-4 rect,#graph-div .section-4 path,#graph-div .section-4 circle,#graph-div .section-4 polygon,#graph-div .section-4 path{fill:#6e0a0a;}#graph-div .section-4 text{fill:lightgrey;}#graph-div .node-icon-4{font-size:40px;color:lightgrey;}#graph-div .section-edge-4{stroke:#6e0a0a;}#graph-div .edge-depth-4{stroke-width:2;}#graph-div .section-4 line{stroke:#91f5f5;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-5 rect,#graph-div .section-5 path,#graph-div .section-5 circle,#graph-div .section-5 polygon,#graph-div .section-5 path{fill:#3b0048;}#graph-div .section-5 text{fill:lightgrey;}#graph-div .node-icon-5{font-size:40px;color:lightgrey;}#graph-div .section-edge-5{stroke:#3b0048;}#graph-div .edge-depth-5{stroke-width:-1;}#graph-div .section-5 line{stroke:#c4ffb7;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-6 rect,#graph-div .section-6 path,#graph-div .section-6 circle,#graph-div .section-6 polygon,#graph-div .section-6 path{fill:#995a01;}#graph-div .section-6 text{fill:lightgrey;}#graph-div .node-icon-6{font-size:40px;color:lightgrey;}#graph-div .section-edge-6{stroke:#995a01;}#graph-div .edge-depth-6{stroke-width:-4;}#graph-div .section-6 line{stroke:#66a5fe;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-7 rect,#graph-div .section-7 path,#graph-div .section-7 circle,#graph-div .section-7 polygon,#graph-div .section-7 path{fill:#154706;}#graph-div .section-7 text{fill:lightgrey;}#graph-div .node-icon-7{font-size:40px;color:lightgrey;}#graph-div .section-edge-7{stroke:#154706;}#graph-div .edge-depth-7{stroke-width:-7;}#graph-div .section-7 line{stroke:#eab8f9;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-8 rect,#graph-div .section-8 path,#graph-div .section-8 circle,#graph-div .section-8 polygon,#graph-div .section-8 path{fill:#161722;}#graph-div .section-8 text{fill:lightgrey;}#graph-div .node-icon-8{font-size:40px;color:lightgrey;}#graph-div .section-edge-8{stroke:#161722;}#graph-div .edge-depth-8{stroke-width:-10;}#graph-div .section-8 line{stroke:#e9e8dd;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-9 rect,#graph-div .section-9 path,#graph-div .section-9 circle,#graph-div .section-9 polygon,#graph-div .section-9 path{fill:#00296f;}#graph-div .section-9 text{fill:lightgrey;}#graph-div .node-icon-9{font-size:40px;color:lightgrey;}#graph-div .section-edge-9{stroke:#00296f;}#graph-div .edge-depth-9{stroke-width:-13;}#graph-div .section-9 line{stroke:#ffd690;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-10 rect,#graph-div .section-10 path,#graph-div .section-10 circle,#graph-div .section-10 polygon,#graph-div .section-10 path{fill:#01629c;}#graph-div .section-10 text{fill:lightgrey;}#graph-div .node-icon-10{font-size:40px;color:lightgrey;}#graph-div .section-edge-10{stroke:#01629c;}#graph-div .edge-depth-10{stroke-width:-16;}#graph-div .section-10 line{stroke:#fe9d63;stroke-width:3;}#graph-div .disabled,#graph-div .disabled circle,#graph-div .disabled text{fill:lightgray;}#graph-div .disabled text{fill:#efefef;}#graph-div .section-root rect,#graph-div .section-root path,#graph-div .section-root circle,#graph-div .section-root polygon{fill:hsl(180, 1.5873015873%, 48.3529411765%);}#graph-div .section-root text{fill:undefined;}#graph-div .icon-container{height:100%;display:flex;justify-content:center;align-items:center;}#graph-div .edge{fill:none;}#graph-div :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g></g><g></g><g class="mindmap-edges"><path class="edge section-edge--1 edge-depth-1" d="M 420.1987378993455,138.2982257261923 L 381.16823235859954,164.11487213395307 L342.1377268178536,189.93151854171384"></path><path class="edge section-edge--1 edge-depth-1" d="M 443.15925486045376,140.78418482171395 L 470.7120653681927,169.1583185007212 L498.2648758759317,197.53245217972847"></path><path class="edge section-edge--1 edge-depth-1" d="M 420.72466884606564,121.00284837154285 L 384.68833924607395,93.8809662972105 L348.65200964608226,66.75908422287816"></path><path class="edge section-edge--1 edge-depth-1" d="M 430.59101872855155,144.87262002721275 L 426.01799512602236,176.92686980355344 L421.44497152349317,208.98111957989414"></path><path class="edge section-edge--1 edge-depth-1" d="M 447.6009266766224,131.82485064018874 L 504.68562000402414,138.7321549861296 L561.7703133314259,145.63945933207043"></path><path class="edge section-edge--1 edge-depth-1" d="M 434.43546179343446,115.12260251827337 L 438.29390264513654,81.81148925116631 L442.1523434968386,48.50037598405925"></path><path class="edge section-edge--1 edge-depth-1" d="M 446.49340244359405,124.1064539179057 L 501.7217116613423,100.40048817110866 L556.9500208790905,76.69452242431163"></path><path class="edge section-edge--1 edge-depth-0" d="M 294.874867080091,126.41544196691105 L 356.2947733983499,128.0229805892894 L417.71467971660877,129.63051921166777"></path><path class="edge section-edge-0 edge-depth-1" d="M 164.23047147519674,199.77111888427953 L 113.63959458583486,220.43604313290928 L63.04871769647296,241.10096738153908"></path><path class="edge section-edge-0 edge-depth-0" d="M 267.4124840514686,134.36330583237256 L 228.99834544869623,160.06098965414768 L190.5842068459239,185.7586734759228"></path><path class="edge section-edge-1 edge-depth-0" d="M 266.74406238604894,118.78094633243364 L 217.04196048599283,91.37944887696094 L167.33985858593672,63.977951421488214"></path></g><g class="mindmap-nodes"><g transform="translate(228.73625287013192, 107.42298267624619)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h92.2874984741211 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-0"></path><line y2="37.19999961853027" x2="102.2874984741211" y1="37.19999961853027" x1="0" class="node-line--2"></line></g><g transform="translate(51.14374923706055, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">Permissions</tspan></text></g></g><g transform="translate(395.84079507097704, 111.42297888380233)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h63.73749923706055 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-1"></path><line y2="37.19999961853027" x2="73.73749923706055" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(36.86874961853027, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">Policies</tspan></text></g></g><g transform="translate(300.4620755147523, 179.60676576557353)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h48.329689025878906 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-2"></path><line y2="37.19999961853027" x2="58.329689025878906" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(29.164844512939453, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">ABAC</tspan></text></g></g><g transform="translate(480.01224115246896, 189.6936584991098)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h47.40468978881836 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-3"></path><line y2="37.19999961853027" x2="57.40468978881836" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(28.70234489440918, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">RBAC</tspan></text></g></g><g transform="translate(307.4335389082314, 39.1389540920884)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h48.46718978881836 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-4"></path><line y2="37.19999961853027" x2="58.46718978881836" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(29.23359489440918, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">UBAC</tspan></text></g></g><g transform="translate(390.4951944181282, 205.23076110477427)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h47.66250228881836 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-5"></path><line y2="37.19999961853027" x2="57.66250228881836" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(28.83125114440918, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">CBAC</tspan></text></g></g><g transform="translate(530.349195318541, 128.84133146992656)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h82.625 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-6"></path><line y2="37.19999961853027" x2="92.625" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(46.3125, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">RuleBased</tspan></text></g></g><g transform="translate(396.8852910878263, 15)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h83.9859390258789 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-7"></path><line y2="37.19999961853027" x2="93.9859390258789" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(46.99296951293945, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">JavaScript</tspan></text></g></g><g transform="translate(521.9463763443589, 52.17799783988472)" class="mindmap-node section-root"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h87.57500457763672 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-8"></path><line y2="37.19999961853027" x2="97.57500457763672" y1="37.19999961853027" x1="0" class="node-line--1"></line></g><g transform="translate(48.78750228881836, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">TimeBased</tspan></text></g></g><g transform="translate(132.84168726432108, 175.49899701351887)" class="mindmap-node section-0"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h80.55000305175781 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-9"></path><line y2="37.19999961853027" x2="90.55000305175781" y1="37.19999961853027" x1="0" class="node-line-0"></line></g><g transform="translate(45.275001525878906, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">Resources</tspan></text></g></g><g transform="translate(15, 228.17308963376945)" class="mindmap-node section-0"><g><path d="M0 32.19999961853027 v-27.19999961853027 q0,-5 5,-5 h58.32500076293945 q5,0 5,5 v32.19999961853027 H0 Z" class="node-bkg node-no-border" id="node-10"></path><line y2="37.19999961853027" x2="68.32500076293945" y1="37.19999961853027" x1="0" class="node-line-0"></line></g><g transform="translate(34.16250038146973, 5)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">Scopes</tspan></text></g></g><g transform="translate(71.81563608891429, 33.135915459145394)" class="mindmap-node section-1"><g><rect width="164.7765655517578" height="47.19999961853027" class="node-bkg node-rect" id="node-11"></rect></g><g transform="translate(82.3882827758789, 10)"><text text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" dy="1em"><tspan dy="1em" x="0">Decision   Strategy</tspan></text></g></g></g></svg>
+
+<p>To create a scope:</p>
+
+<ol>
+  <li>Navigate to “Clients” tab on the sidebar</li>
+  <li>Select “test-client” from the list</li>
+  <li>Go to “Authorization” tab (make sure you enabled “Authorization” checkbox on the “Settings” tab)</li>
+  <li>Select “Scopes” sub-tab</li>
+  <li>Click “Create authorization scope”</li>
+  <li>Specify <strong>workspaces:read</strong> as Name</li>
+  <li>Click “Save”</li>
+</ol>
+
+<p>To create a resource:</p>
+
+<ol>
+  <li>From the “Authorization” tab</li>
+  <li>Select “Resources” sub-tab</li>
+  <li>Click “Create resource”</li>
+  <li>Specify <strong>workspace</strong> as Name</li>
+  <li>Specify <strong>urn:resource:workspace</strong> as Type</li>
+  <li>Specify “workspaces:read” as “Authorization scopes”</li>
+  <li>Click “Save”</li>
+</ol>
+
+<p>Let’s say we want to implement a rule that only users with <strong>realm-role</strong> role and membership in <strong>workspace</strong> group can read a “workspace” resource. To accomplish this, we need to create the next two policies:</p>
+
+<ol>
+  <li>From the “Authorization” tab</li>
+  <li>Select “Policies” sub-tab</li>
+  <li>Click “Create policy”</li>
+  <li>Select “Role” option</li>
+  <li>Specify <strong>Is in realm-role</strong> as Name</li>
+  <li>Click “Add roles”</li>
+  <li>Select <strong>realm-role</strong> role</li>
+  <li>Logic: <strong>Positive</strong></li>
+  <li>Click “Save”</li>
+  <li>Click “Create policy”</li>
+  <li>Select “Group” option</li>
+  <li>Specify <strong>Is in workspace group</strong> as Name</li>
+  <li>Click “Add group”</li>
+  <li>Select “workspace” group</li>
+  <li>Logic: <strong>Positive</strong></li>
+  <li>Click “Save”</li>
+</ol>
+
+<p>Now, we can create the permission:</p>
+
+<ol>
+  <li>From the “Authorization” tab</li>
+  <li>Select “Permissions” sub-tab</li>
+  <li>Click “Create permission”</li>
+  <li>Select “Create resource-based permission”</li>
+  <li>Specify <strong>Workspace Access</strong> as Name</li>
+  <li>Specify <strong>workspace</strong> as resource</li>
+  <li>Add <strong>workspaces:read</strong> as authorization scope</li>
+  <li>Add two previously created policies to the “Policies”</li>
+  <li>Specify <strong>Unanimous</strong> as Decision Strategy</li>
+  <li>Click “Save”</li>
+</ol>
+
+<p>The decision strategy dictates how the policies associated with a given permission are evaluated and how a final decision is obtained. ‘Affirmative’ means that at least one policy must evaluate to a positive decision in order for the final decision to be also positive. ‘Unanimous’ means that all policies must evaluate to a positive decision in order for the final decision to be also positive. ‘Consensus’ means that the number of positive decisions must be greater than the number of negative decisions. If the number of positive and negative is the same, the final decision will be negative.</p>
+
+<h3 id="evaluate-permissions">Evaluate permissions</h3>
+
+<ol>
+  <li>From the “Authorization” tab</li>
+  <li>Select “Evaluate” sub-tab</li>
+</ol>
+
+<p>Let’s say the “user” has <strong>realm-role</strong>, but is not a member of <strong>workspace</strong> group</p>
+
+<p>Here is how the permission evaluation is interpreted by Keycloak:</p>
+
+<center>
+ <img src="/assets/keycloak-authz-server/evaluate1.png" alt="evaluate1" />
+</center>
+
+<p>And if we add the “user to <strong>workspace</strong> group:</p>
+
+<center>
+ <img src="/assets/keycloak-authz-server/evaluate2.png" alt="evaluate1" />
+</center>
+
+<h3 id="demo">Demo</h3>
+
+<ol>
+  <li>Navigate at <a href="https://localhost:7248/swagger/index.html">https://localhost:7248/swagger/index.html</a></li>
+  <li>Click “Authorize”. Note, the access token is retrieved based on “Implicit Flow” that we’ve previously configured.</li>
+  <li>Enter credentials: “user/user”</li>
+  <li>Execute “/endpoint4”</li>
+</ol>
+
+<center>
+ <img src="/assets/keycloak-authz-server/authz-demo2.png" alt="authz-demo2" />
+</center>
+
+<p>As you can see, the response is 200 OK. I suggest you to try removing “user” from the “workspace” group and see how it works.</p>
+
+<p>As described above, the permission is evaluated by Keycloak therefore you can see outgoing HTTP requests in the logs:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>12:19:28 [INFO] Start processing HTTP request "POST" http://localhost:8080/realms/Test/protocol/openid-connect/token
+"System.Net.Http.HttpClient.IKeycloakProtectionClient.ClientHandler"
+12:19:28 [INFO] Sending HTTP request "POST" http://localhost:8080/realms/Test/protocol/openid-connect/token
+"System.Net.Http.HttpClient.IKeycloakProtectionClient.ClientHandler"
+12:19:28 [INFO] Received HTTP response headers after 8.5669ms - 200
+"System.Net.Http.HttpClient.IKeycloakProtectionClient.LogicalHandler"
+12:19:28 [INFO] End processing HTTP request after 25.3503ms - 200
+"Keycloak.AuthServices.Authorization.Requirements.DecisionRequirementHandler"
+12:19:28 [DBUG] ["DecisionRequirement: workspace#workspaces:read"] Access outcome True for user "user"
+"Microsoft.AspNetCore.Authorization.DefaultAuthorizationService"
+12:19:28 [DBUG] Authorization was successful.
+</code></pre></div></div>
+
+<center>
+ <img src="/assets/keycloak-authz-server/authz-demo1.png" alt="authz-demo1" />
+</center>
+
+<hr />
+
+<p>💡 Note, In this post, I’ve showed you how to protect a one resource known to the system, but it is actually possible to create resource programmatically and compose ASP.NET Core policies during runtime. See <code class="highlighter-rouge">Keycloak.AuthServices.Authorization.ProtectedResourcePolicyProvider</code> for more details.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>An authorization Server is a highly beneficial abstraction and it is quite easy to solve a wide range of well-known problems without “Reinventing the wheel”. <a href="https://www.nuget.org/packages/Keycloak.AuthServices.Authorization">Keycloak.AuthServices.Authorization</a> helps you to define a protected resource and does the interaction with Authorization Server for you. Let me know what you think.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/introduction">https://learn.microsoft.com/en-us/aspnet/core/security/authorization/introduction</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/roles">https://learn.microsoft.com/en-us/aspnet/core/security/authorization/roles</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies">https://learn.microsoft.com/en-us/aspnet/core/security/authorization/policies</a></li>
+  <li><a href="https://www.keycloak.org/docs/latest/authorization_services">https://www.keycloak.org/docs/latest/authorization_services</a></li>
+  <li><a href="https://www.keycloak.org/docs/latest/authorization_services/#_resource_overview">https://www.keycloak.org/docs/latest/authorization_services/#_resource_overview</a></li>
+  <li><a href="https://github.com/NikiforovAll/keycloak-authorization-services-dotnet">https://github.com/NikiforovAll/keycloak-authorization-services-dotnet</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(20)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#keycloak-ref">
+				keycloak <span>(1)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(9)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(26)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#auth-ref">
+				auth <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#keycloak-ref">
+				keycloak <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#authz-ref">
+				authz <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Keycloak as Authorization Server in .NET&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/blazor/dotnet/2022/12/08/dotnet-keycloak-blazorwasm-auth.html" title="Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2022 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript"
+  src="https://unpkg.com/mermaid@9.3.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
