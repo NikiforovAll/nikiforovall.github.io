@@ -55,11 +55,11 @@ Considering that today we need to consider heterogeneous environments where user
 In this blog post I will demonstrate how to perform authorization in two ways:
 
 - Role-based access control (RBAC) check executed by *Resource Server (API)*
-  - `/endpint1` - required ASP.NET Core identity role
-  - `/endpint2` - required realm role
-  - `/endpint3` - required client role
+  - `/endpoint` - required ASP.NET Core identity role
+  - `/endpoint` - required realm role
+  - `/endpoint` - required client role
 - Remote authorization policy check executed by *Authorization Server (Keycloak)*
-  - `/endpint4` - remotely executed policy selected for "workspace" - resource, "workspaces:read" - scope.
+  - `/endpoint` - remotely executed policy selected for "workspace" - resource, "workspaces:read" - scope.
 
 ```csharp
 var app = builder.Build();
@@ -489,7 +489,7 @@ As described above, the permission is evaluated by Keycloak therefore you can se
 
 ## Summary
 
-An authorization Server is a highly beneficial abstraction and it is quite easy to solve a wide range of well-known problems without "Reinventing the wheel". [Keycloak.AuthServices.Authorization](https://www.nuget.org/packages/Keycloak.AuthServices.Authorization) helps you to define a protected resource and does the interaction with Authorization Server for you. Let me know what you think.
+An authorization Server is a highly beneficial abstraction and it is quite easy to solve a wide range of well-known problems without "Reinventing the wheel". [Keycloak.AuthServices.Authorization](https://www.nuget.org/packages/Keycloak.AuthServices.Authorization) helps you to define a protected resource and does the interaction with Authorization Server for you. Let me know what you think 🙂
 
 ## References
 
