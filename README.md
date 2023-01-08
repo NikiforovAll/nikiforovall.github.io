@@ -7,6 +7,8 @@ bundle exec jekyll serve
 # OR
 jekyll serve --force_polling
 bundle exec jekyll serve --force_polling
+
+sudo su
 ```
 
 Cleanup: `rm Gemfile.lock`
