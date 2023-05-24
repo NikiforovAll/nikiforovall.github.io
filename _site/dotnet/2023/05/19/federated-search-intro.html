@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Building a federated search engine from the scratch. An introduction.</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Building a federated search engine from the scratch. An introduction. </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			May
+			19th,
+			
+			2023
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="introduction">Introduction</h2>
+
+<p>Federated search, also known as distributed information retrieval, is the simultaneous search of multiple searchable resources. A user makes a single query request, which is distributed to the search engines, databases, or other query engines participating in the federation. The federated search then aggregates the results that are received from the search engines for presentation to the user.</p>
+
+<p>Usually, we need to access a vast array of information sources. However, as the number of these information sources grow, so does the complexity of finding the right piece of information at the right time. Furthermore, the API and contracts changes from source to source and it makes the integration with downstream service tedious task.</p>
+
+<p><strong>Why Federated Search Matters:</strong> Federated search eliminates the need for users to search multiple databases/sources individually, saving time and effort. It also allows for a more comprehensive search, as it can access and retrieve information from diverse sources that a user may not have thought to check or did not have direct access to.</p>
+
+<h2 id="building-blocks">Building blocks</h2>
+
+<p>Here are the fundamental building blocks you’ll need to consider:</p>
+
+<ol>
+  <li><em>Query Interface</em>: This is the entry point for the user to ask their query. This could be a simple text box or a more complex interface with advanced options.</li>
+  <li><em>Query Translation</em>: Since the search is federated, it means you’ll be searching over multiple databases or search engines, each potentially with their own query language. Your federated search engine will need to translate the user’s query into the appropriate language for each underlying system.</li>
+  <li><em>Search Connector / Adapter</em>: These components connect to the external databases or search engines to send the translated queries and fetch the results. The nature of the connectors will vary based on the APIs and interfaces provided by the underlying systems.</li>
+  <li><em>Result Aggregation</em>: Once results are fetched from all the underlying systems, they need to be combined in a meaningful way. This can be quite complex because different systems may rank their results differently.</li>
+  <li><em>Result Presentation</em>: This component is responsible for presenting the combined results to the user. It should be able to handle different types of results (text, images, etc.) and paginate them for ease of browsing.</li>
+  <li><em>Performance Optimization</em>: Given that a federated search has to interact with multiple systems, it can potentially be quite slow. Techniques like caching, parallel queries, and preemptive queries can help to improve performance.</li>
+  <li><em>Error Handling</em>: Your engine should be able to handle errors gracefully. This could include timeouts from slow underlying systems, systems going offline, or corrupt data in the results.</li>
+  <li><em>Logging and Analytics</em>: You’ll need a way to log errors and track the performance of your search engine. This data can be used to continually improve the engine.</li>
+  <li><em>Security and Privacy</em>: Since the system will be dealing with potentially sensitive data, it’s important to ensure that it’s secure and respects the privacy of its users.</li>
+</ol>
+
+<p>Building a federated search engine from scratch is a major undertaking. There are numerous edge cases to handle, and performance and accuracy can be major challenges. It’s often more practical to build on top of existing search platforms and libraries, which can handle many of these concerns out of the box.</p>
+
+<div class="mermaid">
+graph TD
+    FSE[Federated Search Engine]
+    QI[Query Interface]
+    QT[Query Translation]
+    SCA[Search Connector / Adapter]
+    RA[Result Aggregation]
+    RP[Result Presentation]
+    PO[Performance Optimization]
+    EH[Error Handling]
+    LA[Logging and Analytics]
+    SP[Security and Privacy]
+    FSE --&gt; QI
+    FSE --&gt; QT
+    FSE --&gt; SCA
+    FSE --&gt; RA
+    FSE --&gt; RP
+    FSE --&gt; PO
+    FSE --&gt; EH
+    FSE --&gt; LA
+    FSE --&gt; SP
+</div>
+
+<h2 id="query-interface">Query Interface</h2>
+
+<p>Designing a query interface for a federated search engine poses unique requirements and challenges because the interface must support search across multiple databases or search engines, each potentially having different data structures, query languages, and APIs. Here are some key requirements:</p>
+
+<ol>
+  <li><em>Ease of Use</em>: Regardless of the complexity of the underlying databases and systems, the query interface should be straightforward to use. It should accept user queries in a simple and easy-to-understand format. A common approach is to allow plain text queries, but more complex interfaces could allow for advanced search options, Boolean operators, and other search enhancements.</li>
+  <li><em>Query Translation</em>: The query interface needs to translate user queries into the specific query language or API calls required by each underlying system. This can be a complex task, as it requires an understanding of each system’s capabilities, syntax, and semantics.</li>
+  <li><em>Support for Multiple Data Types</em>: The query interface should be flexible enough to accommodate different types of data - text, numbers, dates, geographical data, images, etc. This might require special syntax or options for each data type.</li>
+  <li><em>Scalability</em>: The query interface should be designed in a way that it can easily accommodate the addition of new databases or search engines. This might involve modular design principles, where each database or search engine has its own adapter or connector.</li>
+  <li><em>Error Handling and Feedback</em>: The query interface should provide meaningful feedback to the user. If a query cannot be executed for some reason, the interface should provide an error message that helps the user understand and rectify the problem. Additionally, it should provide some form of feedback while the search is being conducted, such as a progress indicator, particularly for long-running searches.</li>
+  <li><em>Security and Privacy</em>: The query interface should ensure that user queries do not expose sensitive information and that they do not inadvertently allow for SQL injection or other forms of attacks. This might involve careful validation and sanitization of user inputs.</li>
+</ol>
+
+<p>These requirements emphasize the need for a thoughtful and careful design process when creating a query interface for a federated search engine. By meeting these requirements, you can ensure that your federated search engine is effective, versatile, and user-friendly.</p>
+
+<p>Here is what we can use as an example of very simple search query:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">FederatedScratchSearchCommand</span> <span class="p">:</span> <span class="n">IRequest</span><span class="p">&lt;</span><span class="n">FederatedScratchSearchResponse</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="n">FederatedScratchCollectionRequest</span> <span class="n">Request</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="n">init</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">Mapping</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="n">init</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="n">Empty</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">class</span> <span class="nc">FederatedScratchCollectionRequest</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">PrimaryKey</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">ParentPath</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">CollectionName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">Query</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">DataSource</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="k">public</span> <span class="n">IList</span><span class="p">&lt;</span><span class="n">FederatedScratchCollectionRequest</span><span class="p">&gt;</span> <span class="n">Descendants</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The code provided gives us a glimpse of the query interface for a federated search engine. It’s a great example that shows how you might model the request data structure for an API-based search request.</p>
+
+<p>The EpamApiSearchCommand class appears to be a request model that signifies an API search command and is defined with two main properties:</p>
+
+<ol>
+  <li>Request of type <code class="highlighter-rouge">FederatedScratchCollectionRequest</code>: This object contains the detailed search parameters for the API. This is where the user can specify the search collection name, primary key, parent path, and query. It also allows for nested search requests by including a list of descendants, effectively creating a tree-like search structure.</li>
+  <li><code class="highlighter-rouge">Mapping</code> of type string: This is an optional property that appears to store a JMESPath query. JMESPath is a query language for JSON, which means this property can be used to map or filter the JSON response returned by the API. This property allows the client to specify the data structure they want to see in the response.</li>
+</ol>
+
+<p>The <code class="highlighter-rouge">FederatedScratchCollectionRequest</code> class, on the other hand, represents the request details that are to be sent to the API for processing. It has several properties that provide information about the collection to be searched. Here are the main components:</p>
+
+<ol>
+  <li><em>PrimaryKey</em>: Corresponds to the main identifier of the collection item being searched. This could be an ID, a username, or any other unique identifier.</li>
+  <li><em>ParentPath</em>: Represents the path in the hierarchical data structure where the search should begin. Used to perform join on parent collection.</li>
+  <li><em>CollectionName</em>: Corresponds to the name of the collection.</li>
+  <li><em>Query</em>: Search query - the term or condition that the search engine is looking for within the collection.</li>
+  <li><em>DataSource</em>: The name of the data source, adapter identifier.</li>
+  <li><em>Descendants</em>: This is a list of additional <code class="highlighter-rouge">FederatedScratchCollectionRequest</code> objects. This structure allows the user to send complex, nested queries, where each descendant represents a sub-query within the main query.</li>
+</ol>
+
+<p>The <code class="highlighter-rouge">ParentPath</code> and <code class="highlighter-rouge">PrimaryKey</code> keys play a crucial role in connecting different entities together, just like pieces of a puzzle. Their role is to establish relationships between data, helping us link everything together in a meaningful way.</p>
+
+<p>How complex this linking process – or ‘joining’, as it’s often called – turns out to be will vary based on your specific requirements. In our current setup, we’ve kept things straightforward: we extract keys based on field names and use them for exact match comparisons.</p>
+
+<p>However, one of the beautiful aspects of designing your search engine is that it can grow and evolve with your needs. Feel free to adapt and enhance your query model as needed, making it as simple or intricate as your project demands.</p>
+
+<p>–</p>
+
+<p>In essence, this interface provides a robust and flexible way for users to define complex search queries that can be executed against a database or data structure. As this is just the query interface, the actual processing, searching, and returning of results would be handled by other components of the federated search engine.</p>
+
+<h2 id="query-translation">Query Translation</h2>
+
+<p>The query translation component plays a crucial role in a federated search system, particularly when the system encompasses multiple databases or search engines with varying query languages or data schemas.</p>
+
+<p>In a federated search system, a user’s query is received in a standard format. However, each underlying search engine or database may require queries in a different format or structure, specific to its own data model or language. This is where the query translation component comes in.</p>
+
+<p>Here are some key aspects to consider about this crucial building block:</p>
+
+<ol>
+  <li><em>Syntax Translation</em>: Query translation primarily involves converting the syntax of the input query to match the syntax of each underlying search engine’s query language. This might include adapting the query structure, transforming operators, or even changing the order of conditions.</li>
+  <li><em>Semantic Translation</em>: Some databases or search engines may interpret the same query differently, depending on the context or semantic rules of their query language.</li>
+  <li><em>Data Mapping</em>: If the federated search system includes databases with different data schemas, the query translation may also involve data mapping. This means converting field or column names from the user query to match the names used in each database.</li>
+  <li><em>Error Handling</em>: Another important role of query translation is to handle any syntax or semantic errors that might occur during the translation process and provide useful feedback to the user.</li>
+  <li><em>Performance Considerations</em>: Query translation can impact the performance of the search system. Complex translations can introduce delays, so it’s important to optimize this process where possible. This might include caching frequently used translations or using efficient algorithms for the translation process.</li>
+</ol>
+
+<p>In summary, query translation is an integral and complex part of any federated search system. It enables users to make queries without needing to understand the specifics of each underlying search engine or database, thereby making the system more accessible and user-friendly.</p>
+
+<p>RSQL (RESTful Service Query Language) is a query language for RESTful APIs. It provides a set of conventions for expressing queries in URLs. If you build your federated search engine to rely on APIs that all support RSQL, you can eliminate the need for query translation entirely.</p>
+
+<p>With RSQL, you can use a standard format to make queries against your data. For example, you might use a URL like this to make a query:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://example.com/api/users?filter=firstName==John;age=gt=30
+</code></pre></div></div>
+
+<p>In this example, firstName==John and age=gt=30 are RSQL expressions. They can be translated as “find users where the first name is John and the age is greater than 30”.</p>
+
+<p>Here’s how you could incorporate RSQL into a federated search engine:</p>
+
+<ol>
+  <li><em>RSQL as a Query Language</em>: Design your query interface to accept queries in RSQL format. This provides a standard, uniform query syntax that can be used regardless of the underlying data source.</li>
+  <li><em>API Support for RSQL</em>: Ensure that each of the underlying APIs support RSQL. This may limit your choice of APIs, as not all APIs support RSQL natively. However, there are libraries available in many programming languages that can add RSQL support to an existing API.</li>
+  <li><em>RSQL Query Engine</em>: Use an RSQL query engine to parse and execute the RSQL queries against each API. This engine takes the RSQL query from the query interface, sends it to the appropriate APIs, collects the results, and returns them to the user.</li>
+  <li><em>Integration</em>: Integrate the RSQL query engine with the other components of your federated search engine, such as the result presentation and error handling components.</li>
+</ol>
+
+<p>By using RSQL and a compatible query engine, you can create a federated search engine that uses a single, uniform query language across all data sources. This eliminates the need for query translation and can make the search engine easier to develop and maintain. However, it does require all underlying APIs to support RSQL, which may not be feasible in all cases.</p>
+
+<h2 id="result-aggregation">Result Aggregation</h2>
+
+<p>When a search query is executed, the search engine retrieves results from multiple databases or search engines. The function of the Result Aggregation component is to gather these results and consolidate them into a unified, structured, and coherent format, which can then be presented to the user. It essentially enables a comprehensive and useful presentation of search results from across different databases and systems.</p>
+
+<p>Designing an efficient and effective Result Aggregation component involves addressing several key requirements:</p>
+
+<ol>
+  <li><em>Unification</em>: The component should be capable of merging results from various sources into a single set of results. The unification process should handle discrepancies in data formats and structures across different systems.</li>
+  <li><em>Duplication Handling</em>: Since search results may come from multiple sources, it’s possible to have duplicate entries. The aggregation component needs to identify and handle such duplications appropriately.</li>
+  <li><em>Performance Optimization</em>: To provide a seamless user experience, the Result Aggregation component must perform its tasks quickly, even when dealing with large volumes of data.</li>
+  <li><em>Error Handling</em>: In case of any issues in retrieving or processing data from any source, the component should handle such situations gracefully without breaking the whole operation.</li>
+  <li><em>Data Transformation</em>: Depending on the application, the aggregation component might need to perform data transformation tasks. For example, it might need to convert data types, translate data values, or apply a particular data schema.</li>
+  <li><em>Pagination Support</em>: When dealing with a large number of search results, the aggregation component should support pagination to limit the number of results displayed at one time and provide a more manageable view.</li>
+  <li><em>Filtering</em>: Post-query filtering should be supported, allowing users to refine the aggregated results based on specific criteria.</li>
+  <li><em>Security and Privacy</em>: The component must ensure that it complies with all relevant data privacy and security regulations and standards. This includes handling sensitive data appropriately and respecting any access control rules specified by the underlying databases or search engines.</li>
+</ol>
+
+<p>These requirements, while not exhaustive, highlight some of the critical aspects to consider when designing a Result Aggregation component for a Federated Search Engine. By meeting these requirements, you can deliver a high-performing, robust, and user-friendly search solution that consolidates and presents search results effectively.</p>
+
+<h2 id="result-presentation">Result Presentation</h2>
+
+<p>After the search query has been processed, translated, and executed, and the results have been aggregated, these results need to be presented to the user in an understandable format.</p>
+
+<p>The Result Presentation component is responsible for this task. It formats the aggregated search results and displays them in a way that meets the users’ needs and preferences. This might involve creating an HTML page, a PDF report, a data visualization, an interactive UI, or any other format that suits the application.</p>
+
+<p>Good result presentation can dramatically improve the user experience of a search engine. It ensures that users can easily understand the search results, navigate through them, and take any necessary actions based on the results. It can also highlight the most relevant results, provide additional context, and offer options for refining or expanding the search.</p>
+
+<p>In summary, the Result Presentation component is the face of the Federated Search Engine. It is the component that users interact with the most and therefore has a significant impact on users’ perceptions of the search engine’s usefulness and usability. Thus, designing an effective Result Presentation component involves a deep understanding of user needs, a good sense of design and usability, and a strong grasp of the technical aspects of presenting data in various formats.</p>
+
+<p>JMESPath can extract and transform data from a JSON document, making it a useful tool for the Result Presentation component of a Federated Search Engine. It can help format and structure the aggregated search results into a more consumable format for users. You gain a lot of flexibility in how you can transform, filter, and aggregate your search results. You can effectively tailor your search results to the specific needs of your users, improving the usefulness and user-friendliness of your search engine.</p>
+
+<p>Let’s go through the process of how to use JMESPath for result presentation:</p>
+
+<ol>
+  <li><em>Receiving Aggregated Results</em>: Once the Result Aggregation component has gathered and consolidated results, it passes them to the Result Presentation component. These results are typically in the form of a JSON document or a similar data structure.</li>
+  <li><em>Formulating JMESPath Expressions</em>: Depending on how you want to present the results, formulate JMESPath expressions that will extract and structure the required data. For example, if you want to show only the names and locations of users from the search results, you might use an expression like <code class="highlighter-rouge">[*].{name: name, location: location}</code>.</li>
+  <li><em>Applying JMESPath Expressions</em>: Use a JMESPath library or tool to apply your expressions to the JSON document. This will transform the JSON data according to your expressions.</li>
+  <li><em>Converting the Results</em>: The output of the JMESPath expressions will be a new JSON document or data structure that contains only the data you’re interested in, structured in the way you specified. You can then convert this data into the desired presentation format. This could involve generating an HTML table, creating a data visualization, or formatting a text report.</li>
+  <li><em>Displaying the Results</em>: Finally, display the results to the user. This could involve serving an HTML page, rendering a data visualization in a browser, or sending a text report by email.</li>
+</ol>
+
+<p>By using JMESPath in the Result Presentation component, you can provide users with clear, concise, and relevant search results. It allows you to tailor your result presentation to the specific needs of your users, improving the user experience of your search engine.</p>
+
+<p>However, it’s worth noting that JMESPath is only one tool you can use for result presentation. Depending on your needs and the complexity of your data, you may need to use additional tools or techniques to present your search results effectively.</p>
+
+<h3 id="challenges-and-considerations">Challenges and Considerations</h3>
+
+<p>As intriguing as federated search is, it’s not without its challenges. The issues range from dealing with heterogeneous databases, varying query languages, to handling potential time delays and ensuring the security and privacy of data.</p>
+
+<h2 id="wrapping-up">Wrapping Up</h2>
+
+<p>Designing and implementing a Federated Search Engine is a complex yet rewarding task. As we’ve explored in this blog post, each component—Query Interface, Query Translation, Query Execution, Result Aggregation, and Result Presentation—plays a critical role and requires careful consideration.</p>
+
+<p>We’ve also looked into the intricacies of handling query translation using RSQL, using JMESPath for result aggregation, and how it can also aid in the effective presentation of results. Moreover, we addressed some of the significant challenges you might face during implementation, such as handling diverse data, relevance ranking, scalability, language processing and security.</p>
+
+<p>However, it’s important to remember that these complexities are manageable. By understanding the fundamentals of each component, leveraging appropriate tools and techniques, and addressing potential challenges proactively, you can build a powerful and user-friendly federated search engine that meets your specific needs.</p>
+
+<p>I hope this blog post has provided you with a solid understanding of the building blocks of a Federated Search Engine and the considerations involved in designing and implementing each component. Whether you’re just getting started with your search engine project or looking to optimize an existing one, I trust this information will prove useful.</p>
+
+<p>Remember, every search engine is different, and there is no one-size-fits-all approach. Stay flexible, keep learning, and don’t be afraid to adapt as you discover more about your users’ needs and your data.</p>
+
+<p>Happy searching!</p>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(22)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(28)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#api-ref">
+				api <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#federated-search-ref">
+				federated-search <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Building a federated search engine from the scratch. An introduction.&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/2023/01/08/jmespath-intro.html" title="Introduction to JMESPath - JSON processor you should definitely know">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2023 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript"
+  src="https://unpkg.com/mermaid@9.3.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
