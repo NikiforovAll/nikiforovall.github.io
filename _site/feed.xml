@@ -7,6 +7,233 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Building a federated search engine from the scratch. An introduction.</title>
+				<description>&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;Federated search, also known as distributed information retrieval, is the simultaneous search of multiple searchable resources. A user makes a single query request, which is distributed to the search engines, databases, or other query engines participating in the federation. The federated search then aggregates the results that are received from the search engines for presentation to the user.&lt;/p&gt;
+
+&lt;p&gt;Usually, we need to access a vast array of information sources. However, as the number of these information sources grow, so does the complexity of finding the right piece of information at the right time. Furthermore, the API and contracts changes from source to source and it makes the integration with downstream service tedious task.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Why Federated Search Matters:&lt;/strong&gt; Federated search eliminates the need for users to search multiple databases/sources individually, saving time and effort. It also allows for a more comprehensive search, as it can access and retrieve information from diverse sources that a user may not have thought to check or did not have direct access to.&lt;/p&gt;
+
+&lt;h2 id=&quot;building-blocks&quot;&gt;Building blocks&lt;/h2&gt;
+
+&lt;p&gt;Here are the fundamental building blocks you’ll need to consider:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;Query Interface&lt;/em&gt;: This is the entry point for the user to ask their query. This could be a simple text box or a more complex interface with advanced options.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Query Translation&lt;/em&gt;: Since the search is federated, it means you’ll be searching over multiple databases or search engines, each potentially with their own query language. Your federated search engine will need to translate the user’s query into the appropriate language for each underlying system.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Search Connector / Adapter&lt;/em&gt;: These components connect to the external databases or search engines to send the translated queries and fetch the results. The nature of the connectors will vary based on the APIs and interfaces provided by the underlying systems.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Result Aggregation&lt;/em&gt;: Once results are fetched from all the underlying systems, they need to be combined in a meaningful way. This can be quite complex because different systems may rank their results differently.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Result Presentation&lt;/em&gt;: This component is responsible for presenting the combined results to the user. It should be able to handle different types of results (text, images, etc.) and paginate them for ease of browsing.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Performance Optimization&lt;/em&gt;: Given that a federated search has to interact with multiple systems, it can potentially be quite slow. Techniques like caching, parallel queries, and preemptive queries can help to improve performance.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Error Handling&lt;/em&gt;: Your engine should be able to handle errors gracefully. This could include timeouts from slow underlying systems, systems going offline, or corrupt data in the results.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Logging and Analytics&lt;/em&gt;: You’ll need a way to log errors and track the performance of your search engine. This data can be used to continually improve the engine.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Security and Privacy&lt;/em&gt;: Since the system will be dealing with potentially sensitive data, it’s important to ensure that it’s secure and respects the privacy of its users.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Building a federated search engine from scratch is a major undertaking. There are numerous edge cases to handle, and performance and accuracy can be major challenges. It’s often more practical to build on top of existing search platforms and libraries, which can handle many of these concerns out of the box.&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot;&gt;
+graph TD
+    FSE[Federated Search Engine]
+    QI[Query Interface]
+    QT[Query Translation]
+    SCA[Search Connector / Adapter]
+    RA[Result Aggregation]
+    RP[Result Presentation]
+    PO[Performance Optimization]
+    EH[Error Handling]
+    LA[Logging and Analytics]
+    SP[Security and Privacy]
+    FSE --&amp;gt; QI
+    FSE --&amp;gt; QT
+    FSE --&amp;gt; SCA
+    FSE --&amp;gt; RA
+    FSE --&amp;gt; RP
+    FSE --&amp;gt; PO
+    FSE --&amp;gt; EH
+    FSE --&amp;gt; LA
+    FSE --&amp;gt; SP
+&lt;/div&gt;
+
+&lt;h2 id=&quot;query-interface&quot;&gt;Query Interface&lt;/h2&gt;
+
+&lt;p&gt;Designing a query interface for a federated search engine poses unique requirements and challenges because the interface must support search across multiple databases or search engines, each potentially having different data structures, query languages, and APIs. Here are some key requirements:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;Ease of Use&lt;/em&gt;: Regardless of the complexity of the underlying databases and systems, the query interface should be straightforward to use. It should accept user queries in a simple and easy-to-understand format. A common approach is to allow plain text queries, but more complex interfaces could allow for advanced search options, Boolean operators, and other search enhancements.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Query Translation&lt;/em&gt;: The query interface needs to translate user queries into the specific query language or API calls required by each underlying system. This can be a complex task, as it requires an understanding of each system’s capabilities, syntax, and semantics.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Support for Multiple Data Types&lt;/em&gt;: The query interface should be flexible enough to accommodate different types of data - text, numbers, dates, geographical data, images, etc. This might require special syntax or options for each data type.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Scalability&lt;/em&gt;: The query interface should be designed in a way that it can easily accommodate the addition of new databases or search engines. This might involve modular design principles, where each database or search engine has its own adapter or connector.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Error Handling and Feedback&lt;/em&gt;: The query interface should provide meaningful feedback to the user. If a query cannot be executed for some reason, the interface should provide an error message that helps the user understand and rectify the problem. Additionally, it should provide some form of feedback while the search is being conducted, such as a progress indicator, particularly for long-running searches.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Security and Privacy&lt;/em&gt;: The query interface should ensure that user queries do not expose sensitive information and that they do not inadvertently allow for SQL injection or other forms of attacks. This might involve careful validation and sanitization of user inputs.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;These requirements emphasize the need for a thoughtful and careful design process when creating a query interface for a federated search engine. By meeting these requirements, you can ensure that your federated search engine is effective, versatile, and user-friendly.&lt;/p&gt;
+
+&lt;p&gt;Here is what we can use as an example of very simple search query:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;FederatedScratchSearchCommand&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FederatedScratchSearchResponse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FederatedScratchCollectionRequest&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Request&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Mapping&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Empty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;FederatedScratchCollectionRequest&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PrimaryKey&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ParentPath&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CollectionName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Query&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DataSource&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FederatedScratchCollectionRequest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Descendants&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The code provided gives us a glimpse of the query interface for a federated search engine. It’s a great example that shows how you might model the request data structure for an API-based search request.&lt;/p&gt;
+
+&lt;p&gt;The EpamApiSearchCommand class appears to be a request model that signifies an API search command and is defined with two main properties:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Request of type &lt;code class=&quot;highlighter-rouge&quot;&gt;FederatedScratchCollectionRequest&lt;/code&gt;: This object contains the detailed search parameters for the API. This is where the user can specify the search collection name, primary key, parent path, and query. It also allows for nested search requests by including a list of descendants, effectively creating a tree-like search structure.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Mapping&lt;/code&gt; of type string: This is an optional property that appears to store a JMESPath query. JMESPath is a query language for JSON, which means this property can be used to map or filter the JSON response returned by the API. This property allows the client to specify the data structure they want to see in the response.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;FederatedScratchCollectionRequest&lt;/code&gt; class, on the other hand, represents the request details that are to be sent to the API for processing. It has several properties that provide information about the collection to be searched. Here are the main components:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;PrimaryKey&lt;/em&gt;: Corresponds to the main identifier of the collection item being searched. This could be an ID, a username, or any other unique identifier.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;ParentPath&lt;/em&gt;: Represents the path in the hierarchical data structure where the search should begin. Used to perform join on parent collection.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;CollectionName&lt;/em&gt;: Corresponds to the name of the collection.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Query&lt;/em&gt;: Search query - the term or condition that the search engine is looking for within the collection.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;DataSource&lt;/em&gt;: The name of the data source, adapter identifier.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Descendants&lt;/em&gt;: This is a list of additional &lt;code class=&quot;highlighter-rouge&quot;&gt;FederatedScratchCollectionRequest&lt;/code&gt; objects. This structure allows the user to send complex, nested queries, where each descendant represents a sub-query within the main query.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The &lt;code class=&quot;highlighter-rouge&quot;&gt;ParentPath&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;PrimaryKey&lt;/code&gt; keys play a crucial role in connecting different entities together, just like pieces of a puzzle. Their role is to establish relationships between data, helping us link everything together in a meaningful way.&lt;/p&gt;
+
+&lt;p&gt;How complex this linking process – or ‘joining’, as it’s often called – turns out to be will vary based on your specific requirements. In our current setup, we’ve kept things straightforward: we extract keys based on field names and use them for exact match comparisons.&lt;/p&gt;
+
+&lt;p&gt;However, one of the beautiful aspects of designing your search engine is that it can grow and evolve with your needs. Feel free to adapt and enhance your query model as needed, making it as simple or intricate as your project demands.&lt;/p&gt;
+
+&lt;p&gt;–&lt;/p&gt;
+
+&lt;p&gt;In essence, this interface provides a robust and flexible way for users to define complex search queries that can be executed against a database or data structure. As this is just the query interface, the actual processing, searching, and returning of results would be handled by other components of the federated search engine.&lt;/p&gt;
+
+&lt;h2 id=&quot;query-translation&quot;&gt;Query Translation&lt;/h2&gt;
+
+&lt;p&gt;The query translation component plays a crucial role in a federated search system, particularly when the system encompasses multiple databases or search engines with varying query languages or data schemas.&lt;/p&gt;
+
+&lt;p&gt;In a federated search system, a user’s query is received in a standard format. However, each underlying search engine or database may require queries in a different format or structure, specific to its own data model or language. This is where the query translation component comes in.&lt;/p&gt;
+
+&lt;p&gt;Here are some key aspects to consider about this crucial building block:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;Syntax Translation&lt;/em&gt;: Query translation primarily involves converting the syntax of the input query to match the syntax of each underlying search engine’s query language. This might include adapting the query structure, transforming operators, or even changing the order of conditions.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Semantic Translation&lt;/em&gt;: Some databases or search engines may interpret the same query differently, depending on the context or semantic rules of their query language.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Data Mapping&lt;/em&gt;: If the federated search system includes databases with different data schemas, the query translation may also involve data mapping. This means converting field or column names from the user query to match the names used in each database.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Error Handling&lt;/em&gt;: Another important role of query translation is to handle any syntax or semantic errors that might occur during the translation process and provide useful feedback to the user.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Performance Considerations&lt;/em&gt;: Query translation can impact the performance of the search system. Complex translations can introduce delays, so it’s important to optimize this process where possible. This might include caching frequently used translations or using efficient algorithms for the translation process.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In summary, query translation is an integral and complex part of any federated search system. It enables users to make queries without needing to understand the specifics of each underlying search engine or database, thereby making the system more accessible and user-friendly.&lt;/p&gt;
+
+&lt;p&gt;RSQL (RESTful Service Query Language) is a query language for RESTful APIs. It provides a set of conventions for expressing queries in URLs. If you build your federated search engine to rely on APIs that all support RSQL, you can eliminate the need for query translation entirely.&lt;/p&gt;
+
+&lt;p&gt;With RSQL, you can use a standard format to make queries against your data. For example, you might use a URL like this to make a query:&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https://example.com/api/users?filter=firstName==John;age=gt=30
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this example, firstName==John and age=gt=30 are RSQL expressions. They can be translated as “find users where the first name is John and the age is greater than 30”.&lt;/p&gt;
+
+&lt;p&gt;Here’s how you could incorporate RSQL into a federated search engine:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;RSQL as a Query Language&lt;/em&gt;: Design your query interface to accept queries in RSQL format. This provides a standard, uniform query syntax that can be used regardless of the underlying data source.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;API Support for RSQL&lt;/em&gt;: Ensure that each of the underlying APIs support RSQL. This may limit your choice of APIs, as not all APIs support RSQL natively. However, there are libraries available in many programming languages that can add RSQL support to an existing API.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;RSQL Query Engine&lt;/em&gt;: Use an RSQL query engine to parse and execute the RSQL queries against each API. This engine takes the RSQL query from the query interface, sends it to the appropriate APIs, collects the results, and returns them to the user.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Integration&lt;/em&gt;: Integrate the RSQL query engine with the other components of your federated search engine, such as the result presentation and error handling components.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;By using RSQL and a compatible query engine, you can create a federated search engine that uses a single, uniform query language across all data sources. This eliminates the need for query translation and can make the search engine easier to develop and maintain. However, it does require all underlying APIs to support RSQL, which may not be feasible in all cases.&lt;/p&gt;
+
+&lt;h2 id=&quot;result-aggregation&quot;&gt;Result Aggregation&lt;/h2&gt;
+
+&lt;p&gt;When a search query is executed, the search engine retrieves results from multiple databases or search engines. The function of the Result Aggregation component is to gather these results and consolidate them into a unified, structured, and coherent format, which can then be presented to the user. It essentially enables a comprehensive and useful presentation of search results from across different databases and systems.&lt;/p&gt;
+
+&lt;p&gt;Designing an efficient and effective Result Aggregation component involves addressing several key requirements:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;Unification&lt;/em&gt;: The component should be capable of merging results from various sources into a single set of results. The unification process should handle discrepancies in data formats and structures across different systems.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Duplication Handling&lt;/em&gt;: Since search results may come from multiple sources, it’s possible to have duplicate entries. The aggregation component needs to identify and handle such duplications appropriately.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Performance Optimization&lt;/em&gt;: To provide a seamless user experience, the Result Aggregation component must perform its tasks quickly, even when dealing with large volumes of data.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Error Handling&lt;/em&gt;: In case of any issues in retrieving or processing data from any source, the component should handle such situations gracefully without breaking the whole operation.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Data Transformation&lt;/em&gt;: Depending on the application, the aggregation component might need to perform data transformation tasks. For example, it might need to convert data types, translate data values, or apply a particular data schema.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Pagination Support&lt;/em&gt;: When dealing with a large number of search results, the aggregation component should support pagination to limit the number of results displayed at one time and provide a more manageable view.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Filtering&lt;/em&gt;: Post-query filtering should be supported, allowing users to refine the aggregated results based on specific criteria.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Security and Privacy&lt;/em&gt;: The component must ensure that it complies with all relevant data privacy and security regulations and standards. This includes handling sensitive data appropriately and respecting any access control rules specified by the underlying databases or search engines.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;These requirements, while not exhaustive, highlight some of the critical aspects to consider when designing a Result Aggregation component for a Federated Search Engine. By meeting these requirements, you can deliver a high-performing, robust, and user-friendly search solution that consolidates and presents search results effectively.&lt;/p&gt;
+
+&lt;h2 id=&quot;result-presentation&quot;&gt;Result Presentation&lt;/h2&gt;
+
+&lt;p&gt;After the search query has been processed, translated, and executed, and the results have been aggregated, these results need to be presented to the user in an understandable format.&lt;/p&gt;
+
+&lt;p&gt;The Result Presentation component is responsible for this task. It formats the aggregated search results and displays them in a way that meets the users’ needs and preferences. This might involve creating an HTML page, a PDF report, a data visualization, an interactive UI, or any other format that suits the application.&lt;/p&gt;
+
+&lt;p&gt;Good result presentation can dramatically improve the user experience of a search engine. It ensures that users can easily understand the search results, navigate through them, and take any necessary actions based on the results. It can also highlight the most relevant results, provide additional context, and offer options for refining or expanding the search.&lt;/p&gt;
+
+&lt;p&gt;In summary, the Result Presentation component is the face of the Federated Search Engine. It is the component that users interact with the most and therefore has a significant impact on users’ perceptions of the search engine’s usefulness and usability. Thus, designing an effective Result Presentation component involves a deep understanding of user needs, a good sense of design and usability, and a strong grasp of the technical aspects of presenting data in various formats.&lt;/p&gt;
+
+&lt;p&gt;JMESPath can extract and transform data from a JSON document, making it a useful tool for the Result Presentation component of a Federated Search Engine. It can help format and structure the aggregated search results into a more consumable format for users. You gain a lot of flexibility in how you can transform, filter, and aggregate your search results. You can effectively tailor your search results to the specific needs of your users, improving the usefulness and user-friendliness of your search engine.&lt;/p&gt;
+
+&lt;p&gt;Let’s go through the process of how to use JMESPath for result presentation:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;em&gt;Receiving Aggregated Results&lt;/em&gt;: Once the Result Aggregation component has gathered and consolidated results, it passes them to the Result Presentation component. These results are typically in the form of a JSON document or a similar data structure.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Formulating JMESPath Expressions&lt;/em&gt;: Depending on how you want to present the results, formulate JMESPath expressions that will extract and structure the required data. For example, if you want to show only the names and locations of users from the search results, you might use an expression like &lt;code class=&quot;highlighter-rouge&quot;&gt;[*].{name: name, location: location}&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Applying JMESPath Expressions&lt;/em&gt;: Use a JMESPath library or tool to apply your expressions to the JSON document. This will transform the JSON data according to your expressions.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Converting the Results&lt;/em&gt;: The output of the JMESPath expressions will be a new JSON document or data structure that contains only the data you’re interested in, structured in the way you specified. You can then convert this data into the desired presentation format. This could involve generating an HTML table, creating a data visualization, or formatting a text report.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Displaying the Results&lt;/em&gt;: Finally, display the results to the user. This could involve serving an HTML page, rendering a data visualization in a browser, or sending a text report by email.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;By using JMESPath in the Result Presentation component, you can provide users with clear, concise, and relevant search results. It allows you to tailor your result presentation to the specific needs of your users, improving the user experience of your search engine.&lt;/p&gt;
+
+&lt;p&gt;However, it’s worth noting that JMESPath is only one tool you can use for result presentation. Depending on your needs and the complexity of your data, you may need to use additional tools or techniques to present your search results effectively.&lt;/p&gt;
+
+&lt;h3 id=&quot;challenges-and-considerations&quot;&gt;Challenges and Considerations&lt;/h3&gt;
+
+&lt;p&gt;As intriguing as federated search is, it’s not without its challenges. The issues range from dealing with heterogeneous databases, varying query languages, to handling potential time delays and ensuring the security and privacy of data.&lt;/p&gt;
+
+&lt;h2 id=&quot;wrapping-up&quot;&gt;Wrapping Up&lt;/h2&gt;
+
+&lt;p&gt;Designing and implementing a Federated Search Engine is a complex yet rewarding task. As we’ve explored in this blog post, each component—Query Interface, Query Translation, Query Execution, Result Aggregation, and Result Presentation—plays a critical role and requires careful consideration.&lt;/p&gt;
+
+&lt;p&gt;We’ve also looked into the intricacies of handling query translation using RSQL, using JMESPath for result aggregation, and how it can also aid in the effective presentation of results. Moreover, we addressed some of the significant challenges you might face during implementation, such as handling diverse data, relevance ranking, scalability, language processing and security.&lt;/p&gt;
+
+&lt;p&gt;However, it’s important to remember that these complexities are manageable. By understanding the fundamentals of each component, leveraging appropriate tools and techniques, and addressing potential challenges proactively, you can build a powerful and user-friendly federated search engine that meets your specific needs.&lt;/p&gt;
+
+&lt;p&gt;I hope this blog post has provided you with a solid understanding of the building blocks of a Federated Search Engine and the considerations involved in designing and implementing each component. Whether you’re just getting started with your search engine project or looking to optimize an existing one, I trust this information will prove useful.&lt;/p&gt;
+
+&lt;p&gt;Remember, every search engine is different, and there is no one-size-fits-all approach. Stay flexible, keep learning, and don’t be afraid to adapt as you discover more about your users’ needs and your data.&lt;/p&gt;
+
+&lt;p&gt;Happy searching!&lt;/p&gt;
+</description>
+				<pubDate>Fri, 19 May 2023 00:00:00 -0500</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/2023/05/19/federated-search-intro.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2023/05/19/federated-search-intro.html</guid>
+			</item>
+		
+			<item>
 				<title>Introduction to JMESPath - JSON processor you should definitely know</title>
 				<description>&lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
@@ -4004,214 +4231,6 @@ COMMANDS:
 				<pubDate>Sat, 22 Jan 2022 00:00:00 -0600</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/2022/01/22/building-console-application-with-spectre-console.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2022/01/22/building-console-application-with-spectre-console.html</guid>
-			</item>
-		
-			<item>
-				<title>Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;Learn how to write a well-structured CLI application and pack it as a .NET tool.&lt;/p&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;Previously, I wrote a &lt;a href=&quot;https://nikiforovall.github.io/dotnet/cli/2021/06/06/clean-cli.html&quot;&gt;blog post&lt;/a&gt; that explains to you how to create something called “Clean CLI” - a combination of CLI application and Clean Architecture. This time I want to show you how to build .NET tool using the same techniques.&lt;/p&gt;
-
-&lt;p&gt;The .NET CLI lets you create a console application as a tool, which others can install and run. .NET tools are NuGet packages that could be installed from the .NET CLI.&lt;/p&gt;
-
-&lt;p&gt;A tool can be installed in the following ways:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;As a global tool - The tool binaries are installed in a default directory that is added to the PATH environment variable.&lt;/li&gt;
-  &lt;li&gt;As a local tool.&lt;/li&gt;
-  &lt;li&gt;As a global tool in a custom location. The tool binaries are installed in a default directory. You invoke the tool from the installation directory or any of its subdirectories.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;example-application---copy-paste-driven-development-with-copy-paster&quot;&gt;Example application - Copy-paste-driven development with copy-paster&lt;/h3&gt;
-
-&lt;p&gt;I like to optimize little things in my developer inner-loop. Lately, I found myself copying some code from GitHub over and over again. You may call me a copy-paste-driven development practitioner. I decided to write a tool to simplify efforts of downloading files from github - &lt;a href=&quot;https://github.com/NikiforovAll/copy-paster&quot;&gt;copy-paster&lt;/a&gt; (&lt;code class=&quot;highlighter-rouge&quot;&gt;copa&lt;/code&gt; for short). At first, it was a joke (&lt;a href=&quot;https://twitter.com/nicodotgay/statuses/1458891554026930181&quot;&gt;a meme&lt;/a&gt; if you like), I just wanted to show you how to write a .NET tool by example, but now, I really use &lt;code class=&quot;highlighter-rouge&quot;&gt;copa&lt;/code&gt; 😅.&lt;/p&gt;
-
-&lt;p&gt;Usage:&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;copa https://github.com/NikiforovAll/copy-paster/blob/main/LICENSE&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;.NET tools can be found by running &lt;code class=&quot;highlighter-rouge&quot;&gt;dotnet tool search&lt;/code&gt; or simply use &lt;a href=&quot;https://nuget.org&quot;&gt;https://nuget.org&lt;/a&gt; (there is a filter for global tools).&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;~&lt;span class=&quot;se&quot;&gt;\d&lt;/span&gt;ev
-➜  dotnet tool search copy-paster
-Package ID                   Latest Version      Authors           Downloads      Verified
-&lt;span class=&quot;nt&quot;&gt;------------------------------------------------------------------------------------------&lt;/span&gt;
-nikiforovall.copypaster      1.0.0               nikiforovall      0
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Once discovered, a tool can be installed like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet tool &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; NikiforovAll.CopyPaster
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;create-global-tool-&quot;&gt;Create global tool 🔨&lt;/h2&gt;
-
-&lt;p&gt;Let’s start off by creating simple console application.&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;dotnet new console -n copy-paster&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;Install main dependencies to build a .NET tool.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add package System.CommandLine &lt;span class=&quot;c&quot;&gt;# command line parsing and invocation&lt;/span&gt;
-dotnet add package System.CommandLine.Hosting &lt;span class=&quot;c&quot;&gt;# Plug dependency injection container&lt;/span&gt;
-dotnet add package Microsoft.Extensions.Hosting &lt;span class=&quot;c&quot;&gt;# Default DI container&lt;/span&gt;
-dotnet add package Microsoft.Extensions.DependencyInjection.Abstractions
-dotnet add package Spectre.Console &lt;span class=&quot;c&quot;&gt;# Makes it easier to create beautiful console apps&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;As mentioned, .NET tool is nothing but a console application packaged and distributed as a NuGet package. The only thing to do is to add special properties used by MSBuild to package .NET tools.&lt;/p&gt;
-
-&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;Project&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Sdk=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.NET.Sdk&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;PropertyGroup&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;ToolCommandName&amp;gt;&lt;/span&gt;copa&lt;span class=&quot;nt&quot;&gt;&amp;lt;/ToolCommandName&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackAsTool&amp;gt;&lt;/span&gt;True&lt;span class=&quot;nt&quot;&gt;&amp;lt;/PackAsTool&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;OutputType&amp;gt;&lt;/span&gt;Exe&lt;span class=&quot;nt&quot;&gt;&amp;lt;/OutputType&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;TargetFramework&amp;gt;&lt;/span&gt;net6&lt;span class=&quot;nt&quot;&gt;&amp;lt;/TargetFramework&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;/PropertyGroup&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Project&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Application’s entry point looks like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;System.CommandLine&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;System.CommandLine.Builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;System.CommandLine.Hosting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;System.CommandLine.Parsing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.Extensions.DependencyInjection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.Extensions.Hosting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;NikiforovAll.CopyPaster.Commands&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;NikiforovAll.CopyPaster.Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;CommandLineBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;DownloadFromGithub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseHost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;HostBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ConfigureServices&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddHttpClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IGithubCodeDownloader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GitHubCodeDownloader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddSingleton&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;FileSaver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UseCommandHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DownloadFromGithub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DownloadFromGithub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;())&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;InvokeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Builder.CommandLineBuilder&lt;/code&gt; is used to define CLI applications. It is responsible for the way your CLI looks and feels.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Hosting.HostingExtensions.UseHost&lt;/code&gt; accepts &lt;code class=&quot;highlighter-rouge&quot;&gt;Microsoft.Extensions.Hosting.IHostBuilder&lt;/code&gt; as input parameter and enables Dependency Injection configuration. For example, you can register an implementation of &lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Invocation.ICommandHandler&lt;/code&gt; in DI container, so it will be automatically resolved from the DI container during command execution.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Hosting.UseCommandHandler&lt;/code&gt; connects &lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Command&lt;/code&gt; to &lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Invocation.ICommandHandler&lt;/code&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;CommandLineBuilder.Build()&lt;/code&gt; returns &lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Parsing.Parser&lt;/code&gt; that is used to parse arguments and to run the CLI application.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;The anatomy of command is pretty simple:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;DownloadFromGithub&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RootCommand&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;DownloadFromGithub&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;base&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Copies file by url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddArgument&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Argument&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddOption&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Option&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;--output&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;-o&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Output file path&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Handler&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ICommandHandler&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Url&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Output&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IGithubCodeDownloader&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;codeDownloader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FileSaver&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fileSaver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;c1&quot;&gt;//...&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;InvokeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;InvocationContext&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;c1&quot;&gt;//...&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Arguments and options are registered in a declarative manner inside the constructor.&lt;/li&gt;
-  &lt;li&gt;Every &lt;code class=&quot;highlighter-rouge&quot;&gt;System.CommandLine.Command&lt;/code&gt; command contains associated handler with it. &lt;code class=&quot;highlighter-rouge&quot;&gt;public ICommandHandler? Handler {get; set;}&lt;/code&gt; but in the DI scenario we want to let DI to do it for us. &lt;code class=&quot;highlighter-rouge&quot;&gt;ICommandHandler&lt;/code&gt; can be declared anywhere in your project, but I prefer to locate it inside the &lt;code class=&quot;highlighter-rouge&quot;&gt;Command&lt;/code&gt; declaration&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;ICommandHandler.InvokeAsync&lt;/code&gt; is used to describe how the command should be processed. Note, in order to accept input parameters (arguments, options, etc.) you need to define public properties inside &lt;code class=&quot;highlighter-rouge&quot;&gt;ICommandHandler&lt;/code&gt;, names of the properties should match the full names specified in a command declaration. E.g. &lt;em&gt;”–output”&lt;/em&gt; option corresponds to &lt;code class=&quot;highlighter-rouge&quot;&gt;public string? Output { get; set; }&lt;/code&gt;.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&quot;publish-&quot;&gt;Publish 📢&lt;/h3&gt;
-
-&lt;p&gt;Since every .NET tool is a NuGet package. You can specify additional build parameters to improve discoverability and overall user experience at &lt;a href=&quot;https://nuget.org&quot;&gt;https://nuget.org&lt;/a&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;Project&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;PropertyGroup&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Label=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Authoring&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;Company&amp;gt;&lt;/span&gt;nikiforovall&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Company&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;Authors&amp;gt;&lt;/span&gt;nikiforovall&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Authors&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;/PropertyGroup&amp;gt;&lt;/span&gt;
-
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;PropertyGroup&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Label=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Package&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;Title&amp;gt;&lt;/span&gt;CopyPaster (copa)&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Title&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;Description&amp;gt;&lt;/span&gt;Enables copy-paste driven development. CopyPaster (aka copa)&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Description&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageTags&amp;gt;&lt;/span&gt;global-tool;copy-paste;productivity&lt;span class=&quot;nt&quot;&gt;&amp;lt;/PackageTags&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageLicenseExpression&amp;gt;&lt;/span&gt;MIT&lt;span class=&quot;nt&quot;&gt;&amp;lt;/PackageLicenseExpression&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageProjectUrl&amp;gt;&lt;/span&gt;https://github.com/nikiforovall/copy-paster&lt;span class=&quot;nt&quot;&gt;&amp;lt;/PackageProjectUrl&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageIcon&amp;gt;&lt;/span&gt;Icon.jpg&lt;span class=&quot;nt&quot;&gt;&amp;lt;/PackageIcon&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReleaseNotes&amp;gt;&lt;/span&gt;https://github.com/nikiforovall/copy-paster/releases&lt;span class=&quot;nt&quot;&gt;&amp;lt;/PackageReleaseNotes&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;/PropertyGroup&amp;gt;&lt;/span&gt;
-
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;PropertyGroup&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Label=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Repository&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;RepositoryUrl&amp;gt;&lt;/span&gt;https://nuget.org/packages/NikiforovAll.CopyPaster&lt;span class=&quot;nt&quot;&gt;&amp;lt;/RepositoryUrl&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;RepositoryType&amp;gt;&lt;/span&gt;git&lt;span class=&quot;nt&quot;&gt;&amp;lt;/RepositoryType&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;NeutralLanguage&amp;gt;&lt;/span&gt;en-US&lt;span class=&quot;nt&quot;&gt;&amp;lt;/NeutralLanguage&amp;gt;&lt;/span&gt;
-  &lt;span class=&quot;nt&quot;&gt;&amp;lt;/PropertyGroup&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Project&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Once ready, all you need to do is to pack the NuGet package and upload it. I use &lt;a href=&quot;https://cakebuild.net/docs/running-builds/runners/dotnet-tool&quot;&gt;Cake&lt;/a&gt; but it is totally fine to pack it with &lt;code class=&quot;highlighter-rouge&quot;&gt;dotnet pack&lt;/code&gt;.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-cake&quot;&gt;Task(&quot;Pack&quot;)
-    .Description(&quot;Creates NuGet packages and outputs them to the artefacts directory.&quot;)
-    .Does(() =&amp;gt;
-    {
-        DotNetPack(
-            &quot;.&quot;,
-            new DotNetPackSettings()
-            {
-                Configuration = configuration,
-                IncludeSymbols = true,
-                MSBuildSettings = new DotNetMSBuildSettings(),
-                NoBuild = false,
-                NoRestore = false,
-                OutputDirectory = artefactsDirectory,
-            });
-    });
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Before publishing, you may want to install a tool from a folder:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet tool &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--add-source&lt;/span&gt; ./Artefacts
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
-
-&lt;p&gt;I hope this blog post motivates you to create your own .NET tools. Please feel free to contribute to &lt;a href=&quot;https://github.com/NikiforovAll/copy-paster&quot;&gt;copy-paster&lt;/a&gt;. Thanks 👋.&lt;/p&gt;
-
-&lt;h3 id=&quot;reference&quot;&gt;Reference&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools&quot;&gt;https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create&quot;&gt;https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools-how-to-create&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/dotnet/cli/2021/06/06/clean-cli.html&quot;&gt;https://nikiforovall.github.io/dotnet/cli/2021/06/06/clean-cli.html&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/copy-paster&quot;&gt;https://github.com/NikiforovAll/copy-paster&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Mon, 20 Dec 2021 00:00:00 -0600</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/2021/12/20/dotnet-global-tool-copy-paster.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2021/12/20/dotnet-global-tool-copy-paster.html</guid>
 			</item>
 		
 	</channel>
