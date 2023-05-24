@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Building a federated search engine from the scratch. An introduction.
+title: Building a federated search engine from scratch. An introduction.
 categories: [ dotnet ]
 tags: [ dotnet, api, federated-search ]
 published: true
