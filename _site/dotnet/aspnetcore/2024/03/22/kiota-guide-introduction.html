@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1)</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1) </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			March
+			22nd,
+			
+			2024
+		</span>
+
+	
+
+
+
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html">How to add OpenAPI to ASP.NET Core project. A coding story. <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">openapi</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<blockquote>
+  <p>Source code: <a href="https://github.com/NikiforovAll/kiota-getting-started">https://github.com/NikiforovAll/kiota-getting-started</a></p>
+</blockquote>
+
+<h2 id="introduction">Introduction</h2>
+
+<p><strong>Kiota</strong> is a powerful command line tool developed by <strong>Microsoft</strong> that simplifies the process of generating <strong>API clients</strong> for calling any <strong>OpenAPI-described API</strong>.</p>
+
+<p>It gains traction, for example, GitHub teams decided to move away from the static landscape of the traditional Octokit, and now they are shipping SDKs using Kiota (ref: <a href="https://github.blog/2024-01-03-our-move-to-generated-sdks/">github/Our move to generated SDKs</a>)</p>
+
+<h3 id="purpose-and-goal">Purpose and Goal</h3>
+
+<p><strong>Kiota</strong> aims to eliminate the need for developers to rely on different API SDKs for each API they interact with. So When you need to call multiple APIs, you can use <strong>Kiota</strong> to generate a consistent, strongly typed API client without having to learn a new library for every HTTP API.</p>
+
+<h3 id="key-features">Key Features</h3>
+
+<ul>
+  <li>Language Agnostic: <strong>Kiota</strong> provides support for a wide range of languages, including C#, CLI, Go, Java, PHP, Python, Ruby, Swift, and TypeScript.</li>
+  <li>Full OpenAPI Capabilities: It leverages the complete capabilities of OpenAPI descriptions.</li>
+  <li>Minimal Code Generation: It generates only the necessary source code by building on a core library.</li>
+  <li>Reduced External Dependencies: <strong>Kiota</strong> minimizes external dependencies.</li>
+  <li>JSON Schema Integration: It uses JSON Schema descriptions to generate primitive-based model serialization and deserialization code.</li>
+  <li>IDE Autocomplete: The generated code supports IDE autocomplete, aiding in API resource discovery.</li>
+  <li>Full Access to HTTP Capabilities: Kiota ensures you have full access to HTTP features.</li>
+  <li>Fine-Tuned Generation: Need only a specific part of the API? No problem. <strong>Kiota</strong> lets you filter the generation to the exact surface area you’re interested in.</li>
+</ul>
+
+<h2 id="use-kiota">Use Kiota</h2>
+
+<p>Visit <a href="https://learn.microsoft.com/en-us/openapi/kiota/install">https://learn.microsoft.com/en-us/openapi/kiota/install</a> to see various installation options, in our case, we will use <code class="highlighter-rouge">dotnet global-tool</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet tool <span class="nb">install</span> <span class="nt">--global</span> Microsoft.OpenApi.Kiota
+</code></pre></div></div>
+
+<p>A noteworthy feature of the <strong>Kiota</strong> CLI is its endeavor to enhance discoverability by incorporating the search command <code class="highlighter-rouge">kiota search &lt;searchTerm&gt;</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kiota search news
+<span class="c"># Key                                                     Title                           Description</span>
+<span class="c"># apisguru::gov.bc.ca:news                                BC Gov News API Service 1.0     News API</span>
+<span class="c"># apisguru::microsoft.com:cognitiveservices-NewsSearch    News Search Client              The News Search API lets you send a</span>
+<span class="c"># apisguru::sportsdata.io:mlb-v3-rotoballer-premium-news  MLB v3 RotoBaller Premium News</span>
+<span class="c"># apisguru::sportsdata.io:nba-v3-rotoballer-premium-news  NBA v3 RotoBaller Premium News</span>
+<span class="c"># apisguru::sportsdata.io:nfl-v3-rotoballer-premium-news  NFL v3 RotoBaller Premium News</span>
+</code></pre></div></div>
+
+<p>Let’s say we want to know more about: <code class="highlighter-rouge">microsoft.com:cognitiveservices-NewsSearch</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kiota search apisguru::microsoft.com:cognitiveservices-NewsSearch
+<span class="c"># Key: apisguru::microsoft.com:cognitiveservices-NewsSearch</span>
+<span class="c"># Title: News Search Client</span>
+<span class="c"># Description: The News Search API lets you send a search query to Bing and get back a list of news that are relevant to the search query. This section provides technical details about the query parameters and headers that you use to request news and the JSON response objects that contain them. For examples that show how to make requests, see [Searching the web for news](https://docs.microsoft.com/en-us/azure/cognitive-services/bing-news-search/search-the-web).</span>
+<span class="c"># Service:</span>
+<span class="c"># OpenAPI: https://raw.githubusercontent.com/APIs-guru/openapi-directory/gh-pages/v2/specs/microsoft.com/cognitiveservices-NewsSearch/1.0/swagger.json</span>
+</code></pre></div></div>
+
+<p>We can check structure of the API by using <code class="highlighter-rouge">kiota show</code> command, but first, we need to download OpenAPI specification.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kiota download apisguru::microsoft.com:cognitiveservices-NewsSearch <span class="se">\</span>
+    <span class="nt">--output</span> ./src/NewsSearch.Sdk/OpenApi/NewsSearch.json
+<span class="nv">$ </span>kiota show <span class="se">\</span>
+    <span class="nt">--openapi</span> ./src/NewsSearch.Sdk/OpenApi/NewsSearch.json
+<span class="c"># /</span>
+<span class="c">#  └─news</span>
+<span class="c">#     ├─search</span>
+<span class="c">#     └─trendingtopics</span>
+
+<span class="c"># Hint: use the --include-path and --exclude-path options with glob patterns to filter the paths displayed.</span>
+<span class="c"># Example: kiota show -d "C:\Users\Oleksii_Nikiforov\dev\kiota-getting-started\.\src\NewsSearch.Sdk\OpenApi\NewsSearch.json" --include-path "**/foo"</span>
+</code></pre></div></div>
+
+<h2 id="demo">Demo</h2>
+
+<p>Now, we are ready to see how it works, but before we start I want to introduce you the demo application, note, it is intentionally complicated just to demonstrate various aspects of using <strong>Kiota</strong>:</p>
+
+<p>We have an application (<code class="highlighter-rouge">App.Client</code>) that calls our application’s API (<code class="highlighter-rouge">App API</code>). This application integrates with the Bing REST API. The unique aspect of this demo is that every HTTP client is automatically generated based on OpenAPI and <strong>Kiota</strong>.</p>
+
+<h3 id="components">Components</h3>
+
+<p>As part of this post, we don’t need to know about all components. You will learn more in future blog posts. For this post, focus on components marked with 🎯.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>🎯<code class="highlighter-rouge">App</code></td>
+      <td>Integrates with Bing REST API</td>
+    </tr>
+    <tr>
+      <td>🎯<code class="highlighter-rouge">NewsSearch.Sdk</code></td>
+      <td>Generated OpenAPI HTTP Client by Kiota. It’s based on externally provided OpenAPI specification</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">App.Sdk</code></td>
+      <td>Generated OpenAPI HTTP Client by Kiota</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">App.Client</code></td>
+      <td>Invokes <code class="highlighter-rouge">App</code> via <code class="highlighter-rouge">App.Sdk</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">App.Client.Sdk</code></td>
+      <td>Generated OpenAPI HTTP Client by Kiota</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">App.Client.Cli</code></td>
+      <td>Generated CLI Client by Kiota. Convention-based commands based on App.Client OpenAPI specification</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">App.AppHost</code></td>
+      <td>Aspire Host</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">App.ServiceDefaults</code></td>
+      <td>Reasonable service defaults</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="mermaid">
+graph LR
+    App --&gt; NewsSearchSdk["NewsSearch.Sdk"]
+    App --&gt; AppServiceDefaults["App.ServiceDefaults"]
+    AppClient --&gt; AppSdk["App.Sdk"]
+    AppClient["App.Client"] --&gt; AppServiceDefaults
+    AppAppHost["App.AppHost"] --&gt; App
+    AppAppHost --&gt; AppClient
+</div>
+
+<hr />
+
+<p><strong>Our goal</strong> is to add an endpoint to fetch trending topics by Country Code.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">services</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">;</span>
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"trending/{country:minlength(2):maxlength(2)}"</span><span class="p">,</span> <span class="p">(</span><span class="kt">string</span><span class="p">?</span> <span class="n">country</span><span class="p">)</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="c1">// TODO:</span>
+<span class="p">});</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="generate-client">Generate Client</h3>
+
+<p>So, first, we need to generate the client SDK based on OpenApi specification stored previously. Note, <code class="highlighter-rouge">--class-name</code> parameter specifies the name of the generated client - <code class="highlighter-rouge">NewsSearchApiClient</code>.</p>
+
+<p>💡 As mentioned earlier, <strong>Kiota</strong> supports partial client generation by using <code class="highlighter-rouge">--include-path</code> option.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kiota generate <span class="nt">-l</span> CSharp <span class="se">\</span>
+    <span class="nt">--log-level</span> trace <span class="se">\</span>
+    <span class="nt">--output</span> ./src/NewsSearch.Sdk <span class="se">\</span>
+    <span class="nt">--namespace-name</span> NewsSearch.Sdk <span class="se">\</span>
+    <span class="nt">--class-name</span> NewsSearchApiClient <span class="se">\</span>
+    <span class="nt">--include-path</span> <span class="s2">"**/trendingtopics"</span> <span class="se">\</span>
+    <span class="nt">--exclude-backward-compatible</span> <span class="se">\</span>
+    <span class="nt">--openapi</span> ./src/NewsSearch.Sdk/OpenApi/NewsSearch.json
+</code></pre></div></div>
+
+<p>After that, we want to add required dependencies. Luckily, <strong>Kiota</strong> help with it by providing friendly instructions as part of <code class="highlighter-rouge">kiota info -l CSharp</code></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>kiota info  <span class="nt">-l</span> CSharp
+<span class="c"># The language CSharp is currently in Stable maturity level.</span>
+
+<span class="c"># Hint: use the install command to install the dependencies.</span>
+<span class="c"># Example:</span>
+<span class="c">#    dotnet add package Microsoft.Kiota.Abstractions --version 1.7.11</span>
+<span class="c">#    dotnet add package Microsoft.Kiota.Authentication.Azure --version 1.1.4</span>
+<span class="c">#    dotnet add package Microsoft.Kiota.Http.HttpClientLibrary --version 1.3.7</span>
+<span class="c">#    dotnet add package Microsoft.Kiota.Serialization.Form --version 1.1.5</span>
+<span class="c">#    dotnet add package Microsoft.Kiota.Serialization.Json --version 1.1.8</span>
+<span class="c">#    dotnet add package Microsoft.Kiota.Serialization.Multipart --version 1.1.3</span>
+<span class="c">#    dotnet add package Microsoft.Kiota.Serialization.Text --version 1.1.4</span>
+</code></pre></div></div>
+
+<p>Here is how <code class="highlighter-rouge">NewsSearch.Sdk.csproj</code> looks like:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;Project</span> <span class="na">Sdk=</span><span class="s">"Microsoft.NET.Sdk"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;ItemGroup&gt;</span>
+        <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Kiota.Abstractions"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Kiota.Authentication.Azure"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Kiota.Http.HttpClientLibrary"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Kiota.Serialization.Form"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Kiota.Serialization.Json"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Kiota.Serialization.Multipart"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;PackageReference</span> <span class="na">Include=</span><span class="s">"Microsoft.Kiota.Serialization.Text"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/ItemGroup&gt;</span>
+<span class="nt">&lt;/Project&gt;</span>
+</code></pre></div></div>
+
+<p>Add a project <code class="highlighter-rouge">NewsSearch.Sdk</code> reference to <code class="highlighter-rouge">App</code> and instantiate instance of <code class="highlighter-rouge">NewsSearchApiClient</code>.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add ./src/App reference ./src/NewsSearch.Sdk/
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">requestAdapter</span> <span class="p">=</span> <span class="n">Mock</span><span class="p">&lt;</span><span class="n">IRequestAdapter</span><span class="p">&gt;;</span>
+<span class="kt">var</span> <span class="n">client</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">NewsSearchApiClient</span><span class="p">(</span><span class="n">requestAdapter</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>The request adapter interface <code class="highlighter-rouge">IRequestAdapter</code> is the primary point where <strong>Kiota</strong> service libraries will trigger the creation of a HTTP request. The default implementation in .NET has the name <code class="highlighter-rouge">HttpClientRequestAdapter</code> and it takes <code class="highlighter-rouge">IAuthenticationProvider</code> as a dependency.</p>
+
+<p>Most REST APIs are protected through some kind of authentication and authorization scheme. The default HTTP core services provided by <strong>Kiota</strong> require an authentication provider to be passed to handle authentication concerns.</p>
+
+<p>NewsSearch API has ApiKey Authentication. We can use standard class <code class="highlighter-rouge">Microsoft.Kiota.Abstractions.Authentication.ApiKeyAuthenticationProvider</code></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ApiKeyAuthenticationProvider</span> <span class="n">authenticationProvider</span> <span class="p">=</span> <span class="k">new</span> <span class="p">(</span>
+    <span class="n">apiKey</span><span class="p">,</span> <span class="s">"Ocp-Apim-Subscription-Key"</span><span class="p">,</span> <span class="n">KeyLocation</span><span class="p">.</span><span class="n">Header</span><span class="p">);</span>
+
+<span class="n">HttpClientRequestAdapter</span> <span class="n">requestAdapter</span> <span class="p">=</span> <span class="k">new</span> <span class="p">(</span><span class="n">authenticationProvider</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">BaseUrl</span> <span class="p">=</span> <span class="s">"https://api.bing.microsoft.com/v7.0"</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Let’s put everything together:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span>
+    <span class="s">"trending/{country:minlength(2):maxlength(2)}"</span><span class="p">,</span>
+    <span class="k">async</span> <span class="p">(</span><span class="n">IConfiguration</span> <span class="n">configuration</span><span class="p">,</span> <span class="kt">string</span><span class="p">?</span> <span class="n">country</span><span class="p">)</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">ApiKeyAuthenticationProvider</span> <span class="n">authenticationProvider</span> <span class="p">=</span> <span class="k">new</span> <span class="p">(</span>
+        <span class="n">configuration</span><span class="p">[</span><span class="s">"ApiKey"</span><span class="p">],</span> <span class="s">"Ocp-Apim-Subscription-Key"</span><span class="p">,</span> <span class="n">KeyLocation</span><span class="p">.</span><span class="n">Header</span><span class="p">);</span>
+
+    <span class="n">HttpClientRequestAdapter</span> <span class="n">requestAdapter</span> <span class="p">=</span> <span class="k">new</span> <span class="p">(</span><span class="n">authenticationProvider</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">BaseUrl</span> <span class="p">=</span> <span class="s">"https://api.bing.microsoft.com/v7.0"</span>
+    <span class="p">};</span>
+
+    <span class="kt">var</span> <span class="n">client</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">NewsSearchApiClient</span><span class="p">(</span><span class="n">requestAdapter</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">response</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span>
+        <span class="p">.</span><span class="n">News</span>
+        <span class="p">.</span><span class="n">Trendingtopics</span><span class="p">.</span><span class="nf">GetAsync</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">.</span><span class="n">QueryParameters</span><span class="p">.</span><span class="n">Cc</span> <span class="p">=</span> <span class="n">country</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="n">response</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>Before we test it, we need to set ApiKey. Navigate to Azure portal and create resource of type <code class="highlighter-rouge">microsoft.bing/accounts</code> and copy ApiKey.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet user-secrets <span class="nt">--project</span> ./src/App <span class="nb">set </span>ApiKey <span class="s2">"&lt;key&gt;"</span>
+</code></pre></div></div>
+
+<p>Finally, we are ready to Run our demo:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet run <span class="nt">--project</span> ./src/App
+curl <span class="nt">-s</span> http://localhost:5103/trending/US | jq <span class="s1">'.value[].name'</span> | <span class="nb">head</span> <span class="nt">-3</span>
+</code></pre></div></div>
+
+<p><img src="/assets/kiota/demo1.png" alt="demo1" /></p>
+
+<p>The setup, as demonstrated, is quite straightforward. The hierarchical approach to the client builder is particularly commendable as it simplifies the discovery of REST APIs, making it intuitive and user-friendly.</p>
+
+<h3 id="automatic-generation">Automatic Generation</h3>
+
+<p>Since kiota ships as <code class="highlighter-rouge">dotnet global-tool</code> we can easily rely on it as dependency and therefore make it as part of build process. Here is how to build SDK client every time we build the project. This way we don’t need to use <strong>Kiota</strong> CLI everytime.</p>
+
+<p>Add this to <code class="highlighter-rouge">NewsSearch.Sdk.csproj</code>:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;Target</span> <span class="na">Name=</span><span class="s">"GenerateClient"</span> <span class="na">AfterTargets=</span><span class="s">"Build"</span> <span class="na">Condition=</span><span class="s">"$(Configuration)=='Debug'"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Exec</span> <span class="na">Command=</span><span class="s">"dotnet kiota generate -l CSharp --output ./ --namespace-name NewsSearch.Sdk --class-name NewsSearchApiClient --include-path **/trendingtopics --exclude-backward-compatible --openapi ./OpenApi/NewsSearch.json"</span> <span class="na">WorkingDirectory=</span><span class="s">"$(ProjectDir)"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/Target&gt;</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In conclusion, this blog post has provided a comprehensive introduction to <strong>Kiota</strong>, a powerful tool developed by Microsoft for generating API clients. We’ve learned how <strong>Kiota</strong> can simplify the process of interacting with multiple APIs by generating consistent, strongly typed API clients.</p>
+
+<p>We’ve also explored <strong>Kiota</strong>’s key features, including its language-agnostic nature, minimal code generation, reduced external dependencies, and full access to HTTP capabilities.</p>
+
+<p>The post has demonstrated how to install and use <strong>Kiota</strong>, and provided a detailed walkthrough of generating a client SDK based on an OpenAPI specification. We’ve seen how <strong>Kiota</strong> can enhance discoverability and how it can be integrated into an application to fetch trending topics from the Bing REST API.</p>
+
+<p>Overall, <strong>Kiota</strong> is a promising tool that can significantly streamline the process of working with APIs, making it a valuable addition to any developer’s toolkit.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/openapi/kiota/overview">https://learn.microsoft.com/en-us/openapi/kiota/overview</a></li>
+  <li><a href="https://github.com/darrelmiller/KiotaApp">https://github.com/darrelmiller/KiotaApp</a></li>
+  <li><a href="https://github.com/NikiforovAll/kiota-getting-started">https://github.com/NikiforovAll/kiota-getting-started</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(23)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspnetcore-ref">
+				aspnetcore <span>(8)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(29)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(10)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#openapi-ref">
+				openapi <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref">
+				aspire <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#cli-ref">
+				cli <span>(6)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1)&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/2023/05/19/federated-search-intro.html" title="Building a federated search engine from scratch. An introduction.">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript"
+  src="https://unpkg.com/mermaid@9.3.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
