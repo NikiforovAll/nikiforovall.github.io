@@ -204,21 +204,62 @@ As you may already know, `IHttpClientFactory` in .NET provides a better way to w
 services.AddSingleton<IAuthenticationProvider, AnonymousAuthenticationProvider>(
     _ => new AnonymousAuthenticationProvider());
 
-services.AddHttpClient<AppApiClient>().AddTypedClient((httpClient, sp) =>
-{
-    var authenticationProvider = sp.GetRequiredService<IAuthenticationProvider>();
-    var requestAdapter = new HttpClientRequestAdapter(authProvider , httpClient: httpClient)
+services.AddHttpClient<AppApiClient>()
+    .AddTypedClient((httpClient, sp) =>
     {
-        BaseUrl = "http://app"
-    };
+        var authenticationProvider = sp.GetRequiredService<IAuthenticationProvider>();
+        var requestAdapter = new HttpClientRequestAdapter(authProvider , httpClient: httpClient)
+        {
+            BaseUrl = "http://app"
+        };
 
-    return new AppApiClient(requestAdapter);
-});
+        return new AppApiClient(requestAdapter);
+    })
+    .ConfigurePrimaryHttpMessageHandler(_ =>
+    {
+        var defaultHandlers = KiotaClientFactory.CreateDefaultHandlers();
+        var defaultHttpMessageHandler = KiotaClientFactory.GetDefaultHttpMessageHandler();
+
+        return KiotaClientFactory.ChainHandlersCollectionAndGetFirstLink(
+            defaultHttpMessageHandler, [.. defaultHandlers])!;
+    });
 ```
 
 The code above is configuring an `HttpClient` for the `AppApiClient` in a .NET application. The `AddTypedClient` method is used to further configure the `HttpClient` instance. The advantage of using typed clients is that they provide a clear contract for HTTP interactions and can be easily mocked for testing.
 
-Here is how to use `AppApiClient` from DI:
+By default, **Kiota** provides the default list of `DelegatingHandler`s and `HttpMessageHandler`. It is good idea to include them, but you can definitely opt-out if it interferes with your code.
+
+```csharp
+public static IList<DelegatingHandler> CreateDefaultHandlers()
+{
+    return new List<DelegatingHandler>
+    {
+        new RetryHandler(),
+        new RedirectHandler(),
+        new ParametersNameDecodingHandler(),
+        new UserAgentHandler(),
+        new HeadersInspectionHandler()
+    };
+}
+```
+
+The `ConfigurePrimaryHttpMessageHandler` method is used to set up the primary `HttpMessageHandler` for the HTTP client. This handler is responsible for sending HTTP requests and receiving HTTP responses.
+
+```csharp
+public static IHttpClientBuilder ConfigurePrimaryHttpMessageHandler(
+    this IHttpClientBuilder builder,
+    Func<IServiceProvider, HttpMessageHandler> configureHandler);
+```
+
+Here's how it works:
+
+1. Create a list of default `DelegatingHandler` instances using `KiotaClientFactory.CreateDefaultHandlers()`. A `DelegatingHandler` is a special type of `HttpMessageHandler` that can be used to process or manipulate HTTP requests and responses in some way before they are sent or after they are received.
+
+2. Get the default `HttpMessageHandler` using `KiotaClientFactory.GetDefaultHttpMessageHandler()`. This handler is the one that will actually send the HTTP request and receive the response.
+
+3. Chain these handlers together using `KiotaClientFactory.ChainHandlersCollectionAndGetFirstLink()`. This method takes the default `HttpMessageHandler` and the list of `DelegatingHandler` instances, and chains them together so that each request or response will pass through each handler in turn. The method returns the first link in this chain, which is then used as the primary `HttpMessageHandler` for the HTTP client.
+
+Finally, here is how to use `AppApiClient` from DI:
 
 ```csharp
 // App.Client/Program.cs
@@ -354,5 +395,6 @@ In conclusion, **Kiota** is not just a powerful tool, but a practical solution f
 * <https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html>
 * <https://www.meziantou.net/generate-openapi-specification-at-build-time-from-the-code-in-asp-net-core.htm>
 * <https://devblogs.microsoft.com/dotnet/introducing-dotnet-aspire-simplifying-cloud-native-development-with-dotnet-8/>
+* <https://github.com/microsoft/kiota-http-dotnet/blob/main/src/KiotaClientFactory.cs>
 * <https://devblogs.microsoft.com/dotnet/building-resilient-cloud-services-with-dotnet-8/>
 * <https://learn.microsoft.com/en-us/openapi/kiota/testing>
