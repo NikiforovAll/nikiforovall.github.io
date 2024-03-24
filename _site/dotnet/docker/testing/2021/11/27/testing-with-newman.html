@@ -481,6 +481,15 @@
 
 	
 
+	
+	
+
+	
+
+	
+
+	
+
 	<div class="article_body" style="margin-top: 30px;">
 		<h2 id="tldr">TL;DR</h2>
 
@@ -549,7 +558,7 @@
     <span class="k">private</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IResult</span><span class="p">&gt;</span> <span class="nf">CreateOrder</span><span class="p">(</span>
         <span class="n">Order</span> <span class="n">order</span><span class="p">,</span> <span class="n">IMongoClient</span> <span class="n">mongoClient</span><span class="p">,</span> <span class="n">Generator</span> <span class="n">idGenerator</span><span class="p">)</span>
     <span class="p">{</span>
-        <span class="n">order</span> <span class="p">=</span> <span class="n">order</span> <span class="n">with</span>
+        <span class="n">order</span> <span class="p">=</span> <span class="n">order</span> <span class="k">with</span>
         <span class="p">{</span>
             <span class="n">Id</span> <span class="p">=</span> <span class="n">idGenerator</span><span class="p">.</span><span class="nf">NextLong</span><span class="p">(),</span>
             <span class="n">CreatedAt</span> <span class="p">=</span> <span class="n">DateTime</span><span class="p">.</span><span class="n">Now</span>
@@ -586,25 +595,25 @@
       <li>Add folder “main-flow”</li>
     </ol>
   </li>
-  <li>Create environment “testing-with-newman” and add <code class="highlighter-rouge">base-url</code> and <code class="highlighter-rouge">rabbitmq-host</code> variables. Select newly created environment on the top-right.
+  <li>Create environment “testing-with-newman” and add <code class="language-plaintext highlighter-rouge">base-url</code> and <code class="language-plaintext highlighter-rouge">rabbitmq-host</code> variables. Select newly created environment on the top-right.
 <img src="/assets/testing-with-newman/postman-env.png" alt="postman-env" /></li>
-  <li>Add “Create Order” request to the main-flow folder. As you can see, we want to send HTTP POST to <code class="highlighter-rouge">{base-url}/orders</code> with the JSON body. Now, we are ready <a href="https://learning.postman.com/docs/getting-started/sending-the-first-request/">to send</a> the request and see how it works.
+  <li>Add “Create Order” request to the main-flow folder. As you can see, we want to send HTTP POST to <code class="language-plaintext highlighter-rouge">{base-url}/orders</code> with the JSON body. Now, we are ready <a href="https://learning.postman.com/docs/getting-started/sending-the-first-request/">to send</a> the request and see how it works.
 <img src="/assets/testing-with-newman/postman-create-order.png" alt="postman-create-order" /></li>
-  <li>Start the server <code class="highlighter-rouge">cd ./src/OrderService &amp;&amp; dotnet run</code> and send HTTP request through Postman UI. It looks like the order has been accepted and <a href="https://httpstatuses.com/201">“201 CREATED”</a> was returned. You can check the “Location” header to see the address of the created resource.<br />
+  <li>Start the server <code class="language-plaintext highlighter-rouge">cd ./src/OrderService &amp;&amp; dotnet run</code> and send HTTP request through Postman UI. It looks like the order has been accepted and <a href="https://httpstatuses.com/201">“201 CREATED”</a> was returned. You can check the “Location” header to see the address of the created resource.<br />
 <img src="/assets/testing-with-newman/create-order-response.png" alt="postman-create-order" /></li>
   <li>Once we are comfortable with Postman and “Order Service” we can start writing “Postman Tests” to verify expected behavior. Tests are written based on JavaScript. Postman UI helps you to write tests by providing tons of examples, see the right sidebar. Down below, we make sure that the order request return status is 201 and the customer field contains “John Doe”. As you can see, we also writing “orderId” into the environment variable to use it in the next requests.</li>
 </ol>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">pm</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="s2">"Status code is 201"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">to</span><span class="p">.</span><span class="nx">have</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mi">201</span><span class="p">);</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">pm</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="dl">"</span><span class="s2">Status code is 201</span><span class="dl">"</span><span class="p">,</span> <span class="nf">function </span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">to</span><span class="p">.</span><span class="nx">have</span><span class="p">.</span><span class="nf">status</span><span class="p">(</span><span class="mi">201</span><span class="p">);</span>
 <span class="p">});</span>
 
-<span class="nx">pm</span><span class="p">.</span><span class="nx">sendRequest</span><span class="p">(</span><span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="s2">"Location"</span><span class="p">),</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">pm</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="s2">"Order created"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-        <span class="nx">pm</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">code</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">eql</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
-        <span class="nx">pm</span><span class="p">.</span><span class="nx">environment</span><span class="p">.</span><span class="kd">set</span><span class="p">(</span><span class="s2">"orderId"</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">().</span><span class="nx">id</span><span class="p">);</span>
-        <span class="nx">pm</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="s2">"Order has customer"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-            <span class="nx">pm</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">().</span><span class="nx">customer</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">eql</span><span class="p">(</span><span class="s1">'John Doe'</span><span class="p">);</span>
+<span class="nx">pm</span><span class="p">.</span><span class="nf">sendRequest</span><span class="p">(</span><span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="dl">"</span><span class="s2">Location</span><span class="dl">"</span><span class="p">),</span> <span class="nf">function </span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">pm</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="dl">"</span><span class="s2">Order created</span><span class="dl">"</span><span class="p">,</span> <span class="nf">function </span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">pm</span><span class="p">.</span><span class="nf">expect</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nx">code</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nf">eql</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+        <span class="nx">pm</span><span class="p">.</span><span class="nx">environment</span><span class="p">.</span><span class="nf">set</span><span class="p">(</span><span class="dl">"</span><span class="s2">orderId</span><span class="dl">"</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nf">json</span><span class="p">().</span><span class="nx">id</span><span class="p">);</span>
+        <span class="nx">pm</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="dl">"</span><span class="s2">Order has customer</span><span class="dl">"</span><span class="p">,</span> <span class="nf">function </span><span class="p">()</span> <span class="p">{</span>
+            <span class="nx">pm</span><span class="p">.</span><span class="nf">expect</span><span class="p">(</span><span class="nx">res</span><span class="p">.</span><span class="nf">json</span><span class="p">().</span><span class="nx">customer</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nf">eql</span><span class="p">(</span><span class="dl">'</span><span class="s1">John Doe</span><span class="dl">'</span><span class="p">);</span>
         <span class="p">});</span>
     <span class="p">});</span>
 <span class="p">});</span>
@@ -612,42 +621,42 @@
 
 <h3 id="writing-requests-publish-to-rabbitmq">Writing requests. Publish to RabbitMQ</h3>
 
-<p>Also, you can publish messages to RabbitMQ from Postman. It is possible because RabbitMQ exposes HTTP client that enables management. To publish a message, you need to specify an exchange in the URL  <code class="highlighter-rouge">{rabbitmq-host}/api/exchanges/%2F/amq.default/publish</code> and provide the message as part of JSON body. Note <em>%2F</em> is the url-encoded default Virtual Host “/”.</p>
+<p>Also, you can publish messages to RabbitMQ from Postman. It is possible because RabbitMQ exposes HTTP client that enables management. To publish a message, you need to specify an exchange in the URL  <code class="language-plaintext highlighter-rouge">{rabbitmq-host}/api/exchanges/%2F/amq.default/publish</code> and provide the message as part of JSON body. Note <em>%2F</em> is the url-encoded default Virtual Host “/”.</p>
 
 <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
-    </span><span class="s2">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="s2">"content_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"application/json"</span><span class="w">
+    </span><span class="nl">"properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"content_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"application/json"</span><span class="w">
     </span><span class="p">},</span><span class="w">
-    </span><span class="s2">"routing_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order-paid"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"payload"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{</span><span class="se">\"</span><span class="s2">orderId</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">244165178826752</span><span class="se">\"</span><span class="s2">}"</span><span class="p">,</span><span class="w">
-    </span><span class="s2">"payload_encoding"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="w">
+    </span><span class="nl">"routing_key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"order-paid"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payload"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{</span><span class="se">\"</span><span class="s2">orderId</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">244165178826752</span><span class="se">\"</span><span class="s2">}"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"payload_encoding"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
 <p>Because publishing a message it is by nature async operation. All we can do at this point is to verify that it was <em>routed</em> (stored in a queue).</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">pm</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="s2">"Is Routed"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nx">jsonData</span> <span class="o">=</span> <span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
-    <span class="nx">pm</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">jsonData</span><span class="p">.</span><span class="nx">routed</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">eql</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">pm</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="dl">"</span><span class="s2">Is Routed</span><span class="dl">"</span><span class="p">,</span> <span class="nf">function </span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">jsonData</span> <span class="o">=</span> <span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nf">json</span><span class="p">();</span>
+    <span class="nx">pm</span><span class="p">.</span><span class="nf">expect</span><span class="p">(</span><span class="nx">jsonData</span><span class="p">.</span><span class="nx">routed</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nf">eql</span><span class="p">(</span><span class="kc">true</span><span class="p">);</span>
 <span class="p">});</span>
 </code></pre></div></div>
 
-<p>Finally, we want to see that the order has been completed as the result of the previous operation, we do it by sending <code class="highlighter-rouge">GET {base-url}/orders/{orderId}</code> and running the tests:</p>
+<p>Finally, we want to see that the order has been completed as the result of the previous operation, we do it by sending <code class="language-plaintext highlighter-rouge">GET {base-url}/orders/{orderId}</code> and running the tests:</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">pm</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="s2">"Status code is 200"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">to</span><span class="p">.</span><span class="nx">have</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">pm</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="dl">"</span><span class="s2">Status code is 200</span><span class="dl">"</span><span class="p">,</span> <span class="nf">function </span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">to</span><span class="p">.</span><span class="nx">have</span><span class="p">.</span><span class="nf">status</span><span class="p">(</span><span class="mi">200</span><span class="p">);</span>
 <span class="p">});</span>
 
-<span class="nx">pm</span><span class="p">.</span><span class="nx">test</span><span class="p">(</span><span class="s2">"Order is Completed"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
-    <span class="nx">pm</span><span class="p">.</span><span class="nx">expect</span><span class="p">(</span><span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">().</span><span class="nx">status</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nx">eql</span><span class="p">(</span><span class="s2">"Completed"</span><span class="p">);</span>
+<span class="nx">pm</span><span class="p">.</span><span class="nf">test</span><span class="p">(</span><span class="dl">"</span><span class="s2">Order is Completed</span><span class="dl">"</span><span class="p">,</span> <span class="nf">function </span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">pm</span><span class="p">.</span><span class="nf">expect</span><span class="p">(</span><span class="nx">pm</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nf">json</span><span class="p">().</span><span class="nx">status</span><span class="p">).</span><span class="nx">to</span><span class="p">.</span><span class="nf">eql</span><span class="p">(</span><span class="dl">"</span><span class="s2">Completed</span><span class="dl">"</span><span class="p">);</span>
 <span class="p">});</span>
 </code></pre></div></div>
 
 <p>That was “main-flow”. I suggest you check “cancel-flow” on your own. Let’s see how to run Postman collections from CLI.</p>
 
-<h2 id="running-postman-collections-from-cli-via-newman">Running Postman Collections from CLI via <code class="highlighter-rouge">newman</code></h2>
+<h2 id="running-postman-collections-from-cli-via-newman">Running Postman Collections from CLI via <code class="language-plaintext highlighter-rouge">newman</code></h2>
 
-<p>You can export collections and environments from Postman UI and use exported files locally. We are going to set up collection run inside <code class="highlighter-rouge">docker-compose</code></p>
+<p>You can export collections and environments from Postman UI and use exported files locally. We are going to set up collection run inside <code class="language-plaintext highlighter-rouge">docker-compose</code></p>
 
 <p>Running postman collections inside Docker has many benefits:</p>
 
@@ -657,7 +666,7 @@
   <li>Integration testing could be outsourced to a different team/people.</li>
 </ul>
 
-<p>Here is <code class="highlighter-rouge">docker-compose.postman.yml</code>:</p>
+<p>Here is <code class="language-plaintext highlighter-rouge">docker-compose.postman.yml</code>:</p>
 
 <div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="s2">"</span><span class="s">3.4"</span>
 
@@ -669,8 +678,8 @@
       <span class="s">--environment testing-with-newman.postman_environment.json</span>
       <span class="s">--folder main-flow</span>
       <span class="s">-r cli</span>
-      <span class="s">--delay-request 500</span>
-      <span class="s">--iteration-count 1</span>
+      <span class="s">--delay-request </span><span class="m">500</span>
+      <span class="s">--iteration-count </span><span class="m">1</span>
       <span class="s">--color on</span>
     <span class="na">volumes</span><span class="pi">:</span>
       <span class="pi">-</span> <span class="s">./tests/postman:/etc/newman</span>
@@ -683,7 +692,7 @@
       <span class="s">--environment testing-with-newman.postman_environment.json</span>
       <span class="s">--folder cancel-flow</span>
       <span class="s">-r cli</span>
-      <span class="s">--iteration-count 1</span>
+      <span class="s">--iteration-count </span><span class="m">1</span>
       <span class="s">--color on</span>
     <span class="na">volumes</span><span class="pi">:</span>
       <span class="pi">-</span> <span class="s">./tests/postman:/etc/newman</span>
@@ -692,7 +701,7 @@
 
 <span class="na">networks</span><span class="pi">:</span>
   <span class="na">newman-tests</span><span class="pi">:</span>
-    <span class="na">external</span><span class="pi">:</span> <span class="no">true</span>
+    <span class="na">external</span><span class="pi">:</span> <span class="kc">true</span>
     <span class="na">name</span><span class="pi">:</span> <span class="s">newman-tests</span>
 
 </code></pre></div></div>
@@ -708,7 +717,7 @@ docker compose <span class="nt">-f</span> docker-compose.postman.yml up cancel-f
 
 <h3 id="running-newman-as-part-of-the-continuous-integration-process-github-actions-example">Running newman as part of the continuous integration process. GitHub Actions example</h3>
 
-<p>One of the greatest benefits of <code class="highlighter-rouge">newman</code> is that you can use it as part of your CI.</p>
+<p>One of the greatest benefits of <code class="language-plaintext highlighter-rouge">newman</code> is that you can use it as part of your CI.</p>
 
 <div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">name</span><span class="pi">:</span> <span class="s">tests</span>
 <span class="na">on</span><span class="pi">:</span>
@@ -762,7 +771,7 @@ docker compose <span class="nt">-f</span> docker-compose.postman.yml up cancel-f
 		
 		
 		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
-				dotnet <span>(23)</span>
+				dotnet <span>(24)</span>
 				,
 			</a></li>
 		
@@ -788,7 +797,7 @@ docker compose <span class="nt">-f</span> docker-compose.postman.yml up cancel-f
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
-				dotnet <span>(29)</span>
+				dotnet <span>(30)</span>
 				,
 			</a>
 		</li>
@@ -816,7 +825,7 @@ docker compose <span class="nt">-f</span> docker-compose.postman.yml up cancel-f
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#cli-ref">
-				cli <span>(6)</span>
+				cli <span>(7)</span>
 				
 			</a>
 		</li>
