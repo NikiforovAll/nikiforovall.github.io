@@ -481,6 +481,15 @@
 
 	
 
+	
+	
+
+	
+
+	
+
+	
+
 	<div class="article_body" style="margin-top: 30px;">
 		<h2 id="tldr">TL;DR</h2>
 
@@ -493,76 +502,76 @@
 <p>The idea behind having a release container is pretty straightforward - you can bundle artifacts and tools so the release mechanism is portable and unified because of Docker. Also, another advantage of building NuGet packages in Docker is that you don’t need any dependencies installed on the build-server itself. I invite you to read Andrew’s Lock post to get more details about the use case (<a href="https://andrewlock.net/pushing-nuget-packages-built-in-docker-by-running-the-container/">https://andrewlock.net/pushing-nuget-packages-built-in-docker-by-running-the-container/</a>). This blog post is focused on the practical side, let’s dive into it by reviewing the Dockerfile:</p>
 
 <ol>
-  <li>Base layer is used for publishing. It contains <code class="highlighter-rouge">aws-cli</code> and credential provider (<code class="highlighter-rouge">AWS.CodeArtifact.NuGet.CredentialProvider</code>) so we can deploy to private NuGet feed as described in <a href="https://docs.aws.amazon.com/codeartifact/latest/ug/nuget-cli.html">here</a>. Please see the excellent guide on how to work with Docker and NuGet feeds <a href="https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md">https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md</a>.</li>
+  <li>Base layer is used for publishing. It contains <code class="language-plaintext highlighter-rouge">aws-cli</code> and credential provider (<code class="language-plaintext highlighter-rouge">AWS.CodeArtifact.NuGet.CredentialProvider</code>) so we can deploy to private NuGet feed as described in <a href="https://docs.aws.amazon.com/codeartifact/latest/ug/nuget-cli.html">here</a>. Please see the excellent guide on how to work with Docker and NuGet feeds <a href="https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md">https://github.com/dotnet/dotnet-docker/blob/main/documentation/scenarios/nuget-credentials.md</a>.</li>
   <li>Build layer is used for building and packing.</li>
-  <li>Entrypoint defines custom publishing script, essentially, <code class="highlighter-rouge">dotnet nuget push</code> is called. Note that, you can specify additional arguments. (e.g: override <code class="highlighter-rouge">--source</code> or provide <code class="highlighter-rouge">--api-key</code>).</li>
+  <li>Entrypoint defines custom publishing script, essentially, <code class="language-plaintext highlighter-rouge">dotnet nuget push</code> is called. Note that, you can specify additional arguments. (e.g: override <code class="language-plaintext highlighter-rouge">--source</code> or provide <code class="language-plaintext highlighter-rouge">--api-key</code>).</li>
 </ol>
 
-<pre><code class="language-Dockerfile">FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS base
-RUN apt-get update &amp;&amp; apt install unzip &amp;&amp; apt-get install -y curl
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-RUN unzip awscliv2.zip &amp;&amp; ./aws/install
+<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="w"> </span><span class="s">mcr.microsoft.com/dotnet/core/sdk:3.1-buster</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">base</span>
+<span class="k">RUN </span>apt-get update <span class="o">&amp;&amp;</span> apt <span class="nb">install </span>unzip <span class="o">&amp;&amp;</span> apt-get <span class="nb">install</span> <span class="nt">-y</span> curl
+<span class="k">RUN </span>curl <span class="s2">"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"</span> <span class="nt">-o</span> <span class="s2">"awscliv2.zip"</span>
+<span class="k">RUN </span>unzip awscliv2.zip <span class="o">&amp;&amp;</span> ./aws/install
 
-WORKDIR /artifacts
-RUN dotnet new tool-manifest --name manifest
-RUN dotnet tool install --ignore-failed-sources AWS.CodeArtifact.NuGet.CredentialProvider
-RUN dotnet codeartifact-creds install
+<span class="k">WORKDIR</span><span class="s"> /artifacts</span>
+<span class="k">RUN </span>dotnet new tool-manifest <span class="nt">--name</span> manifest
+<span class="k">RUN </span>dotnet tool <span class="nb">install</span> <span class="nt">--ignore-failed-sources</span> AWS.CodeArtifact.NuGet.CredentialProvider
+<span class="k">RUN </span>dotnet codeartifact-creds <span class="nb">install</span>
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build
-ARG Configuration="Release"
+<span class="k">FROM</span><span class="w"> </span><span class="s">mcr.microsoft.com/dotnet/sdk:5.0-buster-slim</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">build</span>
+<span class="k">ARG</span><span class="s"> Configuration="Release"</span>
 
-ENV DOTNET_CLI_TELEMETRY_OPTOUT=true \
+<span class="k">ENV</span><span class="s"> DOTNET_CLI_TELEMETRY_OPTOUT=true \</span>
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 
-WORKDIR /src
+<span class="k">WORKDIR</span><span class="s"> /src</span>
 
-COPY ["src/ReleaseContainerSample/ReleaseContainerSample.csproj", "src/ReleaseContainerSample/"]
-COPY ["tests/ReleaseContainerSample.Tests/ReleaseContainerSample.Tests.csproj", "tests/ReleaseContainerSample.Tests/"]
+<span class="k">COPY</span><span class="s"> ["src/ReleaseContainerSample/ReleaseContainerSample.csproj", "src/ReleaseContainerSample/"]</span>
+<span class="k">COPY</span><span class="s"> ["tests/ReleaseContainerSample.Tests/ReleaseContainerSample.Tests.csproj", "tests/ReleaseContainerSample.Tests/"]</span>
 
-RUN dotnet restore "src/ReleaseContainerSample/ReleaseContainerSample.csproj"
+<span class="k">RUN </span>dotnet restore <span class="s2">"src/ReleaseContainerSample/ReleaseContainerSample.csproj"</span>
 
-COPY . .
+<span class="k">COPY</span><span class="s"> . .</span>
 
-RUN dotnet build "src/ReleaseContainerSample" \
-    --configuration $Configuration
-    # --no-restore
+<span class="k">RUN </span>dotnet build <span class="s2">"src/ReleaseContainerSample"</span> <span class="se">\
+</span>    <span class="nt">--configuration</span> <span class="nv">$Configuration</span>
+    <span class="c"># --no-restore</span>
 
-RUN dotnet test "tests/ReleaseContainerSample.Tests" \
-    --configuration $Configuration \
-    --no-build
+<span class="k">RUN </span>dotnet <span class="nb">test</span> <span class="s2">"tests/ReleaseContainerSample.Tests"</span> <span class="se">\
+</span>    <span class="nt">--configuration</span> <span class="nv">$Configuration</span> <span class="se">\
+</span>    <span class="nt">--no-build</span>
 
-FROM build AS publish
+<span class="k">FROM</span><span class="w"> </span><span class="s">build</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">publish</span>
 
-ARG Configuration="Release"
-ARG Version=1.0.0
+<span class="k">ARG</span><span class="s"> Configuration="Release"</span>
+<span class="k">ARG</span><span class="s"> Version=1.0.0</span>
 
-RUN dotnet pack "src/ReleaseContainerSample"\
-    -p:Version=$Version \
-    --configuration $Configuration \
-    --output /artifacts \
-    --include-symbols
+<span class="k">RUN </span>dotnet pack <span class="s2">"src/ReleaseContainerSample"</span><span class="se">\
+</span>    <span class="nt">-p</span>:Version<span class="o">=</span><span class="nv">$Version</span> <span class="se">\
+</span>    <span class="nt">--configuration</span> <span class="nv">$Configuration</span> <span class="se">\
+</span>    <span class="nt">--output</span> /artifacts <span class="se">\
+</span>    <span class="nt">--include-symbols</span>
 
-FROM base AS final
+<span class="k">FROM</span><span class="w"> </span><span class="s">base</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">final</span>
 
-WORKDIR /artifacts
-COPY --from=publish /artifacts .
+<span class="k">WORKDIR</span><span class="s"> /artifacts</span>
+<span class="k">COPY</span><span class="s"> --from=publish /artifacts .</span>
 
-COPY ./build/publish-nuget.sh ./publish-nuget.sh
+<span class="k">COPY</span><span class="s"> ./build/publish-nuget.sh ./publish-nuget.sh</span>
 
-LABEL org.opencontainers.image.title="ReleaseContainerSample" \
+<span class="k">LABEL</span><span class="s"> org.opencontainers.image.title="ReleaseContainerSample" \</span>
     org.opencontainers.image.description="" \
     org.opencontainers.image.documentation="https://github.com/NikiforovAll/docker-release-container-sample" \
     org.opencontainers.image.source="https://github.com/NikiforovAll/docker-release-container-sample.git" \
     org.opencontainers.image.url="https://github.com/NikiforovAll/docker-release-container-sample" \
     org.opencontainers.image.vendor=""
 
-ENTRYPOINT ["./publish-nuget.sh"]
-CMD ["--source", "https://api.nuget.org/v3/index.json"]
-</code></pre>
+<span class="k">ENTRYPOINT</span><span class="s"> ["./publish-nuget.sh"]</span>
+<span class="k">CMD</span><span class="s"> ["--source", "https://api.nuget.org/v3/index.json"]</span>
+</code></pre></div></div>
 
-<p>Before we produce artifact, we need to specify version. Let’s use <code class="highlighter-rouge">GitVersion</code> to get the build version.</p>
+<p>Before we produce artifact, we need to specify version. Let’s use <code class="language-plaintext highlighter-rouge">GitVersion</code> to get the build version.</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ Version</span><span class="o">=</span><span class="sb">`</span>docker run <span class="nt">--rm</span> <span class="nt">-v</span> <span class="s2">"</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">:/repo"</span> gittools/gitversion:5.6.6 /repo <span class="se">\</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ Version</span><span class="o">=</span><span class="sb">`</span>docker run <span class="nt">--rm</span> <span class="nt">-v</span> <span class="s2">"</span><span class="si">$(</span><span class="nb">pwd</span><span class="si">)</span><span class="s2">:/repo"</span> gittools/gitversion:5.6.6 /repo <span class="se">\</span>
     | <span class="nb">tr</span> <span class="o">{</span> <span class="s1">'\n'</span> | <span class="nb">tr</span> , <span class="s1">'\n'</span> | <span class="nb">tr</span> <span class="o">}</span> <span class="s1">'\n'</span> <span class="se">\</span>
     | <span class="nb">grep</span> <span class="s2">"NuGetVersion"</span> <span class="se">\</span>
     | <span class="nb">awk</span> <span class="nt">-F</span><span class="s1">'"'</span> <span class="s1">'{print $4}'</span> | <span class="nb">head</span> <span class="nt">-n1</span><span class="sb">`</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="nv">$Version</span>
@@ -641,7 +650,7 @@ docker run <span class="nt">--rm</span> <span class="se">\</span>
 		
 		
 		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
-				dotnet <span>(23)</span>
+				dotnet <span>(24)</span>
 				,
 			</a></li>
 		
@@ -667,7 +676,7 @@ docker run <span class="nt">--rm</span> <span class="se">\</span>
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
-				dotnet <span>(29)</span>
+				dotnet <span>(30)</span>
 				,
 			</a>
 		</li>

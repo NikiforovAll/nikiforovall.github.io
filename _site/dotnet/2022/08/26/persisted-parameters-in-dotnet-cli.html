@@ -280,6 +280,15 @@
 	
 
 	
+
+	
+
+	
+	
+
+	
+
+	
 	<div>
 		<h5><a href="/dotnet/2022/01/22/building-console-application-with-spectre-console.html">Console applications with Spectre.Console <span class="label label-default">dotnet</span>  <span class="label label-default">cli</span>  <span class="label label-default">console</span> </a></h5>
 	</div>
@@ -520,13 +529,13 @@
 
 <h2 id="tldr">TL;DR</h2>
 
-<p>See how to implement <em>persisted parameters</em> feature in a CLI/console application. For example, Azure CLI offers persisted parameters that enable you to store parameter values for continued use. You will learn how to use <code class="highlighter-rouge">System.CommandLine</code>. It provides building blocks that make functionality composable and reusable.</p>
+<p>See how to implement <em>persisted parameters</em> feature in a CLI/console application. For example, Azure CLI offers persisted parameters that enable you to store parameter values for continued use. You will learn how to use <code class="language-plaintext highlighter-rouge">System.CommandLine</code>. It provides building blocks that make functionality composable and reusable.</p>
 
 <p>Source code: <a href="https://github.com/NikiforovAll/cli-persistent-parameters-example">https://github.com/NikiforovAll/cli-persistent-parameters-example</a></p>
 
 <h2 id="introduction">Introduction</h2>
 
-<p>Persisted parameters improve the overall developer experience. Since the previous values are stored and are ready to be re-used during the next command run. It is easy to understand the benefit of this feature by looking at how <code class="highlighter-rouge">az</code> does it:</p>
+<p>Persisted parameters improve the overall developer experience. Since the previous values are stored and are ready to be re-used during the next command run. It is easy to understand the benefit of this feature by looking at how <code class="language-plaintext highlighter-rouge">az</code> does it:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Turn persisted parameters on.</span>
 az config param-persist on
@@ -547,11 +556,11 @@ az storage account create <span class="se">\</span>
 <p>For example:</p>
 
 <ul>
-  <li><code class="highlighter-rouge">~/.azure/config</code> is used by Azure CLI</li>
-  <li><code class="highlighter-rouge">~/.aws/config</code> and <code class="highlighter-rouge">~/.aws/credentials</code> are used by AWS CLI</li>
+  <li><code class="language-plaintext highlighter-rouge">~/.azure/config</code> is used by Azure CLI</li>
+  <li><code class="language-plaintext highlighter-rouge">~/.aws/config</code> and <code class="language-plaintext highlighter-rouge">~/.aws/credentials</code> are used by AWS CLI</li>
 </ul>
 
-<p>Here is what <code class="highlighter-rouge">~/.azure/config</code> can look like:</p>
+<p>Here is what <code class="language-plaintext highlighter-rouge">~/.azure/config</code> can look like:</p>
 
 <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>───────┬────────────────────────────────────────────────────────────────────────
        │ File: /home/oleksii_nikiforov/.azure/config
@@ -572,9 +581,9 @@ az storage account create <span class="se">\</span>
 
 <h2 id="implement-configuration-storage">Implement configuration storage</h2>
 
-<p>My goal is to replicate the behavior of <code class="highlighter-rouge">az</code> CLI and make the implementation reusable, so you can just grab the code and add it to your application.</p>
+<p>My goal is to replicate the behavior of <code class="language-plaintext highlighter-rouge">az</code> CLI and make the implementation reusable, so you can just grab the code and add it to your application.</p>
 
-<p>Let’s look at commands provided by <code class="highlighter-rouge">az</code> CLI to work with the configuration.</p>
+<p>Let’s look at commands provided by <code class="language-plaintext highlighter-rouge">az</code> CLI to work with the configuration.</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> az config <span class="nt">-h</span>
 
@@ -653,7 +662,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Now, we want the actual code that handles commands. But before that, we need to grab the configuration from someplace. In my opinion, we already have the required and de-facto standard way of working with configuration namely - <code class="highlighter-rouge">IConfiguration</code>. The only this is left is to use Dependency Injection capabilities of <code class="highlighter-rouge">System.CommandLine</code> and define <code class="highlighter-rouge">BinderBase&lt;IConfiguration&gt;</code>. See <a href="https://docs.microsoft.com/en-us/dotnet/standard/commandline/dependency-injection">https://docs.microsoft.com/en-us/dotnet/standard/commandline/dependency-injection</a> for more details.</p>
+<p>Now, we want the actual code that handles commands. But before that, we need to grab the configuration from someplace. In my opinion, we already have the required and de-facto standard way of working with configuration namely - <code class="language-plaintext highlighter-rouge">IConfiguration</code>. The only this is left is to use Dependency Injection capabilities of <code class="language-plaintext highlighter-rouge">System.CommandLine</code> and define <code class="language-plaintext highlighter-rouge">BinderBase&lt;IConfiguration&gt;</code>. See <a href="https://docs.microsoft.com/en-us/dotnet/standard/commandline/dependency-injection">https://docs.microsoft.com/en-us/dotnet/standard/commandline/dependency-injection</a> for more details.</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">CliConfigurationProvider</span> <span class="p">:</span> <span class="n">BinderBase</span><span class="p">&lt;</span><span class="n">IConfiguration</span><span class="p">&gt;</span>
 <span class="p">{</span>
@@ -684,9 +693,9 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>As you may notice, we are using <code class="highlighter-rouge">ConfigurationBuilder</code> to compose a configuration not only from a configuration file but also from prefix environment variables. As result, we can override parameters, e.g.: <code class="highlighter-rouge">CLISTORE_MyConfigKey</code>.</p>
+<p>As you may notice, we are using <code class="language-plaintext highlighter-rouge">ConfigurationBuilder</code> to compose a configuration not only from a configuration file but also from prefix environment variables. As result, we can override parameters, e.g.: <code class="language-plaintext highlighter-rouge">CLISTORE_MyConfigKey</code>.</p>
 
-<p>The <code class="highlighter-rouge">config get</code> command handler. Note, the <code class="highlighter-rouge">IConfiguration</code> is injected as parameter:</p>
+<p>The <code class="language-plaintext highlighter-rouge">config get</code> command handler. Note, the <code class="language-plaintext highlighter-rouge">IConfiguration</code> is injected as parameter:</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="k">get</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Command</span><span class="p">(</span><span class="s">"get"</span><span class="p">,</span> <span class="s">"Get a configuration"</span><span class="p">);</span>
 <span class="kt">var</span> <span class="n">getpath</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Argument</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">?&gt;(</span><span class="s">"key"</span><span class="p">);</span>
@@ -718,7 +727,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="k">return</span> <span class="k">get</span><span class="p">;</span>
 </code></pre></div></div>
 
-<p>On the write side, we need to be able to manipulate config file. I will skip parsing details. Basically, we load the file from known location and can call <code class="highlighter-rouge">Save(path)</code> when we are ready.</p>
+<p>On the write side, we need to be able to manipulate config file. I will skip parsing details. Basically, we load the file from known location and can call <code class="language-plaintext highlighter-rouge">Save(path)</code> when we are ready.</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">CliConfigurationProvider</span> <span class="p">:</span> <span class="n">BinderBase</span><span class="p">&lt;</span><span class="n">IConfiguration</span><span class="p">&gt;</span>
 <span class="p">{</span>
@@ -739,7 +748,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>The <code class="highlighter-rouge">config set</code> command handler.</p>
+<p>The <code class="language-plaintext highlighter-rouge">config set</code> command handler.</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">configurationProvider</span> <span class="p">=</span> <span class="n">CliConfigurationProvider</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="n">root</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
 <span class="kt">var</span> <span class="k">set</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Command</span><span class="p">(</span><span class="s">"set"</span><span class="p">,</span> <span class="s">"Set a configuration"</span><span class="p">);</span>
@@ -772,7 +781,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 
 <p>Here are some tests. I included *.verfied.txt content as comments. For more details please refer to <a href="https://github.com/NikiforovAll/cli-persistent-parameters-example/tree/main/tests/CliStore.Tests">Tests</a>.</p>
 
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[UsesVerify]</span>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">UsesVerify</span><span class="p">]</span>
 <span class="k">public</span> <span class="k">class</span> <span class="nc">StoreCommands_Specs</span>
 <span class="p">{</span>
     <span class="c1">// kinda ugly, but I can live with it</span>
@@ -864,7 +873,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>Here is the content of <code class="highlighter-rouge">~/.clistore/config</code> file after test run:</p>
+<p>Here is the content of <code class="language-plaintext highlighter-rouge">~/.clistore/config</code> file after test run:</p>
 
 <div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
        │ File: /home/oleksii_nikiforov/.clistore/config
@@ -883,7 +892,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 
 <p>Let’s say we want to print out “Hello, {target}” and take {target} as an option/argument. If an option is not provided we should check configuration storage for default values.</p>
 
-<p>The first approach is to directly use <code class="highlighter-rouge">BinderBase&lt;IConfiguration&gt;</code> and read from <code class="highlighter-rouge">IConfiguration</code>.</p>
+<p>The first approach is to directly use <code class="language-plaintext highlighter-rouge">BinderBase&lt;IConfiguration&gt;</code> and read from <code class="language-plaintext highlighter-rouge">IConfiguration</code>.</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.csharp</span>
 <span class="n">root</span><span class="p">.</span><span class="nf">AddConfigCommands</span><span class="p">(</span><span class="k">out</span> <span class="kt">var</span> <span class="n">configProvider</span><span class="p">);</span>
@@ -904,7 +913,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>The second one is to provide the default value factory <code class="highlighter-rouge">getDefaultValue</code>. Note, it might slow down built-in suggestions:</p>
+<p>The second one is to provide the default value factory <code class="language-plaintext highlighter-rouge">getDefaultValue</code>. Note, it might slow down built-in suggestions:</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.csharp</span>
 <span class="n">root</span><span class="p">.</span><span class="nf">AddConfigCommands</span><span class="p">(</span><span class="k">out</span> <span class="kt">var</span> <span class="n">configProvider</span><span class="p">);</span>
@@ -928,11 +937,11 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 
 <p>The benefit of the approach above is that you don’t need to worry about configuration in the handler code.</p>
 
-<p>And handler could be simplified to <code class="highlighter-rouge">command.SetHandler(Greet, targetOptionWithDefault)</code> by using C# method groups.</p>
+<p>And handler could be simplified to <code class="language-plaintext highlighter-rouge">command.SetHandler(Greet, targetOptionWithDefault)</code> by using C# method groups.</p>
 
 <p>The tests:</p>
 
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[Fact]</span>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
 <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">GreetFromConfig_greets_with_populated_target_config</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="nf">Execute</span><span class="p">(</span><span class="s">"config"</span><span class="p">,</span> <span class="s">"set"</span><span class="p">,</span> <span class="s">"core.target=World"</span><span class="p">);</span>
@@ -943,7 +952,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="c1">// Hello, World</span>
 
 
-<span class="na">[Fact]</span>
+<span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
 <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">GreetFromDefaultValue_greets_with_default_value_from_populated_target_config</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="nf">Execute</span><span class="p">(</span><span class="s">"config"</span><span class="p">,</span> <span class="s">"set"</span><span class="p">,</span> <span class="s">"core.target=World"</span><span class="p">);</span>
@@ -959,7 +968,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 
 <p>Now, we have a good grasp of how to implement stateful CLI applications. We can see how to add the persistent parameters feature. Let’s start with expected behavior and the corresponding test:</p>
 
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[Fact]</span>
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
 <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">GreetFromPersisted_greets_with_persisted_params_value</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="nf">Execute</span><span class="p">(</span><span class="s">"greet-from-persisted"</span><span class="p">,</span> <span class="s">"--target"</span><span class="p">,</span> <span class="s">"World"</span><span class="p">);</span>
@@ -970,9 +979,9 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 <span class="c1">// Hello, World</span>
 </code></pre></div></div>
 
-<p>The <code class="highlighter-rouge">--target</code> parameter is stored as a result of a previous successful invocation. We can organize a dedicated section in configuration to store previously used values.</p>
+<p>The <code class="language-plaintext highlighter-rouge">--target</code> parameter is stored as a result of a previous successful invocation. We can organize a dedicated section in configuration to store previously used values.</p>
 
-<p>To define persisted options we can use <code class="highlighter-rouge">BinderBase&lt;T&gt;</code> as a decorator to <code class="highlighter-rouge">Option&lt;T&gt;</code>. Like following:</p>
+<p>To define persisted options we can use <code class="language-plaintext highlighter-rouge">BinderBase&lt;T&gt;</code> as a decorator to <code class="language-plaintext highlighter-rouge">Option&lt;T&gt;</code>. Like following:</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">PersistedOptionProvider</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="p">:</span> <span class="n">BinderBase</span><span class="p">&lt;</span><span class="n">T</span><span class="p">?&gt;</span>
 <span class="p">{</span>
@@ -1014,7 +1023,7 @@ the corresponding configuration is shown."</span><span class="p">);</span>
 
 <p>That solves the <strong>read</strong> side of the task. What about the <strong>write</strong> side? We want to store options upon successful completion after all.</p>
 
-<p>Thankfully, <code class="highlighter-rouge">System.CommandLine</code> provides a handy abstraction - middleware. We can use it on <code class="highlighter-rouge">CommandLineBuilder.AddMiddleware</code>.</p>
+<p>Thankfully, <code class="language-plaintext highlighter-rouge">System.CommandLine</code> provides a handy abstraction - middleware. We can use it on <code class="language-plaintext highlighter-rouge">CommandLineBuilder.AddMiddleware</code>.</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">root</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">RootCommand</span><span class="p">();</span>
 <span class="n">root</span><span class="p">.</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"clistore"</span><span class="p">;</span>
@@ -1094,7 +1103,7 @@ Hello, bar
 
 <h2 id="summary">Summary</h2>
 
-<p>I’ve shown you how to use <code class="highlighter-rouge">System.CommandLine</code> and how to implement persisted parameters feature in your CLI/console application. The suggested code is not production-ready but is a decent starting point.</p>
+<p>I’ve shown you how to use <code class="language-plaintext highlighter-rouge">System.CommandLine</code> and how to implement persisted parameters feature in your CLI/console application. The suggested code is not production-ready but is a decent starting point.</p>
 
 <h2 id="reference">Reference</h2>
 
@@ -1116,7 +1125,7 @@ Hello, bar
 		
 		
 		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
-				dotnet <span>(23)</span>
+				dotnet <span>(24)</span>
 				
 			</a></li>
 		
@@ -1132,7 +1141,7 @@ Hello, bar
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
-				dotnet <span>(29)</span>
+				dotnet <span>(30)</span>
 				,
 			</a>
 		</li>
@@ -1146,7 +1155,7 @@ Hello, bar
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#cli-ref">
-				cli <span>(6)</span>
+				cli <span>(7)</span>
 				,
 			</a>
 		</li>

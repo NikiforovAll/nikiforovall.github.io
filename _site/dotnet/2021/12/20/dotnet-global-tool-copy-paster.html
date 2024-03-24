@@ -235,6 +235,15 @@
 	
 
 	
+
+	
+
+	
+	
+
+	
+
+	
 	<div>
 		<h5><a href="/dotnet/2022/08/26/persisted-parameters-in-dotnet-cli.html">Add persisted parameters to CLI applications in .NET <span class="label label-default">dotnet</span>  <span class="label label-default">console</span>  <span class="label label-default">cli</span>  <span class="label label-default">systemcommandline</span> </a></h5>
 	</div>
@@ -520,13 +529,13 @@
 
 <h3 id="example-application---copy-paste-driven-development-with-copy-paster">Example application - Copy-paste-driven development with copy-paster</h3>
 
-<p>I like to optimize little things in my developer inner-loop. Lately, I found myself copying some code from GitHub over and over again. You may call me a copy-paste-driven development practitioner. I decided to write a tool to simplify efforts of downloading files from github - <a href="https://github.com/NikiforovAll/copy-paster">copy-paster</a> (<code class="highlighter-rouge">copa</code> for short). At first, it was a joke (<a href="https://twitter.com/nicodotgay/statuses/1458891554026930181">a meme</a> if you like), I just wanted to show you how to write a .NET tool by example, but now, I really use <code class="highlighter-rouge">copa</code> 😅.</p>
+<p>I like to optimize little things in my developer inner-loop. Lately, I found myself copying some code from GitHub over and over again. You may call me a copy-paste-driven development practitioner. I decided to write a tool to simplify efforts of downloading files from github - <a href="https://github.com/NikiforovAll/copy-paster">copy-paster</a> (<code class="language-plaintext highlighter-rouge">copa</code> for short). At first, it was a joke (<a href="https://twitter.com/nicodotgay/statuses/1458891554026930181">a meme</a> if you like), I just wanted to show you how to write a .NET tool by example, but now, I really use <code class="language-plaintext highlighter-rouge">copa</code> 😅.</p>
 
 <p>Usage:</p>
 
-<p><code class="highlighter-rouge">copa https://github.com/NikiforovAll/copy-paster/blob/main/LICENSE</code></p>
+<p><code class="language-plaintext highlighter-rouge">copa https://github.com/NikiforovAll/copy-paster/blob/main/LICENSE</code></p>
 
-<p>.NET tools can be found by running <code class="highlighter-rouge">dotnet tool search</code> or simply use <a href="https://nuget.org">https://nuget.org</a> (there is a filter for global tools).</p>
+<p>.NET tools can be found by running <code class="language-plaintext highlighter-rouge">dotnet tool search</code> or simply use <a href="https://nuget.org">https://nuget.org</a> (there is a filter for global tools).</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~<span class="se">\d</span>ev
 ➜  dotnet tool search copy-paster
@@ -544,7 +553,7 @@ nikiforovall.copypaster      1.0.0               nikiforovall      0
 
 <p>Let’s start off by creating simple console application.</p>
 
-<p><code class="highlighter-rouge">dotnet new console -n copy-paster</code></p>
+<p><code class="language-plaintext highlighter-rouge">dotnet new console -n copy-paster</code></p>
 
 <p>Install main dependencies to build a .NET tool.</p>
 
@@ -592,10 +601,10 @@ dotnet add package Spectre.Console <span class="c"># Makes it easier to create b
 </code></pre></div></div>
 
 <ol>
-  <li><code class="highlighter-rouge">System.CommandLine.Builder.CommandLineBuilder</code> is used to define CLI applications. It is responsible for the way your CLI looks and feels.</li>
-  <li><code class="highlighter-rouge">System.CommandLine.Hosting.HostingExtensions.UseHost</code> accepts <code class="highlighter-rouge">Microsoft.Extensions.Hosting.IHostBuilder</code> as input parameter and enables Dependency Injection configuration. For example, you can register an implementation of <code class="highlighter-rouge">System.CommandLine.Invocation.ICommandHandler</code> in DI container, so it will be automatically resolved from the DI container during command execution.</li>
-  <li><code class="highlighter-rouge">System.CommandLine.Hosting.UseCommandHandler</code> connects <code class="highlighter-rouge">System.CommandLine.Command</code> to <code class="highlighter-rouge">System.CommandLine.Invocation.ICommandHandler</code>.</li>
-  <li><code class="highlighter-rouge">CommandLineBuilder.Build()</code> returns <code class="highlighter-rouge">System.CommandLine.Parsing.Parser</code> that is used to parse arguments and to run the CLI application.</li>
+  <li><code class="language-plaintext highlighter-rouge">System.CommandLine.Builder.CommandLineBuilder</code> is used to define CLI applications. It is responsible for the way your CLI looks and feels.</li>
+  <li><code class="language-plaintext highlighter-rouge">System.CommandLine.Hosting.HostingExtensions.UseHost</code> accepts <code class="language-plaintext highlighter-rouge">Microsoft.Extensions.Hosting.IHostBuilder</code> as input parameter and enables Dependency Injection configuration. For example, you can register an implementation of <code class="language-plaintext highlighter-rouge">System.CommandLine.Invocation.ICommandHandler</code> in DI container, so it will be automatically resolved from the DI container during command execution.</li>
+  <li><code class="language-plaintext highlighter-rouge">System.CommandLine.Hosting.UseCommandHandler</code> connects <code class="language-plaintext highlighter-rouge">System.CommandLine.Command</code> to <code class="language-plaintext highlighter-rouge">System.CommandLine.Invocation.ICommandHandler</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">CommandLineBuilder.Build()</code> returns <code class="language-plaintext highlighter-rouge">System.CommandLine.Parsing.Parser</code> that is used to parse arguments and to run the CLI application.</li>
 </ol>
 
 <p>The anatomy of command is pretty simple:</p>
@@ -629,8 +638,8 @@ dotnet add package Spectre.Console <span class="c"># Makes it easier to create b
 
 <ol>
   <li>Arguments and options are registered in a declarative manner inside the constructor.</li>
-  <li>Every <code class="highlighter-rouge">System.CommandLine.Command</code> command contains associated handler with it. <code class="highlighter-rouge">public ICommandHandler? Handler {get; set;}</code> but in the DI scenario we want to let DI to do it for us. <code class="highlighter-rouge">ICommandHandler</code> can be declared anywhere in your project, but I prefer to locate it inside the <code class="highlighter-rouge">Command</code> declaration</li>
-  <li><code class="highlighter-rouge">ICommandHandler.InvokeAsync</code> is used to describe how the command should be processed. Note, in order to accept input parameters (arguments, options, etc.) you need to define public properties inside <code class="highlighter-rouge">ICommandHandler</code>, names of the properties should match the full names specified in a command declaration. E.g. <em>”–output”</em> option corresponds to <code class="highlighter-rouge">public string? Output { get; set; }</code>.</li>
+  <li>Every <code class="language-plaintext highlighter-rouge">System.CommandLine.Command</code> command contains associated handler with it. <code class="language-plaintext highlighter-rouge">public ICommandHandler? Handler {get; set;}</code> but in the DI scenario we want to let DI to do it for us. <code class="language-plaintext highlighter-rouge">ICommandHandler</code> can be declared anywhere in your project, but I prefer to locate it inside the <code class="language-plaintext highlighter-rouge">Command</code> declaration</li>
+  <li><code class="language-plaintext highlighter-rouge">ICommandHandler.InvokeAsync</code> is used to describe how the command should be processed. Note, in order to accept input parameters (arguments, options, etc.) you need to define public properties inside <code class="language-plaintext highlighter-rouge">ICommandHandler</code>, names of the properties should match the full names specified in a command declaration. E.g. <em>”–output”</em> option corresponds to <code class="language-plaintext highlighter-rouge">public string? Output { get; set; }</code>.</li>
 </ol>
 
 <h3 id="publish-">Publish 📢</h3>
@@ -661,7 +670,7 @@ dotnet add package Spectre.Console <span class="c"># Makes it easier to create b
 <span class="nt">&lt;/Project&gt;</span>
 </code></pre></div></div>
 
-<p>Once ready, all you need to do is to pack the NuGet package and upload it. I use <a href="https://cakebuild.net/docs/running-builds/runners/dotnet-tool">Cake</a> but it is totally fine to pack it with <code class="highlighter-rouge">dotnet pack</code>.</p>
+<p>Once ready, all you need to do is to pack the NuGet package and upload it. I use <a href="https://cakebuild.net/docs/running-builds/runners/dotnet-tool">Cake</a> but it is totally fine to pack it with <code class="language-plaintext highlighter-rouge">dotnet pack</code>.</p>
 
 <pre><code class="language-cake">Task("Pack")
     .Description("Creates NuGet packages and outputs them to the artefacts directory.")
@@ -712,7 +721,7 @@ dotnet add package Spectre.Console <span class="c"># Makes it easier to create b
 		
 		
 		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
-				dotnet <span>(23)</span>
+				dotnet <span>(24)</span>
 				
 			</a></li>
 		
@@ -728,7 +737,7 @@ dotnet add package Spectre.Console <span class="c"># Makes it easier to create b
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
-				dotnet <span>(29)</span>
+				dotnet <span>(30)</span>
 				,
 			</a>
 		</li>
@@ -749,7 +758,7 @@ dotnet add package Spectre.Console <span class="c"># Makes it easier to create b
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#cli-ref">
-				cli <span>(6)</span>
+				cli <span>(7)</span>
 				,
 			</a>
 		</li>
