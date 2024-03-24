@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
-	<title>A Comprehensive Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)</title>
+	<title>A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)</title>
 	
 	<meta name="author" content="Oleksii Nikiforov">
 
@@ -160,7 +160,7 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-	<h1>A Comprehensive Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2) </h1>
+	<h1>A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2) </h1>
 </div>
 <article>
 
@@ -696,21 +696,66 @@ graph LR
 <span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">&lt;</span><span class="n">IAuthenticationProvider</span><span class="p">,</span> <span class="n">AnonymousAuthenticationProvider</span><span class="p">&gt;(</span>
     <span class="n">_</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">AnonymousAuthenticationProvider</span><span class="p">());</span>
 
-<span class="n">services</span><span class="p">.</span><span class="n">AddHttpClient</span><span class="p">&lt;</span><span class="n">AppApiClient</span><span class="p">&gt;().</span><span class="nf">AddTypedClient</span><span class="p">((</span><span class="n">httpClient</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span> <span class="p">=&gt;</span>
-<span class="p">{</span>
-    <span class="kt">var</span> <span class="n">authenticationProvider</span> <span class="p">=</span> <span class="n">sp</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="p">&lt;</span><span class="n">IAuthenticationProvider</span><span class="p">&gt;();</span>
-    <span class="kt">var</span> <span class="n">requestAdapter</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HttpClientRequestAdapter</span><span class="p">(</span><span class="n">authProvider</span> <span class="p">,</span> <span class="n">httpClient</span><span class="p">:</span> <span class="n">httpClient</span><span class="p">)</span>
+<span class="n">services</span><span class="p">.</span><span class="n">AddHttpClient</span><span class="p">&lt;</span><span class="n">AppApiClient</span><span class="p">&gt;()</span>
+    <span class="p">.</span><span class="nf">AddTypedClient</span><span class="p">((</span><span class="n">httpClient</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span> <span class="p">=&gt;</span>
     <span class="p">{</span>
-        <span class="n">BaseUrl</span> <span class="p">=</span> <span class="s">"http://app"</span>
-    <span class="p">};</span>
+        <span class="kt">var</span> <span class="n">authenticationProvider</span> <span class="p">=</span> <span class="n">sp</span><span class="p">.</span><span class="n">GetRequiredService</span><span class="p">&lt;</span><span class="n">IAuthenticationProvider</span><span class="p">&gt;();</span>
+        <span class="kt">var</span> <span class="n">requestAdapter</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HttpClientRequestAdapter</span><span class="p">(</span><span class="n">authProvider</span> <span class="p">,</span> <span class="n">httpClient</span><span class="p">:</span> <span class="n">httpClient</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">BaseUrl</span> <span class="p">=</span> <span class="s">"http://app"</span>
+        <span class="p">};</span>
 
-    <span class="k">return</span> <span class="k">new</span> <span class="nf">AppApiClient</span><span class="p">(</span><span class="n">requestAdapter</span><span class="p">);</span>
-<span class="p">});</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">AppApiClient</span><span class="p">(</span><span class="n">requestAdapter</span><span class="p">);</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="nf">ConfigurePrimaryHttpMessageHandler</span><span class="p">(</span><span class="n">_</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">defaultHandlers</span> <span class="p">=</span> <span class="n">KiotaClientFactory</span><span class="p">.</span><span class="nf">CreateDefaultHandlers</span><span class="p">();</span>
+        <span class="kt">var</span> <span class="n">defaultHttpMessageHandler</span> <span class="p">=</span> <span class="n">KiotaClientFactory</span><span class="p">.</span><span class="nf">GetDefaultHttpMessageHandler</span><span class="p">();</span>
+
+        <span class="k">return</span> <span class="n">KiotaClientFactory</span><span class="p">.</span><span class="nf">ChainHandlersCollectionAndGetFirstLink</span><span class="p">(</span>
+            <span class="n">defaultHttpMessageHandler</span><span class="p">,</span> <span class="p">[..</span> <span class="n">defaultHandlers</span><span class="p">])!;</span>
+    <span class="p">});</span>
 </code></pre></div></div>
 
 <p>The code above is configuring an <code class="language-plaintext highlighter-rouge">HttpClient</code> for the <code class="language-plaintext highlighter-rouge">AppApiClient</code> in a .NET application. The <code class="language-plaintext highlighter-rouge">AddTypedClient</code> method is used to further configure the <code class="language-plaintext highlighter-rouge">HttpClient</code> instance. The advantage of using typed clients is that they provide a clear contract for HTTP interactions and can be easily mocked for testing.</p>
 
-<p>Here is how to use <code class="language-plaintext highlighter-rouge">AppApiClient</code> from DI:</p>
+<p>By default, <strong>Kiota</strong> provides the default list of <code class="language-plaintext highlighter-rouge">DelegatingHandler</code>s and <code class="language-plaintext highlighter-rouge">HttpMessageHandler</code>. It is good idea to include them, but you can definitely opt-out if it interferes with your code.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">IList</span><span class="p">&lt;</span><span class="n">DelegatingHandler</span><span class="p">&gt;</span> <span class="nf">CreateDefaultHandlers</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">DelegatingHandler</span><span class="p">&gt;</span>
+    <span class="p">{</span>
+        <span class="k">new</span> <span class="nf">RetryHandler</span><span class="p">(),</span>
+        <span class="k">new</span> <span class="nf">RedirectHandler</span><span class="p">(),</span>
+        <span class="k">new</span> <span class="nf">ParametersNameDecodingHandler</span><span class="p">(),</span>
+        <span class="k">new</span> <span class="nf">UserAgentHandler</span><span class="p">(),</span>
+        <span class="k">new</span> <span class="nf">HeadersInspectionHandler</span><span class="p">()</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ConfigurePrimaryHttpMessageHandler</code> method is used to set up the primary <code class="language-plaintext highlighter-rouge">HttpMessageHandler</code> for the HTTP client. This handler is responsible for sending HTTP requests and receiving HTTP responses.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">IHttpClientBuilder</span> <span class="nf">ConfigurePrimaryHttpMessageHandler</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">IHttpClientBuilder</span> <span class="n">builder</span><span class="p">,</span>
+    <span class="n">Func</span><span class="p">&lt;</span><span class="n">IServiceProvider</span><span class="p">,</span> <span class="n">HttpMessageHandler</span><span class="p">&gt;</span> <span class="n">configureHandler</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Here’s how it works:</p>
+
+<ol>
+  <li>
+    <p>Create a list of default <code class="language-plaintext highlighter-rouge">DelegatingHandler</code> instances using <code class="language-plaintext highlighter-rouge">KiotaClientFactory.CreateDefaultHandlers()</code>. A <code class="language-plaintext highlighter-rouge">DelegatingHandler</code> is a special type of <code class="language-plaintext highlighter-rouge">HttpMessageHandler</code> that can be used to process or manipulate HTTP requests and responses in some way before they are sent or after they are received.</p>
+  </li>
+  <li>
+    <p>Get the default <code class="language-plaintext highlighter-rouge">HttpMessageHandler</code> using <code class="language-plaintext highlighter-rouge">KiotaClientFactory.GetDefaultHttpMessageHandler()</code>. This handler is the one that will actually send the HTTP request and receive the response.</p>
+  </li>
+  <li>
+    <p>Chain these handlers together using <code class="language-plaintext highlighter-rouge">KiotaClientFactory.ChainHandlersCollectionAndGetFirstLink()</code>. This method takes the default <code class="language-plaintext highlighter-rouge">HttpMessageHandler</code> and the list of <code class="language-plaintext highlighter-rouge">DelegatingHandler</code> instances, and chains them together so that each request or response will pass through each handler in turn. The method returns the first link in this chain, which is then used as the primary <code class="language-plaintext highlighter-rouge">HttpMessageHandler</code> for the HTTP client.</p>
+  </li>
+</ol>
+
+<p>Finally, here is how to use <code class="language-plaintext highlighter-rouge">AppApiClient</code> from DI:</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// App.Client/Program.cs</span>
 <span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/my/trending"</span><span class="p">,</span> <span class="k">async</span> <span class="p">(</span><span class="n">AppApiClient</span> <span class="n">client</span><span class="p">)</span> <span class="p">=&gt;</span>
@@ -841,6 +886,7 @@ dotnet add package Microsoft.Extensions.Http.Resilience
   <li><a href="https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html">https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html</a></li>
   <li><a href="https://www.meziantou.net/generate-openapi-specification-at-build-time-from-the-code-in-asp-net-core.htm">https://www.meziantou.net/generate-openapi-specification-at-build-time-from-the-code-in-asp-net-core.htm</a></li>
   <li><a href="https://devblogs.microsoft.com/dotnet/introducing-dotnet-aspire-simplifying-cloud-native-development-with-dotnet-8/">https://devblogs.microsoft.com/dotnet/introducing-dotnet-aspire-simplifying-cloud-native-development-with-dotnet-8/</a></li>
+  <li><a href="https://github.com/microsoft/kiota-http-dotnet/blob/main/src/KiotaClientFactory.cs">https://github.com/microsoft/kiota-http-dotnet/blob/main/src/KiotaClientFactory.cs</a></li>
   <li><a href="https://devblogs.microsoft.com/dotnet/building-resilient-cloud-services-with-dotnet-8/">https://devblogs.microsoft.com/dotnet/building-resilient-cloud-services-with-dotnet-8/</a></li>
   <li><a href="https://learn.microsoft.com/en-us/openapi/kiota/testing">https://learn.microsoft.com/en-us/openapi/kiota/testing</a></li>
 </ul>
@@ -921,7 +967,7 @@ dotnet add package Microsoft.Extensions.Http.Resilience
 		<section class="share col-sm-6">
 			<h4 class="section-title">Share Post</h4>
 			<a class="btn btn-default btn-sm twitter"
-				href="http://twitter.com/share?text=A Comprehensive Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)&via=nikiforovall"
+				href="http://twitter.com/share?text=A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)&via=nikiforovall"
 				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
 				<i class="fa fa-twitter fa-lg"></i>
 				Twitter
