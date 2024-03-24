@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "A Comprehensive Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)"
+title: "A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)"
 categories: [ dotnet, aspnetcore ]
 tags: [ dotnet, aspnetcore, openapi, aspire, cli ]
 published: true
