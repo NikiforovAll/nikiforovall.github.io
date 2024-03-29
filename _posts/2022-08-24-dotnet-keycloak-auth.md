@@ -7,7 +7,7 @@ published: true
 shortinfo: Learn how to add authentication to ASP.NET Core 6 via Keycloak.
 fullview: false
 comments: true
-hide-related: false
+related: true
 mermaid: true
 ---
 

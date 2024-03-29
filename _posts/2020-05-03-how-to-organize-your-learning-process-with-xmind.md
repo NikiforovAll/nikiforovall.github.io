@@ -6,7 +6,7 @@ tags: [dotnet, mindmaps]
 shortinfo: Visualization of current learning progress as mindmap. Solution is based on <a href="https://nikiforovall.github.io/xmindcsharp/">XMindCsharp</a>.
 fullview: false
 comments: true
-hide-related: true
+related: false
 link-list: https://www.theurlist.com/edu-scope-to-mindmap
 ---
 

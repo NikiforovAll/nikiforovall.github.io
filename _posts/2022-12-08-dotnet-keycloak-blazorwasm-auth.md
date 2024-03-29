@@ -7,7 +7,7 @@ published: true
 shortinfo: Learn how to integrate with Keycloak from Blazor WASM. Create a public client and use built-in capabilities of Microsoft.AspNetCore.Components.WebAssembly.Authentication that integrates with OpenId Connect compliant providers.
 fullview: false
 comments: true
-hide-related: false
+related: true
 mermaid: true
 ---
 

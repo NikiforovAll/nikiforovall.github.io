@@ -7,7 +7,7 @@ published: true
 shortinfo: Learn how to use System.CommandLine to implement persisted parameters in CLI/console applications.
 fullview: false
 comments: true
-hide-related: false
+related: true
 mermaid: true
 ---
 

@@ -6,7 +6,7 @@ tags: [ dotnet, dotnet-try, algorithms, csharp8 ]
 fullview: false
 published: true
 comments: true
-hide-related: true
+related: false
 ---
 
 I would like to share with you something fun. The right way to write interactive documentation - [Try .NET](https://github.com/dotnet/try). It is an awesome project maintained by Microsoft. It allows you to embed C# code inside your markdown documentation and run it locally. The absolute best way to learn it is to use it. So I encourage you to fork <https://github.com/NikiforovAll/intro-to-algorithms> and play with it.

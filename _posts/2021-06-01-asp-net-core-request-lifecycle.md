@@ -7,7 +7,7 @@ published: false
 shortinfo: Learn ASP.NET Core bread and butter - request lifecycle.
 fullview: false
 comments: true
-hide-related: false
+related: true
 link-list: 
 ---
 

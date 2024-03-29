@@ -7,7 +7,7 @@ published: true
 shortinfo: Learn how to create a .NET tool.
 fullview: false
 comments: true
-hide-related: false
+related: true
 ---
 
 ## TL;DR

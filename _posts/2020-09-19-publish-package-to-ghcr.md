@@ -6,7 +6,7 @@ tags: [ docker, docker-registry, tiny-post ]
 shortinfo: Succinct post on how to get things going in ghcr.
 fullview: false
 comments: true
-hide-related: true
+related: false
 link-list: https://www.theurlist.com/start-with-ghcr
 ---
 

@@ -7,7 +7,7 @@ published: false
 shortinfo: A introductory to dev-containers. 
 fullview: false
 comments: true
-hide-related: false
+related: true
 link-list: https://www.theurlist.com/dev-containers
 ---
 

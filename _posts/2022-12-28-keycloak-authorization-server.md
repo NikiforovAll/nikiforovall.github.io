@@ -7,7 +7,7 @@ published: true
 shortinfo: Authorization Server is a powerful abstraction that allows to control authorization concerns. Learn how to implement it for .NET applications.
 fullview: false
 comments: true
-hide-related: false
+related: true
 mermaid: true
 ---
 

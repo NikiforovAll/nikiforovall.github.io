@@ -7,7 +7,7 @@ published: true
 shortinfo: JMESPath is a powerful query language that enables processing of JSON payloads.
 fullview: false
 comments: true
-hide-related: true
+related: false
 mermaid: false
 ---
 
