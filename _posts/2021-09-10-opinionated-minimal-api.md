@@ -7,7 +7,7 @@ published: true
 shortinfo: In this blog post I share my thoughts on how to organize Minimal API project to keep code structure under control and still get benefits from low-ceremony approach.
 fullview: false
 comments: true
-hide-related: false
+related: true
 ---
 
 ## TL;DR

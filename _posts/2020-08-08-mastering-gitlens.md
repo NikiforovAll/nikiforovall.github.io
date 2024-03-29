@@ -7,7 +7,7 @@ tags: [git, vscode, gitlens]
 shortinfo: In this blog post I share with you how I use GitLens in my day-to-day work.
 fullview: false
 comments: true
-hide-related: true
+related: false
 link-list: https://www.theurlist.com/mastering-gitlens
 ---
 

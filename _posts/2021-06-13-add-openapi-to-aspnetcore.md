@@ -7,7 +7,7 @@ published: true
 shortinfo: A coding story (<a href="https://codingstories.io/">https://codingstories.io/</a>) that explains how to enhance your project with OpenAPI support.
 fullview: false
 comments: true
-hide-related: false
+related: true
 ---
 
 ## TL;DR

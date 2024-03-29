@@ -7,7 +7,7 @@ published: false
 shortinfo: Let's explore LINQ together and get it right.
 fullview: false
 comments: true
-hide-related: false
+related: true
 # link-list: https://www.theurlist.com/awaitable-pattern
 ---
 

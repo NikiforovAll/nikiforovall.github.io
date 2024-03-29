@@ -7,7 +7,7 @@ published: true
 shortinfo: An example of how to add middleware for a selected endpoint. EndpointRouteBuilderExtensions pattern.
 fullview: false
 comments: true
-hide-related: true
+related: false
 link-list: 
 ---
 

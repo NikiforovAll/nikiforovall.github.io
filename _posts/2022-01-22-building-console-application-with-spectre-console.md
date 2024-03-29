@@ -7,7 +7,7 @@ published: true
 shortinfo: Learn an easy way to develop CLI applications
 fullview: false
 comments: true
-hide-related: false
+related: true
 ---
 
 ## TL;DR

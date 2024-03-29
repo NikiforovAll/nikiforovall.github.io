@@ -6,7 +6,7 @@ tags: [vscode, productivity]
 shortinfo: Quick overview of surround-with-csharp vscode extension.
 fullview: false
 comments: true
-hide-related: true
+related: false
 link-list: 
 ---
 

@@ -7,7 +7,7 @@ published: false
 shortinfo: 
 fullview: false
 comments: true
-hide-related: false
+related: true
 ---
 
 ## TL;DR

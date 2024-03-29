@@ -7,7 +7,7 @@ published: true
 shortinfo: Release container is a docker image that is used to distribute and release components.
 fullview: false
 comments: true
-hide-related: true
+related: false
 link-list: 
 ---
 

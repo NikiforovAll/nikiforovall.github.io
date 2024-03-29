@@ -7,7 +7,7 @@ published: true
 shortinfo: A coding story (<a href="https://codingstories.io/">https://codingstories.io/</a>) that explains how to add health checks to ASP.NET Core project.
 fullview: false
 comments: true
-hide-related: false
+related: true
 ---
 
 ## TL;DR
