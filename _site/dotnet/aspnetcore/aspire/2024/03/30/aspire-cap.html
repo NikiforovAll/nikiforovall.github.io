@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Transactional Outbox in .NET Cloud Native Development via Aspire</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Transactional Outbox in .NET Cloud Native Development via Aspire </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			March
+			30th,
+			
+			2024
+		</span>
+
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<p><em>Table of Contents</em>:</p>
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction-to-outbox-pattern">Introduction to Outbox Pattern</a></li>
+  <li><a href="#implementation-of-the-outbox-pattern">Implementation of the Outbox Pattern</a>
+    <ul>
+      <li><a href="#introduction-to-dotnetcorecap">Introduction to <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code></a></li>
+      <li><a href="#example">Example</a></li>
+    </ul>
+  </li>
+  <li><a href="#adding-aspire">Adding <code class="language-plaintext highlighter-rouge">Aspire</code></a>
+    <ul>
+      <li><a href="#provision-infrastructure">Provision Infrastructure</a></li>
+      <li><a href="#configure-for-local-development">Configure for Local Development</a></li>
+    </ul>
+  </li>
+  <li><a href="#demo">Demo</a>
+    <ul>
+      <li><a href="#locally">Locally</a></li>
+      <li><a href="#azure">Azure</a>
+        <ul>
+          <li><a href="#outbox-tables">Outbox Tables</a></li>
+        </ul>
+      </li>
+      <li><a href="#cleanup">Cleanup</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="tldr">TL;DR</h2>
+
+<p>This post provides an example of the Outbox pattern implementation using <strong>Aspire</strong>, <strong>DotNetCore.CAP</strong>, <strong>Azure Service Bus</strong>, <strong>Azure SQL</strong>, <strong>Bicep</strong>, and <strong>azd</strong>.</p>
+
+<blockquote>
+  <p>Source code: <a href="https://github.com/NikiforovAll/cap-aspire">https://github.com/NikiforovAll/cap-aspire</a></p>
+</blockquote>
+
+<h2 id="introduction-to-outbox-pattern">Introduction to Outbox Pattern</h2>
+
+<p>The <strong>Outbox pattern</strong> is a crucial component in the world of distributed systems. As we move towards a more distributed and decoupled architecture in modern software development, ensuring reliable message delivery becomes increasingly important.</p>
+
+<p>In a distributed system, different components need to communicate with each other, often through asynchronous messaging. The <strong>Outbox pattern</strong> provides a reliable way to handle these messages. It ensures that even if a system fails after performing a local transaction but before sending out the message, the message is not lost. Instead, it is temporarily stored in an “outbox” and can be retrieved and sent when the system recovers.</p>
+
+<p>By using the <strong>Outbox pattern</strong>, we can ensure that all components of the system receive the necessary messages in a reliable manner, thereby maintaining the integrity and consistency of the entire system.</p>
+
+<p>In a distributed system without the <strong>Outbox pattern</strong>, there are several things that could go wrong, leading to data inconsistency or message loss. Here are a few examples:</p>
+
+<ol>
+  <li><strong>Transaction Commit and Message Send are not Atomic</strong>: In a typical scenario, a service might first commit a transaction to its database and then send a message to a message broker. If the service crashes after the transaction commit but before the message is sent, the message will be lost. Other services will not be aware of the changes that were committed to the database.</li>
+  <li><strong>Message Send Failure</strong>: Even if the service doesn’t crash, sending the message could fail due to a network issue or a problem with the message broker. If the message send operation is not retried, the message will be lost.</li>
+  <li><strong>Duplicate Messages</strong>: If the service retries the message send operation after a failure, it could end up sending the same message multiple times if the first send actually succeeded but the acknowledgement was lost. This could lead to duplicate processing if the message consumers are not idempotent.</li>
+  <li><strong>Ordering Issues:</strong> If multiple messages are sent as a result of a single transaction, and the sends are not atomic, then the messages could be received out of order. This could lead to incorrect processing if the order of the messages is important.</li>
+</ol>
+
+<p>The <strong>Outbox pattern</strong> addresses these issues by ensuring that the transaction commit and the message send operations are atomic, and by providing a mechanism for reliably sending messages even in the face of failures.</p>
+
+<p>Here is a sequence diagram that illustrates the problem with a system without the <strong>Outbox pattern</strong>:</p>
+
+<div class="mermaid">
+
+sequenceDiagram
+    participant A as Component A
+    participant DB as Database
+    participant MB as Message Broker
+    participant B as Component B
+    A-&gt;&gt;DB: Transaction
+    Note right of DB: Transaction is committed
+    DB--&gt;&gt;A: Acknowledgement
+    Note left of A: 💥A crashes before message is delivered
+    A--xMB: Message crash
+    Note right of MB: Message delivery fails due to A's crash
+</div>
+
+<p><strong>Idempotent consumers</strong> play a significant role in the Outbox pattern. In the context of distributed systems, idempotency refers to the ability of a system to produce the same outcome, regardless of how many times a particular operation is performed. This is crucial in ensuring data consistency and reliability in a distributed environment.</p>
+
+<p>However, this could potentially lead to the same message being delivered more than once, especially in scenarios where the system fails after sending the message but before it could mark the message as sent in the outbox. This is where idempotent consumers come into play.</p>
+
+<p><strong>Idempotent consumers</strong> are designed to handle duplicate messages gracefully. They ensure that the side effects of receiving the same message more than once are eliminated. This is typically achieved by keeping track of the IDs of all processed messages. When a message is received, the consumer checks if it has already processed a message with the same ID. If it has, it simply ignores the message.</p>
+
+<p>Here is a sequence diagram that illustrates how the Outbox pattern solves the problem:</p>
+
+<div class="mermaid">
+
+sequenceDiagram
+    participant A as Component A
+    participant DB as Database
+    participant OB as Outbox
+    participant MB as Message Broker
+    participant B as Component B
+    A-&gt;&gt;DB: Transaction
+    A-&gt;&gt;DB: Message
+    Note right of DB: Message is stored in Database
+    DB--&gt;&gt;A: Acknowledgement
+    Note right of DB: Transaction is committed
+    Note left of A: 💥A crashes before message is delivered
+    A--xMB: Message
+    Note right of MB: Message delivery fails due to A's crash
+    loop Every X time
+        OB--&gt;&gt;DB: Check
+        Note over OB: Outbox polls Database for new messages
+        OB--&gt;&gt;MB: Message
+        Note right of MB: Message is delivered to Message Broker
+    end
+    MB--&gt;&gt;B: Message
+    Note right of B: Message is processed by Component B
+    Note over B: If B has already processed a message with the same ID, it simply ignores the message (Idempotent Consumer)
+</div>
+
+<h2 id="implementation-of-the-outbox-pattern">Implementation of the Outbox Pattern</h2>
+
+<p>Now that you understand the importance and benefits of the Outbox pattern, let’s delve into what it takes to implement:</p>
+
+<p>The implementation of the Outbox pattern involves the following steps:</p>
+
+<ol>
+  <li><strong>Create an Outbox Table</strong>: The first step is to create an Outbox table in your database. This table will store all the messages that need to be sent. Each message should have a unique ID and a status field that indicates whether the message has been sent or not.</li>
+  <li><strong>Modify the Application Code</strong>: The next step is to modify your application code. Whenever your application needs to send a message as part of a transaction, it should add the message to the Outbox table as part of the same transaction.</li>
+  <li><strong>Implement an Outbox Publisher</strong>: The Outbox publisher is a separate component that polls the Outbox table for unsent messages. When it finds an unsent message, it sends the message and updates the status of the message in the Outbox table to ‘sent’.</li>
+</ol>
+
+<h3 id="introduction-to-dotnetcorecap">Introduction to <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code></h3>
+
+<p>Luckily, there is a .NET library called <a href="https://cap.dotnetcore.xyz/">DotNetCore.CAP</a> that simplifies the implementation of the Outbox pattern for us.</p>
+
+<p><code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code> is an open-source library that provides a set of APIs that allow developers to easily send messages as part of a database transaction, store them in an outbox, and ensure they are reliably delivered to all interested consumers, even in the face of failures.</p>
+
+<p>The library also supports idempotent consumers, which are crucial for ensuring data consistency and reliability in a distributed environment. This means that even if the same message is delivered more than once, the side effects of receiving the same message are eliminated.</p>
+
+<p>By using <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code>, developers can focus on the business logic of their applications, while the library takes care of the complexities of ensuring reliable message delivery in a distributed system.</p>
+
+<h3 id="example">Example</h3>
+
+<p>This code demonstrates how to use the CAP library in an ASP.NET Core application for event publishing and handling.</p>
+
+<p>In the producer:</p>
+
+<ul>
+  <li>A route handler for the <strong>“/send”</strong> endpoint is defined.</li>
+  <li>It starts a transaction, executes a SQL command to get the current server time, and publishes a message with this time to the <strong>“test.show.time”</strong> topic.</li>
+  <li>The message is published with a delay of 500 milliseconds.</li>
+  <li>If all operations are successful, the transaction is committed and a response is returned.</li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Producer/Program.cs</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/send"</span><span class="p">,</span> <span class="k">async</span> <span class="p">(</span>
+    <span class="n">SqlConnection</span> <span class="n">connection</span><span class="p">,</span>
+    <span class="n">ICapPublisher</span> <span class="n">capPublisher</span><span class="p">,</span>
+    <span class="n">TimeProvider</span> <span class="n">timeProvider</span><span class="p">)</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">startTime</span> <span class="p">=</span> <span class="n">timeProvider</span><span class="p">.</span><span class="nf">GetTimestamp</span><span class="p">();</span>
+    <span class="k">using</span> <span class="nn">var</span> <span class="n">transaction</span> <span class="p">=</span> <span class="n">connection</span>
+        <span class="p">.</span><span class="nf">BeginTransaction</span><span class="p">(</span><span class="n">capPublisher</span><span class="p">,</span> <span class="n">autoCommit</span><span class="p">:</span> <span class="k">false</span><span class="p">);</span>
+
+    <span class="kt">var</span> <span class="n">command</span> <span class="p">=</span> <span class="n">connection</span><span class="p">.</span><span class="nf">CreateCommand</span><span class="p">();</span>
+    <span class="n">command</span><span class="p">.</span><span class="n">Transaction</span> <span class="p">=</span> <span class="p">(</span><span class="n">SqlTransaction</span><span class="p">)</span><span class="n">transaction</span><span class="p">;</span>
+    <span class="n">command</span><span class="p">.</span><span class="n">CommandText</span> <span class="p">=</span> <span class="s">"SELECT GETDATE()"</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">serverTime</span> <span class="p">=</span> <span class="k">await</span> <span class="n">command</span><span class="p">.</span><span class="nf">ExecuteScalarAsync</span><span class="p">();</span>
+
+    <span class="k">await</span> <span class="n">capPublisher</span><span class="p">.</span><span class="nf">PublishDelayAsync</span><span class="p">(</span>
+        <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromMilliseconds</span><span class="p">(</span><span class="m">500</span><span class="p">),</span>
+        <span class="s">"test.show.time"</span><span class="p">,</span>
+        <span class="k">new</span> <span class="nf">MyMessage</span><span class="p">(</span><span class="n">serverTime</span><span class="p">?.</span><span class="nf">ToString</span><span class="p">()!));</span>
+
+    <span class="n">transaction</span><span class="p">.</span><span class="nf">Commit</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">Ok</span><span class="p">(</span><span class="k">new</span>
+    <span class="p">{</span>
+        <span class="n">Status</span> <span class="p">=</span> <span class="s">"Published"</span><span class="p">,</span>
+        <span class="n">Duration</span> <span class="p">=</span> <span class="n">timeProvider</span><span class="p">.</span><span class="nf">GetElapsedTime</span><span class="p">(</span><span class="n">startTime</span><span class="p">)</span>
+    <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>💡Note, <code class="language-plaintext highlighter-rouge">BeginTransaction</code> is an extensions method defined in <code class="language-plaintext highlighter-rouge">DotNetCore.CAP.SqlServer</code>. It responsible for Outbox table management.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">IDbTransaction</span> <span class="nf">BeginTransaction</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">IDbConnection</span> <span class="n">dbConnection</span><span class="p">,</span>
+    <span class="n">ICapPublisher</span> <span class="n">publisher</span><span class="p">,</span>
+    <span class="kt">bool</span> <span class="n">autoCommit</span> <span class="p">=</span> <span class="k">false</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In the consumer:</p>
+
+<ul>
+  <li>A class <code class="language-plaintext highlighter-rouge">SampleSubscriber</code> is defined that implements <code class="language-plaintext highlighter-rouge">ICapSubscribe</code>.</li>
+  <li>It has a method <code class="language-plaintext highlighter-rouge">HandleAsync</code> that is decorated with the <code class="language-plaintext highlighter-rouge">CapSubscribe</code> attribute, specifying it as a handler for the <strong>“test.show.time”</strong> topic.</li>
+  <li>When a message is received on this topic, it logs the message content after a delay of 300 milliseconds.</li>
+</ul>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Consumer/Program.cs</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">SampleSubscriber</span><span class="p">(</span>
+    <span class="n">TimeProvider</span> <span class="n">timeProvider</span><span class="p">,</span>
+    <span class="n">ILogger</span><span class="p">&lt;</span><span class="n">SampleSubscriber</span><span class="p">&gt;</span> <span class="n">logger</span><span class="p">)</span> <span class="p">:</span> <span class="n">ICapSubscribe</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">record</span> <span class="nc">MyMessage</span><span class="p">(</span><span class="kt">string</span> <span class="n">CreatedAt</span><span class="p">);</span>
+    
+    <span class="p">[</span><span class="nf">CapSubscribe</span><span class="p">(</span><span class="s">"test.show.time"</span><span class="p">)]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">HandleAsync</span><span class="p">(</span><span class="n">MyMessage</span> <span class="n">message</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromMilliseconds</span><span class="p">(</span><span class="m">300</span><span class="p">),</span> <span class="n">timeProvider</span><span class="p">);</span>
+        
+        <span class="n">logger</span><span class="p">.</span><span class="nf">LogInformation</span><span class="p">(</span><span class="s">"Message received: {CreatedAt}"</span><span class="p">,</span> <span class="n">message</span><span class="p">.</span><span class="n">CreatedAt</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="adding-aspire">Adding <code class="language-plaintext highlighter-rouge">Aspire</code></h2>
+
+<p>To fully demonstrate the demo, we need to setup some real infrastructure components - Message Broker and Database.</p>
+
+<p>.NET Aspire provides a curated suite of NuGet packages (Components) specifically selected to facilitate the integration of cloud-native applications. Each component furnishes essential cloud-native functionalities through either automatic provisioning or standardized configuration patterns.</p>
+
+<p>Add Message Broker:</p>
+
+<p>The .NET Aspire Service Bus component handles the following concerns to connect your app to Azure Service Bus. It adds <code class="language-plaintext highlighter-rouge">ServiceBusClient</code> to the DI container for connecting to Azure Service Bus.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dotnet</span> <span class="k">add</span> <span class="n">package</span> <span class="n">Aspire</span><span class="p">.</span><span class="n">Azure</span><span class="p">.</span><span class="n">Messaging</span><span class="p">.</span><span class="n">ServiceBus</span> <span class="p">--</span><span class="n">prerelease</span>
+</code></pre></div></div>
+
+<p>Add Database:</p>
+
+<p>.NET Aspire provides two built-in configuration options to streamline SQL Server deployment on Azure:</p>
+
+<ol>
+  <li>Provision a containerized SQL Server database using Azure Container Apps</li>
+  <li>Provision an Azure SQL Database instance (We will go with this one)</li>
+</ol>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dotnet</span> <span class="k">add</span> <span class="n">package</span> <span class="n">Aspire</span><span class="p">.</span><span class="n">Microsoft</span><span class="p">.</span><span class="n">Data</span><span class="p">.</span><span class="n">SqlClient</span> <span class="p">--</span><span class="n">prerelease</span>
+</code></pre></div></div>
+
+<p>Here is how we can setup Aspire Host based on installed components:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// CapExample.AppHost/Program.cs</span>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">sqlServer</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">ExecutionContext</span><span class="p">.</span><span class="n">IsPublishMode</span>
+    <span class="p">?</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddSqlServer</span><span class="p">(</span><span class="s">"sqlserver"</span><span class="p">).</span><span class="nf">PublishAsAzureSqlDatabase</span><span class="p">().</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"sqldb"</span><span class="p">)</span>
+    <span class="p">:</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddConnectionString</span><span class="p">(</span><span class="s">"sqldb"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">serviceBus</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">ExecutionContext</span><span class="p">.</span><span class="n">IsPublishMode</span>
+    <span class="p">?</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddAzureServiceBus</span><span class="p">(</span><span class="s">"serviceBus"</span><span class="p">)</span>
+    <span class="p">:</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddConnectionString</span><span class="p">(</span><span class="s">"serviceBus"</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Consumer</span><span class="p">&gt;(</span><span class="s">"consumer"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">sqlServer</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">serviceBus</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Producer</span><span class="p">&gt;(</span><span class="s">"producer"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">sqlServer</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">serviceBus</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>The idea is to use connection strings during development time and provision Azure resources on publish time.</p>
+
+<p>Aspire allows us to develop locally and deploy to the cloud without source code changes by providing a flexible configuration system. We can use connection strings managed by Aspire Components, which can be easily switched between local development and cloud deployment environments. This allows us to seamlessly transition between different deployment scenarios without modifying our source code.</p>
+
+<p>Down below you can find how to configure <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code> based on Aspire Components:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Consumer/Program.cs</span>
+<span class="c1">// Producer/Program.cs</span>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddAzureServiceBus</span><span class="p">(</span><span class="s">"serviceBus"</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddSqlServerClient</span><span class="p">(</span><span class="s">"sqldb"</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddCap</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">dbConnectionString</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">GetConnectionString</span><span class="p">(</span><span class="s">"sqldb"</span><span class="p">)!;</span>
+    <span class="kt">var</span> <span class="n">serviceBusConnection</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">GetConnectionString</span><span class="p">(</span><span class="s">"serviceBus"</span><span class="p">)!;</span>
+
+    <span class="n">x</span><span class="p">.</span><span class="nf">UseAzureServiceBus</span><span class="p">(</span><span class="n">serviceBusConnection</span><span class="p">);</span>
+    <span class="n">x</span><span class="p">.</span><span class="nf">UseSqlServer</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">ConnectionString</span> <span class="p">=</span> <span class="n">dbConnectionString</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="provision-infrastructure">Provision Infrastructure</h3>
+
+<p>The Azure Developer CLI (<code class="language-plaintext highlighter-rouge">azd</code>) has been enhanced to support the deployment of .NET Aspire applications. The <code class="language-plaintext highlighter-rouge">azd init</code> workflow offers tailored support for .NET Aspire projects. I utilized this approach while developing this application and it proved to be quite nice. It improved by productivity.</p>
+
+<p>When <code class="language-plaintext highlighter-rouge">azd</code> targets a .NET Aspire application it starts the AppHost with a special command (<code class="language-plaintext highlighter-rouge">dotnet run --project AppHost.csproj -- --publisher manifest</code>), which produces the Aspire manifest file.</p>
+
+<p>The manifest file is interrogated by the <code class="language-plaintext highlighter-rouge">azd provision</code> sub-command logic to generate Bicep files in-memory only (by default).</p>
+
+<p><img src="/assets/cap-aspire/azd-internals.png" alt="azd-internals" /></p>
+
+<p>See <a href="https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth?tabs=linux#how-azure-developer-cli-integration-works">https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth?tabs=linux#how-azure-developer-cli-integration-works</a> for more instructions.</p>
+
+<p>Personally, I find it more convenient to generate Bicep files explicitly. This can be accomplished by executing the following command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ azd infra synth
+</code></pre></div></div>
+
+<p>Here is visualization of what would be provisioned:</p>
+
+<p><img src="/assets/cap-aspire/resources.png" alt="resources" /></p>
+
+<p>To provision resources we need to run next command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ azd provision
+</code></pre></div></div>
+
+<p><img src="/assets/cap-aspire/provision.png" alt="provision" /></p>
+
+<p>Here is created resource group - <code class="language-plaintext highlighter-rouge">rg-cap-dev</code>:</p>
+
+<p><img src="/assets/cap-aspire/az-resources.png" alt="az-resources" /></p>
+
+<h3 id="configure-for-local-development">Configure for Local Development</h3>
+
+<p>To retrieve connection string for Azure Service Bus:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="nv">resourceGroup</span><span class="o">=</span><span class="s2">"rg-cap-dev"</span>
+<span class="nv">namespace</span><span class="o">=</span><span class="si">$(</span>
+    az servicebus namespace list <span class="se">\</span>
+        <span class="nt">--resource-group</span> <span class="nv">$resourceGroup</span> <span class="se">\</span>
+        <span class="nt">--output</span> tsv <span class="se">\</span>
+        <span class="nt">--query</span> <span class="s1">'[0].name'</span>
+<span class="si">)</span>
+<span class="nv">azbConnectionString</span><span class="o">=</span><span class="si">$(</span>
+    az servicebus namespace authorization-rule keys list <span class="se">\</span>
+        <span class="nt">--namespace-name</span> <span class="s2">"</span><span class="nv">$namespace</span><span class="s2">"</span> <span class="se">\</span>
+        <span class="nt">--name</span> RootManageSharedAccessKey <span class="se">\</span>
+        <span class="nt">--resource-group</span> <span class="nv">$resourceGroup</span> <span class="se">\</span>
+        <span class="nt">--output</span> tsv <span class="se">\</span>
+        <span class="nt">--query</span> <span class="s1">'primaryConnectionString'</span>
+<span class="si">)</span>
+
+dotnet user-secrets <span class="nt">--project</span> ./src/CapExample.AppHost <span class="se">\</span>
+    <span class="nb">set </span>ConnectionStrings:serviceBus <span class="nv">$azbConnectionString</span>
+</code></pre></div></div>
+
+<p>To retrieve connection string for Azure SQL Database:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/bash</span>
+
+<span class="c"># read server address</span>
+<span class="k">if</span> <span class="o">[</span> <span class="nt">-f</span> .azure/cap-dev/.env <span class="o">]</span>
+<span class="k">then
+    </span><span class="nb">export</span> <span class="si">$(</span><span class="nb">cat</span> .azure/cap-dev/.env | <span class="nb">sed</span> <span class="s1">'s/#.*//g'</span> | xargs<span class="si">)</span>
+<span class="k">fi</span>
+
+<span class="c"># read server password</span>
+<span class="nv">db_password</span><span class="o">=</span><span class="si">$(</span>jq <span class="nt">-r</span> <span class="s1">'.inputs.sql.password'</span> .azure/cap-dev/config.json<span class="si">)</span>
+
+dotnet user-secrets <span class="nt">--project</span> ./src/CapExample.AppHost <span class="nb">set </span>ConnectionStrings:sqldb <span class="se">\</span>
+    <span class="s2">"Server=</span><span class="nv">$SQLSERVER_SQLSERVERFQDN</span><span class="s2">;Initial Catalog=sqldb;Persist Security Info=False;User ID=CloudSA;Password=</span><span class="nv">$db_password</span><span class="s2">;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"</span>
+</code></pre></div></div>
+
+<p>To check the secrets were stored successfully:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ dotnet user-secrets <span class="nt">--project</span> ./src/CapExample.AppHost list
+<span class="c"># ConnectionStrings:sqldb = Server=sqlserver-gopucer6dsl5q.database.windows.net;Initial Catalog=sqldb;Persist Security Info=False;User ID=CloudSA;Password=&lt;your-password&gt;;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;</span>
+<span class="c"># ConnectionStrings:serviceBus = Endpoint=sb://servicebus-gopucer6dsl5q.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=&lt;your-key&gt;</span>
+</code></pre></div></div>
+
+<h2 id="demo">Demo</h2>
+
+<p>As you might know, Aspire adds OpenTelemetry support out-of-the-box and you can configure it in <code class="language-plaintext highlighter-rouge">ServiceDefaults/Extensions.cs</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code> has a package that adds additional OpenTelemetry capabilities.</p>
+
+<p>Distributed spans in OpenTelemetry help you track operations over a message broker by providing a way to trace the flow of messages across different components of your system.</p>
+
+<p>When using a message broker like <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code>, messages are typically sent from a producer to a consumer through an intermediary broker. Each step in this process can be considered a span, which represents a unit of work or an operation.</p>
+
+<p>By instrumenting your code with OpenTelemetry, you can create spans that capture information about each step of the message flow. These spans can include details such as the time taken, any errors encountered, and additional contextual information.</p>
+
+<p>With distributed spans, you can visualize the entire journey of a message as it moves through your system, from the producer to the broker and finally to the consumer. This allows you to gain insights into the performance and behavior of your message processing pipeline.</p>
+
+<p>By analyzing the distributed spans, you can identify bottlenecks, latency issues, and potential errors in your message processing flow. This information is invaluable for troubleshooting and optimizing the performance of your distributed systems.</p>
+
+<p>Here is what you need to do to install and configure OpenTelemetry for <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code>:</p>
+
+<p>Install NuGet package:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ dotnet add ./src/CapExample.ServiceDefaults/ package DotNetCore.Cap.OpenTelemetry
+</code></pre></div></div>
+
+<p>Adjust ServiceDefaults:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddOpenTelemetry</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithMetrics</span><span class="p">(</span><span class="n">metrics</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">metrics</span>
+            <span class="p">.</span><span class="nf">AddAspNetCoreInstrumentation</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddHttpClientInstrumentation</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddProcessInstrumentation</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddRuntimeInstrumentation</span><span class="p">();</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="nf">WithTracing</span><span class="p">(</span><span class="n">tracing</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">builder</span><span class="p">.</span><span class="n">Environment</span><span class="p">.</span><span class="nf">IsDevelopment</span><span class="p">())</span>
+        <span class="p">{</span>
+            <span class="n">tracing</span><span class="p">.</span><span class="nf">SetSampler</span><span class="p">(</span><span class="k">new</span> <span class="nf">AlwaysOnSampler</span><span class="p">());</span>
+        <span class="p">}</span>
+
+        <span class="n">tracing</span>
+            <span class="p">.</span><span class="nf">AddAspNetCoreInstrumentation</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddGrpcClientInstrumentation</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddHttpClientInstrumentation</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddCapInstrumentation</span><span class="p">();</span> <span class="c1">// &lt;-- add this code</span>
+    <span class="p">});</span>
+</code></pre></div></div>
+
+<h3 id="locally">Locally</h3>
+
+<p>Now, let’s run the demo:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ dotnet run <span class="nt">--project</span> ./src/CapExample.AppHost
+<span class="c"># Building...</span>
+<span class="c"># Restore complete (0.6s)</span>
+<span class="c">#   CapExample.ServiceDefaults succeeded (0.2s) → src\CapExample.ServiceDefaults\bin\Debug\net9.0\CapExample.ServiceDefaults.dll</span>
+<span class="c">#   Consumer succeeded (0.3s) → src\Consumer\bin\Debug\net9.0\Consumer.dll</span>
+<span class="c">#   Producer succeeded (0.5s) → src\Producer\bin\Debug\net9.0\Producer.dll</span>
+<span class="c">#   CapExample.AppHost succeeded (0.2s) → src\CapExample.AppHost\bin\Debug\net9.0\CapExample.AppHost.dll</span>
+
+<span class="c"># Build succeeded in 2.6s</span>
+<span class="c"># info: Aspire.Hosting.DistributedApplication[0]</span>
+<span class="c">#       Aspire version: 9.0.0-preview.2.24162.2+eaca163f7737934020f1102a9d11fdf790cccdc0</span>
+<span class="c"># info: Aspire.Hosting.DistributedApplication[0]</span>
+<span class="c">#       Distributed application starting.</span>
+<span class="c"># info: Aspire.Hosting.DistributedApplication[0]</span>
+<span class="c">#       Application host directory is: C:\Users\Oleksii_Nikiforov\dev\cap-aspire\src\CapExample.AppHost</span>
+<span class="c"># info: Aspire.Hosting.DistributedApplication[0]</span>
+<span class="c">#       Now listening on: http://localhost:15118</span>
+<span class="c"># info: Aspire.Hosting.DistributedApplication[0]</span>
+<span class="c">#       Distributed application started. Press Ctrl+C to shut down.</span>
+</code></pre></div></div>
+
+<p>Let’s generate some load:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ curl <span class="nt">-s</span> http://localhost:5288/send | jq
+<span class="c"># {</span>
+<span class="c">#   "status": "Published",</span>
+<span class="c">#   "duration": "00:00:00.5255861"</span>
+<span class="c"># }</span>
+</code></pre></div></div>
+
+<p>Navigate to Aspire Dashboard to see some traces:</p>
+
+<p>Here is the first request, as you can see, we need some time to establish initial connection with Azure Service Bus:</p>
+
+<p><img src="/assets/cap-aspire/traces.png" alt="traces" /></p>
+
+<p>Subsequent requests take less time:</p>
+
+<p><img src="/assets/cap-aspire/traces2.png" alt="traces2" /></p>
+
+<p>💡I recommend you to delve into the source code and trace examples to enhance your understanding of how the <strong>Outbox Pattern</strong> works.</p>
+
+<h3 id="azure">Azure</h3>
+
+<p>Let’s deploy to Azure Container Apps by running <code class="language-plaintext highlighter-rouge">azd deploy</code></p>
+
+<p><img src="/assets/cap-aspire/deploy.png" alt="deploy" /></p>
+
+<p>During the initial configuration (<code class="language-plaintext highlighter-rouge">azd init</code>) I specified that I want a public address for the Producer. We can utilize it for dev testing:</p>
+
+<p>Let’s generate some load and see the metrics for Azure Service Bus.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ curl <span class="nt">-s</span> https://producer.mangoforest-17799c26.eastus.azurecontainerapps.io/send | jq
+<span class="c"># {</span>
+<span class="c">#   "status": "Published",</span>
+<span class="c">#   "duration": "00:00:00.0128251"</span>
+<span class="c"># }</span>
+</code></pre></div></div>
+
+<p><img src="/assets/cap-aspire/sb-metrics.png" alt="metrics" /></p>
+
+<h4 id="outbox-tables">Outbox Tables</h4>
+
+<p>Under the hood <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code> create two tables to manage an outbox.</p>
+
+<p>In the <strong>Outbox Pattern</strong>, the Published and Received tables are used to manage the messages that need to be published or have been received by a messaging system. Let’s take a closer look at the purpose of each table:</p>
+
+<p><strong>Published Table</strong>: The Published table is responsible for storing the messages that need to be published to an external messaging system. When an application generates a message that needs to be sent out, it is stored in the Published table. This table acts as a buffer or a queue, ensuring that the messages are not lost if the messaging system is temporarily unavailable or if there are any failures during the publishing process. By using the Published table, the application can continue to generate messages without being blocked by the availability or performance of the messaging system. The messages in the Published table can be processed asynchronously by a separate component or background process, which takes care of publishing them to the external messaging system. Once a message is successfully published, it can be removed from the Published table.</p>
+
+<p><strong>Received Table</strong>: The Received table is used to track the messages that have been received by the application from the external messaging system. When the application receives a message, it stores the necessary information about the message in the Received table. This information can include the message content, metadata, and any other relevant details. The Received table allows the application to keep a record of the messages it has processed, enabling it to handle duplicate messages.</p>
+
+<p><img src="/assets/cap-aspire/outbox-tables.png" alt="outbox-tables" /></p>
+
+<h3 id="cleanup">Cleanup</h3>
+
+<p>Once you are done with the development you can delete the resource group <code class="language-plaintext highlighter-rouge">rg-cap-dev</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ azd down
+<span class="c"># Deleting all resources and deployed code on Azure (azd down)</span>
+<span class="c"># Local application code is not deleted when running 'azd down'.</span>
+<span class="c">#   Resource group(s) to be deleted:</span>
+<span class="c">#     • rg-cap-dev: https://portal.azure.com/#@/resource/subscriptions/0b252e02-9c7a-4d73-8fbc-633c5d111ebc/resourceGroups/rg-cap-dev/overview</span>
+<span class="c"># ? Total resources to delete: 10, are you sure you want to continue? Yes</span>
+<span class="c"># Deleting your resources can take some time.</span>
+<span class="c">#   (✓) Done: Deleting resource group: rg-cap-dev</span>
+
+<span class="c"># SUCCESS: Your application was removed from Azure in 10 minutes 53 seconds.</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this post, we’ve explored the <strong>Outbox Pattern</strong>, a crucial component in the world of distributed systems. We’ve seen how it ensures reliable message delivery in a distributed system, maintaining the integrity and consistency of the entire system.</p>
+
+<p>We’ve also looked at how the .NET library <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code> simplifies the implementation of the <strong>Outbox Pattern</strong>, allowing developers to focus on the business logic of their applications while the library takes care of the complexities of ensuring reliable message delivery.</p>
+
+<p>Finally, we’ve seen how .NET Aspire provides a curated suite of NuGet packages that facilitate the integration of cloud-native applications, providing essential cloud-native functionalities through either automatic provisioning or standardized configuration patterns.</p>
+
+<p>In summary, the combination of the <strong>Outbox Pattern</strong>, <code class="language-plaintext highlighter-rouge">DotNetCore.CAP</code>, and .NET Aspire provides a powerful toolset for building reliable, cloud-native applications in .NET. By understanding and leveraging these tools, developers can build applications that are robust, scalable, and ready for the challenges of the modern, distributed world.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/">https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/</a></li>
+  <li><a href="https://cap.dotnetcore.xyz/">https://cap.dotnetcore.xyz/</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth">https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(25)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspnetcore-ref">
+				aspnetcore <span>(10)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspire-ref">
+				aspire <span>(1)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(31)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(12)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref">
+				aspire <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#miscroservices-ref">
+				miscroservices <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Transactional Outbox in .NET Cloud Native Development via Aspire&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html" title="A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript"
+  src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
