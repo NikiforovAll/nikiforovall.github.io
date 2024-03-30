@@ -3,7 +3,7 @@ layout: post
 title: "Transactional Outbox in .NET Cloud Native Development via Aspire"
 categories: [ dotnet, aspnetcore, aspire ]
 tags: [ dotnet, aspnetcore, aspire, miscroservices ]
-published: false
+published: true
 shortinfo: This post provides an example of the Outbox pattern implementation using Aspire, DotNetCore.CAP, Azure Service Bus, Azure SQL, Bicep, and azd.
 fullview: false
 comments: true
@@ -12,20 +12,23 @@ mermaid: true
 ---
 
 *Table of Contents*:
-- [TLDR](#tldr)
+- [TL;DR](#tldr)
 - [Introduction to Outbox Pattern](#introduction-to-outbox-pattern)
 - [Implementation of the Outbox Pattern](#implementation-of-the-outbox-pattern)
   - [Introduction to `DotNetCore.CAP`](#introduction-to-dotnetcorecap)
   - [Example](#example)
 - [Adding `Aspire`](#adding-aspire)
   - [Provision Infrastructure](#provision-infrastructure)
+  - [Configure for Local Development](#configure-for-local-development)
 - [Demo](#demo)
   - [Locally](#locally)
   - [Azure](#azure)
+    - [Outbox Tables](#outbox-tables)
+  - [Cleanup](#cleanup)
 - [Conclusion](#conclusion)
 - [References](#references)
 
-## TLDR
+## TL;DR
 
 This post provides an example of the Outbox pattern implementation using **Aspire**, **DotNetCore.CAP**, **Azure Service Bus**, **Azure SQL**, **Bicep**, and **azd**.
 
@@ -60,7 +63,7 @@ sequenceDiagram
     A->>DB: Transaction
     Note right of DB: Transaction is committed
     DB-->>A: Acknowledgement
-    Note left of A: A crashes after transaction is committed but before message is delivered
+    Note left of A: 💥A crashes before message is delivered
     A--xMB: Message crash
     Note right of MB: Message delivery fails due to A's crash
 </div>
@@ -86,7 +89,7 @@ sequenceDiagram
     Note right of DB: Message is stored in Database
     DB-->>A: Acknowledgement
     Note right of DB: Transaction is committed
-    Note left of A: A crashes after transaction is committed but before message is delivered
+    Note left of A: 💥A crashes before message is delivered
     A--xMB: Message
     Note right of MB: Message delivery fails due to A's crash
     loop Every X time
@@ -201,11 +204,15 @@ To fully demonstrate the demo, we need to setup some real infrastructure compone
 
 .NET Aspire provides a curated suite of NuGet packages (Components) specifically selected to facilitate the integration of cloud-native applications. Each component furnishes essential cloud-native functionalities through either automatic provisioning or standardized configuration patterns.
 
+Add Message Broker:
+
 The .NET Aspire Service Bus component handles the following concerns to connect your app to Azure Service Bus. It adds `ServiceBusClient` to the DI container for connecting to Azure Service Bus.
 
 ```csharp
 dotnet add package Aspire.Azure.Messaging.ServiceBus --prerelease
 ```
+
+Add Database:
 
 .NET Aspire provides two built-in configuration options to streamline SQL Server deployment on Azure:
 
@@ -216,7 +223,7 @@ dotnet add package Aspire.Azure.Messaging.ServiceBus --prerelease
 dotnet add package Aspire.Microsoft.Data.SqlClient --prerelease
 ```
 
-Here is we can setup Aspire Host based on installed components:
+Here is how we can setup Aspire Host based on installed components:
 
 ```csharp
 // CapExample.AppHost/Program.cs
@@ -281,94 +288,237 @@ See <https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deploy
 Personally, I find it more convenient to generate Bicep files explicitly. This can be accomplished by executing the following command:
 
 ```bash
-azd infra synth
+❯ azd infra synth
 ```
 
-Let's explore the content of `infra/main.bicep` file, which is an entry point for the IaaC project.
+Here is visualization of what would be provisioned:
 
-```js
-targetScope = 'subscription'
+![resources](/assets/cap-aspire/resources.png)
 
-@minLength(1)
-@maxLength(64)
-@description('Name of the environment that can be used as part of naming resource convention, the name of the resource group for your application will use this name, prefixed with rg-')
-param environmentName string
+To provision resources we need to run next command:
 
-@minLength(1)
-@description('The location used for all deployed resources')
-param location string
-@secure()
-@metadata({azd: {
-  type: 'inputs'
-  autoGenerate: {
-    sql: {
-      password: { len: 10 }
-    }
-  }}
-})
-param inputs object
-
-
-var tags = {
-  'azd-env-name': environmentName
-}
-
-resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: 'rg-${environmentName}'
-  location: location
-  tags: tags
-}
-
-module resources 'resources.bicep' = {
-  scope: rg
-  name: 'resources'
-  params: {
-    location: location
-    tags: tags
-  }
-}
-
-module serviceBus 'serviceBus/aspire.hosting.azure.bicep.servicebus.bicep' = {
-  name: 'serviceBus'
-  scope: rg
-  params: {
-    location: location
-    principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-    principalType: 'ServicePrincipal'
-    queues: []
-    serviceBusNamespaceName: 'servicebus'
-    topics: []
-  }
-}
-module sqlserver 'sqlserver/aspire.hosting.azure.bicep.sql.bicep' = {
-  name: 'sqlserver'
-  scope: rg
-  params: {
-    location: location
-    databases: ['sqldb']
-    principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-    principalName: resources.outputs.MANAGED_IDENTITY_NAME
-    serverName: 'sqlserver'
-    inputs: inputs
-  }
-}
+```bash
+❯ azd provision
 ```
 
-TODO: explore content of main.bicep
+![provision](/assets/cap-aspire/provision.png)
 
-// adz infra synth
-// azd provision
-// configure connection strings
+Here is created resource group - `rg-cap-dev`:
+
+![az-resources](/assets/cap-aspire/az-resources.png)
+
+### Configure for Local Development
+
+To retrieve connection string for Azure Service Bus:
+
+```bash
+#!/bin/bash
+resourceGroup="rg-cap-dev"
+namespace=$(
+    az servicebus namespace list \
+        --resource-group $resourceGroup \
+        --output tsv \
+        --query '[0].name'
+)
+azbConnectionString=$(
+    az servicebus namespace authorization-rule keys list \
+        --namespace-name "$namespace" \
+        --name RootManageSharedAccessKey \
+        --resource-group $resourceGroup \
+        --output tsv \
+        --query 'primaryConnectionString'
+)
+
+dotnet user-secrets --project ./src/CapExample.AppHost \
+    set ConnectionStrings:serviceBus $azbConnectionString
+```
+
+To retrieve connection string for Azure SQL Database:
+
+```bash
+#!/bin/bash
+
+# read server address
+if [ -f .azure/cap-dev/.env ]
+then
+    export $(cat .azure/cap-dev/.env | sed 's/#.*//g' | xargs)
+fi
+
+# read server password
+db_password=$(jq -r '.inputs.sql.password' .azure/cap-dev/config.json)
+
+dotnet user-secrets --project ./src/CapExample.AppHost set ConnectionStrings:sqldb \
+    "Server=$SQLSERVER_SQLSERVERFQDN;Initial Catalog=sqldb;Persist Security Info=False;User ID=CloudSA;Password=$db_password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+```
+
+To check the secrets were stored successfully:
+
+```bash
+❯ dotnet user-secrets --project ./src/CapExample.AppHost list
+# ConnectionStrings:sqldb = Server=sqlserver-gopucer6dsl5q.database.windows.net;Initial Catalog=sqldb;Persist Security Info=False;User ID=CloudSA;Password=<your-password>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+# ConnectionStrings:serviceBus = Endpoint=sb://servicebus-gopucer6dsl5q.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=<your-key>
+```
 
 ## Demo
 
+As you might know, Aspire adds OpenTelemetry support out-of-the-box and you can configure it in `ServiceDefaults/Extensions.cs`.
+
+`DotNetCore.CAP` has a package that adds additional OpenTelemetry capabilities.
+
+Distributed spans in OpenTelemetry help you track operations over a message broker by providing a way to trace the flow of messages across different components of your system.
+
+When using a message broker like `DotNetCore.CAP`, messages are typically sent from a producer to a consumer through an intermediary broker. Each step in this process can be considered a span, which represents a unit of work or an operation.
+
+By instrumenting your code with OpenTelemetry, you can create spans that capture information about each step of the message flow. These spans can include details such as the time taken, any errors encountered, and additional contextual information.
+
+With distributed spans, you can visualize the entire journey of a message as it moves through your system, from the producer to the broker and finally to the consumer. This allows you to gain insights into the performance and behavior of your message processing pipeline.
+
+By analyzing the distributed spans, you can identify bottlenecks, latency issues, and potential errors in your message processing flow. This information is invaluable for troubleshooting and optimizing the performance of your distributed systems.
+
+Here is what you need to do to install and configure OpenTelemetry for `DotNetCore.CAP`:
+
+Install NuGet package:
+
+```bash
+❯ dotnet add ./src/CapExample.ServiceDefaults/ package DotNetCore.Cap.OpenTelemetry
+```
+
+Adjust ServiceDefaults:
+
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddProcessInstrumentation()
+            .AddRuntimeInstrumentation();
+    })
+    .WithTracing(tracing =>
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            tracing.SetSampler(new AlwaysOnSampler());
+        }
+
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddGrpcClientInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddCapInstrumentation(); // <-- add this code
+    });
+```
+
 ### Locally
+
+Now, let's run the demo:
+
+```bash
+❯ dotnet run --project ./src/CapExample.AppHost
+# Building...
+# Restore complete (0.6s)
+#   CapExample.ServiceDefaults succeeded (0.2s) → src\CapExample.ServiceDefaults\bin\Debug\net9.0\CapExample.ServiceDefaults.dll
+#   Consumer succeeded (0.3s) → src\Consumer\bin\Debug\net9.0\Consumer.dll
+#   Producer succeeded (0.5s) → src\Producer\bin\Debug\net9.0\Producer.dll
+#   CapExample.AppHost succeeded (0.2s) → src\CapExample.AppHost\bin\Debug\net9.0\CapExample.AppHost.dll
+
+# Build succeeded in 2.6s
+# info: Aspire.Hosting.DistributedApplication[0]
+#       Aspire version: 9.0.0-preview.2.24162.2+eaca163f7737934020f1102a9d11fdf790cccdc0
+# info: Aspire.Hosting.DistributedApplication[0]
+#       Distributed application starting.
+# info: Aspire.Hosting.DistributedApplication[0]
+#       Application host directory is: C:\Users\Oleksii_Nikiforov\dev\cap-aspire\src\CapExample.AppHost
+# info: Aspire.Hosting.DistributedApplication[0]
+#       Now listening on: http://localhost:15118
+# info: Aspire.Hosting.DistributedApplication[0]
+#       Distributed application started. Press Ctrl+C to shut down.
+```
+
+Let's generate some load:
+
+```bash
+❯ curl -s http://localhost:5288/send | jq
+# {
+#   "status": "Published",
+#   "duration": "00:00:00.5255861"
+# }
+```
+
+Navigate to Aspire Dashboard to see some traces:
+
+Here is the first request, as you can see, we need some time to establish initial connection with Azure Service Bus:
+
+![traces](/assets/cap-aspire/traces.png)
+
+Subsequent requests take less time:
+
+![traces2](/assets/cap-aspire/traces2.png)
+
+💡I recommend you to delve into the source code and trace examples to enhance your understanding of how the **Outbox Pattern** works.
 
 ### Azure
 
+Let's deploy to Azure Container Apps by running `azd deploy`
+
+![deploy](/assets/cap-aspire/deploy.png)
+
+During the initial configuration (`azd init`) I specified that I want a public address for the Producer. We can utilize it for dev testing:
+
+Let's generate some load and see the metrics for Azure Service Bus.
+
+```bash
+❯ curl -s https://producer.mangoforest-17799c26.eastus.azurecontainerapps.io/send | jq
+# {
+#   "status": "Published",
+#   "duration": "00:00:00.0128251"
+# }
+```
+
+![metrics](/assets/cap-aspire/sb-metrics.png)
+
+#### Outbox Tables
+
+Under the hood `DotNetCore.CAP` create two tables to manage an outbox.
+
+In the **Outbox Pattern**, the Published and Received tables are used to manage the messages that need to be published or have been received by a messaging system. Let's take a closer look at the purpose of each table:
+
+**Published Table**: The Published table is responsible for storing the messages that need to be published to an external messaging system. When an application generates a message that needs to be sent out, it is stored in the Published table. This table acts as a buffer or a queue, ensuring that the messages are not lost if the messaging system is temporarily unavailable or if there are any failures during the publishing process. By using the Published table, the application can continue to generate messages without being blocked by the availability or performance of the messaging system. The messages in the Published table can be processed asynchronously by a separate component or background process, which takes care of publishing them to the external messaging system. Once a message is successfully published, it can be removed from the Published table.
+
+**Received Table**: The Received table is used to track the messages that have been received by the application from the external messaging system. When the application receives a message, it stores the necessary information about the message in the Received table. This information can include the message content, metadata, and any other relevant details. The Received table allows the application to keep a record of the messages it has processed, enabling it to handle duplicate messages.
+
+![outbox-tables](/assets/cap-aspire/outbox-tables.png)
+
+### Cleanup
+
+Once you are done with the development you can delete the resource group `rg-cap-dev`:
+
+```bash
+❯ azd down
+# Deleting all resources and deployed code on Azure (azd down)
+# Local application code is not deleted when running 'azd down'.
+#   Resource group(s) to be deleted:
+#     • rg-cap-dev: https://portal.azure.com/#@/resource/subscriptions/0b252e02-9c7a-4d73-8fbc-633c5d111ebc/resourceGroups/rg-cap-dev/overview
+# ? Total resources to delete: 10, are you sure you want to continue? Yes
+# Deleting your resources can take some time.
+#   (✓) Done: Deleting resource group: rg-cap-dev
+
+# SUCCESS: Your application was removed from Azure in 10 minutes 53 seconds.
+```
+
 ## Conclusion
+
+In this post, we've explored the **Outbox Pattern**, a crucial component in the world of distributed systems. We've seen how it ensures reliable message delivery in a distributed system, maintaining the integrity and consistency of the entire system.
+
+We've also looked at how the .NET library `DotNetCore.CAP` simplifies the implementation of the **Outbox Pattern**, allowing developers to focus on the business logic of their applications while the library takes care of the complexities of ensuring reliable message delivery.
+
+Finally, we've seen how .NET Aspire provides a curated suite of NuGet packages that facilitate the integration of cloud-native applications, providing essential cloud-native functionalities through either automatic provisioning or standardized configuration patterns.
+
+In summary, the combination of the **Outbox Pattern**, `DotNetCore.CAP`, and .NET Aspire provides a powerful toolset for building reliable, cloud-native applications in .NET. By understanding and leveraging these tools, developers can build applications that are robust, scalable, and ready for the challenges of the modern, distributed world.
 
 ## References
 
+* <https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/>
 * <https://cap.dotnetcore.xyz/>
 * <https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth>
