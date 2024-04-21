@@ -275,7 +275,7 @@ var pipeline = Source(GenerateRange(1..10))
 await pipeline.ForEach(System.Console.WriteLine);
 ```
 
-The output remains the same:
+The output remains the same (although with some delay between items during the output process):
 
 ```bash
  1^2 =    1
@@ -290,7 +290,7 @@ The output remains the same:
 10^2 =  100
 ```
 
-Ror our task it is not necessary to perform tasks one by one. So we need some way to process tasks concurrently.
+For our task it is not necessary to perform tasks one by one. So we need some way to process tasks concurrently.
 
 ### Multiplexer and Demultiplexer
 
