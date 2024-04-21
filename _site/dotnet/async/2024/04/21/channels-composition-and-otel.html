@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Building pipelines with System.Threading.Channels</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="https://nikiforovall.github.io/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle" />
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html">About</a></li>
+			</ul>
+		</div><!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider"></li>
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle" />
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Building pipelines with System.Threading.Channels </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			April
+			21st,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/async/2021/02/26/tap-composition.html">Task-based asynchronous Pattern and Composition (aka Task Combinators) <span class="label label-default">dotnet</span>  <span class="label label-default">async</span>  <span class="label label-default">TPL</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<p><em>Table of Contents</em>:</p>
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#building-pipeline-pipeline-primitives">Building Pipeline. Pipeline Primitives</a>
+    <ul>
+      <li><a href="#generator-aka-producer">Generator aka Producer</a></li>
+      <li><a href="#transformer-aka-producerconsumer">Transformer aka Producer/Consumer</a></li>
+      <li><a href="#multiplexer-and-demultiplexer">Multiplexer and Demultiplexer</a></li>
+    </ul>
+  </li>
+  <li><a href="#use-openchannelextensions">Use <code class="language-plaintext highlighter-rouge">Open.ChannelExtensions</code></a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="tldr">TL;DR</h2>
+
+<p>This post shows you how to build pipelines based on <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> and <code class="language-plaintext highlighter-rouge">Open.ChannelExtensions</code>.</p>
+
+<blockquote>
+  <p>Source code: <a href="https://github.com/NikiforovAll/channels-composition-and-otel/tree/main/src/Console">https://github.com/NikiforovAll/channels-composition-and-otel/tree/main/src/Console</a></p>
+</blockquote>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Concurrent programming challenges can be effectively addressed using channels. Channels, as part of the <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> namespace, provide a powerful tool for efficient inter-component communication in your application, particularly when dealing with data streams. Channels are essentially a modern take on the classic producer-consumer problem, offering a robust, thread-safe solution for handling data flow. They are designed to be composed, allowing you to build complex, multi-stage pipelines that can process data concurrently.</p>
+
+<p>The relationship between concurrency and parallelism is commonly misunderstood. In fact, two procedures being concurrent doesn’t mean that they’ll run in parallel. Concurrency is something that enables parallelism. On a single processor, two procedures can be concurrent, yet they won’t run in parallel. A concurrent program <strong>deals</strong> with a lot of things at once, whereas a parallel program <strong>does</strong> a lot of things at once.</p>
+
+<p>A channel is a data structure that allows one thread to communicate with another thread. In .NET, this was usually done by using synchronization/locking mechanism. Channels, on the other hand, can be used to send messages directly between threads without any external synchronization or locking required.</p>
+
+<p><strong>Example</strong>:</p>
+
+<p>The code below demonstrates the basic usage of <code class="language-plaintext highlighter-rouge">Channel&lt;T&gt;</code>. It prints numbers from 0 to 4 in random order.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">channel</span> <span class="p">=</span> <span class="n">Channel</span><span class="p">.</span><span class="n">CreateUnbounded</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;();</span>
+
+<span class="kt">var</span> <span class="n">consumer</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">message</span> <span class="k">in</span> <span class="n">channel</span><span class="p">.</span><span class="n">Reader</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+
+<span class="kt">var</span> <span class="n">producer</span> <span class="p">=</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">5</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromSeconds</span><span class="p">(</span><span class="n">Random</span><span class="p">.</span><span class="n">Shared</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="m">3</span><span class="p">)));</span>
+        <span class="k">await</span> <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="s">$"Message </span><span class="p">{</span><span class="n">i</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">Complete</span><span class="p">();</span>
+<span class="p">});</span>
+
+<span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">producer</span><span class="p">,</span> <span class="n">consumer</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Think about this code in terms of the quote below:</p>
+
+<blockquote>
+  <p>Don’t communicate by sharing memory; share memory by communicating. (R. Pike)</p>
+</blockquote>
+
+<h2 id="building-pipeline-pipeline-primitives">Building Pipeline. Pipeline Primitives</h2>
+
+<p>In software development, a pipeline is a sequence of steps or stages through which data or tasks flow. Each step in the pipeline performs a specific operation on the data or tasks and passes the result to the next step. Pipelines are commonly used to process data or perform a series of operations in a structured and efficient manner.</p>
+
+<p><img src="/assets/channels-composition/producer-consumer.png" /></p>
+
+<p>While the <a href="https://github.com/Open-NET-Libraries/Open.ChannelExtensions">Open.ChannelExtensions</a> library already contains the necessary components for building concurrent pipelines, we will be building a <strong>naive</strong> implementation from scratch for <em>learning purposes</em>. This will allow us to gain a deeper understanding of the underlying concepts and mechanisms.</p>
+
+<h3 id="generator-aka-producer">Generator aka Producer</h3>
+
+<p>A generator is responsible for producing data that will be consumed by other parts of the pipeline. A generator is a crucial part of a pipeline based on <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code>. It is the starting point of the pipeline, producing data that will be processed by subsequent stages.</p>
+
+<p>The generator method <code class="language-plaintext highlighter-rouge">Generate&lt;T&gt;</code> in the provided code is a simple example of a generator. It takes an array of items of type <code class="language-plaintext highlighter-rouge">T</code> and produces an <code class="language-plaintext highlighter-rouge">IAsyncEnumerable&lt;T&gt;</code> sequence from them. This sequence can then be used as the source of data for a channel.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">IAsyncEnumerable</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">Generate</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="k">params</span> <span class="n">T</span><span class="p">[]</span> <span class="n">array</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">array</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="n">item</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Source&lt;TOut&gt;</code> method creates a channel from an <code class="language-plaintext highlighter-rouge">IAsyncEnumerable&lt;TOut&gt;</code> source. It creates an unbounded channel and returns the <code class="language-plaintext highlighter-rouge">ChannelReader</code> part of it, effectively turning the <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> into a readable channel.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;</span> <span class="n">Source</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;(</span><span class="n">IAsyncEnumerable</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">channel</span> <span class="p">=</span> <span class="n">Channel</span><span class="p">.</span><span class="n">CreateUnbounded</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;();</span>
+
+    <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">source</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">Complete</span><span class="p">();</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="n">channel</span><span class="p">.</span><span class="n">Reader</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>As result, we have a channel based on <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> which is quite useful for many scenarios:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">Generate</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">));</span>
+
+<span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+<span class="p">{</span>
+    <span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Let’s print the elements using a reusable method that traverses elements of the <code class="language-plaintext highlighter-rouge">ChannelReader</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">Task</span> <span class="n">ForEach</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">&gt;(</span><span class="k">this</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">,</span> <span class="n">Action</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">&gt;</span> <span class="n">action</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">source</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+    <span class="p">{</span>
+        <span class="nf">action</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>So, the our simple example of pipeline looks like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">Generate</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">));</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ForEach</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>And the output:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1
+2
+3
+</code></pre></div></div>
+
+<p>Assume we want to generate a sequence from 1 to 100, for that case I would suggest writing custom generator that simplifies working with source.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">GenerateRange</code> method is another example of a generator. It generates a sequence of integers within a specified range and produces an <code class="language-plaintext highlighter-rouge">IAsyncEnumerable&lt;int&gt;</code> sequence from them.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">IAsyncEnumerable</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">GenerateRange</span><span class="p">(</span><span class="n">Range</span> <span class="n">range</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">int</span> <span class="n">count</span> <span class="p">=</span> <span class="n">range</span><span class="p">.</span><span class="n">End</span><span class="p">.</span><span class="n">Value</span> <span class="p">-</span> <span class="n">range</span><span class="p">.</span><span class="n">Start</span><span class="p">.</span><span class="n">Value</span> <span class="p">+</span> <span class="m">1</span><span class="p">;</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">Enumerable</span><span class="p">.</span><span class="nf">Range</span><span class="p">(</span><span class="n">range</span><span class="p">.</span><span class="n">Start</span><span class="p">.</span><span class="n">Value</span><span class="p">,</span> <span class="n">count</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="n">item</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">GenerateRange</span><span class="p">(</span><span class="m">1</span><span class="p">..</span><span class="m">100</span><span class="p">));</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ForEach</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="transformer-aka-producerconsumer">Transformer aka Producer/Consumer</h3>
+
+<p>The pipeline can be explained as a series of consumer/producer tasks, forming a stream of steps that may be executed concurrently or sequentially.</p>
+
+<p>Let’s say we want to square a sequence of elements:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">GenerateRange</span><span class="p">(</span><span class="m">1</span><span class="p">..</span><span class="m">10</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">CustomPipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">*</span><span class="n">x</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ForEach</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>This code defines an extension method <code class="language-plaintext highlighter-rouge">CustomPipe</code> over <code class="language-plaintext highlighter-rouge">ChannelReader&lt;TRead&gt;</code> class. The <code class="language-plaintext highlighter-rouge">CustomPipe</code> method takes two type parameters, <code class="language-plaintext highlighter-rouge">TRead</code> and <code class="language-plaintext highlighter-rouge">TOut</code>. <code class="language-plaintext highlighter-rouge">TRead</code> is the type of data that the source channel reader reads, and <code class="language-plaintext highlighter-rouge">TOut</code> is the type of data that the resulting channel reader will produce. For each item read from the <code class="language-plaintext highlighter-rouge">source</code>, the <code class="language-plaintext highlighter-rouge">transform</code> function is called to transform the item to type <code class="language-plaintext highlighter-rouge">TOut</code>, and the transformed item is written to the new channel.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;</span> <span class="n">CustomPipe</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">,</span> <span class="n">TOut</span><span class="p">&gt;(</span>
+        <span class="k">this</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">,</span>
+        <span class="n">Func</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">,</span> <span class="n">TOut</span><span class="p">&gt;</span> <span class="n">transform</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">channel</span> <span class="p">=</span> <span class="n">Channel</span><span class="p">.</span><span class="n">CreateUnbounded</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;();</span>
+
+        <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">source</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+            <span class="p">{</span>
+                <span class="k">await</span> <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="nf">transform</span><span class="p">(</span><span class="n">item</span><span class="p">));</span>
+            <span class="p">}</span>
+
+            <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">Complete</span><span class="p">();</span>
+        <span class="p">});</span>
+
+        <span class="k">return</span> <span class="n">channel</span><span class="p">.</span><span class="n">Reader</span><span class="p">;</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>As you may have noticed, it’s not necessary for the pipeline step execution to return the same type as its result.</p>
+
+<p>The code snippet below creates a pipeline that generates a range of numbers, applies a custom pipe operation to calculate the square of each number, and then formats the results into a string.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">GenerateRange</span><span class="p">(</span><span class="m">1</span><span class="p">..</span><span class="m">10</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">CustomPipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">square</span><span class="p">:</span> <span class="n">x</span> <span class="p">*</span> <span class="n">x</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">CustomPipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="s">$"</span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">item</span><span class="p">,</span><span class="m">2</span><span class="p">}</span><span class="s">^2 = </span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">square</span><span class="p">,</span><span class="m">4</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ForEach</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>And here is the result of the execution:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 1^2 <span class="o">=</span>    1
+ 2^2 <span class="o">=</span>    4
+ 3^2 <span class="o">=</span>    9
+ 4^2 <span class="o">=</span>   16
+ 5^2 <span class="o">=</span>   25
+ 6^2 <span class="o">=</span>   36
+ 7^2 <span class="o">=</span>   49
+ 8^2 <span class="o">=</span>   64
+ 9^2 <span class="o">=</span>   81
+10^2 <span class="o">=</span>  100
+</code></pre></div></div>
+
+<p>In real-world scenarios, we often need to perform asynchronous tasks. Let’s write a modification of <code class="language-plaintext highlighter-rouge">CustomPipe</code> method - <code class="language-plaintext highlighter-rouge">CustomPipeAsync</code> that takes <code class="language-plaintext highlighter-rouge">Func&lt;TRead, ValueTask&lt;TOut&gt; transform</code> as parameter instead:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;</span> <span class="n">CustomPipeAsync</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">,</span> <span class="n">TOut</span><span class="p">&gt;(</span>
+    <span class="k">this</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">,</span>
+    <span class="n">Func</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">,</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;&gt;</span> <span class="n">transform</span>
+<span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">channel</span> <span class="p">=</span> <span class="n">Channel</span><span class="p">.</span><span class="n">CreateUnbounded</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;();</span>
+
+    <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">source</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="k">await</span> <span class="nf">transform</span><span class="p">(</span><span class="n">item</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="n">channel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">Complete</span><span class="p">();</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="n">channel</span><span class="p">.</span><span class="n">Reader</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">GenerateRange</span><span class="p">(</span><span class="m">1</span><span class="p">..</span><span class="m">10</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">CustomPipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">square</span><span class="p">:</span> <span class="n">x</span> <span class="p">*</span> <span class="n">x</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">CustomPipeAsync</span><span class="p">(</span><span class="k">async</span> <span class="n">x</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">square</span> <span class="p">*</span> <span class="m">10</span><span class="p">);</span> <span class="c1">// some async work</span>
+
+        <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+    <span class="p">})</span>
+    <span class="p">.</span><span class="nf">CustomPipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="s">$"</span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">item</span><span class="p">,</span> <span class="m">2</span><span class="p">}</span><span class="s">^2 = </span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">square</span><span class="p">,</span> <span class="m">4</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ForEach</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>The output remains the same:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 1^2 <span class="o">=</span>    1
+ 2^2 <span class="o">=</span>    4
+ 3^2 <span class="o">=</span>    9
+ 4^2 <span class="o">=</span>   16
+ 5^2 <span class="o">=</span>   25
+ 6^2 <span class="o">=</span>   36
+ 7^2 <span class="o">=</span>   49
+ 8^2 <span class="o">=</span>   64
+ 9^2 <span class="o">=</span>   81
+10^2 <span class="o">=</span>  100
+</code></pre></div></div>
+
+<p>Ror our task it is not necessary to perform tasks one by one. So we need some way to process tasks concurrently.</p>
+
+<h3 id="multiplexer-and-demultiplexer">Multiplexer and Demultiplexer</h3>
+
+<p>A multiplexer (or muxer) is a concept that combines multiple input signals into one output signal. In the context of our pipeline, we can think of it as a function that takes multiple <code class="language-plaintext highlighter-rouge">ChannelReader&lt;T&gt;</code> instances and combines them into a single <code class="language-plaintext highlighter-rouge">ChannelReader&lt;T&gt;</code>.</p>
+
+<p>On the other hand, a demultiplexer (or demuxer) is a concept that takes a single input and distributes it over several outputs. In our pipeline, it would be a function that takes a single <code class="language-plaintext highlighter-rouge">ChannelReader&lt;T&gt;</code> and splits it into multiple <code class="language-plaintext highlighter-rouge">ChannelReader&lt;T&gt;</code> instances.</p>
+
+<p>Here’s an example of how you might implement a multiplexer (remember naive approach 🙈):</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">Merge</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="k">params</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;[]</span> <span class="n">inputs</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">output</span> <span class="p">=</span> <span class="n">Channel</span><span class="p">.</span><span class="n">CreateUnbounded</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;();</span>
+
+    <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">async</span> <span class="n">Task</span> <span class="nf">Redirect</span><span class="p">(</span><span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">input</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">input</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+                <span class="k">await</span> <span class="n">output</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">WhenAll</span><span class="p">(</span><span class="n">inputs</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">i</span> <span class="p">=&gt;</span> <span class="nf">Redirect</span><span class="p">(</span><span class="n">i</span><span class="p">)).</span><span class="nf">ToArray</span><span class="p">());</span>
+        <span class="n">output</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">Complete</span><span class="p">();</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="n">output</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This code defines a method <code class="language-plaintext highlighter-rouge">Merge</code> that merges multiple input channels into a single output channel. Once all items have been read from all input channels and written to the output channel, the writer of the output channel is completed. This indicates that no more data will be written to the channel.</p>
+
+<p>And here is how you might implement a demultiplexer:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;[]</span> <span class="n">Split</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span><span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">ch</span><span class="p">,</span> <span class="kt">int</span> <span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">outputs</span> <span class="p">=</span> <span class="n">Enumerable</span><span class="p">.</span><span class="nf">Range</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">_</span> <span class="p">=&gt;</span> <span class="n">Channel</span><span class="p">.</span><span class="n">CreateUnbounded</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;())</span>
+        <span class="p">.</span><span class="nf">ToArray</span><span class="p">();</span>
+
+    <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">index</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+        <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">ch</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">outputs</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="n">Writer</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+            <span class="n">index</span> <span class="p">=</span> <span class="p">(</span><span class="n">index</span> <span class="p">+</span> <span class="m">1</span><span class="p">)</span> <span class="p">%</span> <span class="n">n</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">output</span> <span class="k">in</span> <span class="n">outputs</span><span class="p">)</span>
+            <span class="n">output</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">Complete</span><span class="p">();</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="n">outputs</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">output</span> <span class="p">=&gt;</span> <span class="n">output</span><span class="p">.</span><span class="n">Reader</span><span class="p">).</span><span class="nf">ToArray</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>This code defines a method <code class="language-plaintext highlighter-rouge">Split</code> that splits the data from a single input channel into multiple output channels. For each item read from the input channel, the item is written to one of the output channels. The output channel that the item is written to is determined by the <code class="language-plaintext highlighter-rouge">index</code> variable, which is incremented for each item and then wrapped around to zero when it reaches <code class="language-plaintext highlighter-rouge">n</code>. This ensures that the items are distributed evenly across the output channels.</p>
+
+<p>The interesting part is that we can add concurrent processing to <code class="language-plaintext highlighter-rouge">CustomPipeAsync</code> by introducing <code class="language-plaintext highlighter-rouge">maxConcurrency</code> parameter and using <code class="language-plaintext highlighter-rouge">Split</code> and <code class="language-plaintext highlighter-rouge">Merge</code> methods together like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;</span> <span class="n">CustomPipeAsync</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">,</span> <span class="n">TOut</span><span class="p">&gt;(</span>
+    <span class="k">this</span> <span class="n">ChannelReader</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">&gt;</span> <span class="n">source</span><span class="p">,</span>
+    <span class="kt">int</span> <span class="n">maxConcurrency</span><span class="p">,</span>
+    <span class="n">Func</span><span class="p">&lt;</span><span class="n">TRead</span><span class="p">,</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;&gt;</span> <span class="n">transform</span>
+<span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">bufferChannel</span> <span class="p">=</span> <span class="n">Channel</span><span class="p">.</span><span class="n">CreateUnbounded</span><span class="p">&lt;</span><span class="n">TOut</span><span class="p">&gt;();</span>
+
+    <span class="kt">var</span> <span class="n">channel</span> <span class="p">=</span> <span class="nf">Merge</span><span class="p">(</span><span class="nf">Split</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">maxConcurrency</span><span class="p">));</span>
+
+    <span class="n">Task</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">item</span> <span class="k">in</span> <span class="n">channel</span><span class="p">.</span><span class="nf">ReadAllAsync</span><span class="p">())</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">bufferChannel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">WriteAsync</span><span class="p">(</span><span class="k">await</span> <span class="nf">transform</span><span class="p">(</span><span class="n">item</span><span class="p">));</span>
+        <span class="p">}</span>
+
+        <span class="n">bufferChannel</span><span class="p">.</span><span class="n">Writer</span><span class="p">.</span><span class="nf">Complete</span><span class="p">();</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="n">bufferChannel</span><span class="p">.</span><span class="n">Reader</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The source channel is split into multiple channels using the <code class="language-plaintext highlighter-rouge">Split</code> method. The Split method divides the items from the source channel into multiple channels based on the specified <code class="language-plaintext highlighter-rouge">maxConcurrency</code>. This allows for concurrent processing of the items.</p>
+
+<p>Here is the usage of <code class="language-plaintext highlighter-rouge">maxConcurrency</code> parameter:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">GenerateRange</span><span class="p">(</span><span class="m">1</span><span class="p">..</span><span class="m">10</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">CustomPipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">square</span><span class="p">:</span> <span class="n">x</span> <span class="p">*</span> <span class="n">x</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">CustomPipeAsync</span><span class="p">(</span>
+        <span class="n">maxConcurrency</span><span class="p">:</span> <span class="m">2</span><span class="p">,</span>
+        <span class="k">async</span> <span class="n">x</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">square</span> <span class="p">*</span> <span class="m">10</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">CustomPipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="s">$"</span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">item</span><span class="p">,</span><span class="m">2</span><span class="p">}</span><span class="s">^2 = </span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">square</span><span class="p">,</span><span class="m">4</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ForEach</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>And the output, note the order is no longer sequential, which is what we wanted:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 1^2 <span class="o">=</span>    1
+ 3^2 <span class="o">=</span>    9
+ 5^2 <span class="o">=</span>   25
+ 7^2 <span class="o">=</span>   49
+ 9^2 <span class="o">=</span>   81
+ 2^2 <span class="o">=</span>    4
+ 4^2 <span class="o">=</span>   16
+ 6^2 <span class="o">=</span>   36
+ 8^2 <span class="o">=</span>   64
+10^2 <span class="o">=</span>  100
+</code></pre></div></div>
+
+<h2 id="use-openchannelextensions">Use <code class="language-plaintext highlighter-rouge">Open.ChannelExtensions</code></h2>
+
+<p>Luckily, we don’t need to worry about full-fledged implementation of pipeline primitives, <code class="language-plaintext highlighter-rouge">Open.ChannelExtensions</code> already has everything we need for building production-ready pipelines. Let’s see how we can use it to reproduce the demo above:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="nf">Source</span><span class="p">(</span><span class="nf">GenerateRange</span><span class="p">(</span><span class="m">1</span><span class="p">..</span><span class="m">10</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">Pipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="p">(</span><span class="n">item</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">square</span><span class="p">:</span> <span class="n">x</span> <span class="p">*</span> <span class="n">x</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">PipeAsync</span><span class="p">(</span>
+        <span class="n">maxConcurrency</span><span class="p">:</span> <span class="m">2</span><span class="p">,</span>
+        <span class="k">async</span> <span class="n">x</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">square</span> <span class="p">*</span> <span class="m">10</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">Pipe</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="s">$"</span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">item</span><span class="p">,</span><span class="m">2</span><span class="p">}</span><span class="s">^2 = </span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">square</span><span class="p">,</span><span class="m">4</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">.</span><span class="nf">ForEach</span><span class="p">(</span><span class="n">System</span><span class="p">.</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Basically, <code class="language-plaintext highlighter-rouge">Open.ChannelExtensions</code> provides <code class="language-plaintext highlighter-rouge">Pipe</code> and <code class="language-plaintext highlighter-rouge">PipeAsync</code> methods identical to the onces we’ve implemented above (but definitely more efficient).</p>
+
+<p>The output:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 1^2 <span class="o">=</span>    1
+ 2^2 <span class="o">=</span>    4
+ 3^2 <span class="o">=</span>    9
+ 4^2 <span class="o">=</span>   16
+ 5^2 <span class="o">=</span>   25
+ 6^2 <span class="o">=</span>   36
+ 7^2 <span class="o">=</span>   49
+ 8^2 <span class="o">=</span>   64
+ 9^2 <span class="o">=</span>   81
+10^2 <span class="o">=</span>  100
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this blog post, we’ve learned a lot by building custom pipelines from scratch based on <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code>. However, for real-world use, I recommend using <code class="language-plaintext highlighter-rouge">Open.ChannelExtensions</code> as it provides efficient and production-ready pipeline primitives.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://devblogs.microsoft.com/dotnet/an-introduction-to-system-threading-channels/">https://devblogs.microsoft.com/dotnet/an-introduction-to-system-threading-channels/</a></li>
+  <li><a href="https://deniskyashif.com/2019/12/08/csharp-channels-part-1/">https://deniskyashif.com/2019/12/08/csharp-channels-part-1/</a></li>
+  <li><a href="https://github.com/Open-NET-Libraries/Open.ChannelExtensions">https://github.com/Open-NET-Libraries/Open.ChannelExtensions</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref">
+				dotnet <span>(27)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#async-ref">
+				async <span>(2)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref">
+				dotnet <span>(33)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref">
+				aspnetcore <span>(14)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#channels-ref">
+				channels <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#async-ref">
+				async <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#TPL-ref">
+				TPL <span>(2)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter"
+				href="http://twitter.com/share?text=Building pipelines with System.Threading.Channels&via=nikiforovall"
+				onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+			<a class="btn btn-default btn-sm facebook" href="https://www.facebook.com/sharer/sharer.php"
+				onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+				<i class="fa fa-facebook fa-lg"></i>
+				Facebook
+			</a>
+			<a class="btn btn-default btn-sm gplus"
+				onclick="window.open('https://plus.google.com/share?url='+window.location.href, 'google-plus-share', 'width=490,height=530');return false;">
+				<i class="fa fa-google-plus fa-lg"></i>
+				Google+
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image" />
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/aspnetcore/2024/04/06/openapi-polymorphism.html" title="Polymorphic serialization via System.Text.Json in ASP.NET Core Minimal API">&larr;
+				Previous</a></li>
+		
+		
+		<li class="next disabled"><a>Next &rarr;</a>
+			
+	</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+
+		<footer>
+			<hr/>
+			<p>
+				&copy; 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript"
+  src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
