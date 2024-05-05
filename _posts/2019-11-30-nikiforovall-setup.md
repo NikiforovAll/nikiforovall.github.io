@@ -12,7 +12,7 @@ link-list: "https://www.theurlist.com/os-bootstrap"
 
 ## Introduction
 
-I would like to share with you how to implement [dotfiles]([https://link](https://dotfiles.github.io/)) concept for your working environment lightning fast. This post is based on my **dotfiles** repository - [nikiforovall/dotifles](https://github.com/NikiforovAll/dotfiles).
+I would like to share with you how to implement [dotfiles](https://dotfiles.github.io/) concept for your working environment lightning fast. This post is based on my **dotfiles** repository - [nikiforovall/dotifles](https://github.com/NikiforovAll/dotfiles).
 
 It is a good time to be a .NET developer. It is not only mature and enterprise-ready ecosystem but vibrant and active community. I feel like guys from Microsoft doing a lot to support and encourage .NET community. In particular, that is why we have something like [Windows Subsystem For Linux](https://docs.microsoft.com/en-us/windows/wsl/about), [Windows Terminal](https://github.com/Microsoft/Terminal) and many more.
 

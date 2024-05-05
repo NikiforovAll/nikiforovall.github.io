@@ -324,7 +324,7 @@ Sure enough, we can see the "test-client" in the intended audience claim "aud". 
 
 ### Get access token from Swagger UI
 
-`Swashbuckle.AspNetCore` can be configured to retrieve access tokens based on "OpenID Endpoint Configuration". Keycloak serves at a well-known endpoint <http://localhost:8080/realms/{realm}/.well-known/openid-configuration>. This way, Swagger UI will add all possible flows to retrieve an access token.
+`Swashbuckle.AspNetCore` can be configured to retrieve access tokens based on "OpenID Endpoint Configuration". Keycloak serves at a well-known endpoint "http://localhost:8080/realms/{realm}/.well-known/openid-configuration". This way, Swagger UI will add all possible flows to retrieve an access token.
 
 ```csharp
 // Program.cs
