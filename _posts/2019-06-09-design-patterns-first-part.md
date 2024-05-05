@@ -9,7 +9,7 @@ comments: true
 link-list: https://www.theurlist.com/design-patterns
 ---
 
-Yes, you might say that blogging about design patterns is boring. But what about interactive version with live examples and  [Try .NET]([https://link](https://github.com/dotnet/try))? Let's delve into it.
+Yes, you might say that blogging about design patterns is boring. But what about interactive version with live examples and  [Try .NET](https://github.com/dotnet/try)? Let's delve into it.
 
 <h1> TOC </h1>
 

@@ -4,7 +4,7 @@ title: Job Offloading Pattern with System.Threading.Channels. A way to deal with
 categories: [ dotnet, async ]
 tags: [ dotnet, aspnetcore, channels, async, TPL, opentelemetry]
 published: true
-shortinfo: This post shows you how to implement Job Offloading Pattern using an a pipeline built with System.Threading.Channels
+shortinfo: This post shows you how to implement Job Offloading Pattern using a pipeline built with System.Threading.Channels
 fullview: false
 comments: true
 related: true
