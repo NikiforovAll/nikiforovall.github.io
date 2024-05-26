@@ -601,7 +601,7 @@ aws batch submit-job \
     --scheduling-priority-override 1 \
     --container-overrides '{
         "command": [
-            "migrate",
+            "plan",
             "--source",
             "s3://aws-batch-demo-dotnet-source-bucket",
             "--destination",
