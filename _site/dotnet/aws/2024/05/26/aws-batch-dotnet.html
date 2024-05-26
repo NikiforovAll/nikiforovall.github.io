@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Mastering AWS Batch: A .NET Developer Guide to Batch File Processing</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Mastering AWS Batch: A .NET Developer Guide to Batch File Processing </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			May
+			26th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>In this blog post, we will explore how to leverage AWS Batch and Amazon S3 to efficiently process files using .NET</p>
+
+<p>Source code: <a href="https://github.com/NikiforovAll/aws-batch-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aws-batch-dotnet</a></p>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li>
+<a href="#part-1-understanding-aws-batch-and-s3">Part 1: Understanding AWS Batch and S3</a>
+    <ul>
+      <li>
+<a href="#aws-batch">AWS Batch</a>
+        <ul>
+          <li>
+<a href="#components-of-aws-batch">Components of AWS Batch</a>
+            <ul>
+              <li><a href="#jobs">Jobs</a></li>
+              <li><a href="#job-definitions">Job Definitions</a></li>
+              <li><a href="#job-queues">Job Queues</a></li>
+              <li><a href="#compute-environments">Compute Environments</a></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li><a href="#s3">S3</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#part-2-building-a-net-cli-for-aws-batch-operations">Part 2: Building a .NET CLI for AWS Batch operations</a>
+    <ul>
+      <li>
+<a href="#building-the-cli">Building the CLI</a>
+        <ul>
+          <li><a href="#define-commands">Define Commands</a></li>
+        </ul>
+      </li>
+      <li><a href="#creating-a-docker-image">Creating a Docker Image</a></li>
+    </ul>
+  </li>
+  <li><a href="#part-3-setting-up-aws-with-terraform-iac">Part 3: Setting up AWS with Terraform IaC</a></li>
+  <li><a href="#part-4-running-aws-batch-jobs-with-cli-commands">Part 4: Running AWS Batch Jobs with CLI Commands</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In many scenarios, it is common to have a task that needs to process a large number of files. A real-world example of tasks involving processing a large number of files:</p>
+
+<ul>
+  <li>A deep learning model used for natural language processing (NLP). The model might be trained on a dataset consisting of millions of text files, each containing a piece of text, such as a book, an article, or a conversation. Each of these text files would need to be processed and fed into the model for it to learn and understand the structure of the language.</li>
+  <li>Genomics researchers often have to process massive amounts of data. For instance, they might need to analyze the genomes of thousands of individuals to identify patterns and variations. This task involves processing and analyzing a large number of files, each containing the genetic information of an individual.</li>
+  <li>A financial institution that needs to process transaction data for millions of their customers for fraud detection. Each transaction would be a separate file, and sophisticated algorithms would need to process these files to detect any irregular patterns that could indicate fraudulent activity.</li>
+</ul>
+
+<h2 id="part-1-understanding-aws-batch-and-s3">Part 1: Understanding AWS Batch and S3</h2>
+
+<p><em>AWS Batch</em> allows you to efficiently distribute the workload across multiple compute resources. By leveraging <em>AWS Batch</em>, you can easily scale your file processing tasks to handle any number of files, while taking advantage of the automatic resource provisioning and management provided by the service.</p>
+
+<p>AWS Batch is a powerful service that allows you to distribute computing workloads across multiple resources in the AWS Cloud. By combining it with Amazon S3, we can easily scale our file processing tasks and take advantage of automatic resource provisioning and management.</p>
+
+<p>With AWS Batch, you can easily parallelize the processing of your files, significantly reducing the overall processing time. This is particularly useful when dealing with large datasets or computationally intensive tasks. By distributing the workload across multiple compute resources, AWS Batch enables you to process multiple files simultaneously, maximizing the throughput of your file processing pipeline.</p>
+
+<h3 id="aws-batch">AWS Batch</h3>
+
+<p><em>AWS Batch</em> helps you to run batch computing workloads on the AWS Cloud. Batch computing is a common way for developers, scientists, and engineers to access large amounts of compute resources. <em>AWS Batch</em> removes the undifferentiated heavy lifting of configuring and managing the required infrastructure, similar to traditional batch computing software. This service can efficiently provision resources in response to jobs submitted in order to, you can easily parallelize the processing of your files, which can significantly reduce the overall processing time. Additionally, <em>AWS Batch</em> integrates seamlessly with other AWS services, such as <em>Amazon S3</em>, allowing you to easily access and process your files stored in the cloud.</p>
+
+<center>
+    <img src="/assets/aws-batch/aws-batch-service.png" alt="aws-batch-service" width="10%" style="margin: 15px;">
+</center>
+
+<p>For more information on how to use <em>AWS Batch</em> you can refer to the <a href="https://docs.aws.amazon.com/batch/" target="_blank" rel="noopener noreferrer">AWS Batch documentation</a>.</p>
+
+<center>
+    <img src="/assets/aws-batch/batch-arch.png" alt="batch-arch" width="75%" style="margin: 15px;">
+</center>
+
+<h4 id="components-of-aws-batch">Components of AWS Batch</h4>
+
+<p>AWS Batch simplifies running batch jobs across multiple Availability Zones within a Region. You can create AWS Batch compute environments within a new or existing VPC. After a compute environment is up and associated with a job queue, you can define job definitions that specify which Docker container images to run your jobs. Container images are stored in and pulled from container registries, which may exist within or outside of your AWS infrastructure.</p>
+
+<div class="mermaid">
+mindmap
+  root((AWS Batch))
+    VPC
+      AvailabilityZones
+    Compute Environment
+      Amazon EC2
+      Amazon EC2 Spot Instances
+      AWS Fargate
+      Amazon ECS
+      Amazon EKS
+    Job Queues
+    JobDefinitions
+      Memory Requirements
+      CPU Requirements
+      Container Registries - ECR
+    Execution
+      Running Batch Jobs
+        API/SDK
+        AWS CLI
+        Step Functions
+</div>
+
+<h5 id="jobs">Jobs</h5>
+
+<p>A unit of work (such as a shell script, a Linux executable, or a Docker container image) that you submit to AWS Batch. It has a name, and runs as a containerized application on AWS Fargate, Amazon ECS container instances, Amazon EKS, or Amazon EC2 resources in your compute environment, using parameters that you specify in a job definition.</p>
+
+<p>When you submit a job to an AWS Batch job queue, the job enters the <code class="language-plaintext highlighter-rouge">SUBMITTED</code> state. It then passes through the following states until it succeeds (exits with code 0) or fails. See <a href="https://docs.aws.amazon.com/batch/latest/userguide/job_states.html" target="_blank" rel="noopener noreferrer">Job states - Documentation</a>.</p>
+
+<p>When you submit a job request to AWS Batch, you have the option of defining a dependency on a previously submitted job.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Submit job A</span>
+aws batch submit-job <span class="nt">--job-name</span> jobA <span class="nt">--job-queue</span> myQueue <span class="nt">--job-definition</span> jdA
+
+<span class="c"># Output </span>
+<span class="o">{</span>
+    <span class="s2">"jobName"</span>: <span class="s2">"example"</span>,
+    <span class="s2">"jobId"</span>: <span class="s2">"876da822-4198-45f2-a252-6cea32512ea8"</span>
+<span class="o">}</span>
+
+<span class="c"># Submit job B</span>
+aws batch submit-job <span class="nt">--job-name</span> jobB <span class="nt">--job-queue</span> myQueue <span class="nt">--job-definition</span> jdB <span class="nt">--depends-on</span> <span class="nv">jobId</span><span class="o">=</span><span class="s2">"876da822-4198-45f2-a252-6cea32512ea8"</span>
+</code></pre></div></div>
+
+<center>
+    <img src="/assets/aws-batch/job-states.gif" alt="job-states" width="75%" style="margin: 15px;">
+</center>
+
+<h5 id="job-definitions">Job Definitions</h5>
+
+<p>A job definition is a template that describes various parameters for running a job in AWS Batch. It includes information such as the Docker image to use, the command to run, the amount of CPU and memory to allocate, and more. AWS Batch job definitions specify how jobs are to be run. While each job must reference a job definition, many of the parameters that are specified in the job definition can be overridden at runtime.</p>
+
+<h5 id="job-queues">Job Queues</h5>
+
+<p>Jobs are submitted to a job queue where they reside until they can be scheduled to run in a compute environment.</p>
+
+<h5 id="compute-environments">Compute Environments</h5>
+
+<p>Job queues are mapped to one or more compute environments. Compute environments contain the Amazon ECS container instances that are used to run containerized batch jobs. A specific compute environment can also be mapped to one or more than one job queue. Within a job queue, the associated compute environments each have an order that’s used by the scheduler to determine where jobs that are ready to be run will run.</p>
+
+<h3 id="s3">S3</h3>
+
+<p>Amazon Simple Storage Service (<em>Amazon S3</em>) is an object storage service that offers industry-leading scalability, data availability, security, and performance. Customers of all sizes and industries can use <em>Amazon S3</em> to store and protect any amount of data for a range of use cases, such as data lakes, websites, mobile applications, backup and restore, archive, enterprise applications, IoT devices, and big data analytics.</p>
+
+<center>
+    <img src="/assets/aws-batch/aws-s3-service.png" alt="aws-s3-service" width="10%" style="margin: 15px;">
+</center>
+
+<p>For more information on how to use <em>AWS S3</em> you can refer to the <a href="https://docs.aws.amazon.com/s3/" target="_blank" rel="noopener noreferrer">AWS Batch documentation</a>.</p>
+
+<h2 id="part-2-building-a-net-cli-for-aws-batch-operations">Part 2: Building a .NET CLI for AWS Batch operations</h2>
+
+<p>Let’s say we want to build a pipeline that analyzes files from an S3 bucket for word frequency and finds the most used words in the bucket. This pipeline can be implemented using AWS Batch and a CLI application.</p>
+
+<p>The process of migration consists of three stages - initialize a migration plan, run a migration for each item in the plan, and aggregate the results.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>USAGE:
+    BatchMigration.dll <span class="o">[</span>OPTIONS] &lt;COMMAND&gt;
+
+EXAMPLES:
+    BatchMigration.dll plan <span class="nt">--source</span> s3://source-bucket <span class="nt">--destination</span> s3://destination-bucket/output <span class="nt">--plan</span>
+s3://destination-bucket/plan.json
+    BatchMigration.dll migrate <span class="nt">--plan</span> s3://destination-bucket/plan.json <span class="nt">--index</span> 1
+    BatchMigration.dll merge <span class="nt">--source</span> s3://destination-bucket/output
+
+OPTIONS:
+    <span class="nt">-h</span>, <span class="nt">--help</span>    Prints <span class="nb">help </span>information
+
+COMMANDS:
+    plan       Prepares migration plan <span class="k">for </span>a bucket
+    migrate    Run a migration based on migration plan and index
+    merge      Merge the results results
+</code></pre></div></div>
+
+<center>
+    <img src="/assets/aws-batch/stepfunctions_graph.png" alt="stepfunctions_graph" width="25%" style="margin: 15px;">
+</center>
+
+<ol>
+  <li>Initialize Migration Plan:
+    <ul>
+      <li>Use the <code class="language-plaintext highlighter-rouge">plan</code> command to prepare a migration plan for a bucket.</li>
+      <li>Specify the source bucket using the <code class="language-plaintext highlighter-rouge">--source</code> option.</li>
+      <li>Specify the destination bucket for the output using the <code class="language-plaintext highlighter-rouge">--destination</code> option.</li>
+      <li>Use the <code class="language-plaintext highlighter-rouge">--plan</code> option to generate a migration plan file in JSON format, such as <code class="language-plaintext highlighter-rouge">s3://destination-bucket/plan.json</code>.</li>
+    </ul>
+  </li>
+  <li>Run Migration:
+    <ul>
+      <li>Use the <code class="language-plaintext highlighter-rouge">migrate</code> command to run the migration for each item in the plan.</li>
+      <li>Specify the migration plan file using the <code class="language-plaintext highlighter-rouge">--plan</code> option.</li>
+      <li>Use the <code class="language-plaintext highlighter-rouge">--index</code> option to specify the index of the item in the plan to migrate.</li>
+    </ul>
+  </li>
+  <li>Aggregate Results:
+    <ul>
+      <li>Use the <code class="language-plaintext highlighter-rouge">merge</code> command to merge the migration results.</li>
+      <li>Specify the source bucket for the results using the <code class="language-plaintext highlighter-rouge">--source</code> option.</li>
+    </ul>
+  </li>
+</ol>
+
+<p>By following these steps, you can migrate files from the source bucket to the destination bucket using AWS Batch and the provided CLI commands.</p>
+
+<p>Here is a relationship between jobs:</p>
+
+<p>Basically, we start one job to build a plan, than based on the number of files we need to process, we run <strong>N</strong> migration jobs, and process the results based:</p>
+
+<center>
+  <div class="mermaid">
+  graph LR
+      Plan[Plan] --&gt;|Initiate| Migrate{Migrate}
+      Migrate --&gt; Node1[Node 1]
+      Migrate --&gt; Node2[Node 2]
+      Migrate --&gt; Node3[Node 3]
+      Node1 --&gt; Merge[Merge]
+      Node2 --&gt; Merge
+      Node3 --&gt; Merge
+  </div>
+</center>
+
+<h3 id="building-the-cli">Building the CLI</h3>
+
+<p>We will be using <a href="https://spectreconsole.net/" target="_blank" rel="noopener noreferrer">Spectre.Console</a> to build a CLI application. This library provides a convenient way to create command-line interfaces with rich text formatting and interactive features.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">services</span> <span class="p">=</span> <span class="nf">ConfigureServices</span><span class="p">();</span>
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">CommandApp</span><span class="p">(</span><span class="k">new</span> <span class="nf">TypeRegistrar</span><span class="p">(</span><span class="n">services</span><span class="p">));</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Configure</span><span class="p">(</span><span class="n">config</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">config</span>
+        <span class="p">.</span><span class="n">AddCommand</span><span class="p">&lt;</span><span class="n">PlanCommand</span><span class="p">&gt;(</span><span class="s">"plan"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithDescription</span><span class="p">(</span><span class="s">"Prepares migration plan for a bucket"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithExample</span><span class="p">(</span>
+            <span class="s">"plan"</span><span class="p">,</span>
+            <span class="s">"--source s3://source-bucket"</span><span class="p">,</span>
+            <span class="s">"--destination s3://destination-bucket/output"</span><span class="p">,</span>
+            <span class="s">"--plan s3://destination-bucket/plan.json"</span>
+        <span class="p">);</span>
+
+    <span class="n">config</span>
+        <span class="p">.</span><span class="n">AddCommand</span><span class="p">&lt;</span><span class="n">MigrateCommand</span><span class="p">&gt;(</span><span class="s">"migrate"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithDescription</span><span class="p">(</span><span class="s">"Run a migration based on migration plan and index"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithExample</span><span class="p">(</span><span class="s">"migrate"</span><span class="p">,</span> <span class="s">"--plan s3://destination-bucket/plan.json"</span><span class="p">,</span> <span class="s">"--index 1"</span><span class="p">);</span>
+
+    <span class="n">config</span>
+        <span class="p">.</span><span class="n">AddCommand</span><span class="p">&lt;</span><span class="n">MergeCommand</span><span class="p">&gt;(</span><span class="s">"merge"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithDescription</span><span class="p">(</span><span class="s">"Merge the results results"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithExample</span><span class="p">(</span><span class="s">"merge"</span><span class="p">,</span> <span class="s">"--source s3://destination-bucket/output"</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h4 id="define-commands">Define Commands</h4>
+
+<p>The basic idea is to scan the content of S3 bucket and put the plan back to S3, by doing this we can distribute the work between jobs. As you will see later, there is a concept of array job. An array job is a job that shares common parameters, such as the job definition, vCPUs, and memory. It runs as a collection of related yet separate basic jobs that might be distributed across multiple hosts and might run concurrently. At runtime, the <code class="language-plaintext highlighter-rouge">AWS_BATCH_JOB_ARRAY_INDEX</code> environment variable is set to the container’s corresponding job array index number. You can use this index value to control how your array job children are differentiated. In our case, we start the subsequent <code class="language-plaintext highlighter-rouge">migrate</code> job based on total number of items in migration plan.</p>
+
+<p>💡 The examples below are abbreviated and modified for simplicity, please refer to the source code <a href="https://github.com/NikiforovAll/aws-batch-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aws-batch-dotnet</a> for details.</p>
+
+<p>Here is a <code class="language-plaintext highlighter-rouge">plan</code> command:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">PlanCommand</span><span class="p">(</span><span class="n">IAmazonS3</span> <span class="n">s3</span><span class="p">)</span> <span class="p">:</span> <span class="n">CancellableAsyncCommand</span><span class="p">&lt;</span><span class="n">PlanCommand</span><span class="p">.</span><span class="n">Settings</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">static</span> <span class="k">readonly</span> <span class="n">JsonSerializerOptions</span> <span class="n">JsonSerializerOptions</span> <span class="p">=</span>
+        <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">WriteIndented</span> <span class="p">=</span> <span class="k">true</span> <span class="p">};</span>
+
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">Settings</span> <span class="p">:</span> <span class="n">CommandSettings</span>
+    <span class="p">{</span>
+        <span class="p">[</span><span class="nf">CommandOption</span><span class="p">(</span><span class="s">"-s|--source &lt;SourcePath&gt;"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="kt">string</span> <span class="n">Source</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+
+        <span class="p">[</span><span class="nf">CommandOption</span><span class="p">(</span><span class="s">"-d|--destination &lt;DestinationPath&gt;"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="kt">string</span> <span class="n">Destination</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+
+        <span class="p">[</span><span class="nf">CommandOption</span><span class="p">(</span><span class="s">"-p|--plan &lt;PlanPath&gt;"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="kt">string</span> <span class="n">Plan</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">ExecuteAsync</span><span class="p">(</span>
+        <span class="n">CommandContext</span> <span class="n">context</span><span class="p">,</span>
+        <span class="n">Settings</span> <span class="n">settings</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">cancellation</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">plan</span><span class="p">)</span> <span class="p">=</span> <span class="p">(</span>
+            <span class="n">S3Path</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">Source</span><span class="p">),</span>
+            <span class="n">S3Path</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">Destination</span><span class="p">),</span>
+            <span class="n">S3Path</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">Plan</span><span class="p">)</span>
+        <span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">files</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">GetFilesAsync</span><span class="p">(</span><span class="n">source</span><span class="p">.</span><span class="n">Bucket</span><span class="p">,</span> <span class="n">source</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">cancellation</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">migrationPlan</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MigrationPlan</span><span class="p">(</span>
+            <span class="k">new</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">plan</span><span class="p">,</span> <span class="n">files</span><span class="p">.</span><span class="n">Count</span><span class="p">),</span>
+            <span class="n">files</span>
+        <span class="p">);</span>
+
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">StoreMigrationPlan</span><span class="p">(</span><span class="n">migrationPlan</span><span class="p">,</span> <span class="n">cancellation</span><span class="p">);</span>
+
+        <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Running scanning for </span><span class="p">{</span><span class="n">source</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+        <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Result of the scan will be saved to </span><span class="p">{</span><span class="n">destination</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+        <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Plan can be found here </span><span class="p">{</span><span class="n">plan</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="m">0</span><span class="p">;</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here is <code class="language-plaintext highlighter-rouge">migrate</code> command:</p>
+
+<p>Here is what it does:</p>
+
+<ol>
+  <li>Loads migration plan based on <code class="language-plaintext highlighter-rouge">AWS_BATCH_JOB_ARRAY_INDEX</code>
+</li>
+  <li>Get’s corresponding file to migrate based on index</li>
+  <li>Calculate word occurrences for the file</li>
+  <li>Put the result to destination bucket, the file name is copied from the source file.</li>
+</ol>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">MigrateCommand</span><span class="p">(</span><span class="n">IAmazonS3</span> <span class="n">s3</span><span class="p">,</span> <span class="n">IConfiguration</span> <span class="n">configuration</span><span class="p">)</span>
+    <span class="p">:</span> <span class="n">CancellableAsyncCommand</span><span class="p">&lt;</span><span class="n">MigrateCommand</span><span class="p">.</span><span class="n">Settings</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">Settings</span> <span class="p">:</span> <span class="n">CommandSettings</span>
+    <span class="p">{</span>
+        <span class="p">[</span><span class="nf">CommandOption</span><span class="p">(</span><span class="s">"-p|--plan &lt;PlanPath&gt;"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="kt">string</span> <span class="n">Plan</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+
+        <span class="p">[</span><span class="nf">CommandOption</span><span class="p">(</span><span class="s">"-i|--index &lt;Index&gt;"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="kt">int</span><span class="p">?</span> <span class="n">Index</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">ExecuteAsync</span><span class="p">(</span>
+        <span class="n">CommandContext</span> <span class="n">context</span><span class="p">,</span>
+        <span class="n">Settings</span> <span class="n">settings</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">cancellation</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">plan</span> <span class="p">=</span> <span class="n">S3Path</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">Plan</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">index</span> <span class="p">=</span> <span class="n">settings</span><span class="p">.</span><span class="n">Index</span> <span class="p">??</span> <span class="n">configuration</span><span class="p">.</span><span class="n">GetValue</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;(</span><span class="s">"JOB_ARRAY_INDEX"</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">migrationPlan</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">GetPlanAsync</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">cancellation</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">file</span> <span class="p">=</span> <span class="n">migrationPlan</span><span class="p">!.</span><span class="n">Items</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
+
+        <span class="kt">var</span> <span class="n">fileSourcePath</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">S3Path</span><span class="p">(</span>
+            <span class="n">migrationPlan</span><span class="p">.</span><span class="n">Metadata</span><span class="p">.</span><span class="n">Source</span><span class="p">.</span><span class="n">Bucket</span><span class="p">,</span>
+            <span class="n">Path</span><span class="p">.</span><span class="nf">Combine</span><span class="p">(</span><span class="n">migrationPlan</span><span class="p">.</span><span class="n">Metadata</span><span class="p">.</span><span class="n">Source</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+        <span class="p">);</span>
+        <span class="kt">var</span> <span class="n">fileDestinationPath</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">S3Path</span><span class="p">(</span>
+            <span class="n">migrationPlan</span><span class="p">.</span><span class="n">Metadata</span><span class="p">.</span><span class="n">Destination</span><span class="p">.</span><span class="n">Bucket</span><span class="p">,</span>
+            <span class="n">Path</span><span class="p">.</span><span class="nf">Combine</span><span class="p">(</span><span class="n">migrationPlan</span><span class="p">.</span><span class="n">Metadata</span><span class="p">.</span><span class="n">Destination</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+        <span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">sourceText</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">GetTextAsync</span><span class="p">(</span><span class="n">fileSourcePath</span><span class="p">,</span> <span class="n">cancellation</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">destinationText</span> <span class="p">=</span> <span class="nf">CalculateWordsOccurrences</span><span class="p">(</span><span class="n">sourceText</span><span class="p">!);</span>
+
+        <span class="kt">var</span> <span class="n">stream</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">MemoryStream</span><span class="p">(</span><span class="n">Encoding</span><span class="p">.</span><span class="n">UTF8</span><span class="p">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="n">destinationText</span><span class="p">));</span>
+
+        <span class="k">await</span> <span class="n">s3</span><span class="p">.</span><span class="nf">PutObjectAsync</span><span class="p">(</span>
+            <span class="k">new</span> <span class="nf">PutObjectRequest</span><span class="p">()</span>
+            <span class="p">{</span>
+                <span class="n">BucketName</span> <span class="p">=</span> <span class="n">fileDestinationPath</span><span class="p">.</span><span class="n">Bucket</span><span class="p">,</span>
+                <span class="n">Key</span> <span class="p">=</span> <span class="n">fileDestinationPath</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span>
+                <span class="n">InputStream</span> <span class="p">=</span> <span class="n">stream</span>
+            <span class="p">},</span>
+            <span class="n">cancellation</span>
+        <span class="p">);</span>
+
+        <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Plan: </span><span class="p">{</span><span class="n">plan</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+        <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Migrating file([blue]</span><span class="p">{</span><span class="n">index</span><span class="p">}</span><span class="s">[/]) - </span><span class="p">{</span><span class="n">fileSourcePath</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+        <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Migrating file([blue]</span><span class="p">{</span><span class="n">index</span><span class="p">}</span><span class="s">[/]) - </span><span class="p">{</span><span class="n">fileDestinationPath</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="m">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here is <code class="language-plaintext highlighter-rouge">merge</code> command:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">MergeCommand</span><span class="p">(</span><span class="n">IAmazonS3</span> <span class="n">s3</span><span class="p">,</span> <span class="n">ILogger</span><span class="p">&lt;</span><span class="n">MergeCommand</span><span class="p">&gt;</span> <span class="n">logger</span><span class="p">)</span>
+    <span class="p">:</span> <span class="n">CancellableAsyncCommand</span><span class="p">&lt;</span><span class="n">MergeCommand</span><span class="p">.</span><span class="n">Settings</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">Settings</span> <span class="p">:</span> <span class="n">CommandSettings</span>
+    <span class="p">{</span>
+        <span class="p">[</span><span class="nf">CommandOption</span><span class="p">(</span><span class="s">"-s|--source &lt;SourcePath&gt;"</span><span class="p">)]</span>
+        <span class="k">public</span> <span class="kt">string</span> <span class="n">Source</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="kt">int</span><span class="p">&gt;</span> <span class="nf">ExecuteAsync</span><span class="p">(</span>
+        <span class="n">CommandContext</span> <span class="n">context</span><span class="p">,</span>
+        <span class="n">Settings</span> <span class="n">settings</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">cancellation</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">ArgumentNullException</span><span class="p">.</span><span class="nf">ThrowIfNull</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">Source</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">sourcePath</span> <span class="p">=</span> <span class="n">S3Path</span><span class="p">.</span><span class="nf">Parse</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">Source</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">files</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">GetFilesAsync</span><span class="p">(</span><span class="n">sourcePath</span><span class="p">.</span><span class="n">Bucket</span><span class="p">,</span> <span class="n">sourcePath</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">cancellation</span><span class="p">);</span>
+
+        <span class="c1">// E.g: (word1, 10), (word2: 3)</span>
+        <span class="kt">var</span> <span class="n">occurrences</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">AggregateFiles</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">cancellation</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">top</span> <span class="p">=</span> <span class="n">occurrences</span>
+            <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span><span class="n">x</span><span class="p">.</span><span class="n">Key</span> <span class="k">is</span> <span class="p">{</span> <span class="n">Length</span><span class="p">:</span> <span class="p">&gt;</span> <span class="m">2</span> <span class="p">})</span>
+            <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Value</span> <span class="p">&gt;=</span> <span class="m">3</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">OrderByDescending</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Value</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Take</span><span class="p">(</span><span class="m">100</span><span class="p">);</span>
+
+        <span class="nf">WriteTable</span><span class="p">(</span><span class="n">top</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="m">0</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="creating-a-docker-image">Creating a Docker Image</h3>
+
+<p>In order to run our task in <em>AWS Batch</em> we need to push our image to <a href="https://docs.aws.amazon.com/ecr/" target="_blank" rel="noopener noreferrer">Amazon Elastic Container Registry</a>.</p>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="w"> </span><span class="s">mcr.microsoft.com/dotnet/sdk:8.0</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="s">build-env</span>
+<span class="k">WORKDIR</span><span class="s"> /App</span>
+
+<span class="k">COPY</span><span class="s"> . ./</span>
+
+<span class="c"># Restore as distinct layers</span>
+<span class="k">RUN </span>dotnet restore
+<span class="c"># Build and publish a release</span>
+<span class="k">RUN </span>dotnet publish <span class="nt">-c</span> Release <span class="nt">-o</span> out
+
+<span class="c"># Build runtime image</span>
+<span class="k">FROM</span><span class="s"> mcr.microsoft.com/dotnet/aspnet:8.0</span>
+<span class="k">WORKDIR</span><span class="s"> /App</span>
+<span class="k">COPY</span><span class="s"> --from=build-env /App/out .</span>
+<span class="k">ENTRYPOINT</span><span class="s"> ["dotnet", "BatchMigration.dll"]</span>
+<span class="k">CMD</span><span class="s"> ["--help"]</span>
+</code></pre></div></div>
+
+<p>And here is how to build it an push to the public ECR repository:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker build <span class="nt">-t</span> aws-batch-dotnet-demo-repository <span class="nb">.</span>
+
+aws ecr-public get-login-password <span class="nt">--region</span> <span class="nv">$AWS_REGION</span> | docker login <span class="nt">--username</span> AWS <span class="nt">--password-stdin</span> public.ecr.aws
+
+docker tag aws-batch-dotnet-demo-repository:latest public.ecr.aws/t7c5r3b7/aws-batch-dotnet-demo-repository:latest
+
+docker push public.ecr.aws/t7c5r3b7/aws-batch-dotnet-demo-repository:latest
+</code></pre></div></div>
+
+<p>💡 Note, you will need to create a public repository and get instructions from repository page in AWS Management Console.</p>
+
+<h2 id="part-3-setting-up-aws-with-terraform-iac">Part 3: Setting up AWS with Terraform IaC</h2>
+
+<p>I’ve decided to prepare a Terraform example of how to provision a full <em>AWS Batch</em> setup because configuring it from management console can be somewhat tedious. The code below demonstrates main parts of <em>AWS Batch</em> configuration, the code is redacted, once again, please consult source code for precise configuration.</p>
+
+<p>Below you can find a Terraform script that sets up an AWS Batch environment. Here’s a breakdown of what it does:</p>
+
+<ol>
+  <li>It specifies the required provider, in this case, AWS, and the version of the provider and configures the AWS provider with the region “us-east-1”.</li>
+  <li>It creates two S3 buckets, one named “aws-batch-demo-dotnet-source-bucket” and the other “aws-batch-demo-dotnet-destination-bucket”.</li>
+  <li>It uploads all files from the local “documents” directory to the source bucket.</li>
+  <li>It creates an AWS Batch environment using the “terraform-aws-modules/batch/aws” module. This environment includes:
+    <ol>
+      <li>A compute environment named “main_ec2” with a type of “EC2”, a maximum of 8 vCPUs, and a desired number of 2 vCPUs. The instances launched by this environment will be of type “m4.large”.</li>
+      <li>A job queue named “MainQueue” that is enabled and has a priority of 1. This queue uses the “main_ec2” compute environment.</li>
+      <li>Three job definitions named “plan”, “migrate”, and “merge”. Each job runs a different command in a container that uses the latest image from the “public_ecr” repository. Each job requires 1 vCPU and 1024 units of memory.</li>
+    </ol>
+  </li>
+</ol>
+
+<div class="language-terraform highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">terraform</span> <span class="p">{</span>
+  <span class="nx">required_providers</span> <span class="p">{</span>
+    <span class="nx">aws</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">source</span>  <span class="p">=</span> <span class="s2">"hashicorp/aws"</span>
+      <span class="nx">version</span> <span class="p">=</span> <span class="s2">"~&gt; 5.0"</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="c1"># Configure the AWS Provider</span>
+<span class="k">provider</span> <span class="s2">"aws"</span> <span class="p">{</span>
+  <span class="nx">region</span> <span class="p">=</span> <span class="s2">"us-east-1"</span>
+<span class="p">}</span>
+
+<span class="k">resource</span> <span class="s2">"aws_s3_bucket"</span> <span class="s2">"source_bucket"</span> <span class="p">{</span>
+  <span class="nx">bucket</span> <span class="p">=</span> <span class="s2">"aws-batch-demo-dotnet-source-bucket"</span>
+<span class="p">}</span>
+
+<span class="k">resource</span> <span class="s2">"aws_s3_bucket"</span> <span class="s2">"destination_bucket"</span> <span class="p">{</span>
+  <span class="nx">bucket</span> <span class="p">=</span> <span class="s2">"aws-batch-demo-dotnet-destination-bucket"</span>
+<span class="p">}</span>
+
+<span class="k">resource</span> <span class="s2">"aws_s3_object"</span> <span class="s2">"documents"</span> <span class="p">{</span>
+  <span class="nx">for_each</span> <span class="p">=</span> <span class="nx">fileset</span><span class="p">(</span><span class="s2">"./documents"</span><span class="p">,</span> <span class="s2">"**/*"</span><span class="p">)</span>
+
+  <span class="nx">bucket</span> <span class="p">=</span> <span class="nx">aws_s3_bucket</span><span class="p">.</span><span class="nx">source_bucket</span><span class="p">.</span><span class="nx">bucket</span>
+  <span class="nx">key</span>    <span class="p">=</span> <span class="nx">each</span><span class="p">.</span><span class="nx">value</span>
+  <span class="nx">source</span> <span class="p">=</span> <span class="s2">"./documents/</span><span class="k">${</span><span class="nx">each</span><span class="p">.</span><span class="nx">value</span><span class="k">}</span><span class="s2">"</span>
+<span class="p">}</span>
+
+<span class="nx">locals</span> <span class="p">{</span>
+  <span class="nx">region</span> <span class="p">=</span> <span class="s2">"us-east-1"</span>
+  <span class="nx">name</span>   <span class="p">=</span> <span class="s2">"aws-batch-dotnet"</span>
+
+  <span class="nx">tags</span> <span class="p">=</span> <span class="p">{</span>
+    <span class="nx">Name</span>    <span class="p">=</span> <span class="kd">local</span><span class="p">.</span><span class="nx">name</span>
+    <span class="nx">Example</span> <span class="p">=</span> <span class="kd">local</span><span class="p">.</span><span class="nx">name</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">module</span> <span class="s2">"batch"</span> <span class="p">{</span>
+  <span class="nx">source</span> <span class="p">=</span> <span class="s2">"terraform-aws-modules/batch/aws"</span>
+
+  <span class="nx">compute_environments</span> <span class="p">=</span> <span class="p">{</span>
+    <span class="nx">main_ec2</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">name_prefix</span> <span class="p">=</span> <span class="s2">"ec2"</span>
+
+      <span class="nx">compute_resources</span> <span class="p">=</span> <span class="p">{</span>
+        <span class="nx">type</span> <span class="p">=</span> <span class="s2">"EC2"</span>
+
+        <span class="nx">min_vcpus</span>      <span class="p">=</span> <span class="mi">0</span>
+        <span class="nx">max_vcpus</span>      <span class="p">=</span> <span class="mi">8</span>
+        <span class="nx">desired_vcpus</span>  <span class="p">=</span> <span class="mi">2</span>
+        <span class="nx">instance_types</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"m4.large"</span><span class="p">]</span>
+
+        <span class="nx">security_group_ids</span> <span class="p">=</span> <span class="p">[</span><span class="k">module</span><span class="p">.</span><span class="nx">vpc_endpoint_security_group</span><span class="p">.</span><span class="nx">security_group_id</span><span class="p">]</span>
+        <span class="nx">subnets</span>            <span class="p">=</span> <span class="k">module</span><span class="p">.</span><span class="nx">vpc</span><span class="p">.</span><span class="nx">private_subnets</span>
+        <span class="nx">tags</span> <span class="p">=</span> <span class="p">{</span>
+          <span class="c1"># This will set the name on the Ec2 instances launched by this compute environment</span>
+          <span class="nx">Name</span> <span class="p">=</span> <span class="s2">"</span><span class="k">${</span><span class="kd">local</span><span class="p">.</span><span class="nx">name</span><span class="k">}</span><span class="s2">-ec2"</span>
+          <span class="nx">Type</span> <span class="p">=</span> <span class="s2">"Ec2"</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="c1"># Job queus and scheduling policies</span>
+  <span class="nx">job_queues</span> <span class="p">=</span> <span class="p">{</span>
+    <span class="nx">main_queue</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">name</span>     <span class="p">=</span> <span class="s2">"MainQueue"</span>
+      <span class="nx">state</span>    <span class="p">=</span> <span class="s2">"ENABLED"</span>
+      <span class="nx">priority</span> <span class="p">=</span> <span class="mi">1</span>
+
+      <span class="nx">compute_environments</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"main_ec2"</span><span class="p">]</span>
+
+      <span class="nx">tags</span> <span class="p">=</span> <span class="p">{</span>
+        <span class="nx">JobQueue</span> <span class="p">=</span> <span class="s2">"Job queue"</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">job_definitions</span> <span class="p">=</span> <span class="p">{</span>
+    <span class="nx">plan</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">name</span>           <span class="p">=</span> <span class="s2">"</span><span class="k">${</span><span class="kd">local</span><span class="p">.</span><span class="nx">name</span><span class="k">}</span><span class="s2">-plan"</span>
+      <span class="nx">propagate_tags</span> <span class="p">=</span> <span class="kc">true</span>
+
+      <span class="nx">container_properties</span> <span class="p">=</span> <span class="nx">jsonencode</span><span class="p">({</span>
+        <span class="nx">command</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"plan"</span><span class="p">]</span>
+        <span class="nx">image</span>   <span class="p">=</span> <span class="s2">"</span><span class="k">${module</span><span class="p">.</span><span class="nx">public_ecr</span><span class="p">.</span><span class="nx">repository_url</span><span class="k">}</span><span class="s2">:latest"</span>
+        <span class="nx">resourceRequirements</span> <span class="p">=</span> <span class="p">[</span>
+          <span class="p">{</span> <span class="nx">type</span> <span class="p">=</span> <span class="s2">"VCPU"</span><span class="p">,</span> <span class="nx">value</span> <span class="p">=</span> <span class="s2">"1"</span> <span class="p">},</span>
+          <span class="p">{</span> <span class="nx">type</span> <span class="p">=</span> <span class="s2">"MEMORY"</span><span class="p">,</span> <span class="nx">value</span> <span class="p">=</span> <span class="s2">"1024"</span> <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">})</span>
+      <span class="nx">tags</span> <span class="p">=</span> <span class="p">{</span>
+        <span class="nx">JobDefinition</span> <span class="p">=</span> <span class="s2">"Plan"</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nx">migrate</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">name</span>           <span class="p">=</span> <span class="s2">"</span><span class="k">${</span><span class="kd">local</span><span class="p">.</span><span class="nx">name</span><span class="k">}</span><span class="s2">-migrate"</span>
+      <span class="nx">propagate_tags</span> <span class="p">=</span> <span class="kc">true</span>
+
+      <span class="nx">container_properties</span> <span class="p">=</span> <span class="nx">jsonencode</span><span class="p">({</span>
+        <span class="nx">command</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"migrate"</span><span class="p">]</span>
+        <span class="nx">image</span>   <span class="p">=</span> <span class="s2">"</span><span class="k">${module</span><span class="p">.</span><span class="nx">public_ecr</span><span class="p">.</span><span class="nx">repository_url</span><span class="k">}</span><span class="s2">:latest"</span>
+        <span class="nx">resourceRequirements</span> <span class="p">=</span> <span class="p">[</span>
+          <span class="p">{</span> <span class="nx">type</span> <span class="p">=</span> <span class="s2">"VCPU"</span><span class="p">,</span> <span class="nx">value</span> <span class="p">=</span> <span class="s2">"1"</span> <span class="p">},</span>
+          <span class="p">{</span> <span class="nx">type</span> <span class="p">=</span> <span class="s2">"MEMORY"</span><span class="p">,</span> <span class="nx">value</span> <span class="p">=</span> <span class="s2">"1024"</span> <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">})</span>
+      <span class="nx">tags</span> <span class="p">=</span> <span class="p">{</span>
+        <span class="nx">JobDefinition</span> <span class="p">=</span> <span class="s2">"Migrate"</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+
+    <span class="nx">merge</span> <span class="p">=</span> <span class="p">{</span>
+      <span class="nx">name</span>           <span class="p">=</span> <span class="s2">"</span><span class="k">${</span><span class="kd">local</span><span class="p">.</span><span class="nx">name</span><span class="k">}</span><span class="s2">-merge"</span>
+      <span class="nx">propagate_tags</span> <span class="p">=</span> <span class="kc">true</span>
+
+      <span class="nx">container_properties</span> <span class="p">=</span> <span class="nx">jsonencode</span><span class="p">({</span>
+        <span class="nx">command</span> <span class="p">=</span> <span class="p">[</span><span class="s2">"merge"</span><span class="p">]</span>
+        <span class="nx">image</span>   <span class="p">=</span> <span class="s2">"</span><span class="k">${module</span><span class="p">.</span><span class="nx">public_ecr</span><span class="p">.</span><span class="nx">repository_url</span><span class="k">}</span><span class="s2">:latest"</span>
+        <span class="nx">resourceRequirements</span> <span class="p">=</span> <span class="p">[</span>
+          <span class="p">{</span> <span class="nx">type</span> <span class="p">=</span> <span class="s2">"VCPU"</span><span class="p">,</span> <span class="nx">value</span> <span class="p">=</span> <span class="s2">"1"</span> <span class="p">},</span>
+          <span class="p">{</span> <span class="nx">type</span> <span class="p">=</span> <span class="s2">"MEMORY"</span><span class="p">,</span> <span class="nx">value</span> <span class="p">=</span> <span class="s2">"1024"</span> <span class="p">}</span>
+        <span class="p">]</span>
+      <span class="p">})</span>
+      <span class="nx">tags</span> <span class="p">=</span> <span class="p">{</span>
+        <span class="nx">JobDefinition</span> <span class="p">=</span> <span class="s2">"Merge"</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="nx">tags</span> <span class="p">=</span> <span class="kd">local</span><span class="p">.</span><span class="nx">tags</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>💡 Note, you don’t need to know terraform to try to use it. Simply, run <code class="language-plaintext highlighter-rouge">terraform init</code> and <code class="language-plaintext highlighter-rouge">terraform apply</code> to provision the environment.</p>
+
+<h2 id="part-4-running-aws-batch-jobs-with-cli-commands">Part 4: Running AWS Batch Jobs with CLI Commands</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws batch submit-job <span class="se">\</span>
+    <span class="nt">--job-name</span> aws-batch-dotnet-plan-01 <span class="se">\</span>
+    <span class="nt">--job-queue</span> MainQueue  <span class="se">\</span>
+    <span class="nt">--job-definition</span> aws-batch-dotnet-plan <span class="se">\</span>
+    <span class="nt">--share-identifier</span> <span class="s2">"demobatch*"</span> <span class="se">\</span>
+    <span class="nt">--scheduling-priority-override</span> 1 <span class="se">\</span>
+    <span class="nt">--container-overrides</span> <span class="s1">'{
+        "command": [
+            "migrate",
+            "--source",
+            "s3://aws-batch-demo-dotnet-source-bucket",
+            "--destination",
+            "s3://aws-batch-demo-dotnet-destination-bucket/output/",
+            "--plan",
+            "s3://aws-batch-demo-dotnet-destination-bucket/plans/plan-01.json"
+        ]
+    }'</span>
+</code></pre></div></div>
+
+<p>Here is an example of produced migration plan:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"Metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Source"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"Bucket"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aws-batch-demo-dotnet-source-bucket"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Key"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"Destination"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"Bucket"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aws-batch-demo-dotnet-destination-bucket"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"output/"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"Plan"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"Bucket"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aws-batch-demo-dotnet-destination-bucket"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plans/plan-01.json"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"TotalItems"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"Items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="s2">"file1.txt"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"file2.txt"</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Run the migration:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws batch submit-job <span class="se">\</span>
+    <span class="nt">--job-name</span> aws-batch-dotnet-migrate-01 <span class="se">\</span>
+    <span class="nt">--job-queue</span> MainQueue  <span class="se">\</span>
+    <span class="nt">--job-definition</span> aws-batch-dotnet-migrate <span class="se">\</span>
+    <span class="nt">--share-identifier</span> <span class="s2">"demobatch*"</span> <span class="se">\</span>
+    <span class="nt">--scheduling-priority-override</span> 1 <span class="se">\</span>
+    <span class="nt">--array-properties</span> <span class="nv">size</span><span class="o">=</span>2 <span class="se">\</span>
+    <span class="nt">--container-overrides</span> <span class="s1">'{
+        "command": [
+            "migrate",
+            "--plan",
+            "s3://aws-batch-demo-dotnet-destination-bucket/plans/plan-01.json"
+        ]
+    }'</span>
+</code></pre></div></div>
+
+<p>💡 Note, <code class="language-plaintext highlighter-rouge">--array-properties size=2</code> because we need to process two files. In this case, array job is scheduled to main queue, once processed, it will produce sub-jobs that are processed concurrently.</p>
+
+<p>Here is an example of file processing:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>and:12
+batch:11
+aws:7
+# the list goes on
+</code></pre></div></div>
+
+<p>Aggregate results:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws batch submit-job <span class="se">\</span>
+    <span class="nt">--job-name</span> aws-batch-dotnet-merge-01 <span class="se">\</span>
+    <span class="nt">--job-queue</span> MainQueue  <span class="se">\</span>
+    <span class="nt">--job-definition</span> aws-batch-dotnet-merge <span class="se">\</span>
+    <span class="nt">--share-identifier</span> <span class="s2">"demobatch*"</span> <span class="se">\</span>
+    <span class="nt">--scheduling-priority-override</span> 1 <span class="se">\</span>
+    <span class="nt">--container-overrides</span> <span class="s1">'{
+        "command": [
+            "merge",
+            "--source",
+            "s3://aws-batch-demo-dotnet-destination-bucket/output/"
+        ]
+    }'</span>
+</code></pre></div></div>
+
+<p>And here is the that was output to console:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌───────────┬───────┐
+│ Key       │ Value │
+├───────────┼───────┤
+│ batch     │  11   │
+│ aws       │   8   │
+│ service   │   6   │
+│ amazon    │   5   │
+│ storage   │   5   │
+│ computing │   4   │
+│ jobs      │   4   │
+│ data      │   4   │
+│ services  │   3   │
+│ simple    │   3   │
+│ workloads │   3   │
+└───────────┴───────┘
+</code></pre></div></div>
+
+<p>☝️ We can define dependencies between jobs by providing <code class="language-plaintext highlighter-rouge">--depends-on</code>. Alternatively, we can use AWS Step Functions to orchestrate the submission of jobs.</p>
+
+<center>
+    <img src="/assets/aws-batch/stepfunctions-console-execution.png" alt="stepfunctions-console-execution" style="margin: 15px;">
+</center>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this post, we have journeyed through the process of implementing file processing pipeline. We have covered everything from creating a .NET CLI for AWS Batch operations and setting up AWS with Terraform IaC, to running AWS Batch jobs with CLI commands.</p>
+
+<p>Through these guides, I hope to have provided you with a comprehensive understanding and practical skills to confidently navigate AWS Batch in a .NET environment.</p>
+
+<p>Remember, the best way to consolidate your learning is through practice. So, don’t hesitate to apply these concepts in your projects and see the magic happen!</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/NikiforovAll/aws-batch-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aws-batch-dotnet</a></li>
+  <li><a href="https://docs.aws.amazon.com/batch/latest/userguide/example_array_job.html" target="_blank" rel="noopener noreferrer">https://docs.aws.amazon.com/batch/latest/userguide/example_array_job.html</a></li>
+  <li><a href="https://docs.aws.amazon.com/batch/latest/APIReference/API_SubmitJob.html" target="_blank" rel="noopener noreferrer">https://docs.aws.amazon.com/batch/latest/APIReference/API_SubmitJob.html</a></li>
+  <li><a href="https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html" target="_blank" rel="noopener noreferrer">https://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html</a></li>
+  <li><a href="https://aws.amazon.com/blogs/hpc/encoding-workflow-dependencies-in-aws-batch/" target="_blank" rel="noopener noreferrer">https://aws.amazon.com/blogs/hpc/encoding-workflow-dependencies-in-aws-batch/</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(31)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aws-ref" target="_blank" rel="noopener noreferrer">
+				aws <span>(1)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(37)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aws-ref" target="_blank" rel="noopener noreferrer">
+				aws <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#cloud-ref" target="_blank" rel="noopener noreferrer">
+				cloud <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#s3-ref" target="_blank" rel="noopener noreferrer">
+				s3 <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aws-batch-ref" target="_blank" rel="noopener noreferrer">
+				aws-batch <span>(1)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/keycloak/2024/05/10/keycloak-v2-3-0.html" title="Announcement - Keycloak.AuthServices v2.3.0 is out 🎉!" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow noopener noreferrer" target="_blank">comments powered by Disqus.</a>
+</noscript>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
