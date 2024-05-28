@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			May
+			27th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aws/2024/05/26/aws-batch-dotnet.html">Mastering AWS Batch: A .NET Developer Guide to Batch File Processing <span class="label label-default">dotnet</span>  <span class="label label-default">aws</span>  <span class="label label-default">cloud</span>  <span class="label label-default">s3</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html">Transactional Outbox in .NET Cloud Native Development via Aspire <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html">A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2) <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html">A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1) <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Learn how to use <a href="https://www.nuget.org/packages/AWS.Messaging/" target="_blank" rel="noopener noreferrer">AWS.Messaging</a> be implementing Claim-Check pattern.</p>
+
+<blockquote>
+  <p>The Claim-Check pattern allows workloads to transfer payloads without storing the payload in a messaging system. The pattern stores the payload in an external data store and uses a “claim check” to retrieve the payload. The claim check is a unique, obscure token or key. To retrieve the payload, applications need to present the claim-check token to the external data store.</p>
+</blockquote>
+
+<p>Source code: <a href="https://github.com/NikiforovAll/aws-claim-check-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aws-claim-check-dotnet</a></p>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li>
+<a href="#introduction">Introduction</a>
+    <ul>
+      <li><a href="#when-to-use-claim-check-pattern">When to use Claim-Check pattern?</a></li>
+    </ul>
+  </li>
+  <li><a href="#what-is-awsmessaging">What is AWS.Messaging?</a></li>
+  <li>
+<a href="#implementation">Implementation</a>
+    <ul>
+      <li><a href="#goal">Goal</a></li>
+      <li>
+<a href="#code">Code</a>
+        <ul>
+          <li><a href="#file-upload-via-api">File Upload via API</a></li>
+          <li><a href="#file-processing-via-worker">File Processing via Worker</a></li>
+          <li><a href="#opentelemetry-support">OpenTelemetry support</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<blockquote>
+  <p>☝️The blog post will focus on code implementation and usage of <code class="language-plaintext highlighter-rouge">AWS.Messaging</code> and <code class="language-plaintext highlighter-rouge">Aspire</code> and not on the details of the Claim-Check pattern.For more details I highly recommend seeing <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check" target="_blank" rel="noopener noreferrer">Azure/Architecture Center/Claim-Check pattern</a></p>
+</blockquote>
+
+<p>Traditional messaging systems are optimized to manage a high volume of small messages and often have restrictions on the message size they can handle. Large messages not only risk exceeding these limits but can also degrade the performance of the entire system when the messaging system stores them.</p>
+
+<p>The solution to this problem is to use the Claim-Check pattern, and don’t send large messages to the messaging system. Instead, send the payload to an external data store and generate a claim-check token for that payload. The messaging system sends a message with the claim-check token to receiving applications so these applications can retrieve the payload from the data store. The messaging system never sees or stores the payload.</p>
+
+<center>
+    <img src="/assets/claim-check/claim-check-diagram.svg" width="70%" style="margin: 15px;">
+</center>
+
+<ol>
+  <li>Payload</li>
+  <li>Save payload in data store.</li>
+  <li>Generate claim-check token and send message with claim-check token.</li>
+  <li>Receive message and read claim-check token.</li>
+  <li>Retrieve the payload.</li>
+  <li>Process the payload.</li>
+</ol>
+
+<h3 id="when-to-use-claim-check-pattern">When to use Claim-Check pattern?</h3>
+
+<p>The following scenarios are use cases for the Claim-Check pattern:</p>
+
+<ul>
+  <li>Messaging system limitations: Use the Claim-Check pattern when message sizes surpass the limits of your messaging system. Offload the payload to external storage. Send only the message with its claim-check token to the messaging system.</li>
+  <li>Messaging system performance: Use the Claim-Check pattern when large messages are straining the messaging system and degrading system performance.</li>
+</ul>
+
+<p>For example, AWS SQS has a message size limit of 256 KiB. See <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/quotas-messages.html" target="_blank" rel="noopener noreferrer">Amazon SQS message quotas</a> for more details.</p>
+
+<h2 id="what-is-awsmessaging">What is AWS.Messaging?</h2>
+
+<p>The <em>AWS Message Processing Framework for .NET</em> is an AWS-native framework that simplifies the development of .NET message processing applications that use AWS services such as Amazon Simple Queue Service (SQS), Amazon Simple Notification Service (SNS), and Amazon EventBridge. The framework reduces the amount of boiler-plate code developers need to write, allowing you to focus on your business logic when publishing and consuming messages.</p>
+
+<p>The Message Processing Framework supports the following activities and features:</p>
+
+<ul>
+  <li>
+    <p>Sending messages to SQS and publishing events to SNS and EventBridge.</p>
+  </li>
+  <li>Receiving and handling messages from SQS by using a long-running poller, which is typically used in background services. This includes managing the visibility timeout while a message is being handled to prevent other clients from processing it.</li>
+  <li>Handling messages in AWS Lambda functions.</li>
+  <li>FIFO (first-in-first-out) SQS queues and SNS topics.</li>
+  <li>OpenTelemetry for logging.</li>
+</ul>
+
+<p>For a good introductory blog post see <a href="https://aws.amazon.com/blogs/developer/introducing-the-aws-message-processing-framework-for-net-preview/" target="_blank" rel="noopener noreferrer">AWS Developer Tools Blog / Introducing the AWS Message Processing Framework for .NET (Preview)</a></p>
+
+<h2 id="implementation">Implementation</h2>
+
+<h3 id="goal">Goal</h3>
+
+<p>🎯 Assume we want to process pdf documents provided by users to extract key phrases and store these key phrases for further processing.</p>
+
+<p>Here’s a step-by-step explanation of the process:</p>
+
+<ol>
+  <li>
+<em>File Submission</em>: A user submits a file through an API Gateway. This could be any document that needs to be processed, such as a PDF file.</li>
+  <li>
+<em>File Storage</em>: The API Gateway forwards the file to a REST API running on an EC2 instance. The API then stores the file in an S3 bucket and sends a message to an SNS (Simple Notification Service) topic with the location of the file in S3 (this is known as a claim-check pattern).</li>
+  <li>
+<em>Message Queuing</em>: The SNS topic puts the message into an SQS (Simple Queue Service) queue for processing. The API returns a 201 response to the API Gateway, which then returns a response to the user indicating that the file was successfully submitted.</li>
+  <li>
+<em>File Processing</em>: A background service running on another EC2 instance consumes the message from the SQS queue. This service retrieves the file from S3 and sends it to Amazon Textract for parsing.</li>
+  <li>
+<em>Text Extraction</em>: Amazon Textract loads the document, extracts the text, and returns the parsed content to the background service.</li>
+  <li>
+<em>Key Phrase Extraction</em>: The background service then sends the parsed content to Amazon Comprehend to extract key phrases.</li>
+  <li>
+<em>Result Storage</em>: The key phrases are then stored back in S3 by the background service. The service acknowledges the message in the SQS queue, removing it from the queue.</li>
+</ol>
+
+<p>This workflow allows for the asynchronous processing of documents at scale. The user gets a quick response when they submit a file, and the heavy processing is done in the background, allowing the system to handle a large number of file submissions.</p>
+
+<center>
+    <img src="/assets/claim-check/sd-aws.png" width="90%" style="margin: 15px;">
+</center>
+
+<p>❗🤔 Arguably, in the world of AWS, there are cloud-native alternatives to the canonical claim check pattern. For example, you can subscribe to S3 events from a lambda function, but my goal is demonstrate how to use AWS.Messaging and Claim-Check pattern implementation and not to provide reference solution to these problem.</p>
+
+<h3 id="code">Code</h3>
+
+<p>The solution consist of <em>Api</em>, <em>Processor</em> (Worker) components, and AWS resources defined via <a href="https://docs.aws.amazon.com/cloudformation/" target="_blank" rel="noopener noreferrer">CloudFormation</a>.</p>
+
+<p>This application is based on Aspire integration for AWS. Basically, it bootstraps the the CloudFormation stack for your application during the <code class="language-plaintext highlighter-rouge">AppHost</code> startup.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// AppHost/Program.cs</span>
+<span class="k">using</span> <span class="nn">Amazon</span><span class="p">;</span>
+
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">awsConfig</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddAWSSDKConfig</span><span class="p">().</span><span class="nf">WithProfile</span><span class="p">(</span><span class="s">"default"</span><span class="p">).</span><span class="nf">WithRegion</span><span class="p">(</span><span class="n">RegionEndpoint</span><span class="p">.</span><span class="n">USEast1</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">awsResources</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddAWSCloudFormationTemplate</span><span class="p">(</span><span class="s">"DocumentSubmissionAppResources"</span><span class="p">,</span> <span class="s">"aws-resources.template"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">awsConfig</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">).</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">awsResources</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Processor</span><span class="p">&gt;(</span><span class="s">"processor"</span><span class="p">).</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">awsResources</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>The code above is based on couple of NuGet packages:</p>
+
+<ul>
+  <li>
+<a href="https://www.nuget.org/packages/Aspire.Hosting.AWS" target="_blank" rel="noopener noreferrer">Aspire.Hosting.AWS</a> - Provides extension methods and resources definition for a .NET Aspire AppHost to configure the AWS SDK for .NET and AWS application resources.</li>
+  <li>
+<a href="https://www.nuget.org/packages/Aspire.Hosting.AppHost" target="_blank" rel="noopener noreferrer">Aspire.Hosting.AppHost</a> - Provides the core APIs and MSBuild logic for .NET Aspire AppHost projects.</li>
+</ul>
+
+<p>To glue everything together, we need to take a look at CloudFormation template - “aws-resources.template”. The interesting part here is the <strong>Outputs</strong> section. It serves as a contract between your application and infrastructure defined through Aspire.</p>
+
+<div class="language-jsonc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"AWSTemplateFormatVersion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2010-09-09"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+    </span><span class="nl">"Resources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c1">// skipped content, see source code for more details.</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"Outputs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"DocumentQueueUrl"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"Value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DocumentQueue"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"DocumentTopicArn"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"Value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DocumentTopic"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"DocumentBucketName"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"Value"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"DocumentBucket"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>In order to reference Outputs in our code I added next code:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// ServiceDefaults/Extensions.cs</span>
+<span class="k">public</span> <span class="k">static</span> <span class="n">AwsResources</span> <span class="nf">AddAwsResources</span><span class="p">(</span><span class="k">this</span> <span class="n">IHostApplicationBuilder</span> <span class="n">builder</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">awsResources</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">GetSection</span><span class="p">(</span><span class="s">"AWS:Resources"</span><span class="p">).</span><span class="n">Get</span><span class="p">&lt;</span><span class="n">AwsResources</span><span class="p">&gt;()!;</span>
+
+    <span class="c1">// validate, consume at runtime via IOptions if needed.</span>
+    <span class="n">builder</span>
+        <span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddOptions</span><span class="p">&lt;</span><span class="n">AwsResources</span><span class="p">&gt;()</span>
+        <span class="p">.</span><span class="nf">Configure</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">Bind</span><span class="p">(</span><span class="s">"AWS:Resources"</span><span class="p">,</span> <span class="n">options</span><span class="p">))</span>
+        <span class="p">.</span><span class="nf">ValidateOnStart</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="n">awsResources</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>And the model:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// ServiceDefaults/AwsResources.cs</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">AwsResources</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="n">Required</span><span class="p">]</span>
+    <span class="p">[</span><span class="n">Url</span><span class="p">]</span>
+    <span class="k">public</span> <span class="kt">string</span> <span class="n">DocumentQueueUrl</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+
+    <span class="p">[</span><span class="n">Required</span><span class="p">]</span>
+    <span class="k">public</span> <span class="kt">string</span><span class="p">?</span> <span class="n">DocumentTopicArn</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">Required</span><span class="p">]</span>
+    <span class="k">public</span> <span class="kt">string</span><span class="p">?</span> <span class="n">DocumentBucketName</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>Now once we have the infrastructure ready, we can take a look at the components.</p>
+
+<h4 id="file-upload-via-api">File Upload via API</h4>
+
+<p>It is very intuitive and easy to work with <code class="language-plaintext highlighter-rouge">AWS.Messaging</code>, all we need is to define a publisher:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.cs</span>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="kt">var</span> <span class="n">awsResources</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddAwsResources</span><span class="p">();</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddAWSService</span><span class="p">&lt;</span><span class="n">IAmazonS3</span><span class="p">&gt;();</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddAWSMessageBus</span><span class="p">(</span><span class="n">messageBuilder</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">messageBuilder</span><span class="p">.</span><span class="nf">AddMessageSource</span><span class="p">(</span><span class="s">"DocumentSubmissionApi"</span><span class="p">);</span>
+
+    <span class="n">messageBuilder</span><span class="p">.</span><span class="n">AddSNSPublisher</span><span class="p">&lt;</span><span class="n">DocumentSubmission</span><span class="p">&gt;(</span><span class="n">awsResources</span><span class="p">.</span><span class="n">DocumentTopicArn</span><span class="p">);</span>
+<span class="p">});</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapUploadEndpoint</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Here is how to use it:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">app</span><span class="p">.</span><span class="nf">MapPost</span><span class="p">(</span>
+    <span class="s">"/upload"</span><span class="p">,</span>
+    <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Results</span><span class="p">&lt;</span><span class="n">Created</span><span class="p">,</span> <span class="n">BadRequest</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;&gt;&gt;</span> <span class="p">(</span>
+        <span class="n">IFormFile</span> <span class="n">file</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">FromServices</span><span class="p">]</span> <span class="n">IOptions</span><span class="p">&lt;</span><span class="n">AwsResources</span><span class="p">&gt;</span> <span class="n">resources</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">FromServices</span><span class="p">]</span> <span class="n">IAmazonS3</span> <span class="n">s3Client</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">FromServices</span><span class="p">]</span> <span class="n">IMessagePublisher</span> <span class="n">publisher</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">FromServices</span><span class="p">]</span> <span class="n">TimeProvider</span> <span class="n">timeProvider</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">FromServices</span><span class="p">]</span> <span class="n">ILogger</span><span class="p">&lt;</span><span class="n">Program</span><span class="p">&gt;</span> <span class="n">logger</span>
+    <span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">file</span> <span class="k">is</span> <span class="k">null</span> <span class="k">or</span> <span class="p">{</span> <span class="n">Length</span><span class="p">:</span> <span class="m">0</span> <span class="p">})</span>
+        <span class="p">{</span>
+            <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">BadRequest</span><span class="p">(</span><span class="s">"No file uploaded."</span><span class="p">);</span>
+        <span class="p">}</span>
+
+        <span class="k">using</span> <span class="nn">var</span> <span class="n">stream</span> <span class="p">=</span> <span class="n">file</span><span class="p">.</span><span class="nf">OpenReadStream</span><span class="p">();</span>
+        <span class="kt">var</span> <span class="n">bucketName</span> <span class="p">=</span> <span class="n">resources</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">DocumentBucketName</span><span class="p">;</span>
+        <span class="kt">var</span> <span class="n">key</span> <span class="p">=</span> <span class="n">Guid</span><span class="p">.</span><span class="nf">NewGuid</span><span class="p">().</span><span class="nf">ToString</span><span class="p">();</span>
+
+        <span class="k">await</span> <span class="n">s3Client</span><span class="p">.</span><span class="nf">PutObjectAsync</span><span class="p">(</span>
+            <span class="k">new</span> <span class="n">PutObjectRequest</span>
+            <span class="p">{</span>
+                <span class="n">BucketName</span> <span class="p">=</span> <span class="n">bucketName</span><span class="p">,</span>
+                <span class="n">Key</span> <span class="p">=</span> <span class="n">key</span><span class="p">,</span>
+                <span class="n">InputStream</span> <span class="p">=</span> <span class="n">stream</span>
+            <span class="p">}</span>
+        <span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">response</span> <span class="p">=</span> <span class="k">await</span> <span class="n">publisher</span><span class="p">.</span><span class="nf">PublishAsync</span><span class="p">(</span>
+            <span class="k">new</span> <span class="n">DocumentSubmission</span> <span class="p">{</span> <span class="n">CreatedAt</span> <span class="p">=</span> <span class="n">timeProvider</span><span class="p">.</span><span class="nf">GetLocalNow</span><span class="p">(),</span> <span class="n">Location</span> <span class="p">=</span> <span class="n">key</span> <span class="p">}</span>
+        <span class="p">);</span>
+
+        <span class="n">logger</span><span class="p">.</span><span class="nf">LogInformation</span><span class="p">(</span><span class="s">"Published message with id {MessageId}"</span><span class="p">,</span> <span class="n">response</span><span class="p">.</span><span class="n">MessageId</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">Created</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">);</span>
+</code></pre></div></div>
+
+<h4 id="file-processing-via-worker">File Processing via Worker</h4>
+
+<p>Note, in this case we need to provide an SQS Queue Url to listen to.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.cs</span>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">Host</span><span class="p">.</span><span class="nf">CreateApplicationBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">awsResources</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddAwsResources</span><span class="p">();</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddAWSService</span><span class="p">&lt;</span><span class="n">IAmazonTextract</span><span class="p">&gt;();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddAWSService</span><span class="p">&lt;</span><span class="n">IAmazonComprehend</span><span class="p">&gt;();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddAWSService</span><span class="p">&lt;</span><span class="n">IAmazonS3</span><span class="p">&gt;();</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddAWSMessageBus</span><span class="p">(</span><span class="n">builder</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">builder</span><span class="p">.</span><span class="nf">AddSQSPoller</span><span class="p">(</span><span class="n">awsResources</span><span class="p">.</span><span class="n">DocumentQueueUrl</span><span class="p">);</span>
+
+    <span class="n">builder</span><span class="p">.</span><span class="n">AddMessageHandler</span><span class="p">&lt;</span><span class="n">DocumentSubmissionHandler</span><span class="p">,</span> <span class="n">DocumentSubmission</span><span class="p">&gt;();</span>
+<span class="p">});</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Here is the handler:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">DocumentSubmissionHandler</span><span class="p">(</span>
+    <span class="n">IAmazonTextract</span> <span class="n">amazonTextractClient</span><span class="p">,</span>
+    <span class="n">IAmazonComprehend</span> <span class="n">amazonComprehendClient</span><span class="p">,</span>
+    <span class="n">IAmazonS3</span> <span class="n">s3Client</span><span class="p">,</span>
+    <span class="n">IOptions</span><span class="p">&lt;</span><span class="n">AwsResources</span><span class="p">&gt;</span> <span class="n">resources</span><span class="p">,</span>
+    <span class="n">ILogger</span><span class="p">&lt;</span><span class="n">DocumentSubmissionHandler</span><span class="p">&gt;</span> <span class="n">logger</span>
+<span class="p">)</span> <span class="p">:</span> <span class="n">IMessageHandler</span><span class="p">&lt;</span><span class="n">DocumentSubmission</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">MessageProcessStatus</span><span class="p">&gt;</span> <span class="nf">HandleAsync</span><span class="p">(</span>
+        <span class="n">MessageEnvelope</span><span class="p">&lt;</span><span class="n">DocumentSubmission</span><span class="p">&gt;</span> <span class="n">messageEnvelope</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">token</span> <span class="p">=</span> <span class="k">default</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">logger</span><span class="p">.</span><span class="nf">LogInformation</span><span class="p">(</span><span class="s">"Received message - {MessageId}"</span><span class="p">,</span> <span class="n">messageEnvelope</span><span class="p">.</span><span class="n">Id</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">bucketName</span> <span class="p">=</span> <span class="n">resources</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">DocumentBucketName</span><span class="p">;</span>
+        <span class="kt">var</span> <span class="n">key</span> <span class="p">=</span> <span class="n">messageEnvelope</span><span class="p">.</span><span class="n">Message</span><span class="p">.</span><span class="n">Location</span><span class="p">;</span>
+
+        <span class="kt">var</span> <span class="n">textBlocks</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">AnalyzeDocumentAsync</span><span class="p">(</span><span class="n">bucket</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">token</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">keyPhrases</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">DetectKeyPhrasesAsync</span><span class="p">(</span><span class="n">textBlocks</span><span class="p">,</span> <span class="n">token</span><span class="p">);</span>
+
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">StorKeyPhrases</span><span class="p">(</span><span class="n">keyPhrases</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">token</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">MessageProcessStatus</span><span class="p">.</span><span class="nf">Success</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h4 id="opentelemetry-support">OpenTelemetry support</h4>
+
+<p>The awesome thing about <code class="language-plaintext highlighter-rouge">Aspire</code> and <code class="language-plaintext highlighter-rouge">AWS.Messaging</code> is the native OpenTelemetry support, here is how to add <code class="language-plaintext highlighter-rouge">AWS.Messaging</code> instrumentation:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// ServiceDefaults/Extensions.cs</span>
+<span class="k">public</span> <span class="k">static</span> <span class="n">IHostApplicationBuilder</span> <span class="nf">ConfigureOpenTelemetry</span><span class="p">(</span>
+        <span class="k">this</span> <span class="n">IHostApplicationBuilder</span> <span class="n">builder</span>
+<span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">builder</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="nf">AddOpenTelemetry</span><span class="p">(</span><span class="n">logging</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">logging</span><span class="p">.</span><span class="n">IncludeFormattedMessage</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+        <span class="n">logging</span><span class="p">.</span><span class="n">IncludeScopes</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+    <span class="p">});</span>
+
+    <span class="n">builder</span>
+        <span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddOpenTelemetry</span><span class="p">()</span>
+        <span class="p">.</span><span class="nf">WithMetrics</span><span class="p">(</span><span class="n">metrics</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">metrics</span>
+                <span class="p">.</span><span class="nf">AddAspNetCoreInstrumentation</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">AddHttpClientInstrumentation</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">AddRuntimeInstrumentation</span><span class="p">();</span>
+        <span class="p">})</span>
+        <span class="p">.</span><span class="nf">WithTracing</span><span class="p">(</span><span class="n">tracing</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">tracing</span>
+                <span class="p">.</span><span class="nf">AddAspNetCoreInstrumentation</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">AddHttpClientInstrumentation</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">AddAWSInstrumentation</span><span class="p">()</span> <span class="c1">// &lt;-- add this</span>
+                <span class="p">.</span><span class="nf">AddAWSMessagingInstrumentation</span><span class="p">();</span> <span class="c1">// &lt;-- and this</span>
+        <span class="p">});</span>
+
+    <span class="n">builder</span><span class="p">.</span><span class="nf">AddOpenTelemetryExporters</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="n">builder</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The result of file upload from Aspire Dashboard:</p>
+
+<center>
+    <img src="/assets/claim-check/trace-claim-check.png" style="margin: 15px;">
+</center>
+
+<p>💡 <code class="language-plaintext highlighter-rouge">Aspire</code> is great for investigating how distributed systems work. We can use it to deepen our understanding of Claim-Check pattern in our case.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In conclusion, leveraging the power of <code class="language-plaintext highlighter-rouge">AWS.Messaging</code> coupled with <code class="language-plaintext highlighter-rouge">Aspire</code> can significantly streamline the process of .NET and AWS Cloud development. These tools simplify the complexities associated with development of distributed systems.</p>
+
+<h2 id="references">References</h2>
+
+<ol>
+  <li><a href="https://github.com/awslabs/aws-dotnet-messaging" target="_blank" rel="noopener noreferrer">https://github.com/awslabs/aws-dotnet-messaging</a></li>
+  <li><a href="https://aws.amazon.com/blogs/developer/introducing-the-aws-message-processing-framework-for-net-preview/" target="_blank" rel="noopener noreferrer">https://aws.amazon.com/blogs/developer/introducing-the-aws-message-processing-framework-for-net-preview/</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check" target="_blank" rel="noopener noreferrer">https://learn.microsoft.com/en-us/azure/architecture/patterns/claim-check</a></li>
+  <li><a href="https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/msg-proc-fw.html" target="_blank" rel="noopener noreferrer">https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/msg-proc-fw.html</a></li>
+  <li><a href="https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html" target="_blank" rel="noopener noreferrer">https://www.enterpriseintegrationpatterns.com/patterns/messaging/StoreInLibrary.html</a></li>
+  <li><a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/automated-pdf-analysis-solution/welcome.html" target="_blank" rel="noopener noreferrer">https://docs.aws.amazon.com/prescriptive-guidance/latest/automated-pdf-analysis-solution/welcome.html</a></li>
+</ol>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(32)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aws-ref" target="_blank" rel="noopener noreferrer">
+				aws <span>(2)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(38)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref" target="_blank" rel="noopener noreferrer">
+				aspnetcore <span>(18)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aws-ref" target="_blank" rel="noopener noreferrer">
+				aws <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#cloud-ref" target="_blank" rel="noopener noreferrer">
+				cloud <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#s3-ref" target="_blank" rel="noopener noreferrer">
+				s3 <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#sns-ref" target="_blank" rel="noopener noreferrer">
+				sns <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#sqs-ref" target="_blank" rel="noopener noreferrer">
+				sqs <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(4)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/aws/2024/05/26/aws-batch-dotnet.html" title="Mastering AWS Batch: A .NET Developer Guide to Batch File Processing" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow noopener noreferrer" target="_blank">comments powered by Disqus.</a>
+</noscript>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
