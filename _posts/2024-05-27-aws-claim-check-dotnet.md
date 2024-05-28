@@ -9,7 +9,7 @@ fullview: false
 comments: true
 related: true
 mermaid: true
----
+---****
 
 ## TL;DR
 
@@ -97,12 +97,11 @@ This workflow allows for the asynchronous processing of documents at scale. The 
     <img src="/assets/claim-check/sd-aws.png" width="90%" style="margin: 15px;">
 </center>
 
-
-❗🤔 Arguably, in the world of AWS, there are cloud-native alternatives to the canonical claim check pattern. For example, you can subscribe to S3 events from a lambda function, but my goal is demonstrate how to use AWS.Messaging and Claim-Check pattern implementation and not to provide reference solution to these problem.
+❗🤔 Arguably, in the world of AWS, there are cloud-native alternatives to the canonical claim check pattern. For example, you can subscribe to S3 events from a lambda function, but my goal is to demonstrate how to use AWS.Messaging and Claim-Check pattern implementation, and not to provide reference solution to this problem.
 
 ### Code
 
-The solution consist of *Api*, *Processor* (Worker) components, and AWS resources defined via [CloudFormation](https://docs.aws.amazon.com/cloudformation/).
+The solution consists of *Api*, *Processor* (Worker) components, and AWS resources defined via [CloudFormation](https://docs.aws.amazon.com/cloudformation/).
 
 This application is based on Aspire integration for AWS. Basically, it bootstraps the the CloudFormation stack for your application during the `AppHost` startup.
 
@@ -196,7 +195,7 @@ public class AwsResources
 
 ```
 
-Now once we have the infrastructure ready, we can take a look at the components.
+Now, once we have the infrastructure ready, we can take a look at the components.
 
 #### File Upload via API
 
@@ -328,7 +327,7 @@ public class DocumentSubmissionHandler(
 
 #### OpenTelemetry support
 
-The awesome thing about `Aspire` and `AWS.Messaging` is the native OpenTelemetry support, here is how to add `AWS.Messaging` instrumentation:
+The awesome thing about `Aspire` and `AWS.Messaging` is the native OpenTelemetry support. Here is how to add `AWS.Messaging` instrumentation:
 
 ```csharp
 // ServiceDefaults/Extensions.cs
