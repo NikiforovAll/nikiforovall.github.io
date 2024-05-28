@@ -13,7 +13,7 @@ mermaid: true
 
 ## TL;DR
 
-Learn how to use [AWS.Messaging](https://www.nuget.org/packages/AWS.Messaging/) be implementing Claim-Check pattern.
+Learn how to use [AWS.Messaging](https://www.nuget.org/packages/AWS.Messaging/) by implementing Claim-Check pattern.
 
 > The Claim-Check pattern allows workloads to transfer payloads without storing the payload in a messaging system. The pattern stores the payload in an external data store and uses a "claim check" to retrieve the payload. The claim check is a unique, obscure token or key. To retrieve the payload, applications need to present the claim-check token to the external data store.
 
