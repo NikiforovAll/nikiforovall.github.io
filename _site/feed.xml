@@ -7,10 +7,250 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Using Keycloak in .NET Aspire projects</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;You can use &lt;a href=&quot;https://www.nuget.org/packages/Keycloak.AuthServices.Templates/&quot;&gt;Keycloak.AuthServices.Templates&lt;/a&gt; to add Keycloak support for .NET Aspire projects. See the docs for more details - &lt;a href=&quot;https://nikiforovall.github.io/keycloak-authorization-services-dotnet/devex/aspire.html&quot;&gt;Keycloak.AuthServices/Aspire Support&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Source code: &lt;a href=&quot;https://github.com/NikiforovAll/keycloak-aspire-starter-template&quot;&gt;https://github.com/NikiforovAll/keycloak-aspire-starter-template&lt;/a&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#scaffold-a-solution&quot;&gt;Scaffold a solution&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#run-it&quot;&gt;Run it&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#code-explained&quot;&gt;Code Explained&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;From the official &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview&quot;&gt;docs&lt;/a&gt;:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;.NET Aspire is designed to improve the experience of building .NET cloud-native apps. It provides a consistent, opinionated set of tools and patterns that help you build and run distributed apps.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Personally, I’m a big fan of Aspire because it enables great developer experience and productivity. I recommend trying it on your own 🚀&lt;/p&gt;
+
+&lt;p&gt;This article will show you how to get started with Keycloak and Aspire. It is based on &lt;a href=&quot;https://www.nuget.org/packages/Keycloak.AuthServices.Templates&quot;&gt;Keycloak.AuthServices.Templates&lt;/a&gt; template. Templates make it really easy to get started.&lt;/p&gt;
+
+&lt;p&gt;💡Here is a basic example of how the integration looks like:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;keycloak&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakContainer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;keycloak&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDataVolume&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;realm&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;keycloak&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddRealm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Test&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Api&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;api&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;realm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;scaffold-a-solution&quot;&gt;Scaffold a solution&lt;/h3&gt;
+
+&lt;p&gt;Install a templates pack:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet new &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;Keycloak.AuthServices.Templates
+&lt;span class=&quot;c&quot;&gt;# The following template packages will be installed:&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#    Keycloak.AuthServices.Templates::2.5.0&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Success: Keycloak.AuthServices.Templates::2.5.0 installed the following templates:&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Template Name            Short Name               Language  Tags&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# -----------------------  -----------------------  --------  -------------------------------------&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Keycloak Aspire Starter  keycloak-aspire-starter  [C#]      Common/.NET Aspire/Cloud/API/Keycloak&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Keycloak WebApi          keycloak-webapi          [C#]      Common/API/Keycloak&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet new keycloak-aspire-starter &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$dev&lt;/span&gt;/keycloak-aspire-starter-template
+&lt;span class=&quot;c&quot;&gt;# The template &quot;Keycloak Aspire Starter&quot; was created successfully.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here is what was generated:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ tre
+&lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt;
+├── .gitignore
+├── Api
+│   ├── Api.csproj
+│   ├── Extensions.OpenApi.cs
+│   ├── Program.cs
+│   ├── Properties
+│   │   └── launchSettings.json
+│   ├── appsettings.Development.json
+│   └── appsettings.json
+├── AppHost
+│   ├── AppHost.csproj
+│   ├── KeycloakConfiguration
+│   │   ├── Test-realm.json
+│   │   └── Test-users-0.json
+│   ├── Program.cs
+│   ├── Properties
+│   │   └── launchSettings.json
+│   ├── appsettings.Development.json
+│   └── appsettings.json
+├── Directory.Build.props
+├── Directory.Packages.props
+├── README.md
+├── ServiceDefaults
+│   ├── Extensions.cs
+│   └── ServiceDefaults.csproj
+├── global.json
+└── keycloak-aspire-starter-template.sln
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;run-it&quot;&gt;Run it&lt;/h3&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet run &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./AppHost/
+&lt;span class=&quot;c&quot;&gt;# Building...&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#       Aspire version: 8.0.1+a6e341ebbf956bbcec0dda304109815fcbae70c9&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#       Distributed application starting.&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#       Application host directory is: C:\Users\Oleksii_Nikiforov\dev\keycloak-aspire-starter-template\AppHost&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#       Now listening on: http://localhost:15056&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#       Distributed application started. Press Ctrl+C to shut down.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here are resources from Aspire Dashboard:&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/keycloak-aspire/dashboard-resources.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;As you can see, there is a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;quay.io/keycloak/keycloak:24.0.3&lt;/code&gt; container running. It is available on your local machine: &lt;a href=&quot;http://localhost:8080/&quot;&gt;http://localhost:8080/&lt;/a&gt;. Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin:admin&lt;/code&gt; credentials.&lt;/p&gt;
+
+&lt;p&gt;The template project was generated with exemplary import files. It imports &lt;em&gt;Test&lt;/em&gt; realm, adds &lt;em&gt;workspaces-client&lt;/em&gt;, and seeds test users:&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/keycloak-aspire/test-realm.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Now, we can open Swagger UI and retrieve an access token. Note, imported realm is configured to support &lt;a href=&quot;https://oauth.net/2/grant-types/implicit/&quot;&gt;Implicit Flow&lt;/a&gt;. We can use it during the development process as demonstrated below.&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/keycloak-aspire/auth-swagger-ui.png&quot; width=&quot;100%&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;To invoke the API you can use Swagger UI or other HTTP tool of your choice. Here is an example of how to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cURL&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;-X&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;GET&apos;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;s1&quot;&gt;&apos;https://localhost:51492/hello&apos;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;accept: text/plain&apos;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;nt&quot;&gt;-H&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;Authorization: Bearer &amp;lt;AUTH_TOKEN&amp;gt;&apos;&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Hello World!&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;code-explained&quot;&gt;Code Explained&lt;/h2&gt;
+
+&lt;p&gt;Basically, to setup Keycloak installation with Aspire we need to setup two things:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Add Keycloak Resource to Aspire &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt;.&lt;/li&gt;
+  &lt;li&gt;Configure Web API to target Keycloak installation&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Here is how to add Keycloak as resource to Aspire:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// AppHost/Program.cs&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;keycloak&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakContainer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;keycloak&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDataVolume&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImport&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;./KeycloakConfiguration/Test-realm.json&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImport&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;./KeycloakConfiguration/Test-users-0.json&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;realm&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;keycloak&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddRealm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Test&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Api&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;api&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;keycloak&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;realm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The code above does the following:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Starts a Keycloak Instance&lt;/li&gt;
+  &lt;li&gt;Imports realm and test users&lt;/li&gt;
+  &lt;li&gt;Reference to Keycloak adds Keycloak to service discovery&lt;/li&gt;
+  &lt;li&gt;Reference to Realm adds &lt;em&gt;Keycloak__Realm&lt;/em&gt; and &lt;em&gt;Keycloak__AuthServerUrl&lt;/em&gt; environment variables.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;And here is how to configure &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Api&lt;/code&gt; to integrated with Keycloak and use &lt;em&gt;workspaces-client&lt;/em&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Api/Program.cs&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Api&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Keycloak.AuthServices.Authentication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddServiceDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddApplicationOpenApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakWebApiAuthentication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Audience&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;workspaces-client&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RequireHttpsMetadata&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseHttpsRedirection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseApplicationOpenApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseAuthentication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/hello&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Hello World!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;The integration of Keycloak with .NET Aspire projects provides a first class support for building distributed, cloud native systems. By leveraging the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Templates&lt;/code&gt; template, developers can easily scaffold a solution and configure their APIs to work with Keycloak.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;🙌 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Templates&lt;/code&gt; is under development. Please, feel free to submit PRs. &lt;a href=&quot;https://github.com/nikiforovall/keycloak-authorization-services-dotnet&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat&quot; alt=&quot;contributionswelcome&quot; /&gt;&lt;/a&gt; 🙌&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet&quot;&gt;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/keycloak-authorization-services-dotnet/devex/aspire.html&quot;&gt;https://nikiforovall.github.io/keycloak-authorization-services-dotnet/devex/aspire.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/&quot;&gt;https://learn.microsoft.com/en-us/dotnet/aspire/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sun, 02 Jun 2024 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html</guid>
+			</item>
+		
+			<item>
 				<title>Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
-&lt;p&gt;Learn how to use &lt;a href=&quot;https://www.nuget.org/packages/AWS.Messaging/&quot;&gt;AWS.Messaging&lt;/a&gt; be implementing Claim-Check pattern.&lt;/p&gt;
+&lt;p&gt;Learn how to use &lt;a href=&quot;https://www.nuget.org/packages/AWS.Messaging/&quot;&gt;AWS.Messaging&lt;/a&gt; by implementing Claim-Check pattern.&lt;/p&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;The Claim-Check pattern allows workloads to transfer payloads without storing the payload in a messaging system. The pattern stores the payload in an external data store and uses a “claim check” to retrieve the payload. The claim check is a unique, obscure token or key. To retrieve the payload, applications need to present the claim-check token to the external data store.&lt;/p&gt;
@@ -118,11 +358,11 @@
     &lt;img src=&quot;/assets/claim-check/sd-aws.png&quot; width=&quot;90%&quot; style=&quot;margin: 15px;&quot; /&gt;
 &lt;/center&gt;
 
-&lt;p&gt;❗🤔 Arguably, in the world of AWS, there are cloud-native alternatives to the canonical claim check pattern. For example, you can subscribe to S3 events from a lambda function, but my goal is demonstrate how to use AWS.Messaging and Claim-Check pattern implementation and not to provide reference solution to these problem.&lt;/p&gt;
+&lt;p&gt;❗🤔 Arguably, in the world of AWS, there are cloud-native alternatives to the canonical claim check pattern. For example, you can subscribe to S3 events from a lambda function, but my goal is to demonstrate how to use AWS.Messaging and Claim-Check pattern implementation, and not to provide reference solution to this problem.&lt;/p&gt;
 
 &lt;h3 id=&quot;code&quot;&gt;Code&lt;/h3&gt;
 
-&lt;p&gt;The solution consist of &lt;em&gt;Api&lt;/em&gt;, &lt;em&gt;Processor&lt;/em&gt; (Worker) components, and AWS resources defined via &lt;a href=&quot;https://docs.aws.amazon.com/cloudformation/&quot;&gt;CloudFormation&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The solution consists of &lt;em&gt;Api&lt;/em&gt;, &lt;em&gt;Processor&lt;/em&gt; (Worker) components, and AWS resources defined via &lt;a href=&quot;https://docs.aws.amazon.com/cloudformation/&quot;&gt;CloudFormation&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;This application is based on Aspire integration for AWS. Basically, it bootstraps the the CloudFormation stack for your application during the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; startup.&lt;/p&gt;
 
@@ -214,7 +454,7 @@
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Now once we have the infrastructure ready, we can take a look at the components.&lt;/p&gt;
+&lt;p&gt;Now, once we have the infrastructure ready, we can take a look at the components.&lt;/p&gt;
 
 &lt;h4 id=&quot;file-upload-via-api&quot;&gt;File Upload via API&lt;/h4&gt;
 
@@ -342,7 +582,7 @@
 
 &lt;h4 id=&quot;opentelemetry-support&quot;&gt;OpenTelemetry support&lt;/h4&gt;
 
-&lt;p&gt;The awesome thing about &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AWS.Messaging&lt;/code&gt; is the native OpenTelemetry support, here is how to add &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AWS.Messaging&lt;/code&gt; instrumentation:&lt;/p&gt;
+&lt;p&gt;The awesome thing about &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AWS.Messaging&lt;/code&gt; is the native OpenTelemetry support. Here is how to add &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AWS.Messaging&lt;/code&gt; instrumentation:&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// ServiceDefaults/Extensions.cs&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IHostApplicationBuilder&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ConfigureOpenTelemetry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
@@ -3819,300 +4059,6 @@ dotnet add package Microsoft.Extensions.Http.Resilience
 				<pubDate>Sun, 24 Mar 2024 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html</guid>
-			</item>
-		
-			<item>
-				<title>A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1)</title>
-				<description>&lt;blockquote&gt;
-  &lt;p&gt;Source code: &lt;a href=&quot;https://github.com/NikiforovAll/kiota-getting-started&quot;&gt;https://github.com/NikiforovAll/kiota-getting-started&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;Kiota&lt;/strong&gt; is a powerful command line tool developed by &lt;strong&gt;Microsoft&lt;/strong&gt; that simplifies the process of generating &lt;strong&gt;API clients&lt;/strong&gt; for calling any &lt;strong&gt;OpenAPI-described API&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;It gains traction, for example, GitHub teams decided to move away from the static landscape of the traditional Octokit, and now they are shipping SDKs using Kiota (ref: &lt;a href=&quot;https://github.blog/2024-01-03-our-move-to-generated-sdks/&quot;&gt;github/Our move to generated SDKs&lt;/a&gt;)&lt;/p&gt;
-
-&lt;h3 id=&quot;purpose-and-goal&quot;&gt;Purpose and Goal&lt;/h3&gt;
-
-&lt;p&gt;&lt;strong&gt;Kiota&lt;/strong&gt; aims to eliminate the need for developers to rely on different API SDKs for each API they interact with. So When you need to call multiple APIs, you can use &lt;strong&gt;Kiota&lt;/strong&gt; to generate a consistent, strongly typed API client without having to learn a new library for every HTTP API.&lt;/p&gt;
-
-&lt;h3 id=&quot;key-features&quot;&gt;Key Features&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Language Agnostic: &lt;strong&gt;Kiota&lt;/strong&gt; provides support for a wide range of languages, including C#, CLI, Go, Java, PHP, Python, Ruby, Swift, and TypeScript.&lt;/li&gt;
-  &lt;li&gt;Full OpenAPI Capabilities: It leverages the complete capabilities of OpenAPI descriptions.&lt;/li&gt;
-  &lt;li&gt;Minimal Code Generation: It generates only the necessary source code by building on a core library.&lt;/li&gt;
-  &lt;li&gt;Reduced External Dependencies: &lt;strong&gt;Kiota&lt;/strong&gt; minimizes external dependencies.&lt;/li&gt;
-  &lt;li&gt;JSON Schema Integration: It uses JSON Schema descriptions to generate primitive-based model serialization and deserialization code.&lt;/li&gt;
-  &lt;li&gt;IDE Autocomplete: The generated code supports IDE autocomplete, aiding in API resource discovery.&lt;/li&gt;
-  &lt;li&gt;Full Access to HTTP Capabilities: Kiota ensures you have full access to HTTP features.&lt;/li&gt;
-  &lt;li&gt;Fine-Tuned Generation: Need only a specific part of the API? No problem. &lt;strong&gt;Kiota&lt;/strong&gt; lets you filter the generation to the exact surface area you’re interested in.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;use-kiota&quot;&gt;Use Kiota&lt;/h2&gt;
-
-&lt;p&gt;Visit &lt;a href=&quot;https://learn.microsoft.com/en-us/openapi/kiota/install&quot;&gt;https://learn.microsoft.com/en-us/openapi/kiota/install&lt;/a&gt; to see various installation options, in our case, we will use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet global-tool&lt;/code&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet tool &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; Microsoft.OpenApi.Kiota
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;A noteworthy feature of the &lt;strong&gt;Kiota&lt;/strong&gt; CLI is its endeavor to enhance discoverability by incorporating the search command &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kiota search &amp;lt;searchTerm&amp;gt;&lt;/code&gt;.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kiota search news
-&lt;span class=&quot;c&quot;&gt;# Key                                                     Title                           Description&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# apisguru::gov.bc.ca:news                                BC Gov News API Service 1.0     News API&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# apisguru::microsoft.com:cognitiveservices-NewsSearch    News Search Client              The News Search API lets you send a&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# apisguru::sportsdata.io:mlb-v3-rotoballer-premium-news  MLB v3 RotoBaller Premium News&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# apisguru::sportsdata.io:nba-v3-rotoballer-premium-news  NBA v3 RotoBaller Premium News&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# apisguru::sportsdata.io:nfl-v3-rotoballer-premium-news  NFL v3 RotoBaller Premium News&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Let’s say we want to know more about: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;microsoft.com:cognitiveservices-NewsSearch&lt;/code&gt;.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kiota search apisguru::microsoft.com:cognitiveservices-NewsSearch
-&lt;span class=&quot;c&quot;&gt;# Key: apisguru::microsoft.com:cognitiveservices-NewsSearch&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Title: News Search Client&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Description: The News Search API lets you send a search query to Bing and get back a list of news that are relevant to the search query. This section provides technical details about the query parameters and headers that you use to request news and the JSON response objects that contain them. For examples that show how to make requests, see [Searching the web for news](https://docs.microsoft.com/en-us/azure/cognitive-services/bing-news-search/search-the-web).&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Service:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# OpenAPI: https://raw.githubusercontent.com/APIs-guru/openapi-directory/gh-pages/v2/specs/microsoft.com/cognitiveservices-NewsSearch/1.0/swagger.json&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We can check structure of the API by using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kiota show&lt;/code&gt; command, but first, we need to download OpenAPI specification.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kiota download apisguru::microsoft.com:cognitiveservices-NewsSearch &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--output&lt;/span&gt; ./src/NewsSearch.Sdk/OpenApi/NewsSearch.json
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kiota show &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--openapi&lt;/span&gt; ./src/NewsSearch.Sdk/OpenApi/NewsSearch.json
-&lt;span class=&quot;c&quot;&gt;# /&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#  └─news&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#     ├─search&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#     └─trendingtopics&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Hint: use the --include-path and --exclude-path options with glob patterns to filter the paths displayed.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Example: kiota show -d &quot;C:\Users\Oleksii_Nikiforov\dev\kiota-getting-started\.\src\NewsSearch.Sdk\OpenApi\NewsSearch.json&quot; --include-path &quot;**/foo&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;demo&quot;&gt;Demo&lt;/h2&gt;
-
-&lt;p&gt;Now, we are ready to see how it works, but before we start I want to introduce you the demo application, note, it is intentionally complicated just to demonstrate various aspects of using &lt;strong&gt;Kiota&lt;/strong&gt;:&lt;/p&gt;
-
-&lt;p&gt;We have an application (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.Client&lt;/code&gt;) that calls our application’s API (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App API&lt;/code&gt;). This application integrates with the Bing REST API. The unique aspect of this demo is that every HTTP client is automatically generated based on OpenAPI and &lt;strong&gt;Kiota&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;h3 id=&quot;components&quot;&gt;Components&lt;/h3&gt;
-
-&lt;p&gt;As part of this post, we don’t need to know about all components. You will learn more in future blog posts. For this post, focus on components marked with 🎯.&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Component&lt;/th&gt;
-      &lt;th&gt;Description&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;🎯&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Integrates with Bing REST API&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;🎯&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NewsSearch.Sdk&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Generated OpenAPI HTTP Client by Kiota. It’s based on externally provided OpenAPI specification&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.Sdk&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Generated OpenAPI HTTP Client by Kiota&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.Client&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Invokes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App&lt;/code&gt; via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.Sdk&lt;/code&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.Client.Sdk&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Generated OpenAPI HTTP Client by Kiota&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.Client.Cli&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Generated CLI Client by Kiota. Convention-based commands based on App.Client OpenAPI specification&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.AppHost&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Aspire Host&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App.ServiceDefaults&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;Reasonable service defaults&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;div class=&quot;mermaid&quot;&gt;
-graph LR
-    App --&amp;gt; NewsSearchSdk[&quot;NewsSearch.Sdk&quot;]
-    App --&amp;gt; AppServiceDefaults[&quot;App.ServiceDefaults&quot;]
-    AppClient --&amp;gt; AppSdk[&quot;App.Sdk&quot;]
-    AppClient[&quot;App.Client&quot;] --&amp;gt; AppServiceDefaults
-    AppAppHost[&quot;App.AppHost&quot;] --&amp;gt; App
-    AppAppHost --&amp;gt; AppClient
-&lt;/div&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;Our goal&lt;/strong&gt; is to add an endpoint to fetch trending topics by Country Code.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;trending/{country:minlength(2):maxlength(2)}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;country&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// TODO:&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;generate-client&quot;&gt;Generate Client&lt;/h3&gt;
-
-&lt;p&gt;So, first, we need to generate the client SDK based on OpenApi specification stored previously. Note, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--class-name&lt;/code&gt; parameter specifies the name of the generated client - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NewsSearchApiClient&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;💡 As mentioned earlier, &lt;strong&gt;Kiota&lt;/strong&gt; supports partial client generation by using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--include-path&lt;/code&gt; option.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kiota generate &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; CSharp &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--log-level&lt;/span&gt; trace &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--output&lt;/span&gt; ./src/NewsSearch.Sdk &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--namespace-name&lt;/span&gt; NewsSearch.Sdk &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--class-name&lt;/span&gt; NewsSearchApiClient &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--include-path&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;**/trendingtopics&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--exclude-backward-compatible&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;--openapi&lt;/span&gt; ./src/NewsSearch.Sdk/OpenApi/NewsSearch.json
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;After that, we want to add required dependencies. Luckily, &lt;strong&gt;Kiota&lt;/strong&gt; help with it by providing friendly instructions as part of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kiota info -l CSharp&lt;/code&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kiota info  &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; CSharp
-&lt;span class=&quot;c&quot;&gt;# The language CSharp is currently in Stable maturity level.&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Hint: use the install command to install the dependencies.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Example:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    dotnet add package Microsoft.Kiota.Abstractions --version 1.7.11&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    dotnet add package Microsoft.Kiota.Authentication.Azure --version 1.1.4&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    dotnet add package Microsoft.Kiota.Http.HttpClientLibrary --version 1.3.7&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    dotnet add package Microsoft.Kiota.Serialization.Form --version 1.1.5&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    dotnet add package Microsoft.Kiota.Serialization.Json --version 1.1.8&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    dotnet add package Microsoft.Kiota.Serialization.Multipart --version 1.1.3&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    dotnet add package Microsoft.Kiota.Serialization.Text --version 1.1.4&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NewsSearch.Sdk.csproj&lt;/code&gt; looks like:&lt;/p&gt;
-
-&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;Project&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Sdk=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.NET.Sdk&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;ItemGroup&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Include=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.Kiota.Abstractions&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Include=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.Kiota.Authentication.Azure&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Include=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.Kiota.Http.HttpClientLibrary&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Include=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.Kiota.Serialization.Form&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Include=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.Kiota.Serialization.Json&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Include=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.Kiota.Serialization.Multipart&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;&amp;lt;PackageReference&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Include=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Microsoft.Kiota.Serialization.Text&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/ItemGroup&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Project&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Add a project &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NewsSearch.Sdk&lt;/code&gt; reference to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;App&lt;/code&gt; and instantiate instance of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NewsSearchApiClient&lt;/code&gt;.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add ./src/App reference ./src/NewsSearch.Sdk/
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestAdapter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Mock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IRequestAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;;&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;NewsSearchApiClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;requestAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The request adapter interface &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IRequestAdapter&lt;/code&gt; is the primary point where &lt;strong&gt;Kiota&lt;/strong&gt; service libraries will trigger the creation of a HTTP request. The default implementation in .NET has the name &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HttpClientRequestAdapter&lt;/code&gt; and it takes &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IAuthenticationProvider&lt;/code&gt; as a dependency.&lt;/p&gt;
-
-&lt;p&gt;Most REST APIs are protected through some kind of authentication and authorization scheme. The default HTTP core services provided by &lt;strong&gt;Kiota&lt;/strong&gt; require an authentication provider to be passed to handle authentication concerns.&lt;/p&gt;
-
-&lt;p&gt;NewsSearch API has ApiKey Authentication. We can use standard class &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Microsoft.Kiota.Abstractions.Authentication.ApiKeyAuthenticationProvider&lt;/code&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;ApiKeyAuthenticationProvider&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;authenticationProvider&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;apiKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Ocp-Apim-Subscription-Key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KeyLocation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Header&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;HttpClientRequestAdapter&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestAdapter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;authenticationProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;BaseUrl&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;https://api.bing.microsoft.com/v7.0&quot;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Let’s put everything together:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;s&quot;&gt;&quot;trending/{country:minlength(2):maxlength(2)}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IConfiguration&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;country&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;ApiKeyAuthenticationProvider&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;authenticationProvider&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ApiKey&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Ocp-Apim-Subscription-Key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KeyLocation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Header&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;n&quot;&gt;HttpClientRequestAdapter&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;requestAdapter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;authenticationProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;BaseUrl&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;https://api.bing.microsoft.com/v7.0&quot;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;NewsSearchApiClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;requestAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;News&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Trendingtopics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;QueryParameters&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Cc&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;country&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Before we test it, we need to set ApiKey. Navigate to Azure portal and create resource of type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;microsoft.bing/accounts&lt;/code&gt; and copy ApiKey.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet user-secrets &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./src/App &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;ApiKey &lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;key&amp;gt;&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Finally, we are ready to Run our demo:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet run &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./src/App
-curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; http://localhost:5103/trending/US | jq &lt;span class=&quot;s1&quot;&gt;&apos;.value[].name&apos;&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;head&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-3&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/kiota/demo1.png&quot; alt=&quot;demo1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;The setup, as demonstrated, is quite straightforward. The hierarchical approach to the client builder is particularly commendable as it simplifies the discovery of REST APIs, making it intuitive and user-friendly.&lt;/p&gt;
-
-&lt;h3 id=&quot;automatic-generation&quot;&gt;Automatic Generation&lt;/h3&gt;
-
-&lt;p&gt;Since kiota ships as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet global-tool&lt;/code&gt; we can easily rely on it as dependency and therefore make it as part of build process. Here is how to build SDK client every time we build the project. This way we don’t need to use &lt;strong&gt;Kiota&lt;/strong&gt; CLI everytime.&lt;/p&gt;
-
-&lt;p&gt;Add this to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;NewsSearch.Sdk.csproj&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-xml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;Target&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Name=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;GenerateClient&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;AfterTargets=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Build&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Condition=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;$(Configuration)==&apos;Debug&apos;&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;nt&quot;&gt;&amp;lt;Exec&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Command=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;dotnet kiota generate -l CSharp --output ./ --namespace-name NewsSearch.Sdk --class-name NewsSearchApiClient --include-path **/trendingtopics --exclude-backward-compatible --openapi ./OpenApi/NewsSearch.json&quot;&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;WorkingDirectory=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;$(ProjectDir)&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;nt&quot;&gt;&amp;lt;/Target&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In conclusion, this blog post has provided a comprehensive introduction to &lt;strong&gt;Kiota&lt;/strong&gt;, a powerful tool developed by Microsoft for generating API clients. We’ve learned how &lt;strong&gt;Kiota&lt;/strong&gt; can simplify the process of interacting with multiple APIs by generating consistent, strongly typed API clients.&lt;/p&gt;
-
-&lt;p&gt;We’ve also explored &lt;strong&gt;Kiota&lt;/strong&gt;’s key features, including its language-agnostic nature, minimal code generation, reduced external dependencies, and full access to HTTP capabilities.&lt;/p&gt;
-
-&lt;p&gt;The post has demonstrated how to install and use &lt;strong&gt;Kiota&lt;/strong&gt;, and provided a detailed walkthrough of generating a client SDK based on an OpenAPI specification. We’ve seen how &lt;strong&gt;Kiota&lt;/strong&gt; can enhance discoverability and how it can be integrated into an application to fetch trending topics from the Bing REST API.&lt;/p&gt;
-
-&lt;p&gt;Overall, &lt;strong&gt;Kiota&lt;/strong&gt; is a promising tool that can significantly streamline the process of working with APIs, making it a valuable addition to any developer’s toolkit.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/openapi/kiota/overview&quot;&gt;https://learn.microsoft.com/en-us/openapi/kiota/overview&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/darrelmiller/KiotaApp&quot;&gt;https://github.com/darrelmiller/KiotaApp&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/kiota-getting-started&quot;&gt;https://github.com/NikiforovAll/kiota-getting-started&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Fri, 22 Mar 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html</guid>
 			</item>
 		
 	</channel>
