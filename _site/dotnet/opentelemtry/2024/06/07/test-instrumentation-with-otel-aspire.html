@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			June
+			7th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html">Using Keycloak in .NET Aspire projects <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aws/2024/05/27/aws-claim-check-dotnet.html">Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html">Transactional Outbox in .NET Cloud Native Development via Aspire <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html">A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2) <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>In this post, we’ll look at how you can use <a href="https://opentelemetry.io/docs/languages/net/instrumentation/" target="_blank" rel="noopener noreferrer">OpenTelemetry</a> to monitor your automated tests and send that data to the Aspire Dashboard for visualization. The benefit of this approach is that you gain better insights into how your code works.</p>
+
+<p><strong>Source code</strong>: <a href="https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire</a></p>
+
+<center>
+    <img src="/assets/test-instrumentation/blog-cover.png" style="margin: 15px;">
+</center>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#running-integration-tests">Running Integration Tests</a></li>
+  <li>
+<a href="#code-explained">Code Explained</a>
+    <ul>
+      <li><a href="#instrumenting-tests">Instrumenting Tests</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In this post, we’ll look at how you can use <a href="https://opentelemetry.io/docs/languages/net/instrumentation/" target="_blank" rel="noopener noreferrer">OpenTelemetry</a> to monitor your automated tests and send that data to the Aspire Dashboard for visualization. The benefit of this approach is that you gain better insights into how your code works.</p>
+
+<p>We are going to write integration tests for TodoApi application that can be defined as following:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddHostedService</span><span class="p">&lt;</span><span class="n">DbInitializer</span><span class="p">&gt;();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">AddNpgsqlDbContext</span><span class="p">&lt;</span><span class="n">TodoDbContext</span><span class="p">&gt;(</span><span class="s">"db"</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddEndpointsApiExplorer</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddSwaggerGen</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">Environment</span><span class="p">.</span><span class="nf">IsDevelopment</span><span class="p">())</span>
+<span class="p">{</span>
+    <span class="n">app</span><span class="p">.</span><span class="nf">UseSwagger</span><span class="p">();</span>
+    <span class="n">app</span><span class="p">.</span><span class="nf">UseSwaggerUI</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapDefaultEndpoints</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapTodos</span><span class="p">();</span>
+
+<span class="k">await</span> <span class="n">app</span><span class="p">.</span><span class="nf">RunAsync</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Here is the API surface:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">RouteGroupBuilder</span> <span class="nf">MapTodos</span><span class="p">(</span><span class="k">this</span> <span class="n">IEndpointRouteBuilder</span> <span class="n">routes</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="k">group</span> <span class="p">=</span> <span class="n">routes</span><span class="p">.</span><span class="nf">MapGroup</span><span class="p">(</span><span class="s">"/todos"</span><span class="p">);</span>
+
+    <span class="k">group</span><span class="p">.</span><span class="nf">WithTags</span><span class="p">(</span><span class="s">"Todos"</span><span class="p">);</span>
+
+    <span class="k">group</span><span class="p">.</span><span class="nf">WithParameterValidation</span><span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="n">TodoItemViewModel</span><span class="p">));</span>
+
+    <span class="k">group</span>
+        <span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="n">GetTodoItems</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+
+    <span class="k">group</span>
+        <span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span><span class="s">"/{id}"</span><span class="p">,</span> <span class="n">GetTodoItem</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+
+    <span class="k">group</span>
+        <span class="p">.</span><span class="nf">MapPost</span><span class="p">(</span><span class="s">"/"</span><span class="p">,</span> <span class="n">CreateTodoItem</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+
+    <span class="k">group</span>
+        <span class="p">.</span><span class="nf">MapPut</span><span class="p">(</span><span class="s">"/{id}"</span><span class="p">,</span> <span class="n">UpdateTodoItem</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+
+    <span class="k">group</span>
+        <span class="p">.</span><span class="nf">MapDelete</span><span class="p">(</span><span class="s">"/{id}"</span><span class="p">,</span> <span class="n">DeleteTodoItem</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="k">group</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>It’s a very basic CRUD application, please feel free to investigate the details in the source code.</p>
+
+<h2 id="running-integration-tests">Running Integration Tests</h2>
+
+<p>The tests are written based on the following technologies:</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">XUnit</code> - test framework</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">Testcontainers</code> - test dependencies management via Docker Engine and <a href="https://dotnet.testcontainers.org/" target="_blank" rel="noopener noreferrer">.NET integration</a>.</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">Alba</code> - author integration tests against ASP.NET Core HTTP endpoints. Alba scenarios actually exercise the full ASP.NET Core application by running HTTP requests through your ASP.NET system in memory using the built in <a href="https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests" target="_blank" rel="noopener noreferrer">ASP.NET Core TestServer</a>.</li>
+</ul>
+
+<p>I will explain how to instrument integration tests later. Right now, let’s see how it works.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet <span class="nb">test</span> <span class="nt">--filter</span> TodosTests <span class="nt">--verbosity</span> normal
+<span class="c"># Starting test execution, please wait...</span>
+<span class="c"># A total of 1 test files matched the specified pattern.</span>
+<span class="c"># [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.1+ce9211e970 (64-bit .NET 8.0.6)</span>
+<span class="c"># [xUnit.net 00:00:00.17]   Discovering: Api.IntegrationTests</span>
+<span class="c"># [xUnit.net 00:00:00.24]   Discovered:  Api.IntegrationTests</span>
+<span class="c"># [xUnit.net 00:00:00.24]   Starting:    Api.IntegrationTests</span>
+<span class="c"># [xUnit.net 00:00:07.51]   Finished:    Api.IntegrationTests</span>
+<span class="c"># Test Run Successful.</span>
+<span class="c"># Total tests: 6</span>
+<span class="c">#      Passed: 6</span>
+<span class="c">#  Total time: 8.3519 Seconds</span>
+</code></pre></div></div>
+
+<p>Here are output traces that can be found in Aspire Dashboard:</p>
+
+<center>
+    <img src="/assets/test-instrumentation/overview.png" style="margin: 15px;">
+</center>
+
+<p>Open: <a href="http://localhost:18888/">http://localhost:18888/</a> to see the results of Test Runs.</p>
+
+<p>The interesting part here is a “Warmup” and “TestRun” traces. “Warmup” traces shows us how much time it took to setup host <code class="language-plaintext highlighter-rouge">TestServer</code> for <em>TodoApi</em>, <em>PostgreSQL</em> container, and <em>Aspire Dashboard</em> as reusable container.</p>
+
+<center>
+    <img src="/assets/test-instrumentation/warmup.png" style="margin: 15px;">
+</center>
+
+<p>As you can see, we have a lot of thing going on during automatic database migration.</p>
+
+<p>Let’s open “TestRun” traces, I’ve prepared to way you can run integration tests. By default <code class="language-plaintext highlighter-rouge">XUnit</code> runs tests withing same <code class="language-plaintext highlighter-rouge">TestCollection</code> sequentially, but we can override this behavior by using custom test framework.</p>
+
+<p>Here is sequential version:</p>
+
+<center>
+    <img src="/assets/test-instrumentation/seq-test-run.png" style="margin: 15px;">
+</center>
+
+<p>And here is parallel version:</p>
+
+<center>
+    <img src="/assets/test-instrumentation/par-test-run.png" style="margin: 15px;">
+</center>
+
+<p>💡Every test run is separated based on  <code class="language-plaintext highlighter-rouge">service.instance.id</code> with value assigned to <code class="language-plaintext highlighter-rouge">test.run_id</code> custom attribute. It is assigned to every trace to make test runs discoverable. <code class="language-plaintext highlighter-rouge">test.run_id</code> is generated as sequential guid to order the test runs in time. Basically, you can use Aspire Dashboard drop down for replica set to inspect every test run.</p>
+
+<center>
+    <img src="/assets/test-instrumentation/replica-set.png" style="margin: 15px;">
+</center>
+
+<h2 id="code-explained">Code Explained</h2>
+
+<p>As mentioned previously, I use <code class="language-plaintext highlighter-rouge">Alba</code> to setup <code class="language-plaintext highlighter-rouge">TestServer</code> host.</p>
+
+<p>In the code below, we are setting up reusable <code class="language-plaintext highlighter-rouge">WebAppFixture</code>. It will contain everything we need to test and interact with <code class="language-plaintext highlighter-rouge">TestSever</code>.</p>
+
+<p>The other thing here we need to mention about is that we start <code class="language-plaintext highlighter-rouge">Activity</code> named “TestRun” to group sub-Activities for a test run.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">WebAppFixture</span> <span class="p">:</span> <span class="n">IAsyncLifetime</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">ActivitySource</span> <span class="n">ActivitySource</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">new</span><span class="p">(</span><span class="n">TracerName</span><span class="p">);</span>
+    <span class="k">private</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">TracerName</span> <span class="p">=</span> <span class="s">"tests"</span><span class="p">;</span>
+    <span class="k">public</span> <span class="n">IAlbaHost</span> <span class="n">AlbaHost</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">private</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="n">Activity</span> <span class="n">ActivityForTestRun</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="k">private</span> <span class="k">set</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="k">default</span><span class="p">!;</span>
+
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">IContainer</span> <span class="n">aspireDashboard</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">ContainerBuilder</span><span class="p">()</span>
+        <span class="p">.</span><span class="nf">WithImage</span><span class="p">(</span><span class="s">"mcr.microsoft.com/dotnet/aspire-dashboard:8.0.0"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithPortBinding</span><span class="p">(</span><span class="m">18888</span><span class="p">,</span> <span class="m">18888</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithPortBinding</span><span class="p">(</span><span class="m">18889</span><span class="p">,</span> <span class="k">true</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithEnvironment</span><span class="p">(</span><span class="s">"DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS"</span><span class="p">,</span> <span class="s">"true"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithWaitStrategy</span><span class="p">(</span>
+            <span class="n">Wait</span><span class="p">.</span><span class="nf">ForUnixContainer</span><span class="p">().</span><span class="nf">UntilHttpRequestIsSucceeded</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">.</span><span class="nf">ForPort</span><span class="p">(</span><span class="m">18888</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithReuse</span><span class="p">(</span><span class="k">true</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithLabel</span><span class="p">(</span><span class="s">"aspire-dashboard"</span><span class="p">,</span> <span class="s">"aspire-dashboard-reuse-id"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">PostgreSqlContainer</span> <span class="n">db</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">PostgreSqlBuilder</span><span class="p">()</span>
+        <span class="p">.</span><span class="nf">WithImage</span><span class="p">(</span><span class="s">"postgres:16"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">InitializeAsync</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">BootstrapAsync</span><span class="p">();</span>
+
+        <span class="n">ActivityForTestRun</span> <span class="p">=</span> <span class="n">ActivitySource</span><span class="p">.</span><span class="nf">StartActivity</span><span class="p">(</span><span class="s">"TestRun"</span><span class="p">)!;</span>
+    <span class="p">}</span>
+
+    <span class="k">private</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">BootstrapAsync</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">using</span> <span class="nn">var</span> <span class="n">warmupTracerProvider</span> <span class="p">=</span> <span class="n">Sdk</span><span class="p">.</span><span class="nf">CreateTracerProviderBuilder</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">AddSource</span><span class="p">(</span><span class="n">TracerName</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+        <span class="k">using</span> <span class="nn">var</span> <span class="n">activityForWarmup</span> <span class="p">=</span> <span class="n">ActivitySource</span><span class="p">.</span><span class="nf">StartActivity</span><span class="p">(</span><span class="s">"Warmup"</span><span class="p">)!;</span>
+
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">aspireDashboard</span><span class="p">.</span><span class="nf">StartAsync</span><span class="p">();</span>
+        <span class="n">activityForWarmup</span><span class="p">?.</span><span class="nf">AddEvent</span><span class="p">(</span><span class="k">new</span> <span class="nf">ActivityEvent</span><span class="p">(</span><span class="s">"AspireDashboard Started."</span><span class="p">));</span>
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">db</span><span class="p">.</span><span class="nf">StartAsync</span><span class="p">();</span>
+        <span class="n">activityForWarmup</span><span class="p">?.</span><span class="nf">AddEvent</span><span class="p">(</span><span class="k">new</span> <span class="nf">ActivityEvent</span><span class="p">(</span><span class="s">"PostgresSql Started."</span><span class="p">));</span>
+
+        <span class="kt">var</span> <span class="n">otelExporterEndpoint</span> <span class="p">=</span>
+            <span class="s">$"http://localhost:</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="n">aspireDashboard</span><span class="p">.</span><span class="nf">GetMappedPublicPort</span><span class="p">(</span><span class="m">18889</span><span class="p">)}</span><span class="s">"</span><span class="p">;</span>
+
+        <span class="k">using</span> <span class="nn">var</span> <span class="n">hostActivity</span> <span class="p">=</span> <span class="n">ActivitySource</span><span class="p">.</span><span class="nf">StartActivity</span><span class="p">(</span><span class="s">"Start Host"</span><span class="p">)!;</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">AlbaHost</span> <span class="p">=</span> <span class="k">await</span> <span class="n">Alba</span><span class="p">.</span><span class="n">AlbaHost</span><span class="p">.</span><span class="n">For</span><span class="p">&lt;</span><span class="n">Program</span><span class="p">&gt;(</span><span class="n">builder</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">builder</span><span class="p">.</span><span class="nf">UseEnvironment</span><span class="p">(</span><span class="s">"Test"</span><span class="p">);</span>
+
+            <span class="n">builder</span><span class="p">.</span><span class="nf">UseSetting</span><span class="p">(</span><span class="s">"OTEL_EXPORTER_OTLP_ENDPOINT"</span><span class="p">,</span> <span class="n">otelExporterEndpoint</span><span class="p">);</span>
+            <span class="n">builder</span><span class="p">.</span><span class="nf">UseSetting</span><span class="p">(</span><span class="s">"OTEL_TRACES_SAMPLER"</span><span class="p">,</span> <span class="s">"always_on"</span><span class="p">);</span>
+            <span class="n">builder</span><span class="p">.</span><span class="nf">UseSetting</span><span class="p">(</span><span class="s">"OTEL_EXPORTER_OTLP_PROTOCOL"</span><span class="p">,</span> <span class="s">"grpc"</span><span class="p">);</span>
+            <span class="n">builder</span><span class="p">.</span><span class="nf">UseSetting</span><span class="p">(</span><span class="s">"OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY"</span><span class="p">,</span> <span class="s">"in_memory"</span><span class="p">);</span>
+            <span class="n">builder</span><span class="p">.</span><span class="nf">UseSetting</span><span class="p">(</span><span class="s">"OTEL_SERVICE_NAME"</span><span class="p">,</span> <span class="s">"test-host"</span><span class="p">);</span>
+
+            <span class="n">builder</span><span class="p">.</span><span class="nf">UseSetting</span><span class="p">(</span>
+                <span class="s">"Aspire:Npgsql:EntityFrameworkCore:PostgreSQL:ConnectionString"</span><span class="p">,</span>
+                <span class="k">this</span><span class="p">.</span><span class="n">db</span><span class="p">.</span><span class="nf">GetConnectionString</span><span class="p">()</span>
+            <span class="p">);</span>
+
+            <span class="c1">// ordered guid to sort test runs</span>
+            <span class="kt">var</span> <span class="n">testRunId</span> <span class="p">=</span> <span class="n">NewId</span><span class="p">.</span><span class="nf">Next</span><span class="p">().</span><span class="nf">ToString</span><span class="p">();</span>
+
+            <span class="n">builder</span><span class="p">.</span><span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">services</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="n">services</span>
+                    <span class="p">.</span><span class="nf">AddOpenTelemetry</span><span class="p">()</span>
+                    <span class="p">.</span><span class="nf">WithTracing</span><span class="p">(</span><span class="n">tracing</span> <span class="p">=&gt;</span>
+                        <span class="n">tracing</span>
+                            <span class="p">.</span><span class="nf">SetResourceBuilder</span><span class="p">(</span>
+                                <span class="n">ResourceBuilder</span>
+                                    <span class="p">.</span><span class="nf">CreateDefault</span><span class="p">()</span>
+                                    <span class="p">.</span><span class="nf">AddService</span><span class="p">(</span><span class="n">TracerName</span><span class="p">,</span> <span class="n">serviceInstanceId</span><span class="p">:</span> <span class="n">testRunId</span><span class="p">)</span>
+                            <span class="p">)</span>
+                            <span class="p">.</span><span class="nf">AddSource</span><span class="p">(</span><span class="n">TracerName</span><span class="p">)</span>
+                            <span class="p">.</span><span class="nf">AddProcessor</span><span class="p">(</span><span class="k">new</span> <span class="nf">TestRunSpanProcessor</span><span class="p">(</span><span class="n">testRunId</span><span class="p">))</span>
+                    <span class="p">);</span>
+
+                <span class="n">services</span><span class="p">.</span><span class="n">AddDbContextFactory</span><span class="p">&lt;</span><span class="n">TodoDbContext</span><span class="p">&gt;();</span>
+            <span class="p">});</span>
+        <span class="p">});</span>
+
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">AlbaHost</span><span class="p">.</span><span class="nf">StartAsync</span><span class="p">();</span>
+        <span class="n">activityForWarmup</span><span class="p">?.</span><span class="nf">AddEvent</span><span class="p">(</span><span class="k">new</span> <span class="nf">ActivityEvent</span><span class="p">(</span><span class="s">"Host Started."</span><span class="p">));</span>
+
+        <span class="c1">// wait for migration</span>
+        <span class="k">await</span> <span class="k">this</span>
+            <span class="p">.</span><span class="n">AlbaHost</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">GetServices</span><span class="p">&lt;</span><span class="n">IHostedService</span><span class="p">&gt;()</span>
+            <span class="p">.</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">h</span> <span class="p">=&gt;</span> <span class="n">h</span><span class="p">.</span><span class="nf">GetType</span><span class="p">()</span> <span class="p">==</span> <span class="k">typeof</span><span class="p">(</span><span class="n">DbInitializer</span><span class="p">))</span>
+            <span class="p">.</span><span class="n">As</span><span class="p">&lt;</span><span class="n">DbInitializer</span><span class="p">&gt;()</span>
+            <span class="p">.</span><span class="n">StartupTask</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">DisposeAsync</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="n">ActivityForTestRun</span><span class="p">?.</span><span class="nf">Stop</span><span class="p">();</span>
+
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">AlbaHost</span><span class="p">.</span><span class="nf">DisposeAsync</span><span class="p">();</span>
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">db</span><span class="p">.</span><span class="nf">StopAsync</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>We can define a collection of tests that will reuse same instance of <code class="language-plaintext highlighter-rouge">WebAppFixture</code> via <code class="language-plaintext highlighter-rouge">Xunit.CollectionAttribute</code> like this:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="nf">CollectionDefinition</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">WebAppCollection</span><span class="p">))]</span>
+<span class="k">public</span> <span class="k">sealed</span> <span class="k">class</span> <span class="nc">WebAppCollection</span> <span class="p">:</span> <span class="n">ICollectionFixture</span><span class="p">&lt;</span><span class="n">WebAppFixture</span><span class="p">&gt;;</span>
+
+<span class="p">[</span><span class="nf">Collection</span><span class="p">(</span><span class="k">nameof</span><span class="p">(</span><span class="n">WebAppCollection</span><span class="p">))]</span>
+<span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> <span class="nc">WebAppContext</span><span class="p">(</span><span class="n">WebAppFixture</span> <span class="n">fixture</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="n">IAlbaHost</span> <span class="n">Host</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="n">fixture</span><span class="p">.</span><span class="n">AlbaHost</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now, we can use it by inheriting from <code class="language-plaintext highlighter-rouge">WebAppContext</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">TracePerTestRun</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">TodosTests</span><span class="p">(</span><span class="n">WebAppFixture</span> <span class="n">fixture</span><span class="p">)</span> <span class="p">:</span> <span class="nf">WebAppContext</span><span class="p">(</span><span class="n">fixture</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">static</span> <span class="k">readonly</span> <span class="n">Func</span><span class="p">&lt;</span>
+        <span class="n">FluentAssertions</span><span class="p">.</span><span class="n">Equivalency</span><span class="p">.</span><span class="n">EquivalencyAssertionOptions</span><span class="p">&lt;</span><span class="n">TodoItem</span><span class="p">&gt;,</span>
+        <span class="n">FluentAssertions</span><span class="p">.</span><span class="n">Equivalency</span><span class="p">.</span><span class="n">EquivalencyAssertionOptions</span><span class="p">&lt;</span><span class="n">TodoItem</span><span class="p">&gt;</span>
+    <span class="p">&gt;</span> <span class="n">ExcludingTodoItemFields</span> <span class="p">=</span> <span class="n">cfg</span> <span class="p">=&gt;</span> <span class="n">cfg</span><span class="p">.</span><span class="nf">Excluding</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">Id</span><span class="p">);</span>
+
+    <span class="p">[</span><span class="n">Theory</span><span class="p">,</span> <span class="n">AutoData</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">GetTodos_SomeTodosExist_Ok</span><span class="p">(</span><span class="kt">string</span> <span class="n">todoItemTitle</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">TodoItem</span> <span class="n">item</span> <span class="p">=</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">Title</span> <span class="p">=</span> <span class="n">todoItemTitle</span> <span class="p">};</span>
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">AddTodo</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">Host</span><span class="p">.</span><span class="n">GetAsJson</span><span class="p">&lt;</span><span class="n">TodoItemViewModel</span><span class="p">[</span><span class="k">]&gt;</span><span class="p">(</span><span class="s">"/todos"</span><span class="p">);</span>
+
+        <span class="n">result</span><span class="p">.</span><span class="nf">Should</span><span class="p">().</span><span class="nf">NotBeNull</span><span class="p">();</span>
+        <span class="n">result</span><span class="p">.</span><span class="nf">Should</span><span class="p">().</span><span class="nf">ContainEquivalentOf</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ExcludingTodoItemFields</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">PostTodos_ValidTodo_Ok</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">item</span> <span class="p">=</span> <span class="k">new</span> <span class="n">TodoItem</span> <span class="p">{</span> <span class="n">Title</span> <span class="p">=</span> <span class="s">"I want to do this thing tomorrow"</span> <span class="p">};</span>
+
+        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">AddTodo</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+
+        <span class="n">result</span><span class="p">.</span><span class="nf">Should</span><span class="p">().</span><span class="nf">NotBeNull</span><span class="p">();</span>
+        <span class="n">result</span><span class="p">!.</span><span class="n">IsComplete</span><span class="p">.</span><span class="nf">Should</span><span class="p">().</span><span class="nf">BeFalse</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">Theory</span><span class="p">,</span> <span class="n">AutoData</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">GetTodo_ExistingTodo_Ok</span><span class="p">(</span><span class="n">TodoItem</span> <span class="n">item</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">dbTodo</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">AddTodo</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+
+        <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">Host</span><span class="p">.</span><span class="n">GetAsJson</span><span class="p">&lt;</span><span class="n">TodoItemViewModel</span><span class="p">&gt;(</span><span class="s">$"/todos/</span><span class="p">{</span><span class="n">dbTodo</span><span class="p">.</span><span class="n">Id</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+
+        <span class="n">result</span><span class="p">.</span><span class="nf">Should</span><span class="p">().</span><span class="nf">NotBeNull</span><span class="p">();</span>
+
+        <span class="n">result</span><span class="p">.</span><span class="nf">Should</span><span class="p">().</span><span class="nf">BeEquivalentTo</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">ExcludingTodoItemFields</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">Theory</span><span class="p">,</span> <span class="n">AutoData</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">DeleteTodo_ExistingTodo_Ok</span><span class="p">(</span><span class="n">TodoItem</span> <span class="n">item</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">dbTodo</span> <span class="p">=</span> <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="nf">AddTodo</span><span class="p">(</span><span class="n">item</span><span class="p">);</span>
+
+        <span class="k">await</span> <span class="k">this</span><span class="p">.</span><span class="n">Host</span><span class="p">.</span><span class="nf">Scenario</span><span class="p">(</span><span class="n">_</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">_</span><span class="p">.</span><span class="n">Delete</span><span class="p">.</span><span class="nf">Url</span><span class="p">(</span><span class="s">$"/todos/</span><span class="p">{</span><span class="n">dbTodo</span><span class="p">.</span><span class="n">Id</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+            <span class="n">_</span><span class="p">.</span><span class="nf">StatusCodeShouldBeOk</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="instrumenting-tests">Instrumenting Tests</h3>
+
+<p>You might mention special attributed called <code class="language-plaintext highlighter-rouge">TracePerTestRun</code>. It is responsible for OpenTelemetry test instrumentation.</p>
+
+<p><code class="language-plaintext highlighter-rouge">XUnit</code> provides <code class="language-plaintext highlighter-rouge">BeforeAfterTestAttribute</code> to hookup to test execution lifecycle. We use it to start sub-Activities under parent “TestRun” activity.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">abstract</span> <span class="k">class</span> <span class="nc">BaseTraceTestAttribute</span> <span class="p">:</span> <span class="n">BeforeAfterTestAttribute</span> <span class="p">{</span> <span class="p">}</span>
+
+<span class="p">[</span><span class="nf">AttributeUsage</span><span class="p">(</span>
+    <span class="n">AttributeTargets</span><span class="p">.</span><span class="n">Class</span> <span class="p">|</span> <span class="n">AttributeTargets</span><span class="p">.</span><span class="n">Method</span><span class="p">,</span>
+    <span class="n">AllowMultiple</span> <span class="p">=</span> <span class="k">false</span><span class="p">,</span>
+    <span class="n">Inherited</span> <span class="p">=</span> <span class="k">true</span>
+<span class="p">)]</span>
+<span class="k">public</span> <span class="k">sealed</span> <span class="k">class</span> <span class="nc">TracePerTestRunAttribute</span> <span class="p">:</span> <span class="n">BaseTraceTestAttribute</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="n">Activity</span><span class="p">?</span> <span class="n">activityForThisTest</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">Before</span><span class="p">(</span><span class="n">MethodInfo</span> <span class="n">methodUnderTest</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">ArgumentNullException</span><span class="p">.</span><span class="nf">ThrowIfNull</span><span class="p">(</span><span class="n">methodUnderTest</span><span class="p">);</span>
+
+        <span class="k">this</span><span class="p">.</span><span class="n">activityForThisTest</span> <span class="p">=</span> <span class="n">WebAppFixture</span><span class="p">.</span><span class="n">ActivitySource</span><span class="p">.</span><span class="nf">StartActivity</span><span class="p">(</span>
+            <span class="n">methodUnderTest</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+            <span class="n">ActivityKind</span><span class="p">.</span><span class="n">Internal</span><span class="p">,</span>
+            <span class="n">WebAppFixture</span><span class="p">.</span><span class="n">ActivityForTestRun</span><span class="p">.</span><span class="n">Context</span>
+        <span class="p">);</span>
+
+        <span class="k">base</span><span class="p">.</span><span class="nf">Before</span><span class="p">(</span><span class="n">methodUnderTest</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">After</span><span class="p">(</span><span class="n">MethodInfo</span> <span class="n">methodUnderTest</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">activityForThisTest</span><span class="p">?.</span><span class="nf">Stop</span><span class="p">();</span>
+        <span class="k">base</span><span class="p">.</span><span class="nf">After</span><span class="p">(</span><span class="n">methodUnderTest</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Also, for our convenience and to group tests together, we want to add <code class="language-plaintext highlighter-rouge">TestRunSpanProcessor</code>. It enriches every span with <code class="language-plaintext highlighter-rouge">test.run_id</code> tag/attribute. It is an extension point provided by .NET OpenTelemetry instrumentation library.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">TestRunSpanProcessor</span><span class="p">(</span><span class="kt">string</span> <span class="n">testRunId</span><span class="p">)</span> <span class="p">:</span> <span class="n">BaseProcessor</span><span class="p">&lt;</span><span class="n">Activity</span><span class="p">&gt;</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="kt">string</span> <span class="n">testRunId</span> <span class="p">=</span> <span class="n">testRunId</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnStart</span><span class="p">(</span><span class="n">Activity</span> <span class="n">data</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">data</span><span class="p">?.</span><span class="nf">SetTag</span><span class="p">(</span><span class="s">"test.run_id"</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="n">testRunId</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>🙌 Hooray, now you know how to instrument automated tests with <em>OpenTelemetry</em> and visualize the test runs via <em>Aspire Dashboard</em></p>
+
+<p>💡See <a href="https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry" target="_blank" rel="noopener noreferrer">https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry</a> for more details on how to instrument unit tests with <em>OpenTelemetry</em>. This blog post originally inspired me to write this blog post.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this post, we’ve explored how to use OpenTelemetry to instrument our automated tests and visualize the data on the Aspire Dashboard. This approach provides valuable insights into how our code operates, helping us to identify potential bottlenecks and improve the overall performance and reliability of our applications.</p>
+
+<p>We’ve seen how to set up integration tests for a basic CRUD application using <code class="language-plaintext highlighter-rouge">XUnit</code>, <code class="language-plaintext highlighter-rouge">Testcontainers</code>, and <code class="language-plaintext highlighter-rouge">Alba</code>. We’ve also learned how to run these tests both sequentially and in parallel, and how to view the results in the Aspire Dashboard.</p>
+
+<p>By instrumenting our tests with OpenTelemetry, we can gain a deeper understanding of our code and its behavior under test conditions. This can lead to more robust, reliable, and efficient applications.</p>
+
+<p>Remember, the source code for this post is available on GitHub at <a href="https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire</a>. Feel free to explore it further and use it as a starting point for your own test instrumentation.</p>
+
+<p>Happy testing! 🚀</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://opentelemetry.io/docs/languages/net/instrumentation/" target="_blank" rel="noopener noreferrer">https://opentelemetry.io/docs/languages/net/instrumentation/</a></li>
+  <li><a href="https://dotnet.testcontainers.org/" target="_blank" rel="noopener noreferrer">https://dotnet.testcontainers.org/</a></li>
+  <li><a href="https://jasperfx.github.io/alba/guide/gettingstarted.html" target="_blank" rel="noopener noreferrer">https://jasperfx.github.io/alba/guide/gettingstarted.html</a></li>
+  <li><a href="https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry" target="_blank" rel="noopener noreferrer">https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry</a></li>
+  <li><a href="https://github.com/testcontainers/testcontainers-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/testcontainers/testcontainers-dotnet</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(34)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#opentelemtry-ref" target="_blank" rel="noopener noreferrer">
+				opentelemtry <span>(1)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(40)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref" target="_blank" rel="noopener noreferrer">
+				aspnetcore <span>(20)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#opentelemtry-ref" target="_blank" rel="noopener noreferrer">
+				opentelemtry <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(6)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html" title="Using Keycloak in .NET Aspire projects" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow noopener noreferrer" target="_blank">comments powered by Disqus.</a>
+</noscript>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
