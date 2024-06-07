@@ -136,7 +136,7 @@ The interesting part here is a "Warmup" and "TestRun" traces. "Warmup" traces sh
 
 As you can see, we have a lot of thing going on during automatic database migration.
 
-Let's open "TestRun" traces, I've prepared to way you can run integration tests. By default `XUnit` runs tests withing same `TestCollection` sequentially, but we can override this behavior by using custom test framework.
+Let's open "TestRun" traces, I've prepared two ways you can run integration tests. By default `XUnit` runs tests withing same `TestCollection` sequentially, but we can override this behavior by using custom test framework.
 
 Here is sequential version:
 
