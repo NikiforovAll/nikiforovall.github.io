@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			June
+			12th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html">Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">opentelemetry</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html">Using Keycloak in .NET Aspire projects <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aws/2024/05/27/aws-claim-check-dotnet.html">Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/async/2024/04/21/job-offloading-pattern.html">Job Offloading Pattern with System.Threading.Channels. A way to deal with long-running tasks in .NET <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">opentelemetry</span> </a></h5>
+	</div>
+	
+	
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>In this guide, we will explored how to leverage XUnit and OpenTelemetry to instrument .NET test projects. The process of setting up the <a href="https://www.nuget.org/packages/XUnit.Otel.Template" target="_blank" rel="noopener noreferrer">XUnit.Otel.Template</a> demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard.</p>
+
+<p><strong>Source code</strong>: <a href="https://github.com/NikiforovAll/xunit-instrumentation-otel-template" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/xunit-instrumentation-otel-template</a></p>
+
+<center>
+    <img src="/assets/xunit-otel/blog-cover.png" style="margin: 15px;">
+</center>
+
+<p><em>Table of Contents:</em></p>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#installation">Installation</a></li>
+  <li>
+<a href="#run-tests">Run Tests</a>
+    <ul>
+      <li><a href="#explore-the-code">Explore the code</a></li>
+      <li><a href="#results-of-test-run">Results of Test Run</a></li>
+      <li><a href="#metrics">Metrics</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>As discussed in my previous blog post - <a href="https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html" target="_blank" rel="noopener noreferrer">Automated Tests Instrumentation via OpenTelemetry and Aspire Dashboard</a>, we can utilize OpenTelemetry and Aspire Dashboard to gain valuable insights into the execution of our tests. This allows us to collect and analyze data over time, enabling us to identify potential anomalies.</p>
+
+<p>Considering the positive response from the community, I have taken the initiative to enhance the existing approach and create a reusable starter template for everyone to benefit from.</p>
+
+<h2 id="installation">Installation</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ dotnet new <span class="nb">install </span>XUnit.Otel.Template::1.0.0
+<span class="c"># The following template packages will be installed:</span>
+<span class="c">#    XUnit.Otel.Template::1.0.0</span>
+<span class="c"># Success: XUnit.Otel.Template::1.0.0 installed the following templates:</span>
+<span class="c"># Template Name  Short Name  Language  Tags</span>
+<span class="c"># -------------  ----------  --------  -------------------------</span>
+<span class="c"># XUnit Otel     xunit-otel  [C#]      XUnit/Tests/OpenTelemetry</span>
+</code></pre></div></div>
+
+<p>Generate:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ dotnet new xunit-otel <span class="nt">-o</span> <span class="nv">$dev</span>/XUnitOtelExample01 <span class="nt">-n</span> XUnitOtelExample
+<span class="c"># The template "XUnit Otel" was created successfully.</span>
+</code></pre></div></div>
+
+<h2 id="run-tests">Run Tests</h2>
+
+<p>Now let’s navigate to the project directory and run test project with additional option (environment variable really) to include warmup trace. Warmup trace is a special trace that shows how much time it takes to configure dependencies:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ <span class="nv">XUNIT_OTEL_TRACE_WARMUP</span><span class="o">=</span><span class="nb">true </span>dotnet <span class="nb">test</span>
+<span class="c"># Restore complete (1.2s)</span>
+<span class="c"># You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</span>
+<span class="c">#   XUnitOtelExample succeeded (4.9s) → bin\Debug\net8.0\XUnitOtelExample.dll</span>
+<span class="c">#   XUnitOtelExample test succeeded (2.8s)</span>
+
+<span class="c"># Build succeeded in 9.2s</span>
+<span class="c"># Test run succeeded. Total: 3 Failed: 0 Passed: 3 Skipped: 0, Duration: 2.8s</span>
+</code></pre></div></div>
+
+<p>Let’s navigate to <a href="http://localhost:18888/traces">http://localhost:18888/traces</a> to see the results of test execution.</p>
+
+<p>☝️ Aspire Dashboard is automatically started based on <a href="https://dotnet.testcontainers.org/" target="_blank" rel="noopener noreferrer">Testcontainers</a> setup as part of <code class="language-plaintext highlighter-rouge">BaseFixture</code>.</p>
+
+<center>
+    <img src="/assets/xunit-otel/initial-traces.png" style="margin: 15px;">
+</center>
+
+<p>As you can see, there are two traces one for test run and one for warmup.</p>
+
+<h3 id="explore-the-code">Explore the code</h3>
+
+<p>Before we move further let’s explore the content of exemplary test suit.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">TracePerTestRun</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">ExampleTests</span><span class="p">(</span><span class="n">BaseFixture</span> <span class="n">fixture</span><span class="p">)</span> <span class="p">:</span> <span class="nf">BaseContext</span><span class="p">(</span><span class="n">fixture</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WaitRandomTime_Success</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="c1">// ...</span>
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WaitRandomTime_ProducesSubActivity_Success</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="c1">// ...</span>
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WaitRandomTime_AsyncWait_Success</span><span class="p">()</span>
+    <span class="p">{</span>
+       <span class="c1">// ...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>WaitRandomTime_Success</strong>: This test waits for a random duration between 100 and 500 milliseconds and then asserts that the operation completes successfully. Note, the special method called <code class="language-plaintext highlighter-rouge">Runner</code>. It is intended to wrap the asserted code so we can capture exceptions and enrich the traces with additional data such as exception message, trace, etc.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WaitRandomTime_Success</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// Given</span>
+    <span class="kt">int</span> <span class="n">waitFor</span> <span class="p">=</span> <span class="n">Random</span><span class="p">.</span><span class="n">Shared</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="m">100</span><span class="p">,</span> <span class="m">500</span><span class="p">);</span>
+    <span class="n">TimeSpan</span> <span class="n">delay</span> <span class="p">=</span> <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromMilliseconds</span><span class="p">(</span><span class="n">waitFor</span><span class="p">);</span>
+
+    <span class="c1">// When</span>
+    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">delay</span><span class="p">);</span>
+
+    <span class="c1">// Then</span>
+    <span class="nf">Runner</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="k">true</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>WaitRandomTime_ProducesSubActivity_Success</strong>: Similar to the first, but it waits for a shorter random duration (between 50 and 250 milliseconds). It also starts a new activity named “SubActivity”, logs an event indicating a delay has been waited for, and sets a tag with the delay duration. The test asserts success after the wait. This example demonstrate how to add additional traces to test suit if needed.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WaitRandomTime_ProducesSubActivity_Success</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// Given</span>
+    <span class="k">using</span> <span class="nn">var</span> <span class="n">myActivity</span> <span class="p">=</span> <span class="n">BaseFixture</span><span class="p">.</span><span class="n">ActivitySource</span><span class="p">.</span><span class="nf">StartActivity</span><span class="p">(</span><span class="s">"SubActivity"</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">waitFor</span> <span class="p">=</span> <span class="n">Random</span><span class="p">.</span><span class="n">Shared</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="m">50</span><span class="p">,</span> <span class="m">250</span><span class="p">);</span>
+    <span class="n">TimeSpan</span> <span class="n">delay</span> <span class="p">=</span> <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromMilliseconds</span><span class="p">(</span><span class="n">waitFor</span><span class="p">);</span>
+
+    <span class="c1">// When</span>
+    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">delay</span><span class="p">);</span>
+    <span class="n">myActivity</span><span class="p">?.</span><span class="nf">AddEvent</span><span class="p">(</span><span class="k">new</span><span class="p">(</span><span class="s">$"WaitedForDelay"</span><span class="p">));</span>
+    <span class="n">myActivity</span><span class="p">?.</span><span class="nf">SetTag</span><span class="p">(</span><span class="s">"subA_activity:delay"</span><span class="p">,</span> <span class="n">waitFor</span><span class="p">);</span>
+
+    <span class="c1">// Then</span>
+    <span class="nf">Runner</span><span class="p">(()</span> <span class="p">=&gt;</span> <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="k">true</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>WaitRandomTime_AsyncWait_Success</strong>: This test is partially shown. Like the others, it waits for a random duration between 50 and 250 milliseconds then within a Runner method, waits for the delay again before asserting a condition that is always true. This demonstrates asynchronous <code class="language-plaintext highlighter-rouge">Runner</code> execution.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">WaitRandomTime_AsyncWait_Success</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// Given</span>
+    <span class="kt">int</span> <span class="n">waitFor</span> <span class="p">=</span> <span class="n">Random</span><span class="p">.</span><span class="n">Shared</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="m">50</span><span class="p">,</span> <span class="m">250</span><span class="p">);</span>
+    <span class="n">TimeSpan</span> <span class="n">delay</span> <span class="p">=</span> <span class="n">TimeSpan</span><span class="p">.</span><span class="nf">FromMilliseconds</span><span class="p">(</span><span class="n">waitFor</span><span class="p">);</span>
+
+    <span class="c1">// When</span>
+    <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">delay</span><span class="p">);</span>
+
+    <span class="c1">// Then</span>
+
+    <span class="k">await</span> <span class="nf">Runner</span><span class="p">(</span><span class="k">async</span> <span class="p">()</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="k">await</span> <span class="n">Task</span><span class="p">.</span><span class="nf">Delay</span><span class="p">(</span><span class="n">delay</span><span class="p">);</span>
+
+        <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="k">true</span><span class="p">);</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="results-of-test-run">Results of Test Run</h3>
+
+<p>Here is the result of trace output, as you can see, every test has it’s own trace and we can see how tests are executed sequentially by XUnit:</p>
+
+<center>
+    <img src="/assets/xunit-otel/test-run.png" style="margin: 15px;">
+</center>
+
+<p>Now, let’s modify the <code class="language-plaintext highlighter-rouge">WaitRandomTime_AsyncWait_Success</code> test to intentionally cause it to fail. This will allow us to observe how the test framework displays failed tests:</p>
+
+<center>
+    <img src="/assets/xunit-otel/trace-with-error.png" style="margin: 15px;">
+</center>
+
+<p>Below are the details of the test run. Failed tests are readily identifiable on the Aspire Dashboard, where each failed test is accompanied by an <em>Trace Event</em> with exception details. This event provides detailed insights into the reasons behind the test failure.</p>
+
+<center>
+    <img src="/assets/xunit-otel/trace-with-error-details.png" style="margin: 15px;">
+</center>
+
+<h3 id="metrics">Metrics</h3>
+
+<p>These metrics highlight the execution time on a per-test and per-class basis, categorized by tags.</p>
+
+<center>
+    <img src="/assets/xunit-otel/metrics.png" style="margin: 15px;">
+</center>
+
+<p>The P50 percentile, also known as the median, represents the <strong>middle value</strong> of a dataset when it’s sorted in ascending order. In the context of test execution, the P50 percentile for execution time tells you that:</p>
+
+<ul>
+  <li><strong>50% of your tests complete faster than this time.</strong></li>
+  <li><strong>50% of your tests complete slower than this time.</strong></li>
+</ul>
+
+<p>Here’s how you can use the P50 percentile for test execution:</p>
+
+<p><strong>1. Performance Benchmark:</strong></p>
+
+<ul>
+  <li>The P50 provides a good representation of the “typical” test execution time.</li>
+  <li>You can use it as a baseline to compare performance over time. For example, if your P50 increases significantly after a code change, it might indicate a performance regression.</li>
+</ul>
+
+<p><strong>2. Setting Realistic Expectations:</strong></p>
+
+<ul>
+  <li>Instead of focusing on the absolute fastest or slowest tests, the P50 gives you a realistic idea of how long most tests take to execute.</li>
+</ul>
+
+<p><strong>3. Identifying Areas for Improvement:</strong></p>
+
+<ul>
+  <li>While the P50 represents the median, a large difference between the P50 and higher percentiles (like P90 or P95) indicates a wide spread in execution times.</li>
+  <li>This suggests that some tests are significantly slower than others, and you might want to investigate those outliers for potential optimizations.</li>
+</ul>
+
+<p><strong>Example:</strong></p>
+
+<p>Let’s say your test suite has a P50 execution time of 200 milliseconds. This means:</p>
+
+<ul>
+  <li>Half of your tests finish in under 200 milliseconds.</li>
+  <li>Half of your tests take longer than 200 milliseconds.</li>
+</ul>
+
+<p><strong>In summary,</strong> the P50 percentile provides a valuable metric for understanding the typical performance of your tests and identifying areas for optimization. It helps you set realistic expectations, track performance trends, and make informed decisions about your testing process.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this guide, we’ve explored how to leverage XUnit and OpenTelemetry to instrument our .NET test projects, providing a deeper insight into our test executions with the Aspire Dashboard. By integrating these tools, developers can gain valuable metrics and traces that illuminate the performance and behavior of tests in a way that traditional testing frameworks cannot match.</p>
+
+<p>The process of setting up the <code class="language-plaintext highlighter-rouge">XUnit.Otel.Template</code> demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard. The examples provided show not only how to implement basic test instrumentation but also how to enrich our tests with additional data, such as custom activities and events, to gain more detailed insights.</p>
+
+<p>The ability to visualize test executions and metrics on the <em>Aspire Dashboard</em> transforms the way we perceive and interact with our test suites. It allows us to quickly identify and address failures, understand performance bottlenecks, and improve the reliability and efficiency of our tests over time.</p>
+
+<p>As we continue to evolve our testing strategies, the integration of OpenTelemetry and Aspire Dashboard with XUnit represents a significant step forward in achieving more observable, reliable, and insightful test suites. This guide serves as a starting point for developers looking to enhance their testing practices with these powerful tools.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/NikiforovAll/xunit-instrumentation-otel-template" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/xunit-instrumentation-otel-template</a></li>
+  <li><a href="https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html" target="_blank" rel="noopener noreferrer">https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(35)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#opentelemetry-ref" target="_blank" rel="noopener noreferrer">
+				opentelemetry <span>(2)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(41)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref" target="_blank" rel="noopener noreferrer">
+				aspnetcore <span>(21)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#opentelemetry-ref" target="_blank" rel="noopener noreferrer">
+				opentelemetry <span>(3)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(7)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html" title="Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow noopener noreferrer" target="_blank">comments powered by Disqus.</a>
+</noscript>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+

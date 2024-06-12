@@ -1,8 +1,8 @@
 ---
 layout: post
 title: "Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard"
-categories: [ dotnet, opentelemtry ]
-tags: [ dotnet, aspnetcore, opentelemtry, aspire ]
+categories: [ dotnet, opentelemetry ]
+tags: [ dotnet, aspnetcore, opentelemetry, aspire ]
 published: true
 shortinfo: "Learn how you can use OpenTelemetry to monitor your automated tests and send that data to the Aspire Dashboard for visualization."
 fullview: false
