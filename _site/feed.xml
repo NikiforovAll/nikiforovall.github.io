@@ -7,6 +7,259 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;In this guide, we will explored how to leverage XUnit and OpenTelemetry to instrument .NET test projects. The process of setting up the &lt;a href=&quot;https://www.nuget.org/packages/XUnit.Otel.Template&quot;&gt;XUnit.Otel.Template&lt;/a&gt; demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code&lt;/strong&gt;: &lt;a href=&quot;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&quot;&gt;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&lt;/a&gt;&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/xunit-otel/blog-cover.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;&lt;em&gt;Table of Contents:&lt;/em&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#installation&quot;&gt;Installation&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#run-tests&quot;&gt;Run Tests&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#explore-the-code&quot;&gt;Explore the code&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#results-of-test-run&quot;&gt;Results of Test Run&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#metrics&quot;&gt;Metrics&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;As discussed in my previous blog post - &lt;a href=&quot;https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html&quot;&gt;Automated Tests Instrumentation via OpenTelemetry and Aspire Dashboard&lt;/a&gt;, we can utilize OpenTelemetry and Aspire Dashboard to gain valuable insights into the execution of our tests. This allows us to collect and analyze data over time, enabling us to identify potential anomalies.&lt;/p&gt;
+
+&lt;p&gt;Considering the positive response from the community, I have taken the initiative to enhance the existing approach and create a reusable starter template for everyone to benefit from.&lt;/p&gt;
+
+&lt;h2 id=&quot;installation&quot;&gt;Installation&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet new &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;XUnit.Otel.Template::1.0.0
+&lt;span class=&quot;c&quot;&gt;# The following template packages will be installed:&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#    XUnit.Otel.Template::1.0.0&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Success: XUnit.Otel.Template::1.0.0 installed the following templates:&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Template Name  Short Name  Language  Tags&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# -------------  ----------  --------  -------------------------&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# XUnit Otel     xunit-otel  [C#]      XUnit/Tests/OpenTelemetry&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Generate:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet new xunit-otel &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$dev&lt;/span&gt;/XUnitOtelExample01 &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; XUnitOtelExample
+&lt;span class=&quot;c&quot;&gt;# The template &quot;XUnit Otel&quot; was created successfully.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;run-tests&quot;&gt;Run Tests&lt;/h2&gt;
+
+&lt;p&gt;Now let’s navigate to the project directory and run test project with additional option (environment variable really) to include warmup trace. Warmup trace is a special trace that shows how much time it takes to configure dependencies:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ &lt;span class=&quot;nv&quot;&gt;XUNIT_OTEL_TRACE_WARMUP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true &lt;/span&gt;dotnet &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Restore complete (1.2s)&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   XUnitOtelExample succeeded (4.9s) → bin\Debug\net8.0\XUnitOtelExample.dll&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   XUnitOtelExample test succeeded (2.8s)&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Build succeeded in 9.2s&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Test run succeeded. Total: 3 Failed: 0 Passed: 3 Skipped: 0, Duration: 2.8s&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Let’s navigate to &lt;a href=&quot;http://localhost:18888/traces&quot;&gt;http://localhost:18888/traces&lt;/a&gt; to see the results of test execution.&lt;/p&gt;
+
+&lt;p&gt;☝️ Aspire Dashboard is automatically started based on &lt;a href=&quot;https://dotnet.testcontainers.org/&quot;&gt;Testcontainers&lt;/a&gt; setup as part of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BaseFixture&lt;/code&gt;.&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/xunit-otel/initial-traces.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;As you can see, there are two traces one for test run and one for warmup.&lt;/p&gt;
+
+&lt;h3 id=&quot;explore-the-code&quot;&gt;Explore the code&lt;/h3&gt;
+
+&lt;p&gt;Before we move further let’s explore the content of exemplary test suit.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TracePerTestRun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ExampleTests&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BaseFixture&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;BaseContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_ProducesSubActivity_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_AsyncWait_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+       &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;WaitRandomTime_Success&lt;/strong&gt;: This test waits for a random duration between 100 and 500 milliseconds and then asserts that the operation completes successfully. Note, the special method called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Runner&lt;/code&gt;. It is intended to wrap the asserted code so we can capture exceptions and enrich the traces with additional data such as exception message, trace, etc.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// Given&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Shared&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;500&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// When&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Then&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;Runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;WaitRandomTime_ProducesSubActivity_Success&lt;/strong&gt;: Similar to the first, but it waits for a shorter random duration (between 50 and 250 milliseconds). It also starts a new activity named “SubActivity”, logs an event indicating a delay has been waited for, and sets a tag with the delay duration. The test asserts success after the wait. This example demonstrate how to add additional traces to test suit if needed.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_ProducesSubActivity_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// Given&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;myActivity&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BaseFixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;SubActivity&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Shared&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;250&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// When&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;myActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;WaitedForDelay&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;myActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;SetTag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;subA_activity:delay&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Then&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;Runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;WaitRandomTime_AsyncWait_Success&lt;/strong&gt;: This test is partially shown. Like the others, it waits for a random duration between 50 and 250 milliseconds then within a Runner method, waits for the delay again before asserting a condition that is always true. This demonstrates asynchronous &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Runner&lt;/code&gt; execution.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_AsyncWait_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// Given&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Shared&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;250&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// When&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Then&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+        &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;results-of-test-run&quot;&gt;Results of Test Run&lt;/h3&gt;
+
+&lt;p&gt;Here is the result of trace output, as you can see, every test has it’s own trace and we can see how tests are executed sequentially by XUnit:&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/xunit-otel/test-run.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Now, let’s modify the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WaitRandomTime_AsyncWait_Success&lt;/code&gt; test to intentionally cause it to fail. This will allow us to observe how the test framework displays failed tests:&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/xunit-otel/trace-with-error.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Below are the details of the test run. Failed tests are readily identifiable on the Aspire Dashboard, where each failed test is accompanied by an &lt;em&gt;Trace Event&lt;/em&gt; with exception details. This event provides detailed insights into the reasons behind the test failure.&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/xunit-otel/trace-with-error-details.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h3 id=&quot;metrics&quot;&gt;Metrics&lt;/h3&gt;
+
+&lt;p&gt;These metrics highlight the execution time on a per-test and per-class basis, categorized by tags.&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/xunit-otel/metrics.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;The P50 percentile, also known as the median, represents the &lt;strong&gt;middle value&lt;/strong&gt; of a dataset when it’s sorted in ascending order. In the context of test execution, the P50 percentile for execution time tells you that:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;50% of your tests complete faster than this time.&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;50% of your tests complete slower than this time.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here’s how you can use the P50 percentile for test execution:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Performance Benchmark:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The P50 provides a good representation of the “typical” test execution time.&lt;/li&gt;
+  &lt;li&gt;You can use it as a baseline to compare performance over time. For example, if your P50 increases significantly after a code change, it might indicate a performance regression.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Setting Realistic Expectations:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Instead of focusing on the absolute fastest or slowest tests, the P50 gives you a realistic idea of how long most tests take to execute.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;3. Identifying Areas for Improvement:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;While the P50 represents the median, a large difference between the P50 and higher percentiles (like P90 or P95) indicates a wide spread in execution times.&lt;/li&gt;
+  &lt;li&gt;This suggests that some tests are significantly slower than others, and you might want to investigate those outliers for potential optimizations.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s say your test suite has a P50 execution time of 200 milliseconds. This means:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Half of your tests finish in under 200 milliseconds.&lt;/li&gt;
+  &lt;li&gt;Half of your tests take longer than 200 milliseconds.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;In summary,&lt;/strong&gt; the P50 percentile provides a valuable metric for understanding the typical performance of your tests and identifying areas for optimization. It helps you set realistic expectations, track performance trends, and make informed decisions about your testing process.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;In this guide, we’ve explored how to leverage XUnit and OpenTelemetry to instrument our .NET test projects, providing a deeper insight into our test executions with the Aspire Dashboard. By integrating these tools, developers can gain valuable metrics and traces that illuminate the performance and behavior of tests in a way that traditional testing frameworks cannot match.&lt;/p&gt;
+
+&lt;p&gt;The process of setting up the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;XUnit.Otel.Template&lt;/code&gt; demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard. The examples provided show not only how to implement basic test instrumentation but also how to enrich our tests with additional data, such as custom activities and events, to gain more detailed insights.&lt;/p&gt;
+
+&lt;p&gt;The ability to visualize test executions and metrics on the &lt;em&gt;Aspire Dashboard&lt;/em&gt; transforms the way we perceive and interact with our test suites. It allows us to quickly identify and address failures, understand performance bottlenecks, and improve the reliability and efficiency of our tests over time.&lt;/p&gt;
+
+&lt;p&gt;As we continue to evolve our testing strategies, the integration of OpenTelemetry and Aspire Dashboard with XUnit represents a significant step forward in achieving more observable, reliable, and insightful test suites. This guide serves as a starting point for developers looking to enhance their testing practices with these powerful tools.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&quot;&gt;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html&quot;&gt;https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Wed, 12 Jun 2024 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html</guid>
+			</item>
+		
+			<item>
 				<title>Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -417,8 +670,8 @@
 &lt;/ul&gt;
 </description>
 				<pubDate>Fri, 07 Jun 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html</guid>
+				<link>https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html</guid>
 			</item>
 		
 			<item>
@@ -3550,535 +3803,6 @@ bombardier &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; POST &lt;span class=
 				<pubDate>Sat, 06 Apr 2024 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/aspnetcore/2024/04/06/openapi-polymorphism.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/aspnetcore/2024/04/06/openapi-polymorphism.html</guid>
-			</item>
-		
-			<item>
-				<title>Transactional Outbox in .NET Cloud Native Development via Aspire</title>
-				<description>&lt;p&gt;&lt;em&gt;Table of Contents&lt;/em&gt;:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#introduction-to-outbox-pattern&quot;&gt;Introduction to Outbox Pattern&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#implementation-of-the-outbox-pattern&quot;&gt;Implementation of the Outbox Pattern&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#introduction-to-dotnetcorecap&quot;&gt;Introduction to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#example&quot;&gt;Example&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#adding-aspire&quot;&gt;Adding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire&lt;/code&gt;&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#provision-infrastructure&quot;&gt;Provision Infrastructure&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#configure-for-local-development&quot;&gt;Configure for Local Development&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#demo&quot;&gt;Demo&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#locally&quot;&gt;Locally&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#azure&quot;&gt;Azure&lt;/a&gt;
-        &lt;ul&gt;
-          &lt;li&gt;&lt;a href=&quot;#outbox-tables&quot;&gt;Outbox Tables&lt;/a&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#cleanup&quot;&gt;Cleanup&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;This post provides an example of the Outbox pattern implementation using &lt;strong&gt;Aspire&lt;/strong&gt;, &lt;strong&gt;DotNetCore.CAP&lt;/strong&gt;, &lt;strong&gt;Azure Service Bus&lt;/strong&gt;, &lt;strong&gt;Azure SQL&lt;/strong&gt;, &lt;strong&gt;Bicep&lt;/strong&gt;, and &lt;strong&gt;azd&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Source code: &lt;a href=&quot;https://github.com/NikiforovAll/cap-aspire&quot;&gt;https://github.com/NikiforovAll/cap-aspire&lt;/a&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;introduction-to-outbox-pattern&quot;&gt;Introduction to Outbox Pattern&lt;/h2&gt;
-
-&lt;p&gt;The &lt;strong&gt;Outbox pattern&lt;/strong&gt; is a crucial component in the world of distributed systems. As we move towards a more distributed and decoupled architecture in modern software development, ensuring reliable message delivery becomes increasingly important.&lt;/p&gt;
-
-&lt;p&gt;In a distributed system, different components need to communicate with each other, often through asynchronous messaging. The &lt;strong&gt;Outbox pattern&lt;/strong&gt; provides a reliable way to handle these messages. It ensures that even if a system fails after performing a local transaction but before sending out the message, the message is not lost. Instead, it is temporarily stored in an “outbox” and can be retrieved and sent when the system recovers.&lt;/p&gt;
-
-&lt;p&gt;By using the &lt;strong&gt;Outbox pattern&lt;/strong&gt;, we can ensure that all components of the system receive the necessary messages in a reliable manner, thereby maintaining the integrity and consistency of the entire system.&lt;/p&gt;
-
-&lt;p&gt;In a distributed system without the &lt;strong&gt;Outbox pattern&lt;/strong&gt;, there are several things that could go wrong, leading to data inconsistency or message loss. Here are a few examples:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Transaction Commit and Message Send are not Atomic&lt;/strong&gt;: In a typical scenario, a service might first commit a transaction to its database and then send a message to a message broker. If the service crashes after the transaction commit but before the message is sent, the message will be lost. Other services will not be aware of the changes that were committed to the database.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Message Send Failure&lt;/strong&gt;: Even if the service doesn’t crash, sending the message could fail due to a network issue or a problem with the message broker. If the message send operation is not retried, the message will be lost.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Duplicate Messages&lt;/strong&gt;: If the service retries the message send operation after a failure, it could end up sending the same message multiple times if the first send actually succeeded but the acknowledgement was lost. This could lead to duplicate processing if the message consumers are not idempotent.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Ordering Issues:&lt;/strong&gt; If multiple messages are sent as a result of a single transaction, and the sends are not atomic, then the messages could be received out of order. This could lead to incorrect processing if the order of the messages is important.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;The &lt;strong&gt;Outbox pattern&lt;/strong&gt; addresses these issues by ensuring that the transaction commit and the message send operations are atomic, and by providing a mechanism for reliably sending messages even in the face of failures.&lt;/p&gt;
-
-&lt;p&gt;Here is a sequence diagram that illustrates the problem with a system without the &lt;strong&gt;Outbox pattern&lt;/strong&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;mermaid&quot;&gt;
-
-sequenceDiagram
-    participant A as Component A
-    participant DB as Database
-    participant MB as Message Broker
-    participant B as Component B
-    A-&amp;gt;&amp;gt;DB: Transaction
-    Note right of DB: Transaction is committed
-    DB--&amp;gt;&amp;gt;A: Acknowledgement
-    Note left of A: 💥A crashes before message is delivered
-    A--xMB: Message crash
-    Note right of MB: Message delivery fails due to A&apos;s crash
-&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;Idempotent consumers&lt;/strong&gt; play a significant role in the Outbox pattern. In the context of distributed systems, idempotency refers to the ability of a system to produce the same outcome, regardless of how many times a particular operation is performed. This is crucial in ensuring data consistency and reliability in a distributed environment.&lt;/p&gt;
-
-&lt;p&gt;However, this could potentially lead to the same message being delivered more than once, especially in scenarios where the system fails after sending the message but before it could mark the message as sent in the outbox. This is where idempotent consumers come into play.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Idempotent consumers&lt;/strong&gt; are designed to handle duplicate messages gracefully. They ensure that the side effects of receiving the same message more than once are eliminated. This is typically achieved by keeping track of the IDs of all processed messages. When a message is received, the consumer checks if it has already processed a message with the same ID. If it has, it simply ignores the message.&lt;/p&gt;
-
-&lt;p&gt;Here is a sequence diagram that illustrates how the Outbox pattern solves the problem:&lt;/p&gt;
-
-&lt;div class=&quot;mermaid&quot;&gt;
-
-sequenceDiagram
-    participant A as Component A
-    participant DB as Database
-    participant OB as Outbox
-    participant MB as Message Broker
-    participant B as Component B
-    A-&amp;gt;&amp;gt;DB: Transaction
-    A-&amp;gt;&amp;gt;DB: Message
-    Note right of DB: Message is stored in Database
-    DB--&amp;gt;&amp;gt;A: Acknowledgement
-    Note right of DB: Transaction is committed
-    Note left of A: 💥A crashes before message is delivered
-    A--xMB: Message
-    Note right of MB: Message delivery fails due to A&apos;s crash
-    loop Every X time
-        OB--&amp;gt;&amp;gt;DB: Check
-        Note over OB: Outbox polls Database for new messages
-        OB--&amp;gt;&amp;gt;MB: Message
-        Note right of MB: Message is delivered to Message Broker
-    end
-    MB--&amp;gt;&amp;gt;B: Message
-    Note right of B: Message is processed by Component B
-    Note over B: If B has already processed a message with the same ID, it simply ignores the message (Idempotent Consumer)
-&lt;/div&gt;
-
-&lt;h2 id=&quot;implementation-of-the-outbox-pattern&quot;&gt;Implementation of the Outbox Pattern&lt;/h2&gt;
-
-&lt;p&gt;Now that you understand the importance and benefits of the Outbox pattern, let’s delve into what it takes to implement:&lt;/p&gt;
-
-&lt;p&gt;The implementation of the Outbox pattern involves the following steps:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Create an Outbox Table&lt;/strong&gt;: The first step is to create an Outbox table in your database. This table will store all the messages that need to be sent. Each message should have a unique ID and a status field that indicates whether the message has been sent or not.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Modify the Application Code&lt;/strong&gt;: The next step is to modify your application code. Whenever your application needs to send a message as part of a transaction, it should add the message to the Outbox table as part of the same transaction.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Implement an Outbox Publisher&lt;/strong&gt;: The Outbox publisher is a separate component that polls the Outbox table for unsent messages. When it finds an unsent message, it sends the message and updates the status of the message in the Outbox table to ‘sent’.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&quot;introduction-to-dotnetcorecap&quot;&gt;Introduction to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt;&lt;/h3&gt;
-
-&lt;p&gt;Luckily, there is a .NET library called &lt;a href=&quot;https://cap.dotnetcore.xyz/&quot;&gt;DotNetCore.CAP&lt;/a&gt; that simplifies the implementation of the Outbox pattern for us.&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt; is an open-source library that provides a set of APIs that allow developers to easily send messages as part of a database transaction, store them in an outbox, and ensure they are reliably delivered to all interested consumers, even in the face of failures.&lt;/p&gt;
-
-&lt;p&gt;The library also supports idempotent consumers, which are crucial for ensuring data consistency and reliability in a distributed environment. This means that even if the same message is delivered more than once, the side effects of receiving the same message are eliminated.&lt;/p&gt;
-
-&lt;p&gt;By using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt;, developers can focus on the business logic of their applications, while the library takes care of the complexities of ensuring reliable message delivery in a distributed system.&lt;/p&gt;
-
-&lt;h3 id=&quot;example&quot;&gt;Example&lt;/h3&gt;
-
-&lt;p&gt;This code demonstrates how to use the CAP library in an ASP.NET Core application for event publishing and handling.&lt;/p&gt;
-
-&lt;p&gt;In the producer:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;A route handler for the &lt;strong&gt;“/send”&lt;/strong&gt; endpoint is defined.&lt;/li&gt;
-  &lt;li&gt;It starts a transaction, executes a SQL command to get the current server time, and publishes a message with this time to the &lt;strong&gt;“test.show.time”&lt;/strong&gt; topic.&lt;/li&gt;
-  &lt;li&gt;The message is published with a delay of 500 milliseconds.&lt;/li&gt;
-  &lt;li&gt;If all operations are successful, the transaction is committed and a response is returned.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Producer/Program.cs&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/send&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;SqlConnection&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;ICapPublisher&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;capPublisher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;TimeProvider&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;startTime&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetTimestamp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;transaction&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;BeginTransaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;capPublisher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;autoCommit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;command&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateCommand&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Transaction&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SqlTransaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;transaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CommandText&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;SELECT GETDATE()&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;serverTime&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ExecuteScalarAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;capPublisher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;PublishDelayAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;500&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-        &lt;span class=&quot;s&quot;&gt;&quot;test.show.time&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MyMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;serverTime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ToString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()!));&lt;/span&gt;
-
-    &lt;span class=&quot;n&quot;&gt;transaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Commit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TypedResults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Ok&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Status&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Published&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Duration&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetElapsedTime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;startTime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;💡Note, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BeginTransaction&lt;/code&gt; is an extensions method defined in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP.SqlServer&lt;/code&gt;. It responsible for Outbox table management.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IDbTransaction&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;BeginTransaction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IDbConnection&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbConnection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;ICapPublisher&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;publisher&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;autoCommit&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In the consumer:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;A class &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SampleSubscriber&lt;/code&gt; is defined that implements &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ICapSubscribe&lt;/code&gt;.&lt;/li&gt;
-  &lt;li&gt;It has a method &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HandleAsync&lt;/code&gt; that is decorated with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CapSubscribe&lt;/code&gt; attribute, specifying it as a handler for the &lt;strong&gt;“test.show.time”&lt;/strong&gt; topic.&lt;/li&gt;
-  &lt;li&gt;When a message is received on this topic, it logs the message content after a delay of 300 milliseconds.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Consumer/Program.cs&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SampleSubscriber&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;TimeProvider&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;ILogger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SampleSubscriber&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ICapSubscribe&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;record&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CreatedAt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CapSubscribe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;test.show.time&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;HandleAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MyMessage&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;300&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeProvider&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-        
-        &lt;span class=&quot;n&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;LogInformation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Message received: {CreatedAt}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CreatedAt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;adding-aspire&quot;&gt;Adding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire&lt;/code&gt;&lt;/h2&gt;
-
-&lt;p&gt;To fully demonstrate the demo, we need to setup some real infrastructure components - Message Broker and Database.&lt;/p&gt;
-
-&lt;p&gt;.NET Aspire provides a curated suite of NuGet packages (Components) specifically selected to facilitate the integration of cloud-native applications. Each component furnishes essential cloud-native functionalities through either automatic provisioning or standardized configuration patterns.&lt;/p&gt;
-
-&lt;p&gt;Add Message Broker:&lt;/p&gt;
-
-&lt;p&gt;The .NET Aspire Service Bus component handles the following concerns to connect your app to Azure Service Bus. It adds &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ServiceBusClient&lt;/code&gt; to the DI container for connecting to Azure Service Bus.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;dotnet&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;add&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Aspire&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Azure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Messaging&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ServiceBus&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prerelease&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Add Database:&lt;/p&gt;
-
-&lt;p&gt;.NET Aspire provides two built-in configuration options to streamline SQL Server deployment on Azure:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Provision a containerized SQL Server database using Azure Container Apps&lt;/li&gt;
-  &lt;li&gt;Provision an Azure SQL Database instance (We will go with this one)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;dotnet&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;add&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;package&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Aspire&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Microsoft&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SqlClient&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;--&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prerelease&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is how we can setup Aspire Host based on installed components:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// CapExample.AppHost/Program.cs&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sqlServer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ExecutionContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsPublishMode&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddSqlServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sqlserver&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;PublishAsAzureSqlDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sqldb&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sqldb&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;serviceBus&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ExecutionContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsPublishMode&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAzureServiceBus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;serviceBus&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;serviceBus&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Consumer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;consumer&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sqlServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;serviceBus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Producer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;producer&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sqlServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;serviceBus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;The idea is to use connection strings during development time and provision Azure resources on publish time.&lt;/p&gt;
-
-&lt;p&gt;Aspire allows us to develop locally and deploy to the cloud without source code changes by providing a flexible configuration system. We can use connection strings managed by Aspire Components, which can be easily switched between local development and cloud deployment environments. This allows us to seamlessly transition between different deployment scenarios without modifying our source code.&lt;/p&gt;
-
-&lt;p&gt;Down below you can find how to configure &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt; based on Aspire Components:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Consumer/Program.cs&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// Producer/Program.cs&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddServiceDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAzureServiceBus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;serviceBus&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddSqlServerClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sqldb&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddCap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbConnectionString&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sqldb&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)!;&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;serviceBusConnection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;serviceBus&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)!;&lt;/span&gt;
-
-    &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseAzureServiceBus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;serviceBusConnection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSqlServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ConnectionString&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;provision-infrastructure&quot;&gt;Provision Infrastructure&lt;/h3&gt;
-
-&lt;p&gt;The Azure Developer CLI (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd&lt;/code&gt;) has been enhanced to support the deployment of .NET Aspire applications. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd init&lt;/code&gt; workflow offers tailored support for .NET Aspire projects. I utilized this approach while developing this application and it proved to be quite nice. It improved by productivity.&lt;/p&gt;
-
-&lt;p&gt;When &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd&lt;/code&gt; targets a .NET Aspire application it starts the AppHost with a special command (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet run --project AppHost.csproj -- --publisher manifest&lt;/code&gt;), which produces the Aspire manifest file.&lt;/p&gt;
-
-&lt;p&gt;The manifest file is interrogated by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd provision&lt;/code&gt; sub-command logic to generate Bicep files in-memory only (by default).&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/azd-internals.png&quot; alt=&quot;azd-internals&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;See &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth?tabs=linux#how-azure-developer-cli-integration-works&quot;&gt;https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth?tabs=linux#how-azure-developer-cli-integration-works&lt;/a&gt; for more instructions.&lt;/p&gt;
-
-&lt;p&gt;Personally, I find it more convenient to generate Bicep files explicitly. This can be accomplished by executing the following command:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ azd infra synth
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is visualization of what would be provisioned:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/resources.png&quot; alt=&quot;resources&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;To provision resources we need to run next command:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ azd provision
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/provision.png&quot; alt=&quot;provision&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Here is created resource group - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rg-cap-dev&lt;/code&gt;:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/az-resources.png&quot; alt=&quot;az-resources&quot; /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;configure-for-local-development&quot;&gt;Configure for Local Development&lt;/h3&gt;
-
-&lt;p&gt;To retrieve connection string for Azure Service Bus:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;resourceGroup&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;rg-cap-dev&quot;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;namespace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;
-    az servicebus namespace list &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--resource-group&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$resourceGroup&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--output&lt;/span&gt; tsv &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--query&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;[0].name&apos;&lt;/span&gt;
-&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;azbConnectionString&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;
-    az servicebus namespace authorization-rule keys list &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--namespace-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$namespace&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; RootManageSharedAccessKey &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--resource-group&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$resourceGroup&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--output&lt;/span&gt; tsv &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-        &lt;span class=&quot;nt&quot;&gt;--query&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;primaryConnectionString&apos;&lt;/span&gt;
-&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;
-
-dotnet user-secrets &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./src/CapExample.AppHost &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;ConnectionStrings:serviceBus &lt;span class=&quot;nv&quot;&gt;$azbConnectionString&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;To retrieve connection string for Azure SQL Database:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# read server address&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; .azure/cap-dev/.env &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;then
-    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; .azure/cap-dev/.env | &lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;s/#.*//g&apos;&lt;/span&gt; | xargs&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# read server password&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;db_password&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;jq &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;.inputs.sql.password&apos;&lt;/span&gt; .azure/cap-dev/config.json&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;
-
-dotnet user-secrets &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./src/CapExample.AppHost &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;ConnectionStrings:sqldb &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
-    &lt;span class=&quot;s2&quot;&gt;&quot;Server=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$SQLSERVER_SQLSERVERFQDN&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;;Initial Catalog=sqldb;Persist Security Info=False;User ID=CloudSA;Password=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$db_password&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;To check the secrets were stored successfully:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet user-secrets &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./src/CapExample.AppHost list
-&lt;span class=&quot;c&quot;&gt;# ConnectionStrings:sqldb = Server=sqlserver-gopucer6dsl5q.database.windows.net;Initial Catalog=sqldb;Persist Security Info=False;User ID=CloudSA;Password=&amp;lt;your-password&amp;gt;;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# ConnectionStrings:serviceBus = Endpoint=sb://servicebus-gopucer6dsl5q.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=&amp;lt;your-key&amp;gt;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;demo&quot;&gt;Demo&lt;/h2&gt;
-
-&lt;p&gt;As you might know, Aspire adds OpenTelemetry support out-of-the-box and you can configure it in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ServiceDefaults/Extensions.cs&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt; has a package that adds additional OpenTelemetry capabilities.&lt;/p&gt;
-
-&lt;p&gt;Distributed spans in OpenTelemetry help you track operations over a message broker by providing a way to trace the flow of messages across different components of your system.&lt;/p&gt;
-
-&lt;p&gt;When using a message broker like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt;, messages are typically sent from a producer to a consumer through an intermediary broker. Each step in this process can be considered a span, which represents a unit of work or an operation.&lt;/p&gt;
-
-&lt;p&gt;By instrumenting your code with OpenTelemetry, you can create spans that capture information about each step of the message flow. These spans can include details such as the time taken, any errors encountered, and additional contextual information.&lt;/p&gt;
-
-&lt;p&gt;With distributed spans, you can visualize the entire journey of a message as it moves through your system, from the producer to the broker and finally to the consumer. This allows you to gain insights into the performance and behavior of your message processing pipeline.&lt;/p&gt;
-
-&lt;p&gt;By analyzing the distributed spans, you can identify bottlenecks, latency issues, and potential errors in your message processing flow. This information is invaluable for troubleshooting and optimizing the performance of your distributed systems.&lt;/p&gt;
-
-&lt;p&gt;Here is what you need to do to install and configure OpenTelemetry for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt;:&lt;/p&gt;
-
-&lt;p&gt;Install NuGet package:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet add ./src/CapExample.ServiceDefaults/ package DotNetCore.Cap.OpenTelemetry
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Adjust ServiceDefaults:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddOpenTelemetry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithMetrics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;metrics&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;metrics&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAspNetCoreInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddHttpClientInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddProcessInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddRuntimeInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithTracing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tracing&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Environment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;IsDevelopment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;tracing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;SetSampler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AlwaysOnSampler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;tracing&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAspNetCoreInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddGrpcClientInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddHttpClientInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddCapInstrumentation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// &amp;lt;-- add this code&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;locally&quot;&gt;Locally&lt;/h3&gt;
-
-&lt;p&gt;Now, let’s run the demo:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet run &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./src/CapExample.AppHost
-&lt;span class=&quot;c&quot;&gt;# Building...&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Restore complete (0.6s)&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   CapExample.ServiceDefaults succeeded (0.2s) → src\CapExample.ServiceDefaults\bin\Debug\net9.0\CapExample.ServiceDefaults.dll&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Consumer succeeded (0.3s) → src\Consumer\bin\Debug\net9.0\Consumer.dll&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Producer succeeded (0.5s) → src\Producer\bin\Debug\net9.0\Producer.dll&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   CapExample.AppHost succeeded (0.2s) → src\CapExample.AppHost\bin\Debug\net9.0\CapExample.AppHost.dll&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Build succeeded in 2.6s&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Aspire version: 9.0.0-preview.2.24162.2+eaca163f7737934020f1102a9d11fdf790cccdc0&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Distributed application starting.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Application host directory is: C:\Users\Oleksii_Nikiforov\dev\cap-aspire\src\CapExample.AppHost&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Now listening on: http://localhost:15118&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Aspire.Hosting.DistributedApplication[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Distributed application started. Press Ctrl+C to shut down.&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Let’s generate some load:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; http://localhost:5288/send | jq
-&lt;span class=&quot;c&quot;&gt;# {&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   &quot;status&quot;: &quot;Published&quot;,&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   &quot;duration&quot;: &quot;00:00:00.5255861&quot;&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# }&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Navigate to Aspire Dashboard to see some traces:&lt;/p&gt;
-
-&lt;p&gt;Here is the first request, as you can see, we need some time to establish initial connection with Azure Service Bus:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/traces.png&quot; alt=&quot;traces&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Subsequent requests take less time:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/traces2.png&quot; alt=&quot;traces2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;💡I recommend you to delve into the source code and trace examples to enhance your understanding of how the &lt;strong&gt;Outbox Pattern&lt;/strong&gt; works.&lt;/p&gt;
-
-&lt;h3 id=&quot;azure&quot;&gt;Azure&lt;/h3&gt;
-
-&lt;p&gt;Let’s deploy to Azure Container Apps by running &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd deploy&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/deploy.png&quot; alt=&quot;deploy&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;During the initial configuration (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd init&lt;/code&gt;) I specified that I want a public address for the Producer. We can utilize it for dev testing:&lt;/p&gt;
-
-&lt;p&gt;Let’s generate some load and see the metrics for Azure Service Bus.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ curl &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; https://producer.mangoforest-17799c26.eastus.azurecontainerapps.io/send | jq
-&lt;span class=&quot;c&quot;&gt;# {&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   &quot;status&quot;: &quot;Published&quot;,&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   &quot;duration&quot;: &quot;00:00:00.0128251&quot;&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# }&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/sb-metrics.png&quot; alt=&quot;metrics&quot; /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;outbox-tables&quot;&gt;Outbox Tables&lt;/h4&gt;
-
-&lt;p&gt;Under the hood &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt; create two tables to manage an outbox.&lt;/p&gt;
-
-&lt;p&gt;In the &lt;strong&gt;Outbox Pattern&lt;/strong&gt;, the Published and Received tables are used to manage the messages that need to be published or have been received by a messaging system. Let’s take a closer look at the purpose of each table:&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Published Table&lt;/strong&gt;: The Published table is responsible for storing the messages that need to be published to an external messaging system. When an application generates a message that needs to be sent out, it is stored in the Published table. This table acts as a buffer or a queue, ensuring that the messages are not lost if the messaging system is temporarily unavailable or if there are any failures during the publishing process. By using the Published table, the application can continue to generate messages without being blocked by the availability or performance of the messaging system. The messages in the Published table can be processed asynchronously by a separate component or background process, which takes care of publishing them to the external messaging system. Once a message is successfully published, it can be removed from the Published table.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Received Table&lt;/strong&gt;: The Received table is used to track the messages that have been received by the application from the external messaging system. When the application receives a message, it stores the necessary information about the message in the Received table. This information can include the message content, metadata, and any other relevant details. The Received table allows the application to keep a record of the messages it has processed, enabling it to handle duplicate messages.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/cap-aspire/outbox-tables.png&quot; alt=&quot;outbox-tables&quot; /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;cleanup&quot;&gt;Cleanup&lt;/h3&gt;
-
-&lt;p&gt;Once you are done with the development you can delete the resource group &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rg-cap-dev&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ azd down
-&lt;span class=&quot;c&quot;&gt;# Deleting all resources and deployed code on Azure (azd down)&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Local application code is not deleted when running &apos;azd down&apos;.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Resource group(s) to be deleted:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#     • rg-cap-dev: https://portal.azure.com/#@/resource/subscriptions/0b252e02-9c7a-4d73-8fbc-633c5d111ebc/resourceGroups/rg-cap-dev/overview&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# ? Total resources to delete: 10, are you sure you want to continue? Yes&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Deleting your resources can take some time.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   (✓) Done: Deleting resource group: rg-cap-dev&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# SUCCESS: Your application was removed from Azure in 10 minutes 53 seconds.&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In this post, we’ve explored the &lt;strong&gt;Outbox Pattern&lt;/strong&gt;, a crucial component in the world of distributed systems. We’ve seen how it ensures reliable message delivery in a distributed system, maintaining the integrity and consistency of the entire system.&lt;/p&gt;
-
-&lt;p&gt;We’ve also looked at how the .NET library &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt; simplifies the implementation of the &lt;strong&gt;Outbox Pattern&lt;/strong&gt;, allowing developers to focus on the business logic of their applications while the library takes care of the complexities of ensuring reliable message delivery.&lt;/p&gt;
-
-&lt;p&gt;Finally, we’ve seen how .NET Aspire provides a curated suite of NuGet packages that facilitate the integration of cloud-native applications, providing essential cloud-native functionalities through either automatic provisioning or standardized configuration patterns.&lt;/p&gt;
-
-&lt;p&gt;In summary, the combination of the &lt;strong&gt;Outbox Pattern&lt;/strong&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DotNetCore.CAP&lt;/code&gt;, and .NET Aspire provides a powerful toolset for building reliable, cloud-native applications in .NET. By understanding and leveraging these tools, developers can build applications that are robust, scalable, and ready for the challenges of the modern, distributed world.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/&quot;&gt;https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://cap.dotnetcore.xyz/&quot;&gt;https://cap.dotnetcore.xyz/&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth&quot;&gt;https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sat, 30 Mar 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html</guid>
 			</item>
 		
 	</channel>
