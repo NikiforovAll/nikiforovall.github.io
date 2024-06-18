@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Learn .NET Aspire by example: Polyglot persistance featuring PostgreSQL, Redis, MongoDB, and Elasticsearch"
+title: "Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch"
 categories: [ dotnet, aspire ]
 tags: [ dotnet, aspnetcore, aspire ]
 published: true
