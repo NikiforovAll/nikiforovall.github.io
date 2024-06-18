@@ -35,7 +35,7 @@ In this guide, we will explored how to leverage XUnit and OpenTelemetry to instr
 
 ## Introduction
 
-As discussed in my previous blog post - [Automated Tests Instrumentation via OpenTelemetry and Aspire Dashboard](https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html), we can utilize OpenTelemetry and Aspire Dashboard to gain valuable insights into the execution of our tests. This allows us to collect and analyze data over time, enabling us to identify potential anomalies.
+As discussed in my previous blog post - [Automated Tests Instrumentation via OpenTelemetry and Aspire Dashboard](https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html), we can utilize OpenTelemetry and Aspire Dashboard to gain valuable insights into the execution of our tests. This allows us to collect and analyze data over time, enabling us to identify potential anomalies.
 
 Considering the positive response from the community, I have taken the initiative to enhance the existing approach and create a reusable starter template for everyone to benefit from.
 
