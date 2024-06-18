@@ -128,7 +128,7 @@ In practice, implementing horizontal scaling with sharding in a real-world appli
 
 ### Code
 
-We will use [Aspire PostgreSQL](https://learn.microsoft.com/en-us/dotnet/aspire/database/postgresql-entity-framework-component) component. See Aspire documentation to know what is actually means to "consume" Aspire Component. See [.NET Aspire components overview](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/components-overview)
+We will use [Aspire PostgreSQL](https://learn.microsoft.com/en-us/dotnet/aspire/database/postgresql-entity-framework-component) component. See Aspire documentation to explore what is actually means to "consume" Aspire Component. See [.NET Aspire components overview](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/components-overview)
 
 Here is how to configure `AppHost`. Add `Aspire.Hosting.PostgreSQL` package and configure it:
 
@@ -481,7 +481,7 @@ app.MapDefaultEndpoints();
 app.Run();
 ```
 
-As result, we have `ElasticsearchClient` inject into the DI.
+As result, we have `ElasticsearchClient` injected into the DI.
 
 But how do we get data into Elasticsearch? Elasticsearch isn't typically used as a primary database. Instead, it's used as a secondary database that's optimized for read operations, especially search. So, we take our data from our primary database (MongoDb), break it down into smaller, simpler pieces, and then feed it into Elasticsearch. This makes it easier for Elasticsearch to search through the data quickly and efficiently.
 
@@ -704,7 +704,7 @@ var migrator = builder
 builder.Build().Run();
 ```
 
-As you can see, it quite easy to put everything together.
+As you can see, it's quite easy to put everything together.
 
 When working on a project, it is generally a good practice to maintain consistency in how you organize and structure your code. This includes how you reference and use resources within your project.
 
