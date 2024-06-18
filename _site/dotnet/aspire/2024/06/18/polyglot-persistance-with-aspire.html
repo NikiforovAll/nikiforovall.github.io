@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Learn .NET Aspire by example: Polyglot persistance featuring PostgreSQL, Redis, MongoDB, and Elasticsearch</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Learn .NET Aspire by example: Polyglot persistance featuring PostgreSQL, Redis, MongoDB, and Elasticsearch </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			June
+			18th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html">A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html">Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html">Using Keycloak in .NET Aspire projects <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aws/2024/05/27/aws-claim-check-dotnet.html">Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Learn how to set up various databases using Aspire by building a simple social media application.</p>
+
+<p><strong>Source code</strong>: <a href="https://github.com/NikiforovAll/social-media-app-aspire" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/social-media-app-aspire</a></p>
+
+<p><em>Table of Contents:</em></p>
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li>
+<a href="#introduction">Introduction</a>
+    <ul>
+      <li><a href="#case-study---social-media-app">Case Study - Social Media App</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#application-design-add-postgresql">Application Design. Add PostgreSQL</a>
+    <ul>
+      <li><a href="#code">Code</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#application-design-add-redis">Application Design. Add Redis</a>
+    <ul>
+      <li><a href="#code-1">Code</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#application-design-add-mongodb">Application Design. Add MongoDb</a>
+    <ul>
+      <li><a href="#code-2">Code</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#application-design-add-elasticsearch">Application Design. Add Elasticsearch</a>
+    <ul>
+      <li>
+<a href="#code-3">Code</a>
+        <ul>
+          <li><a href="#search">Search</a></li>
+          <li><a href="#analytics">Analytics</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+<a href="#putting-everything-together-migration">Putting everything together. Migration</a>
+    <ul>
+      <li><a href="#migration">Migration</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Polyglot persistence refers to the practice of using multiple databases or data storage technologies within a single application. Instead of relying on just one database for everything, you can choose the most suitable database for each specific need or type of data. It’s like having a toolbox with different tools for different tasks, so you can use the right tool for each job.</p>
+
+<p>The importance of polyglot persistence lies in the fact that different databases excel in different areas. For example, relational databases like PostgreSQL are great for structured data and complex queries, while NoSQL databases like MongoDB are better suited for handling unstructured or semi-structured data. Similarly, Elasticsearch is optimized for full-text search, and Redis excels in caching and high-performance scenarios.</p>
+
+<p>By leveraging the strengths of different databases, developers can design more efficient and scalable systems. They can choose the right tool for the job, ensuring that each component of the application is using the most suitable database technology.</p>
+
+<p>The selection of the correct database depends on various factors such as the nature of the data, the expected workload, performance requirements, scalability needs, and the complexity of the queries. By carefully considering these factors, developers can ensure that the chosen databases align with the specific requirements of the application.</p>
+
+<h3 id="case-study---social-media-app">Case Study - Social Media App</h3>
+
+<p>In this post we will design social media application. It typically includes something like: Users, Posts, Follows, Likes, etc.</p>
+
+<p>The REST API for the application looks will something like following:</p>
+
+<div class="mermaid">
+graph
+    API[API]
+    Users[Users]
+    Posts[Posts]
+    Follows[Follows]
+    Likes[Likes]
+    Search[Search]
+    Analytics[Analytics]
+
+    API --&gt; Users
+    API --&gt; Posts
+    API --&gt; Follows
+    API --&gt; Likes
+    API --&gt; Search
+    API --&gt; Analytics
+
+    subgraph Users
+    GET_users[GET /users]
+    GET_users_id[GET /users/id]
+    POST_users[POST /users]
+    PUT_users_id[PUT /users/id]
+    DELETE_users_id[DELETE /users/id]
+    end
+
+    subgraph Posts
+    GET_posts[GET users/id/posts]
+    GET_posts_id[GET /posts/id]
+    POST_posts[POST /posts]
+    DELETE_posts_id[DELETE /posts/id]
+    end
+
+    subgraph Follows
+    GET_users_id_follows[GET /users/id/follows]
+    POST_users_id_follows[POST /users/id/follows]
+    DELETE_users_id_follows_followId[DELETE /users/id/follows/followId]
+    end
+
+    subgraph Likes
+    GET_posts_id_likes[GET /posts/id/likes]
+    POST_posts_id_likes[POST /posts/id/likes]
+    DELETE_posts_id_likes_userId[DELETE /posts/id/likes/userId]
+    end
+
+    subgraph Search
+    GET_search_users[GET /search/users?query=query]
+    GET_search_posts[GET /search/posts?query=query]
+    end
+
+    subgraph Analytics
+    GET_analytics_users[GET /analytics/leaderboard]
+    end
+</div>
+
+<p>Overall, these components provide essential functionality for a social media app. The search functionality allows users to find other users and relevant posts, while the analytics component provides insights into user activity and engagement.</p>
+
+<h2 id="application-design-add-postgresql">Application Design. Add PostgreSQL</h2>
+
+<p>In this section, we will discuss how to implement the users and follows functionality.</p>
+
+<p>Relational data, such as user information and their relationships (follows), can be easily represented and managed in a relational database like PostgreSQL.</p>
+
+<p>One of the main benefits of using a relational database is the ability to efficiently retrieve and manipulate data. They are well-suited for scenarios where data needs to be structured and related to each other, such as user information and their relationships.</p>
+
+<p>Relational databases scale efficiently in most cases. As the amount of data and the number of users grow, relational databases can handle the increased load by optimizing queries and managing indexes. This means that as long as the database is properly designed and optimized, it can handle a significant amount of data and user activity without performance issues.</p>
+
+<p>However, in some cases, when an application experiences extremely high traffic or deals with massive amounts of data, even a well-optimized relational database may face scalability challenges.</p>
+
+<p>In situations where the workload grows, it is apply vertical scaling. Vertical scaling involves upgrading hardware resources or optimizing the database configuration to increase the capacity of a single database instance, such as adding more memory or CPU power. This approach is typically sufficient, but sometime s it becomes practically impossible to further scale vertically.</p>
+
+<p>At that point, a natural transition is to employ horizontal scaling through a technique called sharding. Sharding involves distributing the data across multiple database instances or servers, where each instance or server is responsible for a subset of the data. By dividing the workload among multiple database nodes, each node can handle a smaller portion of the data, resulting in improved performance and scalability.</p>
+
+<p>In practice, implementing horizontal scaling with sharding in a real-world application is not as straightforward as it may seem. It requires careful planning and significant effort to ensure a smooth and successful transition.</p>
+
+<h3 id="code">Code</h3>
+
+<p>We will use <a href="https://learn.microsoft.com/en-us/dotnet/aspire/database/postgresql-entity-framework-component" target="_blank" rel="noopener noreferrer">Aspire PostgreSQL</a> component. See Aspire documentation to know what is actually means to “consume” Aspire Component. See <a href="https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/components-overview" target="_blank" rel="noopener noreferrer">.NET Aspire components overview</a></p>
+
+<p>Here is how to configure <code class="language-plaintext highlighter-rouge">AppHost</code>. Add <code class="language-plaintext highlighter-rouge">Aspire.Hosting.PostgreSQL</code> package and configure it:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">usersDb</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddPostgres</span><span class="p">(</span><span class="s">"dbserver"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithPgAdmin</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">5050</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"users-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">usersDb</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">migrator</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">MigrationService</span><span class="p">&gt;(</span><span class="s">"migrator"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">usersDb</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Add <code class="language-plaintext highlighter-rouge">Aspire.Npgsql.EntityFrameworkCore.PostgreSQL</code> and register <code class="language-plaintext highlighter-rouge">UsersDbContext</code> via <code class="language-plaintext highlighter-rouge">AddNpgsqlDbContext</code> method:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">AddNpgsqlDbContext</span><span class="p">&lt;</span><span class="n">UsersDbContext</span><span class="p">&gt;(</span><span class="s">"users-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapUsersEndpoints</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapDefaultEndpoints</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Use <code class="language-plaintext highlighter-rouge">DbContext</code> regularly:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">users</span> <span class="p">=</span> <span class="n">app</span><span class="p">.</span><span class="nf">MapGroup</span><span class="p">(</span><span class="s">"/users"</span><span class="p">);</span>
+
+<span class="n">users</span><span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span>
+        <span class="s">"/{id:int}/followers"</span><span class="p">,</span>
+        <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Results</span><span class="p">&lt;</span><span class="n">Ok</span><span class="p">&lt;</span><span class="n">List</span><span class="p">&lt;</span><span class="n">UserSummaryModel</span><span class="p">&gt;&gt;,</span> <span class="n">NotFound</span><span class="p">&gt;&gt;</span> <span class="p">(</span>
+            <span class="kt">int</span> <span class="n">id</span><span class="p">,</span>
+            <span class="n">UsersDbContext</span> <span class="n">dbContext</span><span class="p">,</span>
+            <span class="n">CancellationToken</span> <span class="n">cancellationToken</span>
+        <span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">user</span> <span class="p">=</span> <span class="k">await</span> <span class="n">dbContext</span>
+                <span class="p">.</span><span class="n">Users</span><span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">u</span> <span class="p">=&gt;</span> <span class="n">u</span><span class="p">.</span><span class="n">UserId</span> <span class="p">==</span> <span class="n">id</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Include</span><span class="p">(</span><span class="n">u</span> <span class="p">=&gt;</span> <span class="n">u</span><span class="p">.</span><span class="n">Followers</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">ThenInclude</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Follower</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">FirstOrDefaultAsync</span><span class="p">(</span><span class="n">cancellationToken</span><span class="p">);</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">user</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="kt">var</span> <span class="n">followers</span> <span class="p">=</span> <span class="n">user</span>
+                <span class="p">.</span><span class="n">Followers</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Follower</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">ToUserSummaryViewModel</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">ToList</span><span class="p">();</span>
+
+            <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">Ok</span><span class="p">(</span><span class="n">followers</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithName</span><span class="p">(</span><span class="s">"GetUserFollowers"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithTags</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Here is how to retrieve followers of a user:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ curl <span class="nt">-X</span> <span class="s1">'GET'</span> <span class="s1">'http://localhost:51909/users/1/followers'</span> <span class="nt">-s</span> | jq
+<span class="c"># [</span>
+<span class="c">#   {</span>
+<span class="c">#     "id": 522,</span>
+<span class="c">#     "name": "Jerome Kilback",</span>
+<span class="c">#     "email": "Jerome_Kilback12@gmail.com"</span>
+<span class="c">#   },</span>
+<span class="c">#   {</span>
+<span class="c">#     "id": 611,</span>
+<span class="c">#     "name": "Ernestine Schiller",</span>
+<span class="c">#     "email": "Ernestine_Schiller@hotmail.com"</span>
+<span class="c">#   }</span>
+<span class="c"># ]</span>
+</code></pre></div></div>
+
+<p>💡 See source code for more details of how to represent a user and follower relationship.</p>
+
+<p>💡 See source code to learn how to apply database migrations and use Bogus to seed the data.</p>
+
+<h2 id="application-design-add-redis">Application Design. Add Redis</h2>
+
+<p>Redis can be used as a first-level cache in an application to improve performance and reduce the load on the primary data source, such as a database.</p>
+
+<p>A first-level cache, also known as an in-memory cache, is a cache that resides closest to the application and stores frequently accessed data. It is typically implemented using fast and efficient data stores, such as Redis, to provide quick access to the cached data.</p>
+
+<p>When a request is made to retrieve data, the application first checks the first-level cache. If the data is found in the cache, it is returned immediately, avoiding the need to query the primary data source. This significantly reduces the response time and improves the overall performance of the application.</p>
+
+<p>To use Redis as a first-level cache, the application needs to implement a caching layer that interacts with Redis. When data is requested, the caching layer checks if the data is present in Redis. If it is, the data is returned from the cache. If not, the caching layer retrieves the data from the primary data source, stores it in Redis for future use, and then returns it to the application.</p>
+
+<p>By using Redis as a first-level cache, applications can significantly reduce the load on the primary data source, improve response times, and provide a better user experience.</p>
+
+<h3 id="code-1">Code</h3>
+
+<p>It is very easy to setup Redis Output Caching Component.</p>
+
+<p>Just install <code class="language-plaintext highlighter-rouge">Aspire.StackExchange.Redis.OutputCaching</code> and use it like this:</p>
+
+<p>From the <code class="language-plaintext highlighter-rouge">AppHost</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">redis</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddRedis</span><span class="p">(</span><span class="s">"cache"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">usersDb</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddPostgres</span><span class="p">(</span><span class="s">"dbserver"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithPgAdmin</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">5050</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"users-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">usersDb</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">redis</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>From the consuming service:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">AddNpgsqlDbContext</span><span class="p">&lt;</span><span class="n">UsersDbContext</span><span class="p">&gt;(</span><span class="s">"users-db"</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddRedisOutputCache</span><span class="p">(</span><span class="s">"cache"</span><span class="p">);</span> <span class="c1">// &lt;-- add this</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapUsersEndpoints</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapDefaultEndpoints</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">UseOutputCache</span><span class="p">();</span> <span class="c1">// &lt;-- add this</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>Just add one-liner using <code class="language-plaintext highlighter-rouge">CacheOutput</code> method, meta-programming at this’s best 😎:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">users</span> <span class="p">=</span> <span class="n">app</span><span class="p">.</span><span class="nf">MapGroup</span><span class="p">(</span><span class="s">"/users"</span><span class="p">);</span>
+
+<span class="n">users</span>
+    <span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span>
+        <span class="s">""</span><span class="p">,</span>
+        <span class="k">async</span> <span class="p">(</span>
+            <span class="n">UsersDbContext</span> <span class="n">dbContext</span><span class="p">,</span>
+            <span class="n">CancellationToken</span> <span class="n">cancellationToken</span>
+        <span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">users</span> <span class="p">=</span> <span class="k">await</span> <span class="n">dbContext</span>
+                <span class="p">.</span><span class="n">Users</span><span class="p">.</span><span class="nf">ProjectToViewModel</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">OrderByDescending</span><span class="p">(</span><span class="n">u</span> <span class="p">=&gt;</span> <span class="n">u</span><span class="p">.</span><span class="n">FollowersCount</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">ToListAsync</span><span class="p">(</span><span class="n">cancellationToken</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">Ok</span><span class="p">(</span><span class="n">users</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithName</span><span class="p">(</span><span class="s">"GetUsers"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithTags</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">CacheOutput</span><span class="p">();</span> <span class="c1">// &lt;-- add this</span>
+</code></pre></div></div>
+
+<p>Here is first hit to the API, it takes ~25ms:</p>
+
+<center>
+    <img src="/assets/polyglot-persitance/get-users.png" style="margin: 15px;">
+</center>
+
+<p>And here is subsequent request, it takes ~6ms:</p>
+
+<center>
+    <img src="/assets/polyglot-persitance/get-users-cached.png" style="margin: 15px;">
+</center>
+
+<p>💡Note, in the real-world scenario, the latency reduction can be quite significant when using Redis as a caching layer. For instance, consider an application that initially takes around 120ms to fetch data directly from a traditional SQL database. After implementing Redis for caching, the same data retrieval operation might only take about 15ms. This represents a substantial decrease in latency, improving the application’s responsiveness and overall user experience.</p>
+
+<h2 id="application-design-add-mongodb">Application Design. Add MongoDb</h2>
+
+<p>NoSQL databases, such as MongoDB, are well-suited for storing unstructured or semi-structured data like posts and related likes in a social media application. Unlike relational databases, NoSQL databases do not enforce a fixed schema, allowing for flexible and dynamic data models.</p>
+
+<p>In a NoSQL database, posts can be stored as documents, which are similar to JSON objects. Each document can contain various fields representing different attributes of a post, such as the post content, author, timestamp, and likes. The likes can be stored as an array within the post document, where each element represents a user who liked the post.</p>
+
+<p>One of the key advantages of using NoSQL databases for storing posts and related likes is the ability to perform efficient point reads. Point reads refer to retrieving a single document or a specific subset of data from a database based on a unique identifier, such as the post ID.</p>
+
+<p>NoSQL databases like MongoDB use indexes to optimize point reads. By creating an index on the post ID field, the database can quickly locate and retrieve the desired post document based on the provided ID. This allows for fast and efficient retrieval of individual posts and their associated likes.</p>
+
+<p>Furthermore, NoSQL databases can horizontally scale by distributing data across multiple servers or nodes. This enables high availability and improved performance, as the workload is divided among multiple instances. As a result, point reads can be performed in parallel across multiple nodes, further enhancing the efficiency of retrieving posts and related likes.</p>
+
+<p>MongoDB excels at this because it was designed with built-in support for horizontal scaling. This means you can easily add more servers as your data grows, without any downtime or interruption in service.</p>
+
+<h3 id="code-2">Code</h3>
+
+<p>Adding <a href="https://learn.microsoft.com/en-us/dotnet/aspire/database/mongodb-component" target="_blank" rel="noopener noreferrer">MongoDb Component</a> is straightforward, the process is similar to adding other databases:</p>
+
+<p>Add to <code class="language-plaintext highlighter-rouge">AppHost</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">postsDb</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddMongoDB</span><span class="p">(</span><span class="s">"posts-mongodb"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithMongoExpress</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">8081</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"posts-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">postsDb</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Consuming service:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddMongoDBClient</span><span class="p">(</span><span class="s">"posts-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapPostsEndpoints</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapDefaultEndpoints</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>To use it, we define a simple wrapper client over a MongoDb collection:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">PostService</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">IMongoCollection</span><span class="p">&lt;</span><span class="n">Post</span><span class="p">&gt;</span> <span class="n">collection</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">PostService</span><span class="p">(</span>
+        <span class="n">IMongoClient</span> <span class="n">mongoClient</span><span class="p">,</span>
+        <span class="n">IOptions</span><span class="p">&lt;</span><span class="n">MongoSettings</span><span class="p">&gt;</span> <span class="n">settings</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">database</span> <span class="p">=</span> <span class="n">mongoClient</span><span class="p">.</span><span class="nf">GetDatabase</span><span class="p">(</span><span class="n">settings</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">Database</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="n">collection</span> <span class="p">=</span> <span class="n">database</span><span class="p">.</span><span class="n">GetCollection</span><span class="p">&lt;</span><span class="n">Post</span><span class="p">&gt;(</span><span class="n">settings</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="n">Collection</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Post</span><span class="p">?&gt;</span> <span class="nf">GetPostByIdAsync</span><span class="p">(</span>
+        <span class="kt">string</span> <span class="n">id</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span>
+    <span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="k">await</span> <span class="k">this</span>
+            <span class="p">.</span><span class="n">collection</span><span class="p">.</span><span class="nf">Find</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Id</span> <span class="p">==</span> <span class="n">id</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">FirstOrDefaultAsync</span><span class="p">(</span><span class="n">cancellationToken</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Notice, <code class="language-plaintext highlighter-rouge">IMongoClient</code> is added to the DI by <code class="language-plaintext highlighter-rouge">AddMongoDBClient</code> method.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">posts</span> <span class="p">=</span> <span class="n">app</span><span class="p">.</span><span class="nf">MapGroup</span><span class="p">(</span><span class="s">"/posts"</span><span class="p">);</span>
+
+<span class="n">posts</span>
+    <span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span>
+        <span class="s">"/{postId}"</span><span class="p">,</span>
+        <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">Results</span><span class="p">&lt;</span><span class="n">Ok</span><span class="p">&lt;</span><span class="n">PostViewModel</span><span class="p">&gt;,</span> <span class="n">NotFound</span><span class="p">&gt;&gt;</span> <span class="p">(</span>
+            <span class="kt">string</span> <span class="n">postId</span><span class="p">,</span>
+            <span class="n">PostService</span> <span class="n">postService</span><span class="p">,</span>
+            <span class="n">CancellationToken</span> <span class="n">cancellationToken</span>
+        <span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">post</span> <span class="p">=</span> <span class="k">await</span> <span class="n">postService</span><span class="p">.</span><span class="nf">GetPostByIdAsync</span><span class="p">(</span><span class="n">postId</span><span class="p">,</span> <span class="n">cancellationToken</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="n">post</span> <span class="p">==</span> <span class="k">null</span>
+                <span class="p">?</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">NotFound</span><span class="p">()</span>
+                <span class="p">:</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">Ok</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="nf">ToPostViewModel</span><span class="p">());</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithName</span><span class="p">(</span><span class="s">"GetPostById"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithTags</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h2 id="application-design-add-elasticsearch">Application Design. Add Elasticsearch</h2>
+
+<p>Elasticsearch is a powerful search and analytics engine that is commonly used for full-text search and data analysis in applications. It is designed to handle large volumes of data and provide fast and accurate search results.</p>
+
+<p>To use Elasticsearch for full-text search, you need to index your data in Elasticsearch. The data is divided into documents, and each document is composed of fields that contain the actual data. Elasticsearch indexes these documents and builds an inverted index, which allows for efficient searching.</p>
+
+<p>To search for posts using Elasticsearch, you can perform a full-text search query. This query can include various parameters, such as the search term, filters, sorting, and pagination. Elasticsearch will analyze the search term and match it against the indexed documents, returning the most relevant results.</p>
+
+<p>Elasticsearch is also well-suited for performing analytics tasks, such as calculating leaderboards. Elasticsearch aggregation feature allows you to group and summarize data based on certain criteria. For example, you can aggregate likes by author and calculate the number of likes for each author.</p>
+
+<p>One of the key advantages of Elasticsearch is its ability to scale horizontally, allowing you to handle large volumes of data and increasing the capacity of your search and analytics system.</p>
+
+<p>To achieve scalability, Elasticsearch uses a distributed architecture. It allows you to create a cluster of multiple nodes, where each node can hold a portion of the data and perform search and indexing operations. This distributed nature enables Elasticsearch to handle high traffic loads and provide fast response times.</p>
+
+<p>When you add more nodes to the cluster, Elasticsearch automatically redistributes the data across the nodes, ensuring that the workload is evenly distributed. This allows you to scale your system by simply adding more hardware resources without any downtime or interruption in service.</p>
+
+<p>In addition to distributing data, Elasticsearch also supports data replication. By configuring replica shards, Elasticsearch creates copies of the data on multiple nodes. This provides fault tolerance and high availability, as the system can continue to function even if some nodes fail.</p>
+
+<h3 id="code-3">Code</h3>
+
+<p>As for now, there is no official Elasticsearch Component for Aspire, the work is in progress. But, it is possible to define custom Aspire Component and share them as a Nuget package.</p>
+
+<p>💡 For the sake of simplicity, I will not explain how to add Elasticsearch Aspire Component, please see source code for more details.</p>
+
+<p>Assuming we already have Elasticsearch component, here is how to add it to <code class="language-plaintext highlighter-rouge">AppHost</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">redis</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddRedis</span><span class="p">(</span><span class="s">"cache"</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">postsDb</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddMongoDB</span><span class="p">(</span><span class="s">"posts-mongodb"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithMongoExpress</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">8081</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"posts-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">elastic</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddElasticsearch</span><span class="p">(</span><span class="s">"elasticsearch"</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="m">9200</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">elastic</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Add it to consuming services:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddElasticClientsElasticsearch</span><span class="p">(</span><span class="s">"elasticsearch"</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddMongoDBClient</span><span class="p">(</span><span class="s">"posts-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapPostsEndpoints</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">MapDefaultEndpoints</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>As result, we have <code class="language-plaintext highlighter-rouge">ElasticsearchClient</code> inject into the DI.</p>
+
+<p>But how do we get data into Elasticsearch? Elasticsearch isn’t typically used as a primary database. Instead, it’s used as a secondary database that’s optimized for read operations, especially search. So, we take our data from our primary database (MongoDb), break it down into smaller, simpler pieces, and then feed it into Elasticsearch. This makes it easier for Elasticsearch to search through the data quickly and efficiently.</p>
+
+<h4 id="search">Search</h4>
+
+<p>💡The process of reliable data denormalization is out of scope of this article. A straightforward implementation might be to write the data to the primary database and then to the secondary one.</p>
+
+<p>Assuming we already have data in Elasticsearch, let’s see how to query it:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">ElasticClient</span><span class="p">(</span><span class="n">ElasticsearchClient</span> <span class="n">client</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">const</span> <span class="kt">string</span> <span class="n">PostIndex</span> <span class="p">=</span> <span class="s">"posts"</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">IndexedPost</span><span class="p">&gt;&gt;</span> <span class="nf">SearchPostsAsync</span><span class="p">(</span>
+        <span class="n">PostSearch</span> <span class="n">search</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span>
+    <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">IndexedPost</span><span class="p">&gt;(</span>
+            <span class="n">s</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="k">void</span> <span class="nf">query</span><span class="p">(</span><span class="n">QueryDescriptor</span><span class="p">&lt;</span><span class="n">IndexedPost</span><span class="p">&gt;</span> <span class="n">q</span><span class="p">)</span> <span class="p">=&gt;</span>
+                    <span class="n">q</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="n">b</span> <span class="p">=&gt;</span>
+                        <span class="n">b</span><span class="p">.</span><span class="nf">Should</span><span class="p">(</span><span class="n">sh</span> <span class="p">=&gt;</span>
+                        <span class="p">{</span>
+                            <span class="n">sh</span><span class="p">.</span><span class="nf">Match</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span>
+                                <span class="n">p</span><span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Title</span><span class="p">).</span><span class="nf">Query</span><span class="p">(</span><span class="n">search</span><span class="p">.</span><span class="n">Title</span><span class="p">)</span>
+                            <span class="p">);</span>
+                            <span class="n">sh</span><span class="p">.</span><span class="nf">Match</span><span class="p">(</span><span class="n">d</span> <span class="p">=&gt;</span>
+                                <span class="n">d</span><span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Content</span><span class="p">).</span><span class="nf">Query</span><span class="p">(</span><span class="n">search</span><span class="p">.</span><span class="n">Content</span><span class="p">)</span>
+                            <span class="p">);</span>
+                        <span class="p">})</span>
+                    <span class="p">);</span>
+
+                <span class="n">s</span><span class="p">.</span><span class="nf">Index</span><span class="p">(</span><span class="n">PostIndex</span><span class="p">).</span><span class="nf">From</span><span class="p">(</span><span class="m">0</span><span class="p">).</span><span class="nf">Size</span><span class="p">(</span><span class="m">10</span><span class="p">).</span><span class="nf">Query</span><span class="p">(</span><span class="n">query</span><span class="p">);</span>
+            <span class="p">},</span>
+            <span class="n">cancellationToken</span>
+        <span class="p">);</span>
+
+        <span class="nf">EnsureSuccess</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="n">searchResponse</span><span class="p">.</span><span class="n">Documents</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In the code above we are performing full-text search on “Title” and “Content” fields and returning top 10 results.</p>
+
+<p>And here is how to use it:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">posts</span> <span class="p">=</span> <span class="n">app</span><span class="p">.</span><span class="nf">MapGroup</span><span class="p">(</span><span class="s">"/posts"</span><span class="p">);</span>
+<span class="n">posts</span>
+    <span class="p">.</span><span class="nf">MapGet</span><span class="p">(</span>
+        <span class="s">"/search"</span><span class="p">,</span>
+        <span class="k">async</span> <span class="p">(</span>
+            <span class="p">[</span><span class="nf">FromQuery</span><span class="p">(</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"q"</span><span class="p">)]</span> <span class="kt">string</span> <span class="n">searchTerm</span><span class="p">,</span>
+            <span class="n">ElasticClient</span> <span class="n">elasticClient</span><span class="p">,</span>
+            <span class="n">PostService</span> <span class="n">postService</span><span class="p">,</span>
+            <span class="n">CancellationToken</span> <span class="n">cancellationToken</span>
+        <span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">posts</span> <span class="p">=</span> <span class="k">await</span> <span class="n">elasticClient</span><span class="p">.</span><span class="nf">SearchPostsAsync</span><span class="p">(</span>
+                <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="n">Content</span> <span class="p">=</span> <span class="n">searchTerm</span><span class="p">,</span> <span class="n">Title</span> <span class="p">=</span> <span class="n">searchTerm</span> <span class="p">},</span>
+                <span class="n">cancellationToken</span>
+            <span class="p">);</span>
+
+            <span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">Post</span><span class="p">&gt;</span> <span class="n">result</span> <span class="p">=</span> <span class="p">[];</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">posts</span><span class="p">.</span><span class="nf">Any</span><span class="p">())</span>
+            <span class="p">{</span>
+                <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="n">postService</span><span class="p">.</span><span class="nf">GetPostsByIds</span><span class="p">(</span>
+                    <span class="n">posts</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">Id</span><span class="p">),</span>
+                    <span class="n">cancellationToken</span>
+                <span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">Ok</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="nf">ToPostViewModel</span><span class="p">());</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithName</span><span class="p">(</span><span class="s">"SearchPosts"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithTags</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>The typical pattern in this scenario is to search for posts in Elasticsearch and retrieve the full representation from the primary database (MongoDB).</p>
+
+<h4 id="analytics">Analytics</h4>
+
+<p>Another interesting task that can be solved via Elasticsearch is analytics. Elasticsearch excels at analyzing large amounts of data. It provides real-time analytics, which means you can get insights from your data as soon as it is indexed. This is particularly useful for time-sensitive data or when you need to monitor trends, track changes, and make decisions quickly. Its powerful aggregation capabilities allow you to summarize, group, and calculate data on the fly, making it a great tool for both search and analytics.</p>
+
+<p>Here is how to calculate Leader Board for the social media application:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">async</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">AnalyticsResponse</span><span class="p">&gt;</span> <span class="nf">GetAnalyticsDataAsync</span><span class="p">(</span>
+        <span class="n">AnalyticsRequest</span> <span class="n">request</span><span class="p">,</span>
+        <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span>
+<span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">const</span> <span class="kt">string</span> <span class="n">Key</span> <span class="p">=</span> <span class="s">"user_likes"</span><span class="p">;</span>
+
+    <span class="kt">var</span> <span class="n">aggregationResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">IndexedLike</span><span class="p">&gt;(</span>
+        <span class="n">s</span> <span class="p">=&gt;</span>
+            <span class="n">s</span><span class="p">.</span><span class="nf">Index</span><span class="p">(</span><span class="n">LikeIndex</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Size</span><span class="p">(</span><span class="m">0</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span>
+                <span class="p">{</span>
+                    <span class="n">q</span><span class="p">.</span><span class="nf">Range</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span>
+                        <span class="n">r</span><span class="p">.</span><span class="nf">DateRange</span><span class="p">(</span><span class="n">d</span> <span class="p">=&gt;</span>
+                        <span class="p">{</span>
+                            <span class="n">d</span><span class="p">.</span><span class="nf">Gte</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">start</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd"</span><span class="p">));</span>
+                            <span class="n">d</span><span class="p">.</span><span class="nf">Lte</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">end</span><span class="p">.</span><span class="n">Value</span><span class="p">.</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"yyyy-MM-dd"</span><span class="p">));</span>
+                        <span class="p">})</span>
+                    <span class="p">);</span>
+                <span class="p">})</span>
+                <span class="p">.</span><span class="nf">Aggregations</span><span class="p">(</span><span class="n">a</span> <span class="p">=&gt;</span> 
+                    <span class="n">a</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">Key</span><span class="p">,</span>
+                        <span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span><span class="p">.</span><span class="nf">Terms</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">AuthorId</span><span class="p">).</span><span class="nf">Size</span><span class="p">(</span><span class="n">request</span><span class="p">.</span><span class="n">top</span><span class="p">)))),</span>
+        <span class="n">cancellationToken</span>
+    <span class="p">);</span>
+
+    <span class="nf">EnsureSuccess</span><span class="p">(</span><span class="n">aggregationResponse</span><span class="p">);</span>
+
+    <span class="c1">// processes aggregation result and returns UserId to NumberOfLikes dictionary</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">AnalyticsResponse</span><span class="p">(</span><span class="n">aggregationResponse</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>And here is how to retrieve the users with the highest number of likes and enrich the data from the primary database:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">posts</span>
+    <span class="p">.</span><span class="nf">MapPost</span><span class="p">(</span>
+        <span class="s">"/analytics/leaderboard"</span><span class="p">,</span>
+        <span class="k">async</span> <span class="p">(</span>
+            <span class="p">[</span><span class="nf">FromQuery</span><span class="p">(</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"startDate"</span><span class="p">)]</span> <span class="n">DateTimeOffset</span><span class="p">?</span> <span class="n">startDate</span><span class="p">,</span>
+            <span class="p">[</span><span class="nf">FromQuery</span><span class="p">(</span><span class="n">Name</span> <span class="p">=</span> <span class="s">"endDate"</span><span class="p">)]</span> <span class="n">DateTimeOffset</span><span class="p">?</span> <span class="n">endDate</span><span class="p">,</span>
+            <span class="n">ElasticClient</span> <span class="n">elasticClient</span><span class="p">,</span>
+            <span class="n">UsersDbContext</span> <span class="n">usersDbContext</span><span class="p">,</span>
+            <span class="n">CancellationToken</span> <span class="n">cancellationToken</span>
+        <span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">analyticsData</span> <span class="p">=</span>
+                <span class="k">await</span> <span class="n">elasticClient</span><span class="p">.</span><span class="nf">GetAnalyticsDataAsync</span><span class="p">(</span><span class="k">new</span><span class="p">(</span><span class="n">startDate</span><span class="p">,</span> <span class="n">endDate</span><span class="p">),</span><span class="n">cancellationToken</span><span class="p">);</span>
+
+            <span class="kt">var</span> <span class="n">userIds</span> <span class="p">=</span> <span class="n">analyticsData</span>
+                <span class="p">.</span><span class="n">Leaderboard</span><span class="p">.</span><span class="n">Keys</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">ToList</span><span class="p">();</span>
+
+            <span class="kt">var</span> <span class="n">users</span> <span class="p">=</span> <span class="k">await</span> <span class="n">usersDbContext</span>
+                <span class="p">.</span><span class="n">Users</span><span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">userIds</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">UserId</span><span class="p">))</span>
+                <span class="p">.</span><span class="nf">ToListAsync</span><span class="p">(</span><span class="n">cancellationToken</span><span class="p">:</span> <span class="n">cancellationToken</span><span class="p">);</span>
+
+            <span class="k">return</span> <span class="n">TypedResults</span><span class="p">.</span><span class="nf">Ok</span><span class="p">(</span>
+                <span class="n">users</span>
+                    <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="k">new</span>
+                    <span class="p">{</span>
+                        <span class="n">x</span><span class="p">.</span><span class="n">UserId</span><span class="p">,</span>
+                        <span class="n">x</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span>
+                        <span class="n">x</span><span class="p">.</span><span class="n">Email</span><span class="p">,</span>
+                        <span class="n">LikeCount</span> <span class="p">=</span> <span class="n">analyticsData</span><span class="p">.</span><span class="n">Leaderboard</span><span class="p">[</span><span class="n">x</span><span class="p">.</span><span class="n">UserId</span><span class="p">],</span>
+                    <span class="p">})</span>
+                    <span class="p">.</span><span class="nf">OrderByDescending</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">LikeCount</span><span class="p">)</span>
+            <span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithName</span><span class="p">(</span><span class="s">"GetLeaderBoard"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithTags</span><span class="p">(</span><span class="n">Tags</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithOpenApi</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h2 id="putting-everything-together-migration">Putting everything together. Migration</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">AppHost</code> serves as the <strong>composition root</strong> of a distributed system, where high-level details about the system’s architecture and components are defined and configured.</p>
+
+<p>In the <code class="language-plaintext highlighter-rouge">AppHost</code>, you can define and configure various components that make up the distributed system. These components can include databases, message brokers, caching systems, search engines, and other services that are required for the system to function.</p>
+
+<p>As result, <code class="language-plaintext highlighter-rouge">AppHost</code> looks like following:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">usersDb</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddPostgres</span><span class="p">(</span><span class="s">"dbserver"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithPgAdmin</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">5050</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"users-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">postsDb</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddMongoDB</span><span class="p">(</span><span class="s">"posts-mongodb"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithMongoExpress</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">8081</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"posts-db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">elastic</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddElasticsearch</span><span class="p">(</span><span class="s">"elasticsearch"</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="m">9200</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">redis</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddRedis</span><span class="p">(</span><span class="s">"cache"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">messageBus</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddRabbitMQ</span><span class="p">(</span><span class="s">"messaging"</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="m">5672</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithManagementPlugin</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">usersDb</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">postsDb</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">elastic</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">redis</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">messageBus</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">migrator</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">MigrationService</span><span class="p">&gt;(</span><span class="s">"migrator"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">postsDb</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">elastic</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">usersDb</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>As you can see, it quite easy to put everything together.</p>
+
+<p>When working on a project, it is generally a good practice to maintain consistency in how you organize and structure your code. This includes how you reference and use resources within your project.</p>
+
+<p>For example, we have the “migrator” service that references other resources in the same way as “api” service does.</p>
+
+<h3 id="migration">Migration</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">MigrationService</code> is responsible for databases migration and seeding.</p>
+
+<p>Here is how to generate test data:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">private</span> <span class="k">static</span> <span class="p">(</span><span class="n">List</span><span class="p">&lt;</span><span class="n">Post</span><span class="p">&gt;,</span> <span class="n">List</span><span class="p">&lt;</span><span class="n">IndexedLike</span><span class="p">&gt;)</span> <span class="nf">GeneratePosts</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">faker</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Faker</span><span class="p">&lt;</span><span class="n">Post</span><span class="p">&gt;()</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">Title</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Lorem</span><span class="p">.</span><span class="nf">Sentence</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">Content</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Lorem</span><span class="p">.</span><span class="nf">Paragraph</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">ExternalId</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Random</span><span class="p">.</span><span class="nf">AlphaNumeric</span><span class="p">(</span><span class="m">10</span><span class="p">))</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">CreatedAt</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Date</span><span class="p">.</span><span class="nf">Past</span><span class="p">())</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span><span class="p">.</span><span class="n">AuthorId</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Random</span><span class="p">.</span><span class="nf">Number</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="n">numberOfUsers</span><span class="p">));</span>
+
+    <span class="kt">var</span> <span class="n">posts</span> <span class="p">=</span> <span class="n">faker</span><span class="p">.</span><span class="nf">Generate</span><span class="p">(</span><span class="n">numberOfPosts</span><span class="p">).</span><span class="nf">ToList</span><span class="p">();</span>
+
+    <span class="kt">var</span> <span class="n">likeFaker</span> <span class="p">=</span> <span class="k">new</span> <span class="n">Faker</span><span class="p">&lt;</span><span class="n">IndexedLike</span><span class="p">&gt;()</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">l</span> <span class="p">=&gt;</span> <span class="n">l</span><span class="p">.</span><span class="n">PostId</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="nf">PickRandom</span><span class="p">(</span><span class="n">posts</span><span class="p">).</span><span class="n">ExternalId</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">l</span> <span class="p">=&gt;</span> <span class="n">l</span><span class="p">.</span><span class="n">LikedBy</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Random</span><span class="p">.</span><span class="nf">Number</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="n">numberOfUsers</span><span class="p">))</span>
+        <span class="p">.</span><span class="nf">RuleFor</span><span class="p">(</span><span class="n">l</span> <span class="p">=&gt;</span> <span class="n">l</span><span class="p">.</span><span class="n">CreatedAt</span><span class="p">,</span> <span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Date</span><span class="p">.</span><span class="nf">Past</span><span class="p">());</span>
+
+    <span class="kt">var</span> <span class="n">likes</span> <span class="p">=</span> <span class="n">likeFaker</span>
+        <span class="p">.</span><span class="nf">Generate</span><span class="p">(</span><span class="n">numberOfLikes</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">GroupBy</span><span class="p">(</span><span class="n">l</span> <span class="p">=&gt;</span> <span class="n">l</span><span class="p">.</span><span class="n">PostId</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">ToDictionary</span><span class="p">(</span><span class="n">g</span> <span class="p">=&gt;</span> <span class="n">g</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">g</span> <span class="p">=&gt;</span> <span class="n">g</span><span class="p">.</span><span class="nf">ToList</span><span class="p">());</span>
+
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">post</span> <span class="k">in</span> <span class="n">posts</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">postLikes</span> <span class="p">=</span> <span class="n">likes</span><span class="p">.</span><span class="nf">GetValueOrDefault</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">ExternalId</span><span class="p">)</span> <span class="p">??</span> <span class="p">[];</span>
+
+        <span class="n">post</span><span class="p">.</span><span class="n">Likes</span><span class="p">.</span><span class="nf">AddRange</span><span class="p">(</span><span class="n">postLikes</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">LikedBy</span><span class="p">));</span>
+
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">l</span> <span class="k">in</span> <span class="n">postLikes</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">l</span><span class="p">.</span><span class="n">AuthorId</span> <span class="p">=</span> <span class="n">post</span><span class="p">.</span><span class="n">AuthorId</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">posts</span><span class="p">,</span> <span class="n">likes</span><span class="p">.</span><span class="n">Values</span><span class="p">.</span><span class="nf">SelectMany</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">).</span><span class="nf">ToList</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The migration process is instrumented via OpenTelemetry and you can inspect how much it takes to execute the migration and seeding process per-database.</p>
+
+<center>
+    <img src="/assets/polyglot-persitance/migration-trace.png" style="margin: 15px;">
+</center>
+
+<p>💡As you can see, it takes some time for Elasticsearch to boot up. This is one of the examples that demonstrate why it is important to use resiliency patterns to build more robust and reliable systems.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Polyglot persistence is a powerful approach to designing data storage solutions for applications. By leveraging the strengths of different databases, developers can build efficient and scalable systems that meet the specific requirements of their applications.</p>
+
+<p>In this post, we explored how to implement polyglot persistence in a social media application using PostgreSQL, Redis, MongoDB, and Elasticsearch. Each database was used for a specific purpose, such as storing user data, caching, storing posts, and performing search and analytics tasks.</p>
+
+<p>By carefully selecting the appropriate databases for each use case, developers can design robust and performant applications that deliver a great user experience. The flexibility and scalability provided by polyglot persistence enable applications to handle diverse workloads and data requirements, ensuring that they can grow and evolve over time.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/dotnet/aspire-samples" target="_blank" rel="noopener noreferrer">https://github.com/dotnet/aspire-samples</a></li>
+  <li><a href="https://github.com/NikiforovAll/social-media-app-aspire" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/social-media-app-aspire</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(36)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(2)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(42)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref" target="_blank" rel="noopener noreferrer">
+				aspnetcore <span>(22)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(8)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html" title="A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow noopener noreferrer" target="_blank">comments powered by Disqus.</a>
+</noscript>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
