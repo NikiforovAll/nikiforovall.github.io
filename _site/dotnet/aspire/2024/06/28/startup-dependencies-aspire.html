@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Managing Startup Dependencies in .NET Aspire</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Managing Startup Dependencies in .NET Aspire </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			June
+			28th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html">Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html">A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html">Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html">Using Keycloak in .NET Aspire projects <span class="label label-default">dotnet</span>  <span class="label label-default">aspnetcore</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>This article demonstrates how to utilize .NET Aspire as an orchestrator. You will discover how effortless it is to define a dependency graph between components during startup.</p>
+
+<p><strong>Source code</strong>: <a href="https://github.com/NikiforovAll/aspire-depends-on" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aspire-depends-on</a></p>
+
+<p><strong>Example</strong>: <a href="https://github.com/NikiforovAll/aspire-depends-on/tree/main/samples/Todo" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aspire-depends-on/tree/main/samples/Todo</a></p>
+
+<p><em>Table of Contents:</em></p>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#using-docker-compose-">Using docker-compose 🐳</a></li>
+  <li><a href="#why-net-aspire-">Why .NET Aspire? 🚀</a></li>
+  <li>
+<a href="#using-aspire">Using Aspire</a>
+    <ul>
+      <li><a href="#writing-custom-health-checks-for-aspire">Writing Custom Health Checks for Aspire</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<center>
+    <img src="/assets/startup-dependencies-aspire/aspire-dependencies-banner.png" style="margin: 15px;" width="80%">
+</center>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Managing startup dependencies is a common task for any kind of a project in modern days, especially in microservices solutions.</p>
+
+<p>☝️ Here are a few reasons why it is important:</p>
+
+<ul>
+  <li>
+    <p><strong>Order of Initialization</strong>: Multiple services may need to be initialized and started in a specific order. For example, if Service A depends on Service B, Service B needs to be up and running before Service A can start. By managing startup dependencies, you ensure that services are initialized in the correct order, preventing potential issues and ensuring smooth operation and startup.</p>
+  </li>
+  <li>
+    <p><strong>Graceful Startup and Shutdown</strong>: Managing startup dependencies allows you to implement graceful startup and shutdown procedures. During startup, you can perform necessary initialization tasks, such as establishing database connections or loading configuration settings, before accepting incoming requests. Similarly, during shutdown, you can gracefully stop services, release resources, and perform any necessary cleanup operations.</p>
+  </li>
+  <li>
+    <p><strong>Fault Tolerance and Resilience</strong>: In a distributed environment, <em>failures are inevitable</em>. By managing startup dependencies, you can implement fault tolerance and resilience mechanisms. For example, you can configure services to retry connecting to dependent services if they are temporarily unavailable. This helps ensure that your application can recover from failures and continue functioning properly.</p>
+  </li>
+</ul>
+
+<p>To manage startup dependencies effectively, you can use various techniques and tools.Orchestrators can help automate the process of managing dependencies and ensure that services are started in the correct order.</p>
+
+<h2 id="using-docker-compose-">Using docker-compose 🐳</h2>
+
+<p>One common approach is by using <code class="language-plaintext highlighter-rouge">docker-compose</code>.It provides a declarative way to define the dependencies between components and ensure they are started in the correct order.</p>
+
+<p>To illustrate , let’s assume that the <code class="language-plaintext highlighter-rouge">api</code> service represents a todo application that relies on a <code class="language-plaintext highlighter-rouge">postgres</code> database. Before the <code class="language-plaintext highlighter-rouge">api</code> service can start accepting requests, it needs to ensure that the necessary database migration (<code class="language-plaintext highlighter-rouge">migrator</code>) and seeding operations have been completed.</p>
+
+<center>
+    <div class="mermaid">
+    graph TD;
+        postgres --&gt; pgAdmin;
+        postgres --&gt; migrator;
+        migrator --&gt; api;
+    </div>
+</center>
+
+<p>Once the migration is successfully completed, the <code class="language-plaintext highlighter-rouge">api</code> service can start and begin serving requests. This approach allows for a controlled and orderly startup process, ensuring that all dependencies are satisfied before the <code class="language-plaintext highlighter-rouge">api</code> service becomes available.</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">3.8'</span>
+<span class="na">services</span><span class="pi">:</span>
+    <span class="na">postgres</span><span class="pi">:</span>
+        <span class="na">image</span><span class="pi">:</span> <span class="s">postgres:latest</span>
+    <span class="na">depends_on</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">migrator</span>
+    <span class="na">pgadmin</span><span class="pi">:</span>
+        <span class="na">image</span><span class="pi">:</span> <span class="s">dpage/pgadmin4:latest</span>
+    <span class="na">migrator</span><span class="pi">:</span>
+        <span class="na">image</span><span class="pi">:</span> <span class="s">migrate/migrate:latest</span>
+        <span class="na">depends_on</span><span class="pi">:</span>
+            <span class="pi">-</span> <span class="s">postgres</span>
+</code></pre></div></div>
+
+<p>This <code class="language-plaintext highlighter-rouge">docker-compose.yml</code> file defines the services <code class="language-plaintext highlighter-rouge">postgres</code>, <code class="language-plaintext highlighter-rouge">pgadmin</code>, and <code class="language-plaintext highlighter-rouge">migrator</code>. The <code class="language-plaintext highlighter-rouge">postgres</code> service is the database, the <code class="language-plaintext highlighter-rouge">pgadmin</code> service is a web-based administration tool, and the <code class="language-plaintext highlighter-rouge">migrator</code> service is responsible for performing the database migration.</p>
+
+<p>By specifying the dependencies using the <code class="language-plaintext highlighter-rouge">depends_on</code> keyword, the <code class="language-plaintext highlighter-rouge">migrator</code> service will wait for the <code class="language-plaintext highlighter-rouge">postgres</code> service to be up and running before executing the migration. Once the migration is completed, the <code class="language-plaintext highlighter-rouge">api</code> service can safely start and interact with the database.</p>
+
+<div class="language-yml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">version</span><span class="pi">:</span> <span class="s1">'</span><span class="s">3.8'</span>
+<span class="na">services</span><span class="pi">:</span>
+  <span class="na">postgres</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">postgres:latest</span>
+  <span class="na">depends_on</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">migrator</span>
+
+  <span class="na">pgadmin</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">dpage/pgadmin4:latest</span>
+
+  <span class="na">migrator</span><span class="pi">:</span>
+    <span class="na">image</span><span class="pi">:</span> <span class="s">migrate/migrate:latest</span>
+    <span class="na">depends_on</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="s">postgres</span>
+</code></pre></div></div>
+
+<p>🤔💭 But, wait, is it that easy? Why do we need to using something else than?</p>
+
+<p>Well… In practice, relying solely on the <strong>depends_on</strong> directive in a Docker Compose file may not be sufficient to ensure that a component has fully started up and is ready to accept connections or perform its intended tasks. While <strong>depends_on</strong> helps manage the startup order of services, it <em>does not guarantee that a service is fully operational</em> before another service starts.</p>
+
+<p>To address this, it is common to write custom bash scripts or use other tools to perform health checks on the dependent services. These health checks can verify that the service is in a desired state before proceeding with the startup of other components.</p>
+
+<p>A health check typically involves making requests to the dependent service and checking for specific responses or conditions that indicate it is ready. For example, you might check if a database service is accepting connections by attempting to connect to it and verifying that it responds with a successful connection status.</p>
+
+<p>It’s important to note that the specific implementation of health checks and custom scripts may vary depending on the technology stack and tools you are using.</p>
+
+<h2 id="why-net-aspire-">Why .NET Aspire? 🚀</h2>
+
+<p>While managing startup dependencies using YAML, Dockerfile, and Bash scripts can be challenging, .NET Aspire offers a better way to handle these dependencies directly in C#.</p>
+
+<p>With .NET Aspire, you can define a dependency graph between components during startup using C# code. This allows for a more intuitive and seamless integration with your .NET projects. You can easily specify the order of initialization, implement graceful startup and shutdown procedures, and ensure fault tolerance and resilience.</p>
+
+<p>By leveraging the power of C#, you have access to the rich ecosystem of .NET libraries and frameworks, making it easier to handle complex startup scenarios. You can use the built-in dependency injection capabilities of .NET to manage and resolve dependencies, ensuring that services are initialized in the correct order.</p>
+
+<p>Overall, .NET Aspire offers a more developer-friendly approach to managing startup dependencies in .NET projects, making it a compelling choice for simplifying your application’s startup.</p>
+
+<h2 id="using-aspire">Using Aspire</h2>
+
+<p>I’ve prepared Nuget package called <a href="https://www.nuget.org/packages/Nall.Aspire.Hosting.DependsOn" target="_blank" rel="noopener noreferrer">Nall.Aspire.Hosting.DependsOn</a> to simplify the process of defining dependencies between components.</p>
+
+<p>Let’s see how to use it to describe dependencies for the Todo application described above.</p>
+
+<p>Here is our starting point, <strong>without dependencies</strong>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">dbServer</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddPostgres</span><span class="p">(</span><span class="s">"db-server"</span><span class="p">);</span>
+
+<span class="n">dbServer</span><span class="p">.</span><span class="nf">WithPgAdmin</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">5050</span><span class="p">));</span>
+
+<span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="n">dbServer</span><span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">migrator</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">MigrationService</span><span class="p">&gt;(</span><span class="s">"migrator"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">db</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">db</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<hr>
+
+<p>💡 I strongly recommend you checking out source code for more details, it is a fully-functional application. All you need to do - is to run it by hitting <code class="language-plaintext highlighter-rouge">F5</code> - <a href="https://github.com/NikiforovAll/aspire-depends-on/tree/main/samples/Todo" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aspire-depends-on/tree/main/samples/Todo</a></p>
+
+<hr>
+
+<p>Now, let’s install required packages. <code class="language-plaintext highlighter-rouge">Nall.Aspire.Hosting.DependsOn</code> defines a <code class="language-plaintext highlighter-rouge">WaitFor</code> and <code class="language-plaintext highlighter-rouge">WaitForCompletion</code> methods used to determine startup ordering.</p>
+
+<p>Install core package 📦:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add package Nall.Aspire.Hosting.DependsOn
+</code></pre></div></div>
+
+<p>Also, we need to install specific packages for the dependencies. In our case, it is a PostgreSQL database.</p>
+
+<p>Install health-check-specific package 📦:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add package Nall.Aspire.Hosting.DependsOn.PostgreSQL
+</code></pre></div></div>
+
+<p>Specific health checks packages define <code class="language-plaintext highlighter-rouge">WithHealthCheck</code> extension methods. These methods are technology specific, but in essence are easy to understand and could be written on demand for any kind of dependency without using <code class="language-plaintext highlighter-rouge">Nall.Aspire.Hosting.DependsOn</code>. Later, I will show you how to write your own <code class="language-plaintext highlighter-rouge">WithHealthCheck</code> method.</p>
+
+<p>Let’s put everything together:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">dbServer</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddPostgres</span><span class="p">(</span><span class="s">"db-server"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithHealthCheck</span><span class="p">();</span> <span class="c1">// &lt;-- define health check</span>
+
+<span class="n">dbServer</span><span class="p">.</span><span class="nf">WithPgAdmin</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">c</span><span class="p">.</span><span class="nf">WithHostPort</span><span class="p">(</span><span class="m">5050</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WaitFor</span><span class="p">(</span><span class="n">dbServer</span><span class="p">));</span> <span class="c1">// &lt;-- wait for db</span>
+
+<span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="n">dbServer</span><span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"db"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">migrator</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">MigrationService</span><span class="p">&gt;(</span><span class="s">"migrator"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WaitFor</span><span class="p">(</span><span class="n">db</span><span class="p">);</span> <span class="c1">// &lt;-- wait for db</span>
+
+<span class="kt">var</span> <span class="n">api</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WaitForCompletion</span><span class="p">(</span><span class="n">migrator</span><span class="p">);</span> <span class="c1">// &lt;-- wait until process is terminated</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="writing-custom-health-checks-for-aspire">Writing Custom Health Checks for Aspire</h3>
+
+<p>By convention, <code class="language-plaintext highlighter-rouge">WithHealthCheck</code> method should define <code class="language-plaintext highlighter-rouge">HealthCheckAnnotation</code> annotation for Aspire resource.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">HealthCheckAnnotation</span><span class="p">(</span>
+    <span class="n">Func</span><span class="p">&lt;</span><span class="n">IResource</span><span class="p">,</span> <span class="n">CancellationToken</span><span class="p">,</span> <span class="n">Task</span><span class="p">&lt;</span><span class="n">IHealthCheck</span><span class="p">?&gt;&gt;</span> <span class="n">healthCheckFactory</span>
+<span class="p">)</span> <span class="p">:</span> <span class="n">IResourceAnnotation</span>
+</code></pre></div></div>
+
+<p>Let’s see the implementation of <code class="language-plaintext highlighter-rouge">Nall.Aspire.Hosting.DependsOn.Uris</code>, the package that allows to wait for resources that expose a health check endpoint, usually it is <code class="language-plaintext highlighter-rouge">/health</code> endpoint that returns “200 OK” status code if everything is fine.</p>
+
+<p>Here is <code class="language-plaintext highlighter-rouge">WithHealthCheck</code> method signature:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">IResourceBuilder</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">WithHealthCheck</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span>
+    <span class="k">this</span> <span class="n">IResourceBuilder</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">builder</span><span class="p">,</span>
+    <span class="kt">string</span><span class="p">?</span> <span class="n">endpointName</span> <span class="p">=</span> <span class="k">null</span><span class="p">,</span>
+    <span class="kt">string</span> <span class="n">path</span> <span class="p">=</span> <span class="s">"health"</span>
+<span class="p">)</span> <span class="k">where</span> <span class="n">T</span> <span class="p">:</span> <span class="n">IResourceWithEndpoints</span>
+</code></pre></div></div>
+
+<p>Note, usually, you don’t really need to implement health checking logic, <a href="https://www.nuget.org/packages?q=AspNetCore.HealthChecks" target="_blank" rel="noopener noreferrer">AspNetCore.HealthChecks.*</a> has something to offer.</p>
+
+<p>In case of <code class="language-plaintext highlighter-rouge">Nall.Aspire.Hosting.DependsOn.Uris</code>, it depends on <code class="language-plaintext highlighter-rouge">AspNetCore.HealthChecks.Uris</code>.</p>
+
+<p>So the implementation is straight forward, just find a endpoint by name and define health check for a given path:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="n">IResourceBuilder</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">WithHealthCheck</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;(</span>
+    <span class="k">this</span> <span class="n">IResourceBuilder</span><span class="p">&lt;</span><span class="n">T</span><span class="p">&gt;</span> <span class="n">builder</span><span class="p">,</span>
+    <span class="kt">string</span><span class="p">?</span> <span class="n">endpointName</span> <span class="p">=</span> <span class="k">null</span><span class="p">,</span>
+    <span class="kt">string</span> <span class="n">path</span> <span class="p">=</span> <span class="s">"health"</span>
+<span class="p">)</span>
+    <span class="k">where</span> <span class="n">T</span> <span class="p">:</span> <span class="n">IResourceWithEndpoints</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">builder</span><span class="p">.</span><span class="nf">WithAnnotation</span><span class="p">(</span><span class="k">new</span> <span class="nf">HealthCheckAnnotation</span><span class="p">(</span>
+        <span class="k">async</span> <span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">ct</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">resource</span> <span class="k">is</span> <span class="k">not</span> <span class="n">IResourceWithEndpoints</span> <span class="n">resourceWithEndpoints</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="k">return</span> <span class="k">null</span><span class="p">;</span>
+            <span class="p">}</span>
+
+            <span class="kt">var</span> <span class="n">endpoint</span> <span class="p">=</span> <span class="n">endpointName</span> <span class="k">is</span> <span class="k">null</span>
+                <span class="p">?</span> <span class="n">resourceWithEndpoints</span>
+                    <span class="p">.</span><span class="nf">GetEndpoints</span><span class="p">()</span>
+                    <span class="p">.</span><span class="nf">FirstOrDefault</span><span class="p">(</span><span class="n">e</span> <span class="p">=&gt;</span> <span class="n">e</span><span class="p">.</span><span class="n">Scheme</span> <span class="k">is</span> <span class="s">"http"</span> <span class="k">or</span> <span class="s">"https"</span><span class="p">)</span>
+                <span class="p">:</span> <span class="n">resourceWithEndpoints</span><span class="p">.</span><span class="nf">GetEndpoint</span><span class="p">(</span><span class="n">endpointName</span><span class="p">);</span>
+
+            <span class="kt">var</span> <span class="n">url</span> <span class="p">=</span> <span class="n">endpoint</span><span class="p">?.</span><span class="n">Url</span><span class="p">;</span>
+
+            <span class="kt">var</span> <span class="n">options</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">UriHealthCheckOptions</span><span class="p">();</span>
+            <span class="n">options</span><span class="p">.</span><span class="nf">AddUri</span><span class="p">(</span><span class="k">new</span><span class="p">(</span><span class="k">new</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">path</span><span class="p">));</span>
+
+            <span class="kt">var</span> <span class="n">client</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">HttpClient</span><span class="p">();</span>
+
+            <span class="k">return</span> <span class="k">new</span> <span class="nf">UriHealthCheck</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="n">client</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this article, we explored the challenges of managing startup dependencies in modern applications, particularly in the context of microservices architectures.</p>
+
+<p>.NET Aspire elevates the management of startup dependencies. By allowing developers to define dependency graphs in C#.</p>
+
+<p>Through practical examples, we demonstrated how to use .NET Aspire and its extensions to manage dependencies in a more intuitive and reliable manner. We also touched on the creation of custom health checks, showcasing the flexibility and extensibility of .NET Aspire.</p>
+
+<p>🙌 In conclusion, managing startup dependencies has never been easier with .NET Aspire, and I believe every project needs it.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/NikiforovAll/aspire-depends-on" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/aspire-depends-on</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(37)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(3)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(43)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspnetcore-ref" target="_blank" rel="noopener noreferrer">
+				aspnetcore <span>(23)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(9)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html" title="Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+
+<div id="disqus_thread"></div>
+
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = 'nikiforovall';
+
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow noopener noreferrer" target="_blank">comments powered by Disqus.</a>
+</noscript>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
