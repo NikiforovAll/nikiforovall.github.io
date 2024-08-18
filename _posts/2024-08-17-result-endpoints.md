@@ -125,7 +125,8 @@ public class HelloWorld
     public override Results<Ok<string>, BadRequest<ProblemDetails>> Handle(
         string request
     )
-    {if (request == "badrequest")
+    {
+        if (request == "badrequest")
         {
             return TypedResults.BadRequest(
                 TypedResults.Problem("Something bad happened").ProblemDetails
