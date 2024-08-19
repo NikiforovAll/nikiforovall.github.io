@@ -112,15 +112,11 @@ Although, `TypedResults` class is usually used in minimal APIs scenarios,it can 
 Down below, we define an endpoints that returns `Results<Ok<string>, BadRequest<ProblemDetails>>` which is like a discriminated union of `Ok<string>` and `BadRequest<ProblemDetails>`. It means that the endpoint can return either `Ok<string>` or `BadRequest<ProblemDetails>`. Trying to return any other type will result in a compile-time error. This is exactly what we want to achieve!
 
 ```csharp
-public class HelloWorld
-    : EndpointBaseSync.WithRequest<string>.WithResult<
-        Results<Ok<string>, BadRequest<ProblemDetails>>
+public class HelloWorld : EndpointBaseSync.WithRequest<string>.WithResult<Results<Ok<string>, BadRequest<ProblemDetails>>
     >
 {
     [HttpGet("/hello-world")]
-    public override Results<Ok<string>, BadRequest<ProblemDetails>> Handle(
-        string request
-    )
+    public override Results<Ok<string>, BadRequest<ProblemDetails>> Handle(string request)
     {
         if (request == "badrequest")
         {
@@ -148,9 +144,7 @@ public class HelloWorld : EndpointBaseSync.WithRequest<string>.WithResult<Ok<str
     [Tags("Hello")]
     [EndpointName(nameof(HelloWorld))]
     [HttpGet("/hello-world")]
-    public override Ok<string> Handle(
-        [FromQuery(Name = "q")] [Length(3, 100)] string request
-    )
+    public override Ok<string> Handle([FromQuery(Name = "q")] [Length(3, 100)] string request)
     {
         return TypedResults.Ok($"Hello, {request}");
     }
@@ -198,9 +192,7 @@ public class HelloWorld : EndpointBaseSync.WithRequest<string>.WithResult<Ok<str
     [Tags("Hello")]
     [EndpointName(nameof(HelloWorld))]
     [HttpGet("/hello-world")]
-    public override Ok<string> Handle(
-        [FromQuery(Name = "q")] [Length(3, 100)] string request
-    )
+    public override Ok<string> Handle([FromQuery(Name = "q")] [Length(3, 100)] string request)
     {
         return TypedResults.Ok($"Hello, {request}");
     }
