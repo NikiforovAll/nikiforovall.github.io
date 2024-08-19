@@ -40,16 +40,12 @@ dotnet new result-endpoints-api
 Here is a simple example of how you can use `TypedResults` in your .NET endpoints:
 
 ```csharp
-public class HelloWorld
-    : EndpointBaseSync.WithRequest<string>.WithResult<Ok<string>>
-    >
+public class HelloWorld : EndpointBaseSync.WithRequest<string>.WithResult<Ok<string>>
 {
     [EndpointSummary("Says hello")]
     [EndpointName(nameof(HelloWorld))]
     [HttpGet("/hello-world")]
-    public override Results<Ok<string>> Handle(
-        [FromQuery(Name = "q")] string request
-    )
+    public override Results<Ok<string>> Handle([FromQuery(Name = "q")] string request)
     {
         return TypedResults.Ok($"Hello, {request}");
     }
