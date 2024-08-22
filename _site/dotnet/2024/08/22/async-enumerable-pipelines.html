@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Building pipelines with IAsyncEnumerable in .NET</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Building pipelines with IAsyncEnumerable in .NET </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			August
+			22nd,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/async/2024/04/21/channels-composition.html">Building pipelines with System.Threading.Channels <span class="label label-default">dotnet</span>  <span class="label label-default">async</span>  <span class="label label-default">pipelines</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li>
+<a href="#examples">Examples</a>
+    <ul>
+      <li><a href="#using-systemlinqasync-operators-to-build-a-pipeline">Using <code class="language-plaintext highlighter-rouge">System.Linq.Async</code> operators to build a pipeline</a></li>
+      <li><a href="#combining-iasyncenumerable-with-iobservable">Combining <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> with <code class="language-plaintext highlighter-rouge">IObservable</code></a></li>
+      <li><a href="#implementing-reusable-operators---batch">Implementing reusable operators - <code class="language-plaintext highlighter-rouge">Batch</code></a></li>
+      <li><a href="#implementing-reusable-domain-specific-operators---textsummarization-with-semantic-kernel">Implementing reusable domain-specific operators - <code class="language-plaintext highlighter-rouge">TextSummarization</code> with Semantic Kernel</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<p>This article demonstrates how to use <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> and <code class="language-plaintext highlighter-rouge">System.Linq.Async</code> to build pipelines in C#.</p>
+
+<p><strong>Source code</strong>: <a href="https://github.com/NikiforovAll/async-enumerable-pipelines" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/async-enumerable-pipelines</a></p>
+
+<p>You can see all demos by running:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet example <span class="nt">--list</span>
+</code></pre></div></div>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>╭─────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Example                                 │ Description                                                                                │
+├─────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────┤
+│ CalculateWordCountPipeline              │ Demonstrates how to build async-enumerable pipelines based on standard LINQ operators      │
+│ CalculateWordCountFileWatcherPipeline   │ Demonstrates how to combine async-enumerable pipelines with IObservable. E.g: file watcher │
+│ CalculateWordCountBatchPipeline         │ Demonstrates how to use batching in async-enumerable pipelines                             │
+│ TextSummarizationAndAggregationPipeline │ Demonstrates how to build custom async-enumerable operators                                │
+╰─────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────╯
+</code></pre></div></div>
+
+<p>Here’s a sneak peek 👀:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// TextSummarizationAndAggregationPipeline</span>
+<span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">Directory</span>
+    <span class="p">.</span><span class="nf">EnumerateFiles</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ToAsyncEnumerable</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">ReportProgress</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">SelectAwait</span><span class="p">(</span><span class="n">ReadFile</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">IsValidFileForProcessing</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">SelectAwait</span><span class="p">(</span><span class="n">Summarize</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WriteResultToFile</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">.</span><span class="nf">Combine</span><span class="p">(</span><span class="n">Path</span><span class="p">.</span><span class="nf">GetTempPath</span><span class="p">(),</span> <span class="s">"summaries.txt"</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">ForEachAsync</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Processed [green]</span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">Name</span><span class="p">}</span><span class="s">[/]"</span><span class="p">));</span>
+</code></pre></div></div>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Pipelines are a powerful way to process data in a streaming fashion. They are a series of stages that transform data from one form to another. In this article, we will explore how to build pipelines using <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> and <code class="language-plaintext highlighter-rouge">System.Linq.Async</code>.</p>
+
+<p>Pipelines are a common pattern in modern software development. They are used to process data in a streaming fashion, which can be more efficient than processing it all at once. Pipelines are also composable, meaning that you can combine multiple stages together to create more complex processing logic.</p>
+
+<p>💡 I already describe an approach to building pipelines in my previous blog post, you might want to take a look at <a href="https://nikiforovall.github.io/dotnet/async/2024/04/21/channels-composition.html" target="_blank" rel="noopener noreferrer">Building pipelines with System.Threading.Channels</a>. Both <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> and <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> provide powerful tools for managing asynchronous data streams in .NET. However, while <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> offers a more explicit approach to handling producer-consumer scenarios, <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> brings a more integrated and LINQ-friendly way to work with asynchronous sequences. Understanding the strengths and nuances of each can help you choose the right tool for your specific use case.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>There are many interesting concepts that I’m going to cover in this article. Let’s start with the basics.</p>
+
+<h3 id="using-systemlinqasync-operators-to-build-a-pipeline">Using <code class="language-plaintext highlighter-rouge">System.Linq.Async</code> operators to build a pipeline</h3>
+
+<p>Let’s say we want to build a pipeline that reads files from a directory, parses them, and counts the number of words in each file.</p>
+
+<p>This can be illustrated as follows:</p>
+
+<center>
+    <div class="mermaid">
+    graph LR;
+        A[Read files] --&gt; B[Parse files];
+        B --&gt; C[Count words];
+        C --&gt; D[Output results];
+    </div>
+</center>
+
+<p>🎯 Our goal is to represent each stage of the pipeline in the code using <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> and <code class="language-plaintext highlighter-rouge">System.Linq.Async</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">System.Linq.Async</code> is a library that provides asynchronous versions of LINQ operators. It allows you to work with <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> in a similar way to how you would work with <code class="language-plaintext highlighter-rouge">IEnumerable</code>. It makes it easy to build pipelines.</p>
+
+<p>Basically, you have control-flow described as chain of methods calls, and you can implement each stage of the pipeline as a separate method. In my opinion, it makes the code more readable and maintainable. The benefit of this approach is once you determine the stages of the pipeline, you can implement them independently and focus on the logic of each stage.</p>
+
+<p>The process of parsing files can be implemented as follows:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">path</span> <span class="p">=</span> <span class="n">Path</span><span class="p">.</span><span class="nf">Combine</span><span class="p">(</span><span class="n">Directory</span><span class="p">.</span><span class="nf">GetCurrentDirectory</span><span class="p">(),</span> <span class="s">".."</span><span class="p">,</span> <span class="s">".."</span><span class="p">,</span> <span class="s">"Data"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">Directory</span>
+    <span class="p">.</span><span class="nf">EnumerateFiles</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ToAsyncEnumerable</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">SelectAwait</span><span class="p">(</span><span class="n">ReadFile</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">IsValidFileForProcessing</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">CalculateWordCount</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">OrderByDescending</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">WordCount</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ForEachAsync</span><span class="p">(</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>Everything starts with the conversion of <code class="language-plaintext highlighter-rouge">IEnumerable&lt;string&gt;</code> file paths to <code class="language-plaintext highlighter-rouge">IAsyncEnumerable&lt;string&gt;</code>.</p>
+
+<p>💡 Alternatively, we could write our own method that returns <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code>, for example, we could easily swap the local file system with Azure Blob Storage. It means we can reuse the same pipeline with different data sources.</p>
+
+<p>💡 Later, we will see that not only <code class="language-plaintext highlighter-rouge">IEnumerable</code> can be converted to <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code>, but also <code class="language-plaintext highlighter-rouge">IObservable</code>.</p>
+
+<p>As you can see <code class="language-plaintext highlighter-rouge">System.Linq.Async</code> provides a set of extension methods that allow you to work with <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> in a similar way to how you would work with <code class="language-plaintext highlighter-rouge">IEnumerable</code>. The <code class="language-plaintext highlighter-rouge">SelectAwait</code> method is used to asynchronously project each element of the sequence. The <code class="language-plaintext highlighter-rouge">Where</code> method is used to filter elements based on a predicate. The <code class="language-plaintext highlighter-rouge">OrderByDescending</code> method is used to sort the elements of the sequence in descending order. The <code class="language-plaintext highlighter-rouge">ForEachAsync</code> method is used to asynchronously iterate over the sequence.</p>
+
+<p>It worth to point out that <code class="language-plaintext highlighter-rouge">ForEachAsync</code> is a terminal operation that triggers the execution of the pipeline. It is important to remember that <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> is a cold sequence, meaning that it does not start processing until you start iterating over it.</p>
+
+<p>Here are the building blocks of the pipeline:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">Steps</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">FilePayload</span><span class="p">&gt;</span> <span class="nf">ReadFile</span><span class="p">(</span><span class="kt">string</span> <span class="n">file</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">content</span> <span class="p">=</span> <span class="k">await</span> <span class="n">File</span><span class="p">.</span><span class="nf">ReadAllTextAsync</span><span class="p">(</span><span class="n">file</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">name</span> <span class="p">=</span> <span class="n">Path</span><span class="p">.</span><span class="nf">GetFileName</span><span class="p">(</span><span class="n">file</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">FilePayload</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">content</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">bool</span> <span class="nf">IsValidFileForProcessing</span><span class="p">(</span><span class="n">FilePayload</span> <span class="n">file</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="n">file</span> <span class="k">is</span> <span class="p">{</span> <span class="n">Content</span><span class="p">.</span><span class="n">Length</span><span class="p">:</span> <span class="p">&gt;</span> <span class="m">0</span><span class="p">,</span> <span class="n">Name</span><span class="p">:</span> <span class="p">[..,</span> <span class="sc">'t'</span><span class="p">,</span> <span class="sc">'x'</span><span class="p">,</span> <span class="sc">'t'</span><span class="p">]</span> <span class="p">};</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="n">WordCountPayload</span> <span class="nf">CalculateWordCount</span><span class="p">(</span><span class="n">FilePayload</span> <span class="n">payload</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">words</span> <span class="p">=</span> <span class="n">payload</span><span class="p">.</span><span class="n">Content</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="sc">' '</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="k">new</span><span class="p">(</span><span class="n">payload</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">words</span><span class="p">.</span><span class="n">Length</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">public</span> <span class="k">record</span> <span class="nc">FilePayload</span><span class="p">(</span><span class="kt">string</span> <span class="n">Name</span><span class="p">,</span> <span class="kt">string</span> <span class="n">Content</span><span class="p">);</span>
+<span class="k">public</span> <span class="k">record</span> <span class="nc">WordCountPayload</span><span class="p">(</span><span class="kt">string</span> <span class="n">Name</span><span class="p">,</span> <span class="kt">int</span> <span class="n">WordCount</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Let’s see the pipeline in action:</p>
+
+<center>
+    <video src="https://github.com/user-attachments/assets/84c1e8a8-996d-4960-9b39-20e6bd1101a9" controls="controls" style="margin: 15px;" width="100%"></video>
+</center>
+
+<h3 id="combining-iasyncenumerable-with-iobservable">Combining <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> with <code class="language-plaintext highlighter-rouge">IObservable</code>
+</h3>
+
+<p>Let’s say we want to use simple file watcher to monitor changes in the directory and trigger the pipeline when a new file is created or an existing file is modified.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">fileWatcher</span> <span class="p">=</span> <span class="nf">CreateFileObservable</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">fileWatcher</span>
+    <span class="p">.</span><span class="nf">TakeUntil</span><span class="p">(</span><span class="n">DateTimeOffset</span><span class="p">.</span><span class="n">Now</span><span class="p">.</span><span class="nf">AddSeconds</span><span class="p">(</span><span class="m">15</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">ToAsyncEnumerable</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">SelectAwait</span><span class="p">(</span><span class="n">ReadFile</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">IsValidFileForProcessing</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">CalculateWordCount</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ForEachAsync</span><span class="p">(</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>In this example, we use <code class="language-plaintext highlighter-rouge">IObservable</code> to monitor changes in the directory. We create an observable sequence of file paths using the <code class="language-plaintext highlighter-rouge">CreateFileObservable</code> method. We then use the <code class="language-plaintext highlighter-rouge">TakeUntil</code> operator to limit the duration of the sequence to 15 seconds. We convert the observable sequence to an asynchronous enumerable sequence using the <code class="language-plaintext highlighter-rouge">ToAsyncEnumerable</code> method. We then apply the same pipeline as before to process the files.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">CreateFileObservable</code> method is implemented as follows:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">static</span> <span class="n">IObservable</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span> <span class="nf">CreateFileObservable</span><span class="p">(</span><span class="kt">string</span> <span class="n">path</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="n">Observable</span><span class="p">.</span><span class="n">Create</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;(</span><span class="n">observer</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">watcher</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">FileSystemWatcher</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">NotifyFilter</span> <span class="p">=</span> <span class="n">NotifyFilters</span><span class="p">.</span><span class="n">FileName</span> <span class="p">|</span> <span class="n">NotifyFilters</span><span class="p">.</span><span class="n">LastWrite</span><span class="p">,</span>
+            <span class="n">Filter</span> <span class="p">=</span> <span class="s">"*.*"</span><span class="p">,</span>
+            <span class="n">EnableRaisingEvents</span> <span class="p">=</span> <span class="k">true</span>
+        <span class="p">};</span>
+
+        <span class="k">void</span> <span class="nf">onChanged</span><span class="p">(</span><span class="kt">object</span> <span class="n">sender</span><span class="p">,</span> <span class="n">FileSystemEventArgs</span> <span class="n">e</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">try</span>
+            <span class="p">{</span>
+                <span class="n">observer</span><span class="p">.</span><span class="nf">OnNext</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">FullPath</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">catch</span> <span class="p">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="n">observer</span><span class="p">.</span><span class="nf">OnError</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+        <span class="n">watcher</span><span class="p">.</span><span class="n">Created</span> <span class="p">+=</span> <span class="n">onChanged</span><span class="p">;</span>
+        <span class="n">watcher</span><span class="p">.</span><span class="n">Changed</span> <span class="p">+=</span> <span class="n">onChanged</span><span class="p">;</span>
+
+        <span class="k">return</span> <span class="p">()</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">watcher</span><span class="p">.</span><span class="n">Created</span> <span class="p">-=</span> <span class="n">onChanged</span><span class="p">;</span>
+            <span class="n">watcher</span><span class="p">.</span><span class="n">Changed</span> <span class="p">-=</span> <span class="n">onChanged</span><span class="p">;</span>
+            <span class="n">watcher</span><span class="p">.</span><span class="nf">Dispose</span><span class="p">();</span>
+        <span class="p">};</span>
+    <span class="p">});</span>
+</code></pre></div></div>
+
+<p>Let’s see the pipeline in action:</p>
+
+<p>In the demo below, I’m appending “ word” to the end of the file content to trigger the pipeline.</p>
+
+<center>
+    <video src="https://github.com/user-attachments/assets/56db32bd-a7e9-41ec-8706-eaf876750bb6" controls="controls" style="margin: 15px;" width="100%"></video>
+</center>
+
+<h3 id="implementing-reusable-operators---batch">Implementing reusable operators - <code class="language-plaintext highlighter-rouge">Batch</code>
+</h3>
+
+<p>Let’s say we want to batch the processing of files to improve performance. We can implement a custom operator called <code class="language-plaintext highlighter-rouge">Batch</code> that groups elements of the sequence into batches of a specified size.</p>
+
+<p>In the example above, we are reading files in batches in parallel. We are using the <code class="language-plaintext highlighter-rouge">Batch</code> operator to group files into batches of size 2. We then process each batch in parallel using the <code class="language-plaintext highlighter-rouge">ProcessEachAsync</code> method.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">const</span> <span class="kt">int</span> <span class="n">batchSize</span> <span class="p">=</span> <span class="m">2</span><span class="p">;</span>
+
+<span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">Directory</span>
+    <span class="p">.</span><span class="nf">EnumerateFiles</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ToAsyncEnumerable</span><span class="p">()</span>
+    <span class="p">.</span><span class="n">Batch</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">FilePayload</span><span class="p">&gt;(</span><span class="n">batchSize</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ProcessEachAsync</span><span class="p">(</span><span class="n">ReadFile</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">IsValidFileForProcessing</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">CalculateWordCount</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">OrderByDescending</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">x</span><span class="p">.</span><span class="n">WordCount</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ForEachAsync</span><span class="p">(</span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">);</span>
+
+<span class="k">await</span> <span class="n">pipeline</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>In the example above, we are reading files in batches in parallel. We are using the <code class="language-plaintext highlighter-rouge">Batch</code> operator to group files into batches of size 2. We then process each batch in parallel using the <code class="language-plaintext highlighter-rouge">ProcessEachAsync</code> method.</p>
+
+<p>💡 I will leave the implementation of the <code class="language-plaintext highlighter-rouge">Batch</code> operator as an exercise for the reader. Please check source code for the full implementation. <a href="https://github.com/NikiforovAll/async-enumerable-pipelines/blob/main/Pipelines.Core/PipelineBuilderExtensions.cs" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/async-enumerable-pipelines/blob/main/Pipelines.Core/PipelineBuilderExtensions.cs</a></p>
+
+<p>Let’s see the pipeline in action:</p>
+
+<center>
+    <video src="https://github.com/user-attachments/assets/96cc653d-8b42-4779-b2f2-fce804f0160b" controls="controls" style="margin: 15px;" width="100%"></video>
+</center>
+
+<h3 id="implementing-reusable-domain-specific-operators---textsummarization-with-semantic-kernel">Implementing reusable domain-specific operators - <code class="language-plaintext highlighter-rouge">TextSummarization</code> with Semantic Kernel</h3>
+
+<p>To demonstrate something more complex, let’s say we want to summarize the content of the files using the <a href="https://github.com/microsoft/semantic-kernel" target="_blank" rel="noopener noreferrer">Semantic Kernel</a> library. Summarization is a common task in natural language processing (NLP) that involves generating a concise representation of a text document.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">pipeline</span> <span class="p">=</span> <span class="n">Directory</span>
+    <span class="p">.</span><span class="nf">EnumerateFiles</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">ToAsyncEnumerable</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">ReportProgress</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">SelectAwait</span><span class="p">(</span><span class="n">ReadFile</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">Where</span><span class="p">(</span><span class="n">IsValidFileForProcessing</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">SelectAwait</span><span class="p">(</span><span class="n">Summarize</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WriteResultToFile</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">.</span><span class="nf">Combine</span><span class="p">(</span><span class="n">Path</span><span class="p">.</span><span class="nf">GetTempPath</span><span class="p">(),</span> <span class="s">"summaries.txt"</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">ForEachAsync</span><span class="p">(</span><span class="n">x</span> <span class="p">=&gt;</span> <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Processed [green]</span><span class="p">{</span><span class="n">x</span><span class="p">.</span><span class="n">Name</span><span class="p">}</span><span class="s">[/]"</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>In the example above, we are reading files, summarizing their content, and writing the results to a file. We are using the <code class="language-plaintext highlighter-rouge">ReportProgress</code> operator to report progress as each file is processed. We are using the <code class="language-plaintext highlighter-rouge">Summarize</code> operator to summarize the content of each file. We are using the <code class="language-plaintext highlighter-rouge">WriteResultToFile</code> operator to write the results to a file.</p>
+
+<p>Before we move forward, let’s see how the pipeline works in the demo below:</p>
+
+<center>
+    <video src="https://github.com/user-attachments/assets/42c6eb97-7a11-4b89-857e-1ffb8e70073c" controls="controls" style="margin: 15px;" width="100%"></video>
+</center>
+
+<p>Now, we are ready to move forward and see the details of the implementation.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Summarize</code> method is implemented as follows:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">SummarizationPayload</span><span class="p">&gt;</span> <span class="nf">Summarize</span><span class="p">(</span><span class="n">FilePayload</span> <span class="n">file</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">prompt</span> <span class="p">=</span> <span class="s">"""
+</span>        
+        <span class="n">Please</span> <span class="n">summarize</span> <span class="n">the</span> <span class="n">content</span> <span class="n">above</span> <span class="k">in</span> <span class="m">20</span> <span class="n">words</span> <span class="k">or</span> <span class="n">less</span><span class="p">:</span>
+
+        <span class="n">The</span> <span class="n">output</span> <span class="n">format</span> <span class="n">should</span> <span class="n">be</span><span class="p">:</span> <span class="p">[</span><span class="n">title</span><span class="p">]:</span> <span class="p">[</span><span class="n">summary</span><span class="p">]</span>
+        <span class="s">""";
+</span>
+    <span class="kt">var</span> <span class="n">result</span> <span class="p">=</span> <span class="k">await</span> <span class="n">kernel</span><span class="p">.</span><span class="nf">InvokePromptAsync</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="k">new</span> <span class="nf">KernelArguments</span><span class="p">()</span> <span class="p">{</span> <span class="p">[</span><span class="s">"input"</span><span class="p">]</span> <span class="p">=</span> <span class="n">file</span><span class="p">.</span><span class="n">Content</span> <span class="p">});</span>
+
+    <span class="k">return</span> <span class="k">new</span><span class="p">(</span><span class="n">file</span><span class="p">.</span><span class="n">Name</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Than we want to write the results to a file:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">IAsyncEnumerable</span><span class="p">&lt;</span><span class="n">SummarizationPayload</span><span class="p">&gt;</span> <span class="nf">WriteResultToFile</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">IAsyncEnumerable</span><span class="p">&lt;</span><span class="n">SummarizationPayload</span><span class="p">&gt;</span> <span class="n">values</span><span class="p">,</span>
+    <span class="kt">string</span> <span class="n">path</span>
+<span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">const</span> <span class="kt">int</span> <span class="n">batchSize</span> <span class="p">=</span> <span class="m">10</span><span class="p">;</span>
+
+    <span class="k">using</span> <span class="nn">var</span> <span class="n">streamWriter</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StreamWriter</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">append</span><span class="p">:</span> <span class="k">true</span><span class="p">);</span>
+
+    <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">batch</span> <span class="k">in</span> <span class="n">values</span><span class="p">.</span><span class="nf">Buffer</span><span class="p">(</span><span class="n">batchSize</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="k">value</span> <span class="k">in</span> <span class="n">batch</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">await</span> <span class="n">streamWriter</span><span class="p">.</span><span class="nf">WriteLineAsync</span><span class="p">(</span><span class="k">value</span><span class="p">.</span><span class="n">Summary</span><span class="p">);</span>
+
+            <span class="k">yield</span> <span class="k">return</span> <span class="k">value</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">await</span> <span class="n">streamWriter</span><span class="p">.</span><span class="nf">FlushAsync</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">AnsiConsole</span><span class="p">.</span><span class="nf">MarkupLine</span><span class="p">(</span><span class="s">$"Results written to [green]</span><span class="p">{</span><span class="n">path</span><span class="p">}</span><span class="s">[/]"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>💡 Note, <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> is pull-based model. With this approach, each summary is read individually and appended to the end of the file. This means that results are continuously saved as each batch is processed by calling the <code class="language-plaintext highlighter-rouge">FlushAsync</code> method.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">ReportProgress</code> method is quite interesting because it eagerly reads all elements of the sequence to determine the total count. It then reports progress as each element is processed.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">static</span> <span class="k">async</span> <span class="n">IAsyncEnumerable</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span> <span class="nf">ReportProgress</span><span class="p">(</span><span class="k">this</span> <span class="n">IAsyncEnumerable</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span> <span class="n">values</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">totalCount</span> <span class="p">=</span> <span class="k">await</span> <span class="n">values</span><span class="p">.</span><span class="nf">CountAsync</span><span class="p">();</span>
+
+    <span class="k">await</span> <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="p">(</span><span class="k">value</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="k">in</span> <span class="n">values</span><span class="p">.</span><span class="nf">Select</span><span class="p">((</span><span class="k">value</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">(</span><span class="k">value</span><span class="p">,</span> <span class="n">index</span><span class="p">)))</span>
+    <span class="p">{</span>
+        <span class="k">yield</span> <span class="k">return</span> <span class="k">value</span><span class="p">;</span>
+
+        <span class="n">AnsiConsole</span>
+            <span class="p">.</span><span class="nf">Progress</span><span class="p">()</span>
+            <span class="p">.</span><span class="nf">Start</span><span class="p">(</span><span class="n">ctx</span> <span class="p">=&gt;</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">task</span> <span class="p">=</span> <span class="n">ctx</span><span class="p">.</span><span class="nf">AddTask</span><span class="p">(</span><span class="s">$"Processing - </span><span class="p">{</span><span class="n">Path</span><span class="p">.</span><span class="nf">GetFileName</span><span class="p">(</span><span class="k">value</span><span class="p">)}</span><span class="s">"</span><span class="p">,</span> <span class="k">true</span><span class="p">,</span> <span class="n">totalCount</span><span class="p">);</span>
+                <span class="n">task</span><span class="p">.</span><span class="nf">Increment</span><span class="p">(</span><span class="n">index</span> <span class="p">+</span> <span class="m">1</span><span class="p">);</span>
+                <span class="n">task</span><span class="p">.</span><span class="nf">StopTask</span><span class="p">();</span>
+            <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>💡 This is a good demonstration of leaky abstractions. Not all data sources can provide the full sequence immediately, so we need to be careful.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>That is it! 🙌 We have seen how to build pipelines using <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> and <code class="language-plaintext highlighter-rouge">System.Linq.Async</code>. I hope you found this article helpful. If you have any questions or comments, please feel free to leave them below.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/archive/msdn-magazine/2019/november/csharp-iterating-with-async-enumerables-in-csharp-8" target="_blank" rel="noopener noreferrer">https://learn.microsoft.com/en-us/archive/msdn-magazine/2019/november/csharp-iterating-with-async-enumerables-in-csharp-8</a></li>
+  <li><a href="https://github.com/dotnet/reactive" target="_blank" rel="noopener noreferrer">https://github.com/dotnet/reactive</a></li>
+  <li><a href="https://github.com/microsoft/semantic-kernel/tree/main/dotnet/notebooks" target="_blank" rel="noopener noreferrer">https://github.com/microsoft/semantic-kernel/tree/main/dotnet/notebooks</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(41)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(47)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#async-ref" target="_blank" rel="noopener noreferrer">
+				async <span>(4)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#pipelines-ref" target="_blank" rel="noopener noreferrer">
+				pipelines <span>(2)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/2024/08/17/result-endpoints.html" title="Unlocking the Power of TypedResults in Endpoints: A Consistent Approach to Strongly Typed APIs in .NET" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
