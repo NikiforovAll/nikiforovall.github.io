@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			September
+			4th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html">A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">opentelemetry</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html">Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">opentelemetry</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li>
+<a href="#code">Code</a>
+    <ul>
+      <li><a href="#set-up-aspire">Set up Aspire</a></li>
+      <li><a href="#set-up-kernel-memory">Set up Kernel Memory</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#demo">Demo</a>
+    <ul>
+      <li><a href="#upload-a-document">Upload a Document</a></li>
+      <li><a href="#ask-a-question">Ask a Question</a></li>
+      <li><a href="#observability">Observability</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<center>
+    <img src="/assets/typical-rag-dotnet/banner.png" style="margin: 15px;" width="100%">
+</center>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/typical-rag-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/typical-rag-dotnet</a></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p><em>Kernel Memory</em> (<strong>KM</strong>) is a multi-modal <a href="https://github.com/microsoft/kernel-memory/blob/main/service/Service/README.md" target="_blank" rel="noopener noreferrer">AI Service</a> specialized in the efficient indexing of datasets through custom continuous data hybrid pipelines, with support for Retrieval Augmented Generation (<strong>RAG</strong>), synthetic memory, prompt engineering, and custom semantic memory processing.</p>
+
+<p><em>Kernel Memory</em> works and scales best when running as a service (separate process), allowing the ingestion of thousands of documents and information without blocking your app However, you can also use the <code class="language-plaintext highlighter-rouge">MemoryServerless</code> class in your app, using <code class="language-plaintext highlighter-rouge">KernelMemoryBuilder</code>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">memory</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">KernelMemoryBuilder</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithOpenAIDefaults</span><span class="p">(</span><span class="n">Environment</span><span class="p">.</span><span class="nf">GetEnvironmentVariable</span><span class="p">(</span><span class="s">"OPENAI_API_KEY"</span><span class="p">))</span>
+    <span class="p">.</span><span class="n">Build</span><span class="p">&lt;</span><span class="n">MemoryServerless</span><span class="p">&gt;();</span>
+
+<span class="c1">// Import a file</span>
+<span class="k">await</span> <span class="n">memory</span><span class="p">.</span><span class="nf">ImportDocumentAsync</span><span class="p">(</span><span class="s">"meeting-transcript.docx"</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="k">new</span><span class="p">()</span> <span class="p">{</span> <span class="p">{</span> <span class="s">"user"</span><span class="p">,</span> <span class="s">"Blake"</span> <span class="p">}</span> <span class="p">});</span>
+
+<span class="c1">// Ask questions</span>
+<span class="kt">var</span> <span class="n">answer1</span> <span class="p">=</span> <span class="k">await</span> <span class="n">memory</span><span class="p">.</span><span class="nf">AskAsync</span><span class="p">(</span><span class="s">"How many people attended the meeting?"</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">MemoryServerless</code> class is a lightweight in-process version of the Kernel Memory service.</p>
+
+<p>The Kernel Memory architecture can be divided in two main areas: <em>Ingestion</em> and <em>Retrieval</em>.</p>
+
+<p>When a client sends a file, the service first saves data in the <em>Content Storage</em>, such as Azure Blobs or Local Disk. During this phase, a client stays connected, sending data and waiting for the data to be stored. Only when this operation is complete, <em>Kernel Memory</em> releases the client request and starts an <em>asynchronous pipeline</em>, to complete the ingestion without blocking the client.</p>
+
+<p><em>Kernel Memory</em> ingestion offers a default pipeline, composed by these sequential steps. Each step depends on the previous to complete successfully before starting. These steps are implemented by <em>Handlers</em>, shipped with the Core library. The list of steps and the logic of handlers can be customized. The default pipeline looks as follows:</p>
+
+<ol>
+  <li>Text Extraction (e.g.: from PDF, DOCX,  web page, etc.) (name: <code class="language-plaintext highlighter-rouge">extract</code>)</li>
+  <li>Splitting text into partitions (name: <code class="language-plaintext highlighter-rouge">partition</code>)</li>
+  <li>Generating embedding vectors for each partition (name: <code class="language-plaintext highlighter-rouge">gen_embeddings</code>)</li>
+  <li>Store embedding vectors and metadata in a memory DB. (name: <code class="language-plaintext highlighter-rouge">save_records</code>)</li>
+</ol>
+
+<p>KM uses two types of storage:</p>
+
+<ol>
+  <li>
+<em>Content Storage</em>: stores raw data uploaded by clients, pipeline status, unique IDs assigned to documents.</li>
+  <li>
+<em>Memory Storage</em>: databases with search capability, where KM stores partitions and metadata (aka “memories”)</li>
+</ol>
+
+<p><em>Kernel Memory</em> is composable in two ways:</p>
+
+<ol>
+  <li>Customizable components: you can choose a Vector Database, Content Storage, Embedding Generator, and Summarizer (LLM).</li>
+  <li>Extensible pipeline: you can add custom handlers to the pipeline, or replace the default ones.</li>
+</ol>
+
+<p>Now, let’s see how to build a typical RAG solution using <em>Semantic Kernel</em>, <em>Kernel Memory</em>, and <em>Aspire</em> in .NET.</p>
+
+<h2 id="code">Code</h2>
+
+<p>The awesome thing about <em>Kernel Memory</em> is that it provides an out-of-the-box solution. <code class="language-plaintext highlighter-rouge">Microsoft.KernelMemory.Service.AspNetCore</code> package provides a set of endpoints to interact with the service. You can use these endpoints to upload documents, ask questions, and get answers.</p>
+
+<p>Basically, it boils down to the following:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddKernelMemory</span><span class="p">&lt;</span><span class="n">MemoryServerless</span><span class="p">&gt;();</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">AddKernelMemoryEndpoints</span><span class="p">(</span><span class="n">apiPrefix</span><span class="p">:</span> <span class="s">"/rag"</span><span class="p">);</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>As a result, you will get the following endpoints:</p>
+
+<center>
+    <img src="/assets/typical-rag-dotnet/webrag-swagger.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>Let’s see how to actually make it work by adding essential components, such as LLM, Vector Database, and Content Storage.</p>
+
+<p>Before we see how to configure Kernel Memory, let’s see how to configure Aspire.</p>
+
+<h3 id="set-up-aspire">Set up Aspire</h3>
+
+<p>We will use Postgres as a Vector and Content Database and we will use Azure Open AI to generate embeddings and summaries.</p>
+
+<blockquote>
+  <p>💡 Aspire comes with OpenTelemetry support. I strongly suggest adding observability to your RAG solutions from the beginning because you really want to know how everything works together and how long it takes to serve a response.</p>
+</blockquote>
+
+<blockquote>
+  <p>💡 Consider latency as part of your UI/UX since the retrieval and call to the LLM can significantly increase the response time.</p>
+</blockquote>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// AppHost/Program.cs</span>
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">db</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddPostgres</span><span class="p">(</span><span class="s">"postgres"</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="m">5432</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithImage</span><span class="p">(</span><span class="s">"pgvector/pgvector"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithImageTag</span><span class="p">(</span><span class="s">"pg16"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithInitBindMount</span><span class="p">(</span><span class="s">"resources/init-db"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithPgAdmin</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">AddDatabase</span><span class="p">(</span><span class="s">"rag-db"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithHealthCheck</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">openai</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">ExecutionContext</span><span class="p">.</span><span class="n">IsPublishMode</span>
+    <span class="p">?</span> <span class="n">builder</span>
+        <span class="p">.</span><span class="nf">AddAzureOpenAI</span><span class="p">(</span><span class="s">"openai"</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">AddDeployment</span><span class="p">(</span>
+            <span class="k">new</span> <span class="nf">AzureOpenAIDeployment</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">:</span> <span class="s">"gpt-4"</span><span class="p">,</span>
+                <span class="n">modelName</span><span class="p">:</span> <span class="s">"gpt-4"</span><span class="p">,</span>
+                <span class="n">modelVersion</span><span class="p">:</span> <span class="s">"2024-05-13"</span><span class="p">,</span>
+                <span class="n">skuName</span><span class="p">:</span> <span class="s">"Standard"</span><span class="p">,</span>
+                <span class="n">skuCapacity</span><span class="p">:</span> <span class="m">1000</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">:</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddConnectionString</span><span class="p">(</span><span class="s">"openai"</span><span class="p">);</span>
+
+<span class="n">builder</span>
+    <span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">WebRAG</span><span class="p">&gt;(</span><span class="s">"rag-web"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">openai</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WaitFor</span><span class="p">(</span><span class="n">db</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="set-up-kernel-memory">Set up Kernel Memory</h3>
+
+<p>Now, when we have Aspire set up, let’s see how to configure Kernel Memory.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddServiceDefaults</span><span class="p">();</span>
+<span class="n">builder</span><span class="p">.</span><span class="nf">AddNpgsqlDataSource</span><span class="p">(</span><span class="s">"rag-db"</span><span class="p">);</span> <span class="c1">// Adds OpenTelemetry and health checks for Postgres</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="nf">ConfigureAiOptions</span><span class="p">();</span>
+<span class="kt">var</span> <span class="n">aiOptions</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">GetAiOptions</span><span class="p">();</span>
+
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddKernelMemory</span><span class="p">&lt;</span><span class="n">MemoryServerless</span><span class="p">&gt;(</span><span class="n">memoryBuilder</span> <span class="p">=&gt;</span>
+<span class="p">{</span>
+    <span class="n">memoryBuilder</span>
+        <span class="p">.</span><span class="nf">WithPostgresMemoryDb</span><span class="p">(</span>
+            <span class="k">new</span> <span class="nf">PostgresConfig</span><span class="p">()</span>
+            <span class="p">{</span>
+                <span class="n">ConnectionString</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">.</span><span class="nf">GetConnectionString</span><span class="p">(</span><span class="s">"rag-db"</span><span class="p">)!</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithSemanticKernelTextGenerationService</span><span class="p">(</span>
+            <span class="k">new</span> <span class="nf">AzureOpenAIChatCompletionService</span><span class="p">(</span>
+                <span class="n">deploymentName</span><span class="p">:</span> <span class="n">aiOptions</span><span class="p">.</span><span class="n">Deployment</span><span class="p">,</span>
+                <span class="n">endpoint</span><span class="p">:</span> <span class="n">aiOptions</span><span class="p">.</span><span class="n">Endpoint</span><span class="p">,</span>
+                <span class="n">apiKey</span><span class="p">:</span> <span class="n">aiOptions</span><span class="p">.</span><span class="n">ApiKey</span>
+            <span class="p">),</span>
+            <span class="k">new</span> <span class="nf">SemanticKernelConfig</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="p">.</span><span class="nf">WithSemanticKernelTextEmbeddingGenerationService</span><span class="p">(</span>
+            <span class="k">new</span> <span class="nf">AzureOpenAITextEmbeddingGenerationService</span><span class="p">(</span>
+                <span class="n">deploymentName</span><span class="p">:</span> <span class="s">"text-embedding-ada-002"</span><span class="p">,</span>
+                <span class="n">endpoint</span><span class="p">:</span> <span class="n">aiOptions</span><span class="p">.</span><span class="n">Endpoint</span><span class="p">,</span>
+                <span class="n">apiKey</span><span class="p">:</span> <span class="n">aiOptions</span><span class="p">.</span><span class="n">ApiKey</span>
+            <span class="p">),</span>
+            <span class="k">new</span> <span class="nf">SemanticKernelConfig</span><span class="p">()</span>
+        <span class="p">);</span>
+<span class="p">});</span>
+
+<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
+
+<span class="n">app</span><span class="p">.</span><span class="nf">MapDefaultEndpoints</span><span class="p">();</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">AddKernelMemoryEndpoints</span><span class="p">(</span><span class="n">apiPrefix</span><span class="p">:</span> <span class="s">"/rag"</span><span class="p">);</span>
+<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">IKernelMemoryBuilder</code> provides a fluent API to configure <em>Kernel Memory</em>.</p>
+
+<p>💡 We are using Azure OpenAI services through <em>Semantic Kernel</em> because it provides additional OpenTelemetry instrumentation. Later, we will see how it works in practice.</p>
+
+<h2 id="demo">Demo</h2>
+
+<p>Let’s run the application and see how it works.</p>
+
+<p>But before that, we need to configure the OpenAI connection string in <code class="language-plaintext highlighter-rouge">AppHost/appsettings.json</code>:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"ConnectionStrings"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"OpenAI"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Endpoint=https://{account_name}.openai.azure.com/;Key={account_key};Deployment=gpt-4"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>And run:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet run <span class="nt">--project</span> src/AppHost/
+</code></pre></div></div>
+
+<h3 id="upload-a-document">Upload a Document</h3>
+
+<p>Now, let’s upload a document by calling the <code class="language-plaintext highlighter-rouge">POST /rag/upload</code> endpoint.</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">POST</span> <span class="nn">https://localhost:7016/rag/upload</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">accept</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">multipart/form-data; boundary=boundary</span>
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="AzureFundamentals.pdf"
+Content-Type: pdf
+
+&lt; ./AzureFundamentals.pdf
+--boundary--
+</code></pre></div></div>
+
+<p>Response:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"index"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"documentId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20240903.124353.69a8ef269a0d43989c53719128054436"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Document upload completed, ingestion pipeline started"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>It took about 1 minute to process the document. As you can see below, multiple calls were made to the OpenAI service to generate an embedding for each partition.</p>
+
+<center>
+    <img src="/assets/typical-rag-dotnet/upload-pipeline.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>And about 133 partitions/embeddings were created for a single document (8 MB/500 pages).</p>
+
+<center>
+    <img src="/assets/typical-rag-dotnet/embeddings.png" style="margin: 15px;" width="100%">
+</center>
+
+<blockquote>
+  <p>💡Note that the way you chunk your data is important and can impact the way RAG works. For example, you may want to make your chunks bigger and apply summarization to get more abstract answers.</p>
+</blockquote>
+
+<h3 id="ask-a-question">Ask a Question</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl <span class="nt">-X</span> <span class="s1">'POST'</span> <span class="se">\</span>
+    <span class="s1">'https://localhost:7016/rag/ask'</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s1">'accept: application/json'</span> <span class="se">\</span>
+    <span class="nt">-H</span> <span class="s1">'content-type: application/json'</span> <span class="se">\</span>
+    <span class="nt">-d</span> <span class="s1">'{ "question": "What kind of Azure Database services can I use?" }'</span>
+</code></pre></div></div>
+
+<p>Response:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"question"</span><span class="p">:</span><span class="w"> </span><span class="s2">"What kind of Azure Database services can I use?"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"noResult"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Azure offers a variety of database services to cater to different needs, including both SQL and NoSQL options:</span><span class="se">\n\n</span><span class="s2">1. **Azure SQL Database**: This is a fully managed relational database with built-in intelligence that supports self-driving features such as performance tuning and threat alerts. Azure SQL Database is highly scalable and compatible with the SQL Server programming model.</span><span class="se">\n\n</span><span class="s2">2. **SQL Server on Azure Virtual Machines**: This service allows you to run SQL Server inside a fully managed virtual machine in the cloud. It is suitable for applications that require a high level of control over the database server and compatibility with SQL Server data management and business intelligence capabilities.</span><span class="se">\n\n</span><span class="s2">3. **Azure Cosmos DB**: Formerly known as DocumentDB, Azure Cosmos DB is a globally distributed, multi-model database service. It is designed to provide low-latency, scalable, and highly available access to your data, suitable for any scale of business application.</span><span class="se">\n\n</span><span class="s2">4. **Azure Database for MySQL**: This is a managed service that enables you to run, manage, and scale highly available MySQL databases in the cloud. Using Azure Database for MySQL provides capabilities such as high availability, security, and recovery built into the service.</span><span class="se">\n\n</span><span class="s2">5. **Azure Database for PostgreSQL**: Similar to Azure Database for MySQL, this service provides a fully managed, scalable PostgreSQL database service with high availability and security features.</span><span class="se">\n\n</span><span class="s2">6. **Azure Table Storage**: A service that stores large amounts of structured NoSQL data in the cloud, providing a key/attribute store with a schema-less design."</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"relevantSources"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"link"</span><span class="p">:</span><span class="w"> </span><span class="s2">"default/20240903.124353.69a8ef269a0d43989c53719128054436/9b7accc78c164db7a2a630ca57e38d8f"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"index"</span><span class="p">:</span><span class="w"> </span><span class="s2">"default"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"documentId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20240903.124353.69a8ef269a0d43989c53719128054436"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"fileId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"9b7accc78c164db7a2a630ca57e38d8f"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"sourceContentType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"application/pdf"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"sourceName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ExampleTestDocument.pdf"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"sourceUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/download?index=default&amp;documentId=20240903.124353.69a8ef269a0d43989c53719128054436&amp;filename=ExampleTestDocument.pdf"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"partitions"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"relevance"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.8672107</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"partitionNumber"</span><span class="p">:</span><span class="w"> </span><span class="mi">99</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"sectionNumber"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"lastUpdate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2024-09-03T09:45:34+03:00"</span><span class="p">,</span><span class="w">
+          </span><span class="nl">"tags"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"__document_id"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+              </span><span class="s2">"20240903.124353.69a8ef269a0d43989c53719128054436"</span><span class="w">
+            </span><span class="p">],</span><span class="w">
+            </span><span class="nl">"__file_type"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"application/pdf"</span><span class="p">],</span><span class="w">
+            </span><span class="nl">"__file_id"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"9b7accc78c164db7a2a630ca57e38d8f"</span><span class="p">],</span><span class="w">
+            </span><span class="nl">"__file_part"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"1999e1ab04a24174bf6d2c79284b04b5"</span><span class="p">],</span><span class="w">
+            </span><span class="nl">"__part_n"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"99"</span><span class="p">],</span><span class="w">
+            </span><span class="nl">"__sect_n"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"0"</span><span class="p">]</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>As you can see, the response contains the answer to the question and the relevant sources. The answer is generated by the OpenAI service, and the relevant sources are the partitions that contain the answer.</p>
+
+<h3 id="observability">Observability</h3>
+
+<p>The response time is quite high. It took about 14 seconds to get the answer. This is because the OpenAI service is called to generate the answer, and it takes time.</p>
+
+<p>We can use OpenTelemetry to trace the request and see how much time it takes to get the answer.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">public</span> <span class="k">static</span> <span class="n">IHostApplicationBuilder</span> <span class="nf">ConfigureOpenTelemetry</span><span class="p">(</span>
+    <span class="k">this</span> <span class="n">IHostApplicationBuilder</span> <span class="n">builder</span>
+<span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">builder</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="nf">AddOpenTelemetry</span><span class="p">(</span><span class="n">logging</span> <span class="p">=&gt;</span>
+    <span class="p">{</span>
+        <span class="n">logging</span><span class="p">.</span><span class="n">IncludeFormattedMessage</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+        <span class="n">logging</span><span class="p">.</span><span class="n">IncludeScopes</span> <span class="p">=</span> <span class="k">true</span><span class="p">;</span>
+    <span class="p">});</span>
+
+    <span class="n">AppContext</span><span class="p">.</span><span class="nf">SetSwitch</span><span class="p">(</span><span class="s">"Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnostics"</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+    <span class="n">AppContext</span><span class="p">.</span><span class="nf">SetSwitch</span><span class="p">(</span><span class="s">"Microsoft.SemanticKernel.Experimental.GenAI.EnableOTelDiagnosticsSensitive"</span><span class="p">,</span> <span class="k">true</span><span class="p">);</span>
+
+    <span class="n">builder</span>
+        <span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="nf">AddOpenTelemetry</span><span class="p">()</span>
+        <span class="p">.</span><span class="nf">WithMetrics</span><span class="p">(</span><span class="n">metrics</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">metrics</span>
+                <span class="p">.</span><span class="nf">AddAspNetCoreInstrumentation</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">AddMeter</span><span class="p">(</span><span class="s">"Microsoft.SemanticKernel*"</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">AddHttpClientInstrumentation</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">AddRuntimeInstrumentation</span><span class="p">();</span>
+        <span class="p">})</span>
+        <span class="p">.</span><span class="nf">WithTracing</span><span class="p">(</span><span class="n">tracing</span> <span class="p">=&gt;</span>
+        <span class="p">{</span>
+            <span class="n">tracing</span>
+                <span class="p">.</span><span class="nf">AddAspNetCoreInstrumentation</span><span class="p">()</span>
+                <span class="p">.</span><span class="nf">AddSource</span><span class="p">(</span><span class="s">"Microsoft.SemanticKernel*"</span><span class="p">)</span> <span class="c1">// add this to trace Semantic Kernel</span>
+                <span class="p">.</span><span class="nf">AddHttpClientInstrumentation</span><span class="p">();</span>
+        <span class="p">});</span>
+
+    <span class="n">builder</span><span class="p">.</span><span class="nf">AddOpenTelemetryExporters</span><span class="p">();</span>
+
+    <span class="k">return</span> <span class="n">builder</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>
+    <img src="/assets/typical-rag-dotnet/ask-demo.png" style="margin: 15px;" width="100%">
+</center>
+
+<p><em>Semantic Kernel</em> instrumentation adds a lot of interesting information that can help you to understand how the interaction with LLM works:</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Key</th>
+      <th scope="col">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>gen_ai.operation.name</td>
+      <td>chat.completions</td>
+    </tr>
+    <tr>
+      <td>gen_ai.request.max_tokens</td>
+      <td>300</td>
+    </tr>
+    <tr>
+      <td>gen_ai.request.model</td>
+      <td>gpt-4</td>
+    </tr>
+    <tr>
+      <td>gen_ai.request.temperature</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>gen_ai.request.top_p</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>gen_ai.prompt</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <td>gen_ai.completion</td>
+      <td>...</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Here is an example of <code class="language-plaintext highlighter-rouge">gen_ai.prompt</code> and <code class="language-plaintext highlighter-rouge">gen_ai.prompt</code> completion.</p>
+
+<p>Prompt:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Facts:</span><span class="se">\n</span><span class="s2">==== [File:ExampleTestDocument.pdf;Relevance:86.7%](CONTENT_ABBREVAITED)</span><span class="se">\n</span><span class="s2">Question: What kind of Azure Database services can I use?</span><span class="se">\n</span><span class="s2">Answer: "</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Completion:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"assistant"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Azure offers a variety of database services catering to different needs, including both SQL and NoSQL options:</span><span class="se">\n\n</span><span class="s2">1. **Azure SQL Database**: This is a fully managed relational database with built-in intelligence that supports self-driving features such as performance tuning and threat alerts. Azure SQL Database is highly scalable and compatible with the SQL Server programming model.</span><span class="se">\n\n</span><span class="s2">2. **SQL Server on Azure Virtual Machines**: This service allows you to run SQL Server inside a fully managed virtual machine in the cloud. It is suitable for applications that require complete control over the database server and is ideal for migrating existing SQL Server workloads to the cloud.</span><span class="se">\n\n</span><span class="s2">3. **MySQL Database**: Azure facilitates MySQL as a managed service, which is easy to set up, manage, and scale. This service is provided through a partnership with SuccessBricks</span><span class="se">\u</span><span class="s2">2019 ClearDb, offering a fully managed MySQL database.</span><span class="se">\n\n</span><span class="s2">4. **Azure Database for PostgreSQL**: This is a managed service that makes it easier to set up, manage, and scale PostgreSQL databases in the cloud.</span><span class="se">\n\n</span><span class="s2">5. **Azure Cosmos DB**: Formerly known as DocumentDB, Cosmos DB is a globally distributed, multi-model database service that supports schema-less data, which makes it a suitable option for web, mobile, gaming, and IoT applications.</span><span class="se">\n\n</span><span class="s2">6. **Azure Table Storage**: This service offers highly available, massively scalable storage, which is ideal for applications requiring a flexible NoSQL key-value store.</span><span class="se">\n\n</span><span class="s2">7. **Azure MongoDB**: Through the Azure Marketplace, MongoDB can be hosted on Azure Virtual Machines, providing"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>In this article, we have seen how to build a typical RAG solution using <strong>Semantic Kernel</strong>, <strong>Kernel Memory</strong>, and <strong>Aspire</strong> in .NET. We have also seen how to add OpenTelemetry instrumentation to trace the request and see how long it takes to get the answer. I hope you find this article helpful. 🙌</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>
+<a href="https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp" target="_blank" rel="noopener noreferrer">https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide?pivots=programming-language-csharp</a> - Semantic Kernel Quick Start Guide</li>
+  <li>
+<a href="https://microsoft.github.io/kernel-memory" target="_blank" rel="noopener noreferrer">https://microsoft.github.io/kernel-memory</a> - Kernel Memory Docs</li>
+  <li>
+<a href="https://github.com/microsoft/semantic-kernel/blob/main/dotnet/docs/TELEMETRY.md" target="_blank" rel="noopener noreferrer">https://github.com/microsoft/semantic-kernel/blob/main/dotnet/docs/TELEMETRY.md</a> - OpenTelemetry + Semantic Kernel</li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(42)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#ai-ref" target="_blank" rel="noopener noreferrer">
+				ai <span>(1)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(48)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#semantic-kernel-ref" target="_blank" rel="noopener noreferrer">
+				semantic-kernel <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#kernel-memory-ref" target="_blank" rel="noopener noreferrer">
+				kernel-memory <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#opentelemetry-ref" target="_blank" rel="noopener noreferrer">
+				opentelemetry <span>(4)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#ai-ref" target="_blank" rel="noopener noreferrer">
+				ai <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(12)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/2024/08/22/async-enumerable-pipelines.html" title="Building pipelines with IAsyncEnumerable in .NET" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
