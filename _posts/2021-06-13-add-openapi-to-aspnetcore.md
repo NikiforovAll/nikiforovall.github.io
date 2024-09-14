@@ -2,7 +2,7 @@
 layout: post
 title: How to add OpenAPI to ASP.NET Core project. A coding story.
 categories: [  dotnet, aspnetcore, coding-stories ]
-tags: [ dotnet, aspnetcore, openapi, coding-stories, engx, csharp ]
+tags: [ dotnet, aspnetcore, openapi, coding-stories ]
 published: true
 shortinfo: A coding story (<a href="https://codingstories.io/">https://codingstories.io/</a>) that explains how to enhance your project with OpenAPI support.
 fullview: false

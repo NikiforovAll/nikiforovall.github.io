@@ -2,7 +2,7 @@
 layout: post
 title: Rapid Microservices Development in .NET. An introduction.
 categories: [ dotnet, microservices, csharp ]
-tags: [ dotnet, csharp, microservices ]
+tags: [ dotnet, microservices ]
 published: true
 shortinfo: Learn how to speed up microservices development process by using set of predefined templates and practices.
 fullview: false

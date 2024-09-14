@@ -2,7 +2,7 @@
 layout: post
 title: "Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch"
 categories: [ dotnet, aspire ]
-tags: [ dotnet, aspnetcore, aspire ]
+tags: [ dotnet, aspnetcore, aspire, databases ]
 published: true
 shortinfo: "Learn how to set up various databases using Aspire by building a simple social media application."
 fullview: false

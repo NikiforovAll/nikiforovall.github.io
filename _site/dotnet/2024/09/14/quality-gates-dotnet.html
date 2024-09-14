@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			September
+			14th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Learn how to enforce code quality gates in your .NET projects.</p>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li>
+<a href="#motivation">Motivation</a>
+    <ul>
+      <li><a href="#developer-feedback-loop">Developer Feedback Loop</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#code-quality-aspects">Code Quality Aspects</a>
+    <ul>
+      <li><a href="#code-formatting">Code Formatting</a></li>
+      <li><a href="#spelling">Spelling</a></li>
+      <li><a href="#coding-style-and-code-analysis">Coding Style and Code Analysis</a></li>
+      <li><a href="#code-analysis-tools">Code Analysis Tools</a></li>
+    </ul>
+  </li>
+  <li><a href="#demo">Demo</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/quality-gateways-demo-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/quality-gateways-demo-dotnet</a> <a href="https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/build.yml" target="_blank" rel="noopener noreferrer"><img src="https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/build.yml/badge.svg?branch=main" alt="Build"></a> <a href="https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/sonar.yml" target="_blank" rel="noopener noreferrer"><img src="https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/sonar.yml/badge.svg" alt="SonarCloud"></a><a href="https://sonarcloud.io/summary/new_code?id=NikiforovAll_quality-gateways-demo-dotnet" target="_blank" rel="noopener noreferrer"><img src="https://sonarcloud.io/api/project_badges/measure?project=NikiforovAll_quality-gateways-demo-dotnet&amp;metric=alert_status" alt="Quality Gate Status"></a></p>
+
+<h2 id="motivation">Motivation</h2>
+
+<p>In today’s fast-paced development world, maintaining high code quality is important, especially when working in a team environment. One effective way to ensure this is by enforcing code quality gates.🫸</p>
+
+<p><em>Code quality gates</em> are automated checks that ensure code meets predefined quality standards before it is merged into the main codebase. They help catch issues early in the development process, reducing the likelihood of bugs and technical debt.</p>
+
+<p>💡 From my experience, maintaining consistent code base is crucial for the long-term success of a project. It helps developers understand the codebase better, reduces the time spent on code reviews, and makes it easier to onboard new team members.</p>
+
+<p>Small issues and inconsistencies are left unaddressed in the codebase can create a perception of low quality and encourage the introduction of more issues over time. This can result in a deteriorating codebase and increased technical debt.
+It is so called “broken windows theory 🪟” in the context of software development.</p>
+
+<p>💡 The quality of code base reflects the team’s professionalism and commitment to delivering high-quality software.</p>
+
+<p>On another hand, too strict code quality gates can slow down the development process and frustrate developers. It is important to strike a balance between enforcing quality standards and maintaining developer productivity.</p>
+
+<p>For example, it should be possible to bypass code quality checks in exceptional cases. However, <em>“technical debt”</em> management practices should be in place to ensure that these exceptions eventually get addressed.</p>
+
+<p>There are two main aspects of enforcing quality gates:</p>
+
+<ol>
+  <li>Make sure that code quality is enforced, so it is not possible to merge code that does not meet the quality standards.</li>
+  <li>Keep the feedback loop as short as possible, so developers can fix the issues as soon as possible. ❗ Beware, developers will rebel against quality gates if it impacts their productivity and developer experience (DevEX).</li>
+</ol>
+
+<h3 id="developer-feedback-loop">Developer Feedback Loop</h3>
+
+<p>Quality gates should provide feedback to developers as soon as possible. But it is important to strike a balance between providing feedback and not overwhelming developers with too many notifications and increased compilation times.</p>
+
+<p>We can implement quality gates at various stages of the inner development loop:</p>
+
+<ol>
+  <li>📝IDE/Linter</li>
+  <li>🪝Pre-commit hooks</li>
+  <li>⚙️CI/CD
+    <ol>
+      <li>Build</li>
+      <li>Automated tests (unit, integration, end-to-end, performance, etc.)</li>
+      <li>Code quality checks</li>
+      <li>Security checks</li>
+    </ol>
+  </li>
+  <li>🤼Code Review</li>
+</ol>
+
+<p>The more important the check, the earlier it should be in the development loop. For example, it is better to catch syntax errors and formatting issues in the IDE or pre-commit hooks rather than in the CI/CD pipeline.</p>
+
+<h2 id="code-quality-aspects">Code Quality Aspects</h2>
+
+<p>There are several aspects of code quality that can be enforced by quality gates:</p>
+
+<ul>
+  <li>Consistent formatting</li>
+  <li>Consistent code style</li>
+  <li>High code quality</li>
+  <li>No code smells</li>
+  <li>No spelling mistakes</li>
+  <li>No security vulnerabilities</li>
+  <li>No performance issues</li>
+  <li>No bugs</li>
+</ul>
+
+<h3 id="code-formatting">Code Formatting</h3>
+
+<p>I prefer <a href="https://csharpier.com/" target="_blank" rel="noopener noreferrer">csharpier</a>, because it is fast and has a good default configuration. It is an opinionated code formatter for C#. It is similar to Prettier, and the <a href="https://prettier.io/docs/en/option-philosophy.html" target="_blank" rel="noopener noreferrer">philosophy</a> is to have a single way to format the code.</p>
+
+<p>Personally, I don’t want to spend time discussing code formatting in code reviews. I want to have a single way to format the code, and I want to have it done automatically.</p>
+
+<p>The only option you can argue about is the line length. The default line length is 120 characters, but you can change it to 80 characters if you prefer.</p>
+
+<h3 id="spelling">Spelling</h3>
+
+<p>Spelling mistakes can be detected by the <code class="language-plaintext highlighter-rouge">cspell linter</code>. It is a fast and configurable spell checker that runs in the terminal.</p>
+
+<h3 id="coding-style-and-code-analysis">Coding Style and Code Analysis</h3>
+
+<p>Coding style can be enforced by standard (Roslyn) analyzers. Code analysis rules have various configuration options. Some of these options are specified as key-value pairs in an analyzer configuration file (<code class="language-plaintext highlighter-rouge">.editorconfig</code>).</p>
+
+<p>You can configure the severity level for any rule, including <a href="https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/" target="_blank" rel="noopener noreferrer">code quality</a> rules and <a href="https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/" target="_blank" rel="noopener noreferrer">code style</a> rules. For example, to enable a rule as a warning, add the following key-value pair to an analyzer configuration file:</p>
+
+<div class="language-ini highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[*.{cs,vb}]</span>
+<span class="c"># IDE0040: Accessibility modifiers required
+</span><span class="py">dotnet_diagnostic.IDE0040.severity</span> <span class="p">=</span> <span class="s">warning</span>
+<span class="c"># or
+# IDE0040: Accessibility modifiers required
+</span><span class="py">dotnet_style_require_accessibility_modifiers</span> <span class="p">=</span> <span class="s">always:warning</span>
+</code></pre></div></div>
+
+<p>.NET compiler platform  analyzers inspect your code for code quality and style issues. Starting in .NET 5, these analyzers are included with the .NET SDK and you don’t need to install them separately.</p>
+
+<p>While the .NET SDK includes all code analysis rules, only some of them are enabled <a href="https://github.com/dotnet/roslyn-analyzers/blob/main/src/NetAnalyzers/Core/AnalyzerReleases.Shipped.md" target="_blank" rel="noopener noreferrer">by default</a>. The analysis mode determines which, if any, set of rules to enable. You can choose a more aggressive analysis mode where most or all rules are enabled - <code class="language-plaintext highlighter-rouge">&lt;AnalysisMode&gt;All&lt;/AnalysisMode&gt;</code>.</p>
+
+<p>There are two other options to enforce coding style I would like to mention:</p>
+
+<ul>
+  <li>
+<a href="https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/errors-warnings#treatwarningsaserrors" target="_blank" rel="noopener noreferrer">TreatWarningsAsErrors</a> - All warning messages are instead reported as errors. The build process halts (no output files are built).</li>
+  <li>
+<a href="https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#enforcecodestyleinbuild" target="_blank" rel="noopener noreferrer">EnforceCodeStyleInBuild</a> - .NET code style analysis is disabled, by default, on build for all .NET projects.</li>
+</ul>
+
+<p>From my experience, it can negatively impact the local build time, so I prefer to run the checks in the CI/CD pipeline.</p>
+
+<p>💡 The only exception to this is to use <code class="language-plaintext highlighter-rouge">&lt;WarningsAsErrors&gt;Nullable&lt;/WarningsAsErrors&gt;</code> to treat nullable warnings as errors.</p>
+
+<hr>
+
+<p>There is a way to write your own <em>custom analyzers</em>. You can use the <a href="https://github.com/dotnet/roslyn-sdk" target="_blank" rel="noopener noreferrer">Roslyn SDK</a> to create custom rules and code fixes. It is a great way to enforce custom coding standards and best practices used in your organization.</p>
+
+<p>⭐ Additionally, you may consider the following analyzers created by the community:</p>
+
+<ul>
+  <li><a href="https://github.com/SonarSource/sonar-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/SonarSource/sonar-dotnet</a></li>
+  <li><a href="https://github.com/dotnet/roslynator" target="_blank" rel="noopener noreferrer">https://github.com/dotnet/roslynator</a></li>
+  <li><a href="https://github.com/bkoelman/CSharpGuidelinesAnalyzer" target="_blank" rel="noopener noreferrer">https://github.com/bkoelman/CSharpGuidelinesAnalyzer</a></li>
+  <li><a href="https://github.com/meziantou/Meziantou.Analyzer" target="_blank" rel="noopener noreferrer">https://github.com/meziantou/Meziantou.Analyzer</a></li>
+  <li><a href="https://github.com/SergeyTeplyakov/ErrorProne.NET" target="_blank" rel="noopener noreferrer">https://github.com/SergeyTeplyakov/ErrorProne.NET</a></li>
+</ul>
+
+<p>☝️ Note, you don’t have to adopt analyzers entirely. You can use only the rules that make sense for your project.</p>
+
+<p>🧠 My suggestion is to work on the code quality and code style rules together with the team during the code review process. The rules should be discussed and agreed upon by the team.</p>
+
+<h3 id="code-analysis-tools">Code Analysis Tools</h3>
+
+<p>If you want to go further, you can use code analysis tools. The difference between code analysis tools and code analyzers is that code analysis tools are external tools that analyze your codebase and provide insights into the quality of your code.</p>
+
+<p>Some of the popular tools are:</p>
+
+<ul>
+  <li>
+<a href="https://sonarcloud.io/" target="_blank" rel="noopener noreferrer">SonarCloud</a> - SonarCloud is a cloud-based code analysis service that automatically detects bugs, vulnerabilities, and code smells in your code. It integrates with GitHub, Azure DevOps, and Bitbucket.</li>
+  <li>
+<a href="https://securitylab.github.com/tools/codeql" target="_blank" rel="noopener noreferrer">CodeQL</a> - CodeQL is a semantic code analysis engine that allows you to write queries to find vulnerabilities in your code.</li>
+  <li>
+<a href="https://www.ndepend.com/" target="_blank" rel="noopener noreferrer">NDepend</a> - NDepend is a static analysis tool that helps you manage complex .NET codebases and achieve high code quality.</li>
+</ul>
+
+<p>Here is an example of a SonarCloud report:</p>
+
+<center>
+  <img src="/assets/quality-gates/sonar.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>💡 You can include <code class="language-plaintext highlighter-rouge">SonarCloud</code> check as part of a CI/CD pipeline. Use <code class="language-plaintext highlighter-rouge">/d:sonar.qualitygate.wait=true</code> option. Otherwise, the CI/CD pipeline will not wait for the SonarCloud analysis to finish.</p>
+
+<p>By default, Sonar configures pretty strict rules called “Sonar Way”:</p>
+
+<center>
+  <img src="/assets/quality-gates/sonar-way.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>👎 The downside of using different code analysis tools is that you have to configure them separately. You have to configure the rules, the severity levels, and the exclusions. Ideally, I want to have a single configuration file (aka source of truth) that configures all the code quality checks.</p>
+
+<h2 id="demo">Demo</h2>
+
+<p>Assume we have initial code that does not meet the quality standards.</p>
+
+<center>
+  <img src="/assets/quality-gates/code-before.png" style="margin: 15px;" width="100%">
+</center>
+
+<ol>
+  <li>First of all, the developer will receive feedback from the IDE and linter.</li>
+  <li>Before committing the code, <a href="https://alirezanet.github.io/Husky.Net/" target="_blank" rel="noopener noreferrer">Husky.NET</a> will run pre-commit hooks. And if any of the checks fail, the commit will be rejected.</li>
+  <li>The CI/CD pipeline will run the same checks (and maybe other checks such as automated tests). And if any of the checks fail, the pipeline will fail.</li>
+</ol>
+
+<p>Prerequisites:</p>
+
+<ul>
+  <li>
+<code class="language-plaintext highlighter-rouge">dotnet tool restore</code> - installs <code class="language-plaintext highlighter-rouge">husky</code>, <code class="language-plaintext highlighter-rouge">csharpier</code>
+</li>
+  <li><code class="language-plaintext highlighter-rouge">npm install -g cspell</code></li>
+</ul>
+
+<p>The benefit of using <code class="language-plaintext highlighter-rouge">Husky.NET</code> is that it allows you to run pre-commit hooks in a cross-platform way. It is a .NET port of the popular <code class="language-plaintext highlighter-rouge">husky</code> tool for Node.js.</p>
+
+<p>Let’s run it locally to see how it works:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet run husky
+</code></pre></div></div>
+
+<p>This command runs the following checks sequentially:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"$schema"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://alirezanet.github.io/Husky.Net/schema.json"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"tasks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"format"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pre-commit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dotnet"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"csharpier"</span><span class="p">,</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span><span class="w"> </span><span class="s2">"--check"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"style"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pre-commit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dotnet"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"format"</span><span class="p">,</span><span class="w"> </span><span class="s2">"style"</span><span class="p">,</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span><span class="w"> </span><span class="s2">"--verify-no-changes"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"analyzers"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pre-commit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"dotnet"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"format"</span><span class="p">,</span><span class="w"> </span><span class="s2">"analyzers"</span><span class="p">,</span><span class="w"> </span><span class="s2">"."</span><span class="p">,</span><span class="w"> </span><span class="s2">"--verify-no-changes"</span><span class="p">]</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"spelling"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"group"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pre-commit"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cspell"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"lint"</span><span class="p">,</span><span class="w"> </span><span class="s2">"**.cs"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--no-progress"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--no-summary"</span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We can run the checks individually:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet husky run <span class="nt">--name</span> format
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet husky run <span class="nt">--name</span> style
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet husky run <span class="nt">--name</span> analyzers
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet husky run <span class="nt">--name</span> spelling
+</code></pre></div></div>
+
+<p>Now, assume the developer ignores the warning and somehow commits the code and creates a pull request. The CI/CD pipeline will run the same checks, and if any of the checks fail, the pipeline will fail.</p>
+
+<p>💡 I configured parallel execution for code quality gates, which helps to receive feedback faster.</p>
+
+<center>
+  <img src="/assets/quality-gates/ci-cd-failed.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>Now let’s fix the issues, by running “quick code fixes” (<code class="language-plaintext highlighter-rouge">ctrl + .</code>) in the IDE.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">string</span> <span class="n">filePath</span> <span class="p">=</span> <span class="s">"path/to/your/file.txt"</span><span class="p">;</span>
+
+<span class="k">using</span> <span class="nn">var</span> <span class="n">fileStream</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">FileStream</span><span class="p">(</span><span class="n">filePath</span><span class="p">,</span> <span class="n">FileMode</span><span class="p">.</span><span class="n">Open</span><span class="p">,</span> <span class="n">FileAccess</span><span class="p">.</span><span class="n">Read</span><span class="p">);</span>
+<span class="k">using</span> <span class="nn">var</span> <span class="n">reader</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StreamReader</span><span class="p">(</span><span class="n">fileStream</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">lines</span> <span class="p">=</span> <span class="k">new</span> <span class="n">List</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;();</span>
+
+<span class="k">while</span> <span class="p">(!</span><span class="n">reader</span><span class="p">.</span><span class="n">EndOfStream</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">line</span> <span class="p">=</span> <span class="k">await</span> <span class="n">reader</span><span class="p">.</span><span class="nf">ReadLineAsync</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="kt">string</span><span class="p">.</span><span class="nf">IsNullOrWhiteSpace</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="k">continue</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">lines</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="s">$"</span><span class="p">{</span><span class="n">Guid</span><span class="p">.</span><span class="nf">NewGuid</span><span class="p">()}</span><span class="s"> - </span><span class="p">{</span><span class="n">line</span><span class="p">}</span><span class="s">[</span><span class="p">{</span><span class="nf">CountCapitalLetters</span><span class="p">(</span><span class="n">line</span><span class="p">)}</span><span class="s">]"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">foreach</span> <span class="p">(</span><span class="kt">string</span> <span class="n">line</span> <span class="k">in</span> <span class="n">lines</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">line</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// Counts the number of capital letters in a string</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="nf">CountCapitalLetters</span><span class="p">(</span><span class="kt">string</span> <span class="n">input</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">input</span><span class="p">.</span><span class="nf">Count</span><span class="p">(</span><span class="kt">char</span><span class="p">.</span><span class="n">IsUpper</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>🔁 And run the checks again.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>❯ dotnet husky run
+<span class="o">[</span>Husky] 🚀 Loading tasks ...
+<span class="nt">--------------------------------------------------</span>
+<span class="o">[</span>Husky] ⚡ Preparing task <span class="s1">'format'</span>
+<span class="o">[</span>Husky] ⌛ Executing task <span class="s1">'format'</span> ...
+Formatted 1 files <span class="k">in </span>952ms.
+<span class="o">[</span>Husky]  ✔ Successfully executed <span class="k">in </span>2,307ms
+<span class="nt">--------------------------------------------------</span>
+<span class="o">[</span>Husky] ⚡ Preparing task <span class="s1">'style'</span>
+<span class="o">[</span>Husky] ⌛ Executing task <span class="s1">'style'</span> ...
+<span class="o">[</span>Husky]  ✔ Successfully executed <span class="k">in </span>15,299ms
+<span class="nt">--------------------------------------------------</span>
+<span class="o">[</span>Husky] ⚡ Preparing task <span class="s1">'analyzers'</span>
+<span class="o">[</span>Husky] ⌛ Executing task <span class="s1">'analyzers'</span> ...
+<span class="o">[</span>Husky]  ✔ Successfully executed <span class="k">in </span>12,293ms
+<span class="nt">--------------------------------------------------</span>
+<span class="o">[</span>Husky] ⚡ Preparing task <span class="s1">'spelling'</span>
+<span class="o">[</span>Husky] ⌛ Executing task <span class="s1">'spelling'</span> ...
+<span class="o">[</span>Husky]  ✔ Successfully executed <span class="k">in </span>2,802ms
+<span class="nt">--------------------------------------------------</span>
+</code></pre></div></div>
+
+<p>💡 Note: The pre-commit hook takes about 30 seconds. This is already too long, so we might consider removing something from the git hook and relying only on the CI/CD.</p>
+
+<p>Now, we commit the changes and push them to the repository. The CI/CD pipeline will run the checks again, and if all checks pass, the pipeline will succeed.</p>
+
+<center>
+  <img src="/assets/quality-gates/ci-cd-success.png" style="margin: 15px;" width="100%">
+</center>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Enforcing code quality gates is an important part of maintaining a high-quality codebase. It helps catch issues early in the development process, reducing the likelihood of bugs and technical debt.</p>
+
+<blockquote>
+  <p>🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏</p>
+</blockquote>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://alirezanet.github.io/Husky.Net/" target="_blank" rel="noopener noreferrer">https://alirezanet.github.io/Husky.Net/</a></li>
+  <li><a href="https://csharpier.com/" target="_blank" rel="noopener noreferrer">https://csharpier.com/</a></li>
+  <li><a href="https://docs.sonarsource.com/sonarcloud/" target="_blank" rel="noopener noreferrer">https://docs.sonarsource.com/sonarcloud/</a></li>
+  <li><a href="https://rules.sonarsource.com/csharp/" target="_blank" rel="noopener noreferrer">https://rules.sonarsource.com/csharp/</a></li>
+  <li><a href="https://github.com/bkoelman/CSharpGuidelinesAnalyzer" target="_blank" rel="noopener noreferrer">https://github.com/bkoelman/CSharpGuidelinesAnalyzer</a></li>
+  <li><a href="https://github.com/streetsidesoftware/cspell" target="_blank" rel="noopener noreferrer">https://github.com/streetsidesoftware/cspell</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options" target="_blank" rel="noopener noreferrer">https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options</a></li>
+  <li><a href="https://microsoft.github.io/code-with-engineering-playbook/developer-experience/" target="_blank" rel="noopener noreferrer">https://microsoft.github.io/code-with-engineering-playbook/developer-experience/</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(44)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(50)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#cicd-ref" target="_blank" rel="noopener noreferrer">
+				cicd <span>(2)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/ai/2024/09/11/notebook-agent.html" title="Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+

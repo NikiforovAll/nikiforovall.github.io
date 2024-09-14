@@ -2,7 +2,7 @@
 layout: post
 title: Development environment based on Windows Terminal + WSL + ZSH + dotfiles
 categories: [productivity]
-tags: [windows-terminal, git, zsh, dotfiles, wsl, deaac]
+tags: [windows-terminal, dotfiles, wsl, deaac]
 shortinfo: I would like to share with you approach on how to set up your working environment lightning fast. This post is based on my <b>dotfiles</b> repository - <a href="https://github.com/NikiforovAll/dotfiles" target="_blank">nikiforovall/dotifles</a>
 fullview: false
 comments: true

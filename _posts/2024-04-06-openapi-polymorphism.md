@@ -2,7 +2,7 @@
 layout: post
 title: Polymorphic serialization via System.Text.Json in ASP.NET Core Minimal API
 categories: [ dotnet, aspnetcore ]
-tags: [ dotnet, aspnetcore, openapi, minimalapi ]
+tags: [ dotnet, aspnetcore, openapi, minimal-api ]
 published: true
 shortinfo: In this article, we will explore the process of serializing a model hierarchy using `System.Text.Json` and how to accurately represent this serialized data in OpenAPI 3.0.
 fullview: false

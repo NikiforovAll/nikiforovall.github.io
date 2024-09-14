@@ -2,7 +2,7 @@
 layout: post
 title: "Transactional Outbox in .NET Cloud Native Development via Aspire"
 categories: [ dotnet, aspnetcore, aspire ]
-tags: [ dotnet, aspnetcore, aspire, miscroservices ]
+tags: [ dotnet, aspnetcore, aspire, microservices ]
 published: true
 shortinfo: This post provides an example of the Outbox pattern implementation using Aspire, DotNetCore.CAP, Azure Service Bus, Azure SQL, Bicep, and azd.
 fullview: false

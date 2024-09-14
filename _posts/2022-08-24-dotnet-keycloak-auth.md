@@ -2,7 +2,7 @@
 layout: post
 title: Use Keycloak as Identity Provider in ASP.NET Core 6
 categories: [ aspnetcore, dotnet ]
-tags: [ aspnetcore, dotnet, auth, keycloak, jwt ]
+tags: [ aspnetcore, dotnet, auth, keycloak ]
 published: true
 shortinfo: Learn how to add authentication to ASP.NET Core 6 via Keycloak.
 fullview: false

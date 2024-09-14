@@ -2,7 +2,7 @@
 layout: post
 title: Task-based asynchronous Pattern and Composition (aka Task Combinators)
 categories: [  dotnet, async ]
-tags: [ dotnet, async, TPL ]
+tags: [ dotnet, async ]
 published: true
 shortinfo: WhenAll, WhenAny, ForEachAsync, Throttling, Process as complete, etc.
 fullview: false

@@ -2,7 +2,7 @@
 layout: post
 title: ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method
 categories: [ dotnet, aspnetcore ]
-tags: [ dotnet, aspnetcore, aspnetcore-pipeline ]
+tags: [ dotnet, aspnetcore ]
 published: true
 shortinfo: An example of how to add middleware for a selected endpoint. EndpointRouteBuilderExtensions pattern.
 fullview: false
