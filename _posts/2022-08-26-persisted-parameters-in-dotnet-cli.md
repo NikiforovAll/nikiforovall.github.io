@@ -2,7 +2,7 @@
 layout: post
 title: Add persisted parameters to CLI applications in .NET
 categories: [ dotnet ]
-tags: [ dotnet, console, cli,  systemcommandline]
+tags: [ dotnet, console, cli ]
 published: true
 shortinfo: Learn how to use System.CommandLine to implement persisted parameters in CLI/console applications.
 fullview: false

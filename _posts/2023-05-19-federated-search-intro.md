@@ -2,7 +2,7 @@
 layout: post
 title: Building a federated search engine from scratch. An introduction.
 categories: [ dotnet ]
-tags: [ dotnet, api, federated-search ]
+tags: [ dotnet, api ]
 published: true
 shortinfo: Federated search, also known as distributed information retrieval, is the simultaneous search of multiple searchable resources. Learn more about it in this blog post.
 fullview: false

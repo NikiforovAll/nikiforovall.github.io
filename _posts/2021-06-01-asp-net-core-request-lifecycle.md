@@ -2,7 +2,7 @@
 layout: post
 title: Request Lifecycle in ASP.NET Core
 categories: [ aspnetcore, dotnet ]
-tags: [ aspnetcore, aspnet, dotnet, aspnetcore-pipeline ]
+tags: [ aspnetcore, aspnet, dotnet ]
 published: false
 shortinfo: Learn ASP.NET Core bread and butter - request lifecycle.
 fullview: false

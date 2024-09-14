@@ -7,6 +7,355 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;Learn how to enforce code quality gates in your .NET projects.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#motivation&quot;&gt;Motivation&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#developer-feedback-loop&quot;&gt;Developer Feedback Loop&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#code-quality-aspects&quot;&gt;Code Quality Aspects&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#code-formatting&quot;&gt;Code Formatting&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#spelling&quot;&gt;Spelling&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#coding-style-and-code-analysis&quot;&gt;Coding Style and Code Analysis&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#code-analysis-tools&quot;&gt;Code Analysis Tools&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#demo&quot;&gt;Demo&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/quality-gateways-demo-dotnet&quot;&gt;https://github.com/NikiforovAll/quality-gateways-demo-dotnet&lt;/a&gt; &lt;a href=&quot;https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/build.yml&quot;&gt;&lt;img src=&quot;https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/build.yml/badge.svg?branch=main&quot; alt=&quot;Build&quot; /&gt;&lt;/a&gt; &lt;a href=&quot;https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/sonar.yml&quot;&gt;&lt;img src=&quot;https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/sonar.yml/badge.svg&quot; alt=&quot;SonarCloud&quot; /&gt;&lt;/a&gt;&lt;a href=&quot;https://sonarcloud.io/summary/new_code?id=NikiforovAll_quality-gateways-demo-dotnet&quot;&gt;&lt;img src=&quot;https://sonarcloud.io/api/project_badges/measure?project=NikiforovAll_quality-gateways-demo-dotnet&amp;amp;metric=alert_status&quot; alt=&quot;Quality Gate Status&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;motivation&quot;&gt;Motivation&lt;/h2&gt;
+
+&lt;p&gt;In today’s fast-paced development world, maintaining high code quality is important, especially when working in a team environment. One effective way to ensure this is by enforcing code quality gates.🫸&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Code quality gates&lt;/em&gt; are automated checks that ensure code meets predefined quality standards before it is merged into the main codebase. They help catch issues early in the development process, reducing the likelihood of bugs and technical debt.&lt;/p&gt;
+
+&lt;p&gt;💡 From my experience, maintaining consistent code base is crucial for the long-term success of a project. It helps developers understand the codebase better, reduces the time spent on code reviews, and makes it easier to onboard new team members.&lt;/p&gt;
+
+&lt;p&gt;Small issues and inconsistencies are left unaddressed in the codebase can create a perception of low quality and encourage the introduction of more issues over time. This can result in a deteriorating codebase and increased technical debt.
+It is so called “broken windows theory 🪟” in the context of software development.&lt;/p&gt;
+
+&lt;p&gt;💡 The quality of code base reflects the team’s professionalism and commitment to delivering high-quality software.&lt;/p&gt;
+
+&lt;p&gt;On another hand, too strict code quality gates can slow down the development process and frustrate developers. It is important to strike a balance between enforcing quality standards and maintaining developer productivity.&lt;/p&gt;
+
+&lt;p&gt;For example, it should be possible to bypass code quality checks in exceptional cases. However, &lt;em&gt;“technical debt”&lt;/em&gt; management practices should be in place to ensure that these exceptions eventually get addressed.&lt;/p&gt;
+
+&lt;p&gt;There are two main aspects of enforcing quality gates:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Make sure that code quality is enforced, so it is not possible to merge code that does not meet the quality standards.&lt;/li&gt;
+  &lt;li&gt;Keep the feedback loop as short as possible, so developers can fix the issues as soon as possible. ❗ Beware, developers will rebel against quality gates if it impacts their productivity and developer experience (DevEX).&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;developer-feedback-loop&quot;&gt;Developer Feedback Loop&lt;/h3&gt;
+
+&lt;p&gt;Quality gates should provide feedback to developers as soon as possible. But it is important to strike a balance between providing feedback and not overwhelming developers with too many notifications and increased compilation times.&lt;/p&gt;
+
+&lt;p&gt;We can implement quality gates at various stages of the inner development loop:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;📝IDE/Linter&lt;/li&gt;
+  &lt;li&gt;🪝Pre-commit hooks&lt;/li&gt;
+  &lt;li&gt;⚙️CI/CD
+    &lt;ol&gt;
+      &lt;li&gt;Build&lt;/li&gt;
+      &lt;li&gt;Automated tests (unit, integration, end-to-end, performance, etc.)&lt;/li&gt;
+      &lt;li&gt;Code quality checks&lt;/li&gt;
+      &lt;li&gt;Security checks&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;🤼Code Review&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The more important the check, the earlier it should be in the development loop. For example, it is better to catch syntax errors and formatting issues in the IDE or pre-commit hooks rather than in the CI/CD pipeline.&lt;/p&gt;
+
+&lt;h2 id=&quot;code-quality-aspects&quot;&gt;Code Quality Aspects&lt;/h2&gt;
+
+&lt;p&gt;There are several aspects of code quality that can be enforced by quality gates:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Consistent formatting&lt;/li&gt;
+  &lt;li&gt;Consistent code style&lt;/li&gt;
+  &lt;li&gt;High code quality&lt;/li&gt;
+  &lt;li&gt;No code smells&lt;/li&gt;
+  &lt;li&gt;No spelling mistakes&lt;/li&gt;
+  &lt;li&gt;No security vulnerabilities&lt;/li&gt;
+  &lt;li&gt;No performance issues&lt;/li&gt;
+  &lt;li&gt;No bugs&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;code-formatting&quot;&gt;Code Formatting&lt;/h3&gt;
+
+&lt;p&gt;I prefer &lt;a href=&quot;https://csharpier.com/&quot;&gt;csharpier&lt;/a&gt;, because it is fast and has a good default configuration. It is an opinionated code formatter for C#. It is similar to Prettier, and the &lt;a href=&quot;https://prettier.io/docs/en/option-philosophy.html&quot;&gt;philosophy&lt;/a&gt; is to have a single way to format the code.&lt;/p&gt;
+
+&lt;p&gt;Personally, I don’t want to spend time discussing code formatting in code reviews. I want to have a single way to format the code, and I want to have it done automatically.&lt;/p&gt;
+
+&lt;p&gt;The only option you can argue about is the line length. The default line length is 120 characters, but you can change it to 80 characters if you prefer.&lt;/p&gt;
+
+&lt;h3 id=&quot;spelling&quot;&gt;Spelling&lt;/h3&gt;
+
+&lt;p&gt;Spelling mistakes can be detected by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cspell linter&lt;/code&gt;. It is a fast and configurable spell checker that runs in the terminal.&lt;/p&gt;
+
+&lt;h3 id=&quot;coding-style-and-code-analysis&quot;&gt;Coding Style and Code Analysis&lt;/h3&gt;
+
+&lt;p&gt;Coding style can be enforced by standard (Roslyn) analyzers. Code analysis rules have various configuration options. Some of these options are specified as key-value pairs in an analyzer configuration file (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.editorconfig&lt;/code&gt;).&lt;/p&gt;
+
+&lt;p&gt;You can configure the severity level for any rule, including &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/&quot;&gt;code quality&lt;/a&gt; rules and &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/&quot;&gt;code style&lt;/a&gt; rules. For example, to enable a rule as a warning, add the following key-value pair to an analyzer configuration file:&lt;/p&gt;
+
+&lt;div class=&quot;language-ini highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nn&quot;&gt;[*.{cs,vb}]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# IDE0040: Accessibility modifiers required
+&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;dotnet_diagnostic.IDE0040.severity&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;warning&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# or
+# IDE0040: Accessibility modifiers required
+&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;dotnet_style_require_accessibility_modifiers&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;always:warning&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;.NET compiler platform  analyzers inspect your code for code quality and style issues. Starting in .NET 5, these analyzers are included with the .NET SDK and you don’t need to install them separately.&lt;/p&gt;
+
+&lt;p&gt;While the .NET SDK includes all code analysis rules, only some of them are enabled &lt;a href=&quot;https://github.com/dotnet/roslyn-analyzers/blob/main/src/NetAnalyzers/Core/AnalyzerReleases.Shipped.md&quot;&gt;by default&lt;/a&gt;. The analysis mode determines which, if any, set of rules to enable. You can choose a more aggressive analysis mode where most or all rules are enabled - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;AnalysisMode&amp;gt;All&amp;lt;/AnalysisMode&amp;gt;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are two other options to enforce coding style I would like to mention:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/errors-warnings#treatwarningsaserrors&quot;&gt;TreatWarningsAsErrors&lt;/a&gt; - All warning messages are instead reported as errors. The build process halts (no output files are built).&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#enforcecodestyleinbuild&quot;&gt;EnforceCodeStyleInBuild&lt;/a&gt; - .NET code style analysis is disabled, by default, on build for all .NET projects.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;From my experience, it can negatively impact the local build time, so I prefer to run the checks in the CI/CD pipeline.&lt;/p&gt;
+
+&lt;p&gt;💡 The only exception to this is to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;WarningsAsErrors&amp;gt;Nullable&amp;lt;/WarningsAsErrors&amp;gt;&lt;/code&gt; to treat nullable warnings as errors.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;There is a way to write your own &lt;em&gt;custom analyzers&lt;/em&gt;. You can use the &lt;a href=&quot;https://github.com/dotnet/roslyn-sdk&quot;&gt;Roslyn SDK&lt;/a&gt; to create custom rules and code fixes. It is a great way to enforce custom coding standards and best practices used in your organization.&lt;/p&gt;
+
+&lt;p&gt;⭐ Additionally, you may consider the following analyzers created by the community:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/SonarSource/sonar-dotnet&quot;&gt;https://github.com/SonarSource/sonar-dotnet&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/dotnet/roslynator&quot;&gt;https://github.com/dotnet/roslynator&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/bkoelman/CSharpGuidelinesAnalyzer&quot;&gt;https://github.com/bkoelman/CSharpGuidelinesAnalyzer&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/meziantou/Meziantou.Analyzer&quot;&gt;https://github.com/meziantou/Meziantou.Analyzer&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/SergeyTeplyakov/ErrorProne.NET&quot;&gt;https://github.com/SergeyTeplyakov/ErrorProne.NET&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;☝️ Note, you don’t have to adopt analyzers entirely. You can use only the rules that make sense for your project.&lt;/p&gt;
+
+&lt;p&gt;🧠 My suggestion is to work on the code quality and code style rules together with the team during the code review process. The rules should be discussed and agreed upon by the team.&lt;/p&gt;
+
+&lt;h3 id=&quot;code-analysis-tools&quot;&gt;Code Analysis Tools&lt;/h3&gt;
+
+&lt;p&gt;If you want to go further, you can use code analysis tools. The difference between code analysis tools and code analyzers is that code analysis tools are external tools that analyze your codebase and provide insights into the quality of your code.&lt;/p&gt;
+
+&lt;p&gt;Some of the popular tools are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://sonarcloud.io/&quot;&gt;SonarCloud&lt;/a&gt; - SonarCloud is a cloud-based code analysis service that automatically detects bugs, vulnerabilities, and code smells in your code. It integrates with GitHub, Azure DevOps, and Bitbucket.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://securitylab.github.com/tools/codeql&quot;&gt;CodeQL&lt;/a&gt; - CodeQL is a semantic code analysis engine that allows you to write queries to find vulnerabilities in your code.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.ndepend.com/&quot;&gt;NDepend&lt;/a&gt; - NDepend is a static analysis tool that helps you manage complex .NET codebases and achieve high code quality.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here is an example of a SonarCloud report:&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/quality-gates/sonar.png&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;💡 You can include &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SonarCloud&lt;/code&gt; check as part of a CI/CD pipeline. Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/d:sonar.qualitygate.wait=true&lt;/code&gt; option. Otherwise, the CI/CD pipeline will not wait for the SonarCloud analysis to finish.&lt;/p&gt;
+
+&lt;p&gt;By default, Sonar configures pretty strict rules called “Sonar Way”:&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/quality-gates/sonar-way.png&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;👎 The downside of using different code analysis tools is that you have to configure them separately. You have to configure the rules, the severity levels, and the exclusions. Ideally, I want to have a single configuration file (aka source of truth) that configures all the code quality checks.&lt;/p&gt;
+
+&lt;h2 id=&quot;demo&quot;&gt;Demo&lt;/h2&gt;
+
+&lt;p&gt;Assume we have initial code that does not meet the quality standards.&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/quality-gates/code-before.png&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;First of all, the developer will receive feedback from the IDE and linter.&lt;/li&gt;
+  &lt;li&gt;Before committing the code, &lt;a href=&quot;https://alirezanet.github.io/Husky.Net/&quot;&gt;Husky.NET&lt;/a&gt; will run pre-commit hooks. And if any of the checks fail, the commit will be rejected.&lt;/li&gt;
+  &lt;li&gt;The CI/CD pipeline will run the same checks (and maybe other checks such as automated tests). And if any of the checks fail, the pipeline will fail.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Prerequisites:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet tool restore&lt;/code&gt; - installs &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;husky&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;csharpier&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;npm install -g cspell&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The benefit of using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Husky.NET&lt;/code&gt; is that it allows you to run pre-commit hooks in a cross-platform way. It is a .NET port of the popular &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;husky&lt;/code&gt; tool for Node.js.&lt;/p&gt;
+
+&lt;p&gt;Let’s run it locally to see how it works:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet run husky
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This command runs the following checks sequentially:&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;$schema&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://alirezanet.github.io/Husky.Net/schema.json&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;tasks&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;format&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;group&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pre-commit&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;command&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;dotnet&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;args&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;csharpier&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;--check&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;style&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;group&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pre-commit&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;command&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;dotnet&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;args&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;format&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;style&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;--verify-no-changes&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;analyzers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;group&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pre-commit&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;command&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;dotnet&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;args&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;format&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;analyzers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;--verify-no-changes&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;spelling&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;group&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;pre-commit&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;command&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cspell&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;args&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;lint&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;**.cs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;--no-progress&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;--no-summary&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can run the checks individually:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet husky run &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; format
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet husky run &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; style
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet husky run &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; analyzers
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet husky run &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; spelling
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, assume the developer ignores the warning and somehow commits the code and creates a pull request. The CI/CD pipeline will run the same checks, and if any of the checks fail, the pipeline will fail.&lt;/p&gt;
+
+&lt;p&gt;💡 I configured parallel execution for code quality gates, which helps to receive feedback faster.&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/quality-gates/ci-cd-failed.png&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Now let’s fix the issues, by running “quick code fixes” (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ctrl + .&lt;/code&gt;) in the IDE.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;filePath&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;path/to/your/file.txt&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fileStream&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;FileStream&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filePath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FileMode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FileAccess&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reader&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;StreamReader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fileStream&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EndOfStream&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ReadLineAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;IsNullOrWhiteSpace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Guid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;NewGuid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; - &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CountCapitalLetters&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;foreach&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteLine&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// Counts the number of capital letters in a string&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;CountCapitalLetters&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsUpper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;🔁 And run the checks again.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet husky run
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] 🚀 Loading tasks ...
+&lt;span class=&quot;nt&quot;&gt;--------------------------------------------------&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⚡ Preparing task &lt;span class=&quot;s1&quot;&gt;&apos;format&apos;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⌛ Executing task &lt;span class=&quot;s1&quot;&gt;&apos;format&apos;&lt;/span&gt; ...
+Formatted 1 files &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;952ms.
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky]  ✔ Successfully executed &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;2,307ms
+&lt;span class=&quot;nt&quot;&gt;--------------------------------------------------&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⚡ Preparing task &lt;span class=&quot;s1&quot;&gt;&apos;style&apos;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⌛ Executing task &lt;span class=&quot;s1&quot;&gt;&apos;style&apos;&lt;/span&gt; ...
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky]  ✔ Successfully executed &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;15,299ms
+&lt;span class=&quot;nt&quot;&gt;--------------------------------------------------&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⚡ Preparing task &lt;span class=&quot;s1&quot;&gt;&apos;analyzers&apos;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⌛ Executing task &lt;span class=&quot;s1&quot;&gt;&apos;analyzers&apos;&lt;/span&gt; ...
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky]  ✔ Successfully executed &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;12,293ms
+&lt;span class=&quot;nt&quot;&gt;--------------------------------------------------&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⚡ Preparing task &lt;span class=&quot;s1&quot;&gt;&apos;spelling&apos;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky] ⌛ Executing task &lt;span class=&quot;s1&quot;&gt;&apos;spelling&apos;&lt;/span&gt; ...
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Husky]  ✔ Successfully executed &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;2,802ms
+&lt;span class=&quot;nt&quot;&gt;--------------------------------------------------&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;💡 Note: The pre-commit hook takes about 30 seconds. This is already too long, so we might consider removing something from the git hook and relying only on the CI/CD.&lt;/p&gt;
+
+&lt;p&gt;Now, we commit the changes and push them to the repository. The CI/CD pipeline will run the checks again, and if all checks pass, the pipeline will succeed.&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/quality-gates/ci-cd-success.png&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Enforcing code quality gates is an important part of maintaining a high-quality codebase. It helps catch issues early in the development process, reducing the likelihood of bugs and technical debt.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://alirezanet.github.io/Husky.Net/&quot;&gt;https://alirezanet.github.io/Husky.Net/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://csharpier.com/&quot;&gt;https://csharpier.com/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.sonarsource.com/sonarcloud/&quot;&gt;https://docs.sonarsource.com/sonarcloud/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://rules.sonarsource.com/csharp/&quot;&gt;https://rules.sonarsource.com/csharp/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/bkoelman/CSharpGuidelinesAnalyzer&quot;&gt;https://github.com/bkoelman/CSharpGuidelinesAnalyzer&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/streetsidesoftware/cspell&quot;&gt;https://github.com/streetsidesoftware/cspell&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options&quot;&gt;https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://microsoft.github.io/code-with-engineering-playbook/developer-experience/&quot;&gt;https://microsoft.github.io/code-with-engineering-playbook/developer-experience/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 14 Sep 2024 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/2024/09/14/quality-gates-dotnet.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2024/09/14/quality-gates-dotnet.html</guid>
+			</item>
+		
+			<item>
 				<title>Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -3041,421 +3390,6 @@ graph
 				<pubDate>Wed, 12 Jun 2024 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html</guid>
-			</item>
-		
-			<item>
-				<title>Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;In this post, we’ll look at how you can use &lt;a href=&quot;https://opentelemetry.io/docs/languages/net/instrumentation/&quot;&gt;OpenTelemetry&lt;/a&gt; to monitor your automated tests and send that data to the Aspire Dashboard for visualization. The benefit of this approach is that you gain better insights into how your code works.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code&lt;/strong&gt;: &lt;a href=&quot;https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire&quot;&gt;https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire&lt;/a&gt;&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/test-instrumentation/blog-cover.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#running-integration-tests&quot;&gt;Running Integration Tests&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#code-explained&quot;&gt;Code Explained&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#instrumenting-tests&quot;&gt;Instrumenting Tests&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;In this post, we’ll look at how you can use &lt;a href=&quot;https://opentelemetry.io/docs/languages/net/instrumentation/&quot;&gt;OpenTelemetry&lt;/a&gt; to monitor your automated tests and send that data to the Aspire Dashboard for visualization. The benefit of this approach is that you gain better insights into how your code works.&lt;/p&gt;
-
-&lt;p&gt;We are going to write integration tests for TodoApi application that can be defined as following:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddServiceDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddHostedService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DbInitializer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddNpgsqlDbContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoDbContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;db&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddEndpointsApiExplorer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddSwaggerGen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Environment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;IsDevelopment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSwagger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSwaggerUI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapDefaultEndpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapTodos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RunAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is the API surface:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RouteGroupBuilder&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MapTodos&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IEndpointRouteBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGroup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/todos&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithTags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Todos&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithParameterValidation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoItemViewModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GetTodoItems&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithOpenApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/{id}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GetTodoItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithOpenApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapPost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CreateTodoItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithOpenApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapPut&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/{id}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;UpdateTodoItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithOpenApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapDelete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/{id}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DeleteTodoItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithOpenApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;group&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;It’s a very basic CRUD application, please feel free to investigate the details in the source code.&lt;/p&gt;
-
-&lt;h2 id=&quot;running-integration-tests&quot;&gt;Running Integration Tests&lt;/h2&gt;
-
-&lt;p&gt;The tests are written based on the following technologies:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;XUnit&lt;/code&gt; - test framework&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Testcontainers&lt;/code&gt; - test dependencies management via Docker Engine and &lt;a href=&quot;https://dotnet.testcontainers.org/&quot;&gt;.NET integration&lt;/a&gt;.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Alba&lt;/code&gt; - author integration tests against ASP.NET Core HTTP endpoints. Alba scenarios actually exercise the full ASP.NET Core application by running HTTP requests through your ASP.NET system in memory using the built in &lt;a href=&quot;https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests&quot;&gt;ASP.NET Core TestServer&lt;/a&gt;.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;I will explain how to instrument integration tests later. Right now, let’s see how it works.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--filter&lt;/span&gt; TodosTests &lt;span class=&quot;nt&quot;&gt;--verbosity&lt;/span&gt; normal
-&lt;span class=&quot;c&quot;&gt;# Starting test execution, please wait...&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# A total of 1 test files matched the specified pattern.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.1+ce9211e970 (64-bit .NET 8.0.6)&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# [xUnit.net 00:00:00.17]   Discovering: Api.IntegrationTests&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# [xUnit.net 00:00:00.24]   Discovered:  Api.IntegrationTests&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# [xUnit.net 00:00:00.24]   Starting:    Api.IntegrationTests&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# [xUnit.net 00:00:07.51]   Finished:    Api.IntegrationTests&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Test Run Successful.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Total tests: 6&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#      Passed: 6&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#  Total time: 8.3519 Seconds&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here are output traces that can be found in Aspire Dashboard:&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/test-instrumentation/overview.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;Open: &lt;a href=&quot;http://localhost:18888/&quot;&gt;http://localhost:18888/&lt;/a&gt; to see the results of Test Runs.&lt;/p&gt;
-
-&lt;p&gt;The interesting part here is a “Warmup” and “TestRun” traces. “Warmup” traces shows us how much time it took to setup host &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TestServer&lt;/code&gt; for &lt;em&gt;TodoApi&lt;/em&gt;, &lt;em&gt;PostgreSQL&lt;/em&gt; container, and &lt;em&gt;Aspire Dashboard&lt;/em&gt; as reusable container.&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/test-instrumentation/warmup.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;As you can see, we have a lot of thing going on during automatic database migration.&lt;/p&gt;
-
-&lt;p&gt;Let’s open “TestRun” traces. I’ve prepared two ways you can run integration tests. By default, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;XUnit&lt;/code&gt; runs tests within the same &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TestCollection&lt;/code&gt; sequentially, but we can override this behavior by using a custom test framework.&lt;/p&gt;
-
-&lt;p&gt;Here is sequential version:&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/test-instrumentation/seq-test-run.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;And here is parallel version:&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/test-instrumentation/par-test-run.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;💡Every test run is separated based on  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;service.instance.id&lt;/code&gt; with value assigned to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;test.run_id&lt;/code&gt; custom attribute. It is assigned to every trace to make test runs discoverable. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;test.run_id&lt;/code&gt; is generated as sequential guid to order the test runs in time. Basically, you can use Aspire Dashboard drop down for replica set to inspect every test run.&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/test-instrumentation/replica-set.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;code-explained&quot;&gt;Code Explained&lt;/h2&gt;
-
-&lt;p&gt;As mentioned previously, I use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Alba&lt;/code&gt; to setup &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TestServer&lt;/code&gt; host.&lt;/p&gt;
-
-&lt;p&gt;In the code below, we are setting up reusable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WebAppFixture&lt;/code&gt;. It will contain everything we need to test and interact with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TestSever&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;The other thing here we need to mention about is that we start &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Activity&lt;/code&gt; named “TestRun” to group sub-Activities for a test run.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;WebAppFixture&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IAsyncLifetime&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TracerName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TracerName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;tests&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IAlbaHost&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AlbaHost&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Activity&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivityForTestRun&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!;&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;readonly&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IContainer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aspireDashboard&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ContainerBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;mcr.microsoft.com/dotnet/aspire-dashboard:8.0.0&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithPortBinding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;18888&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;18888&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithPortBinding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;18889&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;true&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithWaitStrategy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;Wait&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ForUnixContainer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UntilHttpRequestIsSucceeded&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ForPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;18888&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReuse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithLabel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;aspire-dashboard&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;aspire-dashboard-reuse-id&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;readonly&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PostgreSqlContainer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;PostgreSqlBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;postgres:16&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;InitializeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;BootstrapAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;ActivityForTestRun&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;TestRun&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)!;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;BootstrapAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;warmupTracerProvider&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Sdk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateTracerProviderBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddSource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TracerName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;activityForWarmup&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Warmup&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)!;&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aspireDashboard&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;activityForWarmup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ActivityEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;AspireDashboard Started.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;activityForWarmup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ActivityEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;PostgresSql Started.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;otelExporterEndpoint&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;
-            &lt;span class=&quot;s&quot;&gt;$&quot;http://localhost:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aspireDashboard&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetMappedPublicPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;18889&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hostActivity&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Start Host&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)!;&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AlbaHost&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Alba&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AlbaHost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;For&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Program&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Test&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSetting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OTEL_EXPORTER_OTLP_ENDPOINT&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;otelExporterEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSetting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OTEL_TRACES_SAMPLER&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;always_on&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSetting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OTEL_EXPORTER_OTLP_PROTOCOL&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;grpc&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSetting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;in_memory&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSetting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OTEL_SERVICE_NAME&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;test-host&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseSetting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-                &lt;span class=&quot;s&quot;&gt;&quot;Aspire:Npgsql:EntityFrameworkCore:PostgreSQL:ConnectionString&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-                &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-            &lt;span class=&quot;c1&quot;&gt;// ordered guid to sort test runs&lt;/span&gt;
-            &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testRunId&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NewId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ToString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ConfigureServices&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;
-                    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddOpenTelemetry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-                    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithTracing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tracing&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-                        &lt;span class=&quot;n&quot;&gt;tracing&lt;/span&gt;
-                            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;SetResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-                                &lt;span class=&quot;n&quot;&gt;ResourceBuilder&lt;/span&gt;
-                                    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateDefault&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-                                    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TracerName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;serviceInstanceId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testRunId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-                            &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-                            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddSource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TracerName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-                            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddProcessor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;TestRunSpanProcessor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testRunId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-                    &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-                &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddDbContextFactory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoDbContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AlbaHost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;activityForWarmup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ActivityEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Host Started.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-
-        &lt;span class=&quot;c1&quot;&gt;// wait for migration&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AlbaHost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetServices&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IHostedService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FirstOrDefault&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DbInitializer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;As&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DbInitializer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;()&lt;/span&gt;
-            &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;StartupTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;DisposeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;ActivityForTestRun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Stop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AlbaHost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;DisposeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StopAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We can define a collection of tests that will reuse same instance of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WebAppFixture&lt;/code&gt; via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Xunit.CollectionAttribute&lt;/code&gt; like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CollectionDefinition&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;nameof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebAppCollection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sealed&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;WebAppCollection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ICollectionFixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebAppFixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;;&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Collection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;nameof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebAppCollection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;abstract&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;WebAppContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebAppFixture&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IAlbaHost&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Host&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AlbaHost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now, we can use it by inheriting from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WebAppContext&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TracePerTestRun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;TodosTests&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebAppFixture&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WebAppContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;readonly&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;FluentAssertions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Equivalency&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EquivalencyAssertionOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;FluentAssertions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Equivalency&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EquivalencyAssertionOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoItem&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ExcludingTodoItemFields&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cfg&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cfg&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Excluding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Theory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AutoData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;GetTodos_SomeTodosExist_Ok&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;todoItemTitle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;TodoItem&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Title&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;todoItemTitle&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddTodo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetAsJson&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoItemViewModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;]&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/todos&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Should&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;NotBeNull&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Should&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ContainEquivalentOf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ExcludingTodoItemFields&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;PostTodos_ValidTodo_Ok&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TodoItem&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Title&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;I want to do this thing tomorrow&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddTodo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Should&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;NotBeNull&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsComplete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Should&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;BeFalse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Theory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AutoData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;GetTodo_ExistingTodo_Ok&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoItem&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbTodo&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddTodo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetAsJson&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoItemViewModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;/todos/&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dbTodo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Should&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;NotBeNull&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Should&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;BeEquivalentTo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ExcludingTodoItemFields&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Theory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AutoData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;DeleteTodo_ExistingTodo_Ok&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TodoItem&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbTodo&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddTodo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Scenario&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Delete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;/todos/&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dbTodo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StatusCodeShouldBeOk&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;instrumenting-tests&quot;&gt;Instrumenting Tests&lt;/h3&gt;
-
-&lt;p&gt;You might mention special attributed called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TracePerTestRun&lt;/code&gt;. It is responsible for OpenTelemetry test instrumentation.&lt;/p&gt;
-
-&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;XUnit&lt;/code&gt; provides &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BeforeAfterTestAttribute&lt;/code&gt; to hookup to test execution lifecycle. We use it to start sub-Activities under parent “TestRun” activity.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;abstract&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BaseTraceTestAttribute&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BeforeAfterTestAttribute&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AttributeUsage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;AttributeTargets&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AttributeTargets&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Method&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;AllowMultiple&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Inherited&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;sealed&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;TracePerTestRunAttribute&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BaseTraceTestAttribute&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Activity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;activityForThisTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;override&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Before&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MethodInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;methodUnderTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;ArgumentNullException&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ThrowIfNull&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;methodUnderTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activityForThisTest&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebAppFixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;methodUnderTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;ActivityKind&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Internal&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;WebAppFixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ActivityForTestRun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Context&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;base&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Before&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;methodUnderTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;override&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;After&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MethodInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;methodUnderTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;activityForThisTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Stop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;base&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;After&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;methodUnderTest&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Also, for our convenience and to group tests together, we want to add &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;TestRunSpanProcessor&lt;/code&gt;. It enriches every span with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;test.run_id&lt;/code&gt; tag/attribute. It is an extension point provided by .NET OpenTelemetry instrumentation library.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;TestRunSpanProcessor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testRunId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BaseProcessor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Activity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;readonly&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testRunId&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;testRunId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;override&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;OnStart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Activity&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;SetTag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;test.run_id&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;testRunId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;🙌 Hooray, now you know how to instrument automated tests with &lt;em&gt;OpenTelemetry&lt;/em&gt; and visualize the test runs via &lt;em&gt;Aspire Dashboard&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;💡See &lt;a href=&quot;https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry&quot;&gt;https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry&lt;/a&gt; for more details on how to instrument unit tests with &lt;em&gt;OpenTelemetry&lt;/em&gt;. This blog post originally inspired me to write this blog post.&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In this post, we’ve explored how to use OpenTelemetry to instrument our automated tests and visualize the data on the Aspire Dashboard. This approach provides valuable insights into how our code operates, helping us to identify potential bottlenecks and improve the overall performance and reliability of our applications.&lt;/p&gt;
-
-&lt;p&gt;We’ve seen how to set up integration tests for a basic CRUD application using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;XUnit&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Testcontainers&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Alba&lt;/code&gt;. We’ve also learned how to run these tests both sequentially and in parallel, and how to view the results in the Aspire Dashboard.&lt;/p&gt;
-
-&lt;p&gt;By instrumenting our tests with OpenTelemetry, we can gain a deeper understanding of our code and its behavior under test conditions. This can lead to more robust, reliable, and efficient applications.&lt;/p&gt;
-
-&lt;p&gt;Remember, the source code for this post is available on GitHub at &lt;a href=&quot;https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire&quot;&gt;https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire&lt;/a&gt;. Feel free to explore it further and use it as a starting point for your own test instrumentation.&lt;/p&gt;
-
-&lt;p&gt;Happy testing! 🚀&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://opentelemetry.io/docs/languages/net/instrumentation/&quot;&gt;https://opentelemetry.io/docs/languages/net/instrumentation/&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://dotnet.testcontainers.org/&quot;&gt;https://dotnet.testcontainers.org/&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://jasperfx.github.io/alba/guide/gettingstarted.html&quot;&gt;https://jasperfx.github.io/alba/guide/gettingstarted.html&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry&quot;&gt;https://www.honeycomb.io/blog/monitoring-unit-tests-opentelemetry&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/testcontainers/testcontainers-dotnet&quot;&gt;https://github.com/testcontainers/testcontainers-dotnet&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Fri, 07 Jun 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html</guid>
 			</item>
 		
 	</channel>

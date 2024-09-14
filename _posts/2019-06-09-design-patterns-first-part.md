@@ -2,7 +2,7 @@
 layout: post
 title: Design Patterns. Behavioral Patterns. Part I
 categories: [design-patterns]
-tags: [dotnet, csharp, design-patterns, trydotnet]
+tags: [dotnet, csharp, design-patterns ]
 shortinfo: Overview of behavioral patterns with Try.NET
 fullview: false
 comments: true

@@ -2,7 +2,7 @@
 layout: post
 title: How to organize learning process with mindmaps, spreadsheets and .NET Core
 categories: [productivity]
-tags: [dotnet, mindmaps]
+tags: [dotnet, productivity ]
 shortinfo: Visualization of current learning progress as mindmap. Solution is based on <a href="https://nikiforovall.github.io/xmindcsharp/">XMindCsharp</a>.
 fullview: false
 comments: true

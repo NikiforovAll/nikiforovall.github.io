@@ -2,7 +2,7 @@
 layout: post
 title: Publish NuGet packages via Docker Release Container
 categories: [ dotnet, nuget, docker ]
-tags: [ dotnet, nuget, docker, ci-cd]
+tags: [ dotnet, nuget, docker, cicd]
 published: true
 shortinfo: Release container is a docker image that is used to distribute and release components.
 fullview: false

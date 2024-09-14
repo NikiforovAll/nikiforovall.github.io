@@ -2,7 +2,7 @@
 layout: post
 title: Try out .NET 6 inside your own development environment built with devcontainers, docker, and vscode
 categories: [ productivity, devcontainers ]
-tags: [ dotnet, docker, dotfiles, git, wsl, vscode, deaac, devcontainers ]
+tags: [ dotnet, docker, dotfiles, vscode, deaac, devcontainers ]
 published: true
 shortinfo: See how you can set up your reproducible development environment based on devcontainers without extra hustle.
 fullview: false

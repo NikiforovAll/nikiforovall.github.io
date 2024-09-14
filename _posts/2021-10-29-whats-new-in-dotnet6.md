@@ -2,7 +2,7 @@
 layout: post
 title: What's new in .NET 6 and C# 10. Everything you wanted to know.
 categories: [ dotnet, csharp, coding-stories ]
-tags: [ dotnet, csharp, coding-stories ]
+tags: [ dotnet, coding-stories ]
 published: true
 shortinfo: See how you can set up your reproducible development environment based on devcontainers without extra hustle.
 fullview: false

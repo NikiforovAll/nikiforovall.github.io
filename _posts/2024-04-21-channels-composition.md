@@ -2,7 +2,7 @@
 layout: post
 title: Building pipelines with System.Threading.Channels
 categories: [ dotnet, async ]
-tags: [ dotnet, aspnetcore, channels, async, TPL, pipelines ]
+tags: [ dotnet, aspnetcore, async, pipelines ]
 published: true
 shortinfo: This post shows you how to build pipelines based on System.Threading.Channels and Open.ChannelExtensions
 fullview: false

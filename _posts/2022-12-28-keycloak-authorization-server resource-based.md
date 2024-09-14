@@ -2,7 +2,7 @@
 layout: post
 title: Keycloak Authorization Server in .NET. Resource-based authorization
 categories: [ dotnet, keycloak ]
-tags: [ aspnetcore, dotnet, auth, keycloak, authz]
+tags: [ aspnetcore, dotnet, auth, keycloak ]
 published: false
 shortinfo:
 fullview: false

@@ -2,7 +2,7 @@
 layout: post
 title: Catch up with .NET Core - System.Text.JSON
 categories: [dotnet-core]
-tags: [dotnet, dotnet-core-modern-api]
+tags: [dotnet, json]
 shortinfo: Introduction to <b>System.Text.Json</b>.
 fullview: false
 published: true

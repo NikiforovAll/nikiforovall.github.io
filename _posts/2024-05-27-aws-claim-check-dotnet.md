@@ -2,7 +2,7 @@
 layout: post
 title: "Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire"
 categories: [ dotnet, aws ]
-tags: [ dotnet, aspnetcore, aws, cloud, s3, sns, sqs, aspire ]
+tags: [ dotnet, aspnetcore, aws, cloud, aws-s3, aws-sns, aws-sqs, aspire ]
 published: true
 shortinfo: "Learn how to use AWS.Messaging and Aspire to implement the Claim-Check pattern"
 fullview: false

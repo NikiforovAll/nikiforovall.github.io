@@ -2,7 +2,7 @@
 layout: post
 title: Creating and Using HTTP Client SDKs in .NET 6
 categories: [ dotnet, aspnetcore, microservices ]
-tags: [ dotnet, microservices, aspnetcore, api, http ]
+tags: [ dotnet, microservices, aspnetcore, api ]
 published: true
 shortinfo: There are many ways of developing HTTP Client SDKs. This article helps you to choose the right one according to your scenario.
 fullview: false
