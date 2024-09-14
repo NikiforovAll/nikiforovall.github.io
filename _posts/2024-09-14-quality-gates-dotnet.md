@@ -165,6 +165,20 @@ By default, Sonar configures pretty strict rules called "Sonar Way":
 
 ## Demo
 
+Check out the example I've prepared - <https://github.com/NikiforovAll/quality-gateways-demo-dotnet>
+
+🎯 This project, demonstrates how to enforce quality gates in a .NET project using the following tools:
+
+- [Code Analysis](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/overview) - .NET compiler platform (Roslyn) analyzers (shipped as part of the .NET SDK).
+- [SonarAnalyzer.CSharp](https://rules.sonarsource.com/csharp/) - Custom analyzers for C# that are part of SonarCloud.
+- [CSharpier](https://csharpier.com/) - CSharpier is an opinionated code formatter for C#.
+- [cspell](https://streetsidesoftware.github.io/cspell/) - cspell is a command line tool that checks the spelling of your code.
+- [Husky.Net](https://alirezanet.github.io/Husky.Net/) - Husky.Net is a .NET tool that allows you to run tasks before committing the code.
+- [GitHub Actions](https://docs.github.com/en/actions) - Automate, customize, and execute your software development workflows.
+- [SonarCloud](https://sonarcloud.io/) - SonarCloud is a cloud-based code analysis service that automatically detects bugs, vulnerabilities, and code smells in your code.
+
+---
+
 Assume we have initial code that does not meet the quality standards.
 
 <center>
