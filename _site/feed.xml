@@ -7,6 +7,351 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>10 Lessons I Learned from Using Aspire in Production</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;I have been using .NET Aspire for a while now and have learned a lot along the way. In this blog post, I will share some of the lessons I have learned from using .NET Aspire in production.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;.NET Aspire version: &lt;strong&gt;8.2.1&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/aspire-lessons-learned/aspire-brand.png&quot; style=&quot;margin: 15px;&quot; width=&quot;40%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#case-study&quot;&gt;Case Study&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-1-adding-aspire-is-quite-straightforward-and-incremental&quot;&gt;Lesson 1. Adding Aspire is quite straightforward and incremental&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-2-be-ready-to-write-custom-integrations&quot;&gt;Lesson 2. Be ready to write custom integrations&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-3-aspire-workload-should-be-installed-every-time-you-run-the-cicd-pipeline&quot;&gt;Lesson 3. Aspire workload should be installed every time you run the CI/CD pipeline&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-4-managing-startup-dependencies-is-a-must-have&quot;&gt;Lesson 4. Managing Startup Dependencies is a must have&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-5-aspire-project-can-take-some-time-to-boot-up&quot;&gt;Lesson 5. Aspire project can take some time to boot up&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-6-it-can-be-challenging-to-run-things-without-aspire&quot;&gt;Lesson 6. It can be challenging to run things without Aspire&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-7-there-is-no-easy-way-to-run-a-partial-setup&quot;&gt;Lesson 7. There is no easy way to run a partial setup&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-8-using-podman-instead-of-docker-can-be-troublesome&quot;&gt;Lesson 8. Using Podman instead of Docker can be troublesome&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-9-aspire-client-integrations-requires-ihostapplicationbuilder&quot;&gt;Lesson 9. Aspire client integrations requires IHostApplicationBuilder&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lesson-10-learn-by-example&quot;&gt;Lesson 10. Learn by example&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;case-study&quot;&gt;Case Study&lt;/h2&gt;
+
+&lt;p&gt;Assume we have a project, it is a &lt;strong&gt;web application&lt;/strong&gt; with advanced enterprise search capabilities, utilizing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; for data querying. It features a &lt;strong&gt;background jobs&lt;/strong&gt; for scraping and processing data from various sources, storing structured data in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PostgreSQL&lt;/code&gt; and files in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Azure Blob Storage&lt;/code&gt;. Additionally, we have a &lt;strong&gt;CLI&lt;/strong&gt; tool for essential administrative tasks such as reindexing and database migrations, ensuring system maintenance and automation.&lt;/p&gt;
+
+&lt;center&gt;
+&lt;div class=&quot;mermaid&quot;&gt;
+graph LR;
+    subgraph BS [Backing Services]
+        B[Elasticsearch]
+        C[PostgreSQL]
+        D[Azure Blob Storage]
+    end
+    A[Web App] --&amp;gt; B[Elasticsearch]
+    E[Jobs] --&amp;gt; B
+    E --&amp;gt; C[PostgreSQL]
+    E --&amp;gt; D[Blob Storage]
+    F[CLI] --&amp;gt; B
+    F --&amp;gt; C
+    F --&amp;gt; D
+&lt;/div&gt;
+&lt;/center&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;🎯 Our objective was to improve the developer experience by integrating &lt;strong&gt;.NET Aspire&lt;/strong&gt;. We aimed to create a seamless so called &lt;em&gt;F5&lt;/em&gt; setup for every team member.&lt;/p&gt;
+
+&lt;p&gt;💡 An “F5 setup” refers to a development environment configuration where a developer can simply press the F5 key (commonly used to start debugging in many IDEs, including Visual Studio) to run the application. This setup aims to streamline the development process by ensuring that all necessary services, dependencies, and configurations are automatically handled, allowing developers to focus on coding without worrying about manual setup or configuration.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;For existing developers, this means more efficient development and debugging workflows.&lt;/li&gt;
+  &lt;li&gt;For new developers, this means they can start working on the project without the hassle of manually configuring and setting up the underlying infrastructure. This approach ensures a smoother onboarding process and a more efficient development workflow.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Furthermore, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; serves as a composition root of the solution. If done correctly, you can reason what this solution is about just by looking at it.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;🚀 Down below, I will share some of the lessons learned from this experience. Let’s dive in!&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-1-adding-aspire-is-quite-straightforward-and-incremental&quot;&gt;Lesson 1. Adding Aspire is quite straightforward and incremental&lt;/h2&gt;
+
+&lt;p&gt;It turns out that transitioning your entire project to Aspire doesn’t have to be an all-or-nothing endeavor. You can begin by adding the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; and progressively migrate your backing services at your own pace.&lt;/p&gt;
+
+&lt;p&gt;For example, if you already have &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; configured in a non-Aspire way, you don’t have to use the official Aspire &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; &lt;strong&gt;client&lt;/strong&gt; integration. You can just use the &lt;strong&gt;hosting&lt;/strong&gt; integration and write adapter code to bridge the gap between Aspire and your existing code. My suggestion is to make these changes to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; to limit the amount of changes and avoid altering existing working code.&lt;/p&gt;
+
+&lt;p&gt;💡 Additionally, we didn’t really want to change the way we configure and manage cross-cutting concerns, so we abandoned the idea of using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ServiceDefaults&lt;/code&gt; altogether.We simply added an OpenTelemetry integration to enable logs, traces, and metrics in the Aspire Dashboard.&lt;/p&gt;
+
+&lt;p&gt;🗒️ References:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/get-started/add-aspire-existing-app?tabs=unix&amp;amp;pivots=dotnet-cli&quot;&gt;Tutorial: Add .NET Aspire to an existing .NET app&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;lesson-2-be-ready-to-write-custom-integrations&quot;&gt;Lesson 2. Be ready to write custom integrations&lt;/h2&gt;
+
+&lt;p&gt;We adopted Aspire at an early stage, and during our migration to Aspire, there was no official integration for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt;. Consequently, we developed a custom integration to configure &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; with Aspire by creating a custom &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ElasticsearchResource&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Custom hosting integrations often depend on an existing Dockerfile or Docker image. Therefore, creating one involves using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IDistributedApplicationBuilder&lt;/code&gt; to define the Docker equivalents.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ElasticsearchResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AddElasticsearch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IDistributedApplicationBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ParameterResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;password&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;port&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;internalPort&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;ArgumentNullException&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ThrowIfNull&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;passwordParameter&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;password&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Resource&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;??&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ParameterResourceBuilderExtensions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateDefaultPasswordParameter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;s&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;-password&quot;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;elasticsearch&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ElasticsearchResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;passwordParameter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;elasticsearch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ElasticsearchContainerImageTags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElasticsearchContainerImageTags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Tag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImageRegistry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ElasticsearchContainerImageTags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Registry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithHttpEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;targetPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElasticsearchPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElasticsearchResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PrimaryEndpointName&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;targetPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElasticsearchInternalPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;internalPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElasticsearchResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;InternalEndpointName&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;discovery.type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;single-node&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;xpack.security.http.ssl.enabled&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;false&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;xpack.security.enabled&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;true&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ELASTIC_PASSWORD&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;elasticsearch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PasswordParameter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As you can see above, we created a custom &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddElasticsearch&lt;/code&gt; extension method to configure &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; with Aspire. This method adds an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ElasticsearchResource&lt;/code&gt; to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IDistributedApplicationBuilder&lt;/code&gt; and configures the necessary settings for the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; Docker container.&lt;/p&gt;
+
+&lt;p&gt;It is a good idea to put separate custom integrations in a separate project to keep the codebase clean and organized. This approach also makes it easier to manage and maintain custom integrations as your project grows.&lt;/p&gt;
+
+&lt;p&gt;💡To gracefully migrate to Aspire and limit the amount of changes, we employed a previously mentioned technique (Lesson 1). I call this approach &lt;strong&gt;hosting integration adapter method&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;You can provide an overload of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WithReference&lt;/code&gt; to configure a custom integration in an opinionated way.&lt;/p&gt;
+
+&lt;p&gt;For example, here is how to provide a connection string and environment variables simultaneously:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TDestination&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TDestination&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TDestination&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ElasticsearchResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;source&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TDestination&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IResourceWithEnvironment&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;ArgumentNullException&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ThrowIfNull&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resource&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Resource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Prefix&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Elastic&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Add connection string as is (Aspire-way)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IResourceWithConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;connectionSTringResource&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connectionSTringResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Adapter code (Custom-way)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;__Url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PrimaryEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;__Login&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElasticsearchResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UserName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Prefix&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;__Password&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PasswordParameter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The benefit of this approach is that you can just conform to an existing way you configure your services and minimize the changes.&lt;/p&gt;
+
+&lt;p&gt;💡 Often, managing backing services requires additional tools such as &lt;strong&gt;pgAdmin&lt;/strong&gt; for PostgreSQL, &lt;strong&gt;Kibana&lt;/strong&gt; for Elasticsearch, or &lt;strong&gt;Azure Storage Explorer&lt;/strong&gt; for Azure Blob Storage. A growing &lt;em&gt;pattern&lt;/em&gt; is to add tooling support for hosting integrations using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;With{ToolName}&lt;/code&gt;. Here is an example:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WithKibana&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;KibanaContainerResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&amp;gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configureContainer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;containerName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElasticsearchResource&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;// implementation goes here&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This approach works well because it is easier to encapsulate two Aspire resources and use them together since their lifecycles are the same. I call this approach &lt;strong&gt;hosting integration tool&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;References:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/integrations-overview&quot;&gt;.NET Aspire integrations overview&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;lesson-3-aspire-workload-should-be-installed-every-time-you-run-the-cicd-pipeline&quot;&gt;Lesson 3. Aspire workload should be installed every time you run the CI/CD pipeline&lt;/h2&gt;
+
+&lt;p&gt;Installing the Aspire workload is necessary for it to function, but this can be cumbersome, especially in a CI/CD pipeline. The workload must be installed every time the pipeline runs, which can be time-consuming and tedious.&lt;/p&gt;
+
+&lt;p&gt;To address this, we created a separate solution for Aspire AppHost and its dependencies, excluding it from the main solution. This effectively removes the Aspire component from the CI/CD pipeline.&lt;/p&gt;
+
+&lt;p&gt;🙌🆕 Luckily, you don’t have to do it in Aspire 9.0. A standalone MSBuild SDK - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire.AppHost.Sdk&lt;/code&gt; should be referenced from the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; project.&lt;/p&gt;
+
+&lt;p&gt;See the related GitHub issue: &lt;a href=&quot;https://github.com/dotnet/aspire/issues/5444&quot;&gt;Remove Aspire.Hosting.SDK from the Workload #5444&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-4-managing-startup-dependencies-is-a-must-have&quot;&gt;Lesson 4. Managing Startup Dependencies is a must have&lt;/h2&gt;
+
+&lt;p&gt;In real-world applications, managing startup dependencies is crucial. For instance, you may need to ensure that a database is up and running before starting a migration CLI tool. Once the migration is complete, you might need to start the web application.&lt;/p&gt;
+
+&lt;p&gt;Although Aspire does not support this out of the box, you can achieve it using Aspire’s extension points.&lt;/p&gt;
+
+&lt;p&gt;For a detailed guide, refer to my blog post &lt;a href=&quot;https://nikiforovall.github.io/dotnet/aspire/2024/06/28/startup-dependencies-aspire.html&quot;&gt;Managing Startup Dependencies in .NET Aspire&lt;/a&gt;. Basically, I have created a NuGet package &lt;a href=&quot;https://www.nuget.org/packages/Nall.Aspire.Hosting.DependsOn&quot;&gt;Nall.Aspire.Hosting.DependsOn&lt;/a&gt; to address this issue.&lt;/p&gt;
+
+&lt;p&gt;Here is an example of how you can use it:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbServer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddPostgres&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;db-server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithHealthCheck&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;dbServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithPgAdmin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithHostPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;5050&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dbServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;db&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;migrator&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MigrationService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;migrator&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;api&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Api&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;api&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitForCompletion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;migrator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In the code above, we use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WithHealthCheck&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WaitFor&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WaitForCompletion&lt;/code&gt; to define dependency graph. This ensures that the database is up and running before starting the migration service, and the migration service is completed before starting the API.&lt;/p&gt;
+
+&lt;p&gt;🙌🆕 I have another good news for you! In Aspire 9.0, this is now a built-in feature.&lt;/p&gt;
+
+&lt;p&gt;See the related GitHub issue: &lt;a href=&quot;https://github.com/dotnet/aspire/pull/5394&quot;&gt;WaitFor/WaitForCompletion implementation. #5394&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-5-aspire-project-can-take-some-time-to-boot-up&quot;&gt;Lesson 5. Aspire project can take some time to boot up&lt;/h2&gt;
+
+&lt;p&gt;Since there is no hot-reload support for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt;, you have to rebuild and restart the project every time you make a change. This can be time-consuming, especially if your project is large and has many dependencies.&lt;/p&gt;
+
+&lt;p&gt;In our case, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; container took some time to start up, which slowed down the development process. It can take 30-60 seconds to start up, which at first glance seems like not a lot, but trust me, things add up.&lt;/p&gt;
+
+&lt;p&gt;To overcome this, we’ve implemented a mechanism to run only infrastructure services when needed. It is like a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docker-compose.infrastructure.yml&lt;/code&gt; file, but for Aspire.&lt;/p&gt;
+
+&lt;p&gt;🙌🆕 There is a solution to this problem! One of my favorite improvements in Aspire 9.0 is the - &lt;a href=&quot;https://github.com/dotnet/aspire/issues/923&quot;&gt;option to set up and keep resources (containers) after AppHost shutdown #923&lt;/a&gt;. It saves us from the headache of restarting &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elasticsearch&lt;/code&gt; every time we make a change.&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-6-it-can-be-challenging-to-run-things-without-aspire&quot;&gt;Lesson 6. It can be challenging to run things without Aspire&lt;/h2&gt;
+
+&lt;p&gt;Sometimes you need to run things without Aspire, but it is not easy because everything is tightly integrated with Aspire, and a lot of things are abstracted away.
+For example, assume I want to run a Blazor application in hot-reload mode without starting the Aspire &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; but still utilize the infrastructure provisioned and managed by Aspire.&lt;/p&gt;
+
+&lt;p&gt;To overcome this, we created a specific project called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EnvDumper&lt;/code&gt; that dumps the environment variables and connection strings to a file called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appsettings.Development.Aspire.json&lt;/code&gt;. The idea is that you can run the application without Aspire by using this file.&lt;/p&gt;
+
+&lt;p&gt;So the scenario is like this:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;You exclude a project from the Aspire &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; by using configuration.&lt;/li&gt;
+  &lt;li&gt;When you do this, the excluded projects are replaced by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EnvDumper&lt;/code&gt; project.&lt;/li&gt;
+  &lt;li&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EnvDumper&lt;/code&gt; project dumps the environment variables and connection strings to a file.&lt;/li&gt;
+  &lt;li&gt;You add the corresponding file to an excluded project and run it without Aspire in hot-reload mode.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;From &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; perspective it looks like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RegisterProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebApp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;web-app&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;blobStorage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;elastic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RegisterProject&lt;/code&gt; extension method:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IResourceWithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RegisterProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IDistributedApplicationBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TProject&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IProjectMetadata&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;IResourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IResourceWithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;project&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; 
+        &lt;span class=&quot;nf&quot;&gt;IsExcludedProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EnvDumper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;componentName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;project&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;🙌🆕 Alternatively, to speed up the development process, consider exploring the new feature in Aspire 9.0 - &lt;a href=&quot;https://github.com/dotnet/aspire/issues/295&quot;&gt;Add support for restarting services from the dashboard #295&lt;/a&gt;. Although I haven’t tried it yet, I believe this feature will address many of my requirements.&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-7-there-is-no-easy-way-to-run-a-partial-setup&quot;&gt;Lesson 7. There is no easy way to run a partial setup&lt;/h2&gt;
+
+&lt;p&gt;Sometimes you need to run a partial setup, for example, to test a specific feature or component without starting the entire application. However, Aspire does not provide an easy way to do this out of the box. As you already know, we added the feature to exclude projects from the Aspire &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; by using configuration. (See Lesson 5)&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-8-using-podman-instead-of-docker-can-be-troublesome&quot;&gt;Lesson 8. Using Podman instead of Docker can be troublesome&lt;/h2&gt;
+
+&lt;p&gt;💥 Networking issues can arise when using Podman instead of Docker from Windows. For example, we encountered problems with the Kibana container not being able to connect to the Elasticsearch container.&lt;/p&gt;
+
+&lt;p&gt;The problem exists to this day, and there are no workarounds available.&lt;/p&gt;
+
+&lt;p&gt;See the related GitHub issue: &lt;a href=&quot;https://github.com/dotnet/aspire/issues/4136&quot;&gt;Podman-hosted containers may not be able to reach Aspire services #4136&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-9-aspire-client-integrations-requires-ihostapplicationbuilder&quot;&gt;Lesson 9. Aspire client integrations requires IHostApplicationBuilder&lt;/h2&gt;
+
+&lt;p&gt;Aspire client integrations require &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IHostApplicationBuilder&lt;/code&gt;, which might not always be available. For instance, if you want to use client integrations and add dependencies to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IServiceCollection&lt;/code&gt; in a console application, or if you have existing code that uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IServiceCollection&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ConfigurationManager&lt;/code&gt; separately, you may find out your self in a tricky situation. Now, you have to refactor entire codebase just to use a client integration.&lt;/p&gt;
+
+&lt;p&gt;This is what happened to us, take a look at:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AddNpgsqlDataSource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IHostApplicationBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;connectionName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NpgsqlSettings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configureSettings&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Action&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NpgsqlDataSourceBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;configureDataSourceBuilder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As you can see, we should provide an instance of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IHostApplicationBuilder&lt;/code&gt; to use this extension method. This was a problem in our case because we had a lot of existing code that uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IServiceCollection&lt;/code&gt;, and since our solution consists of a hierarchy of projects with different configurations, it takes some time to refactor everything.&lt;/p&gt;
+
+&lt;p&gt;🤔 I think this design choice breaks the Postel’s Law principle, which states that you should be liberal in what you accept and conservative in what you send. In other words, it should be easy to use and hard to misuse. I would imagine an overload that does less but requires &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IServiceCollection&lt;/code&gt; instead. It would make client integrations more composable.&lt;/p&gt;
+
+&lt;h2 id=&quot;lesson-10-learn-by-example&quot;&gt;Lesson 10. Learn by example&lt;/h2&gt;
+
+&lt;p&gt;The best way to learn how to use Aspire is by example. I recommend checking out the official Aspire samples and the Aspire GitHub repository.&lt;/p&gt;
+
+&lt;p&gt;⭐ Here are some of my favorite reference applications:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/dotnet/eShopSupport&quot;&gt;eShopSupport&lt;/a&gt; - A reference .NET application using AI for a customer support ticketing system&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/dotnet/eShop&quot;&gt;eShop&lt;/a&gt; - A reference .NET application implementing an eCommerce site&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/Azure-Samples/eShopOnAzure&quot;&gt;eShopOnAzure&lt;/a&gt; - A variant of eShop that uses Azure services&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/cecilphillip/shadowshop&quot;&gt;cecilphillip/shadowShop&lt;/a&gt; - A modified version of the Aspire Shop sample application that adds integration with Stripe for payment processing, temporal for durable workflows, other customer Aspire Integrations&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/thangchung/practical-dotnet-aspire&quot;&gt;thangchung/practical-dotnet-aspire&lt;/a&gt; - The practical .NET Aspire builds on the coffeeshop app business domain&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/aspirant-project/aspirant&quot;&gt;Aspirant&lt;/a&gt; - Aspirant is a set of extensions and experiments for .NET Aspire App Host projects&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Aspire is more than just an alternative to docker-compose; it is a comprehensive ecosystem designed to simplify the building, running, and management of your applications. The key feature of Aspire is its &lt;strong&gt;programmability&lt;/strong&gt;, which enables you to extend and customize the platform to meet your specific requirements.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+				<pubDate>Mon, 30 Sep 2024 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/aspire/2024/09/30/aspire-lessons-learned.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/aspire/2024/09/30/aspire-lessons-learned.html</guid>
+			</item>
+		
+			<item>
 				<title>A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -3153,259 +3498,6 @@ graph
 				<pubDate>Tue, 18 Jun 2024 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html</guid>
-			</item>
-		
-			<item>
-				<title>A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;In this guide, we will explored how to leverage XUnit and OpenTelemetry to instrument .NET test projects. The process of setting up the &lt;a href=&quot;https://www.nuget.org/packages/XUnit.Otel.Template&quot;&gt;XUnit.Otel.Template&lt;/a&gt; demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code&lt;/strong&gt;: &lt;a href=&quot;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&quot;&gt;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&lt;/a&gt;&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/xunit-otel/blog-cover.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;&lt;em&gt;Table of Contents:&lt;/em&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#installation&quot;&gt;Installation&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#run-tests&quot;&gt;Run Tests&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#explore-the-code&quot;&gt;Explore the code&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#results-of-test-run&quot;&gt;Results of Test Run&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#metrics&quot;&gt;Metrics&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;As discussed in my previous blog post - &lt;a href=&quot;https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html&quot;&gt;Automated Tests Instrumentation via OpenTelemetry and Aspire Dashboard&lt;/a&gt;, we can utilize OpenTelemetry and Aspire Dashboard to gain valuable insights into the execution of our tests. This allows us to collect and analyze data over time, enabling us to identify potential anomalies.&lt;/p&gt;
-
-&lt;p&gt;Considering the positive response from the community, I have taken the initiative to enhance the existing approach and create a reusable starter template for everyone to benefit from.&lt;/p&gt;
-
-&lt;h2 id=&quot;installation&quot;&gt;Installation&lt;/h2&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet new &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;XUnit.Otel.Template::1.0.0
-&lt;span class=&quot;c&quot;&gt;# The following template packages will be installed:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#    XUnit.Otel.Template::1.0.0&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Success: XUnit.Otel.Template::1.0.0 installed the following templates:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Template Name  Short Name  Language  Tags&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# -------------  ----------  --------  -------------------------&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# XUnit Otel     xunit-otel  [C#]      XUnit/Tests/OpenTelemetry&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Generate:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dotnet new xunit-otel &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$dev&lt;/span&gt;/XUnitOtelExample01 &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; XUnitOtelExample
-&lt;span class=&quot;c&quot;&gt;# The template &quot;XUnit Otel&quot; was created successfully.&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;run-tests&quot;&gt;Run Tests&lt;/h2&gt;
-
-&lt;p&gt;Now let’s navigate to the project directory and run test project with additional option (environment variable really) to include warmup trace. Warmup trace is a special trace that shows how much time it takes to configure dependencies:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ &lt;span class=&quot;nv&quot;&gt;XUNIT_OTEL_TRACE_WARMUP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true &lt;/span&gt;dotnet &lt;span class=&quot;nb&quot;&gt;test&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Restore complete (1.2s)&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   XUnitOtelExample succeeded (4.9s) → bin\Debug\net8.0\XUnitOtelExample.dll&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   XUnitOtelExample test succeeded (2.8s)&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Build succeeded in 9.2s&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Test run succeeded. Total: 3 Failed: 0 Passed: 3 Skipped: 0, Duration: 2.8s&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Let’s navigate to &lt;a href=&quot;http://localhost:18888/traces&quot;&gt;http://localhost:18888/traces&lt;/a&gt; to see the results of test execution.&lt;/p&gt;
-
-&lt;p&gt;☝️ Aspire Dashboard is automatically started based on &lt;a href=&quot;https://dotnet.testcontainers.org/&quot;&gt;Testcontainers&lt;/a&gt; setup as part of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BaseFixture&lt;/code&gt;.&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/xunit-otel/initial-traces.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;As you can see, there are two traces one for test run and one for warmup.&lt;/p&gt;
-
-&lt;h3 id=&quot;explore-the-code&quot;&gt;Explore the code&lt;/h3&gt;
-
-&lt;p&gt;Before we move further let’s explore the content of exemplary test suit.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TracePerTestRun&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ExampleTests&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BaseFixture&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;BaseContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_ProducesSubActivity_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_AsyncWait_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-       &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;WaitRandomTime_Success&lt;/strong&gt;: This test waits for a random duration between 100 and 500 milliseconds and then asserts that the operation completes successfully. Note, the special method called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Runner&lt;/code&gt;. It is intended to wrap the asserted code so we can capture exceptions and enrich the traces with additional data such as exception message, trace, etc.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// Given&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Shared&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;500&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// When&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// Then&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;Runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;WaitRandomTime_ProducesSubActivity_Success&lt;/strong&gt;: Similar to the first, but it waits for a shorter random duration (between 50 and 250 milliseconds). It also starts a new activity named “SubActivity”, logs an event indicating a delay has been waited for, and sets a tag with the delay duration. The test asserts success after the wait. This example demonstrate how to add additional traces to test suit if needed.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_ProducesSubActivity_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// Given&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;myActivity&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BaseFixture&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ActivitySource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;SubActivity&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Shared&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;250&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// When&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;myActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;WaitedForDelay&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;myActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;SetTag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;subA_activity:delay&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// Then&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;Runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;WaitRandomTime_AsyncWait_Success&lt;/strong&gt;: This test is partially shown. Like the others, it waits for a random duration between 50 and 250 milliseconds then within a Runner method, waits for the delay again before asserting a condition that is always true. This demonstrates asynchronous &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Runner&lt;/code&gt; execution.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Fact&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WaitRandomTime_AsyncWait_Success&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// Given&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Shared&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;250&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromMilliseconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;waitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// When&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// Then&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;results-of-test-run&quot;&gt;Results of Test Run&lt;/h3&gt;
-
-&lt;p&gt;Here is the result of trace output, as you can see, every test has it’s own trace and we can see how tests are executed sequentially by XUnit:&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/xunit-otel/test-run.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;Now, let’s modify the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WaitRandomTime_AsyncWait_Success&lt;/code&gt; test to intentionally cause it to fail. This will allow us to observe how the test framework displays failed tests:&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/xunit-otel/trace-with-error.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;Below are the details of the test run. Failed tests are readily identifiable on the Aspire Dashboard, where each failed test is accompanied by an &lt;em&gt;Trace Event&lt;/em&gt; with exception details. This event provides detailed insights into the reasons behind the test failure.&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/xunit-otel/trace-with-error-details.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h3 id=&quot;metrics&quot;&gt;Metrics&lt;/h3&gt;
-
-&lt;p&gt;These metrics highlight the execution time on a per-test and per-class basis, categorized by tags.&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/xunit-otel/metrics.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;The P50 percentile, also known as the median, represents the &lt;strong&gt;middle value&lt;/strong&gt; of a dataset when it’s sorted in ascending order. In the context of test execution, the P50 percentile for execution time tells you that:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;50% of your tests complete faster than this time.&lt;/strong&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;50% of your tests complete slower than this time.&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Here’s how you can use the P50 percentile for test execution:&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;1. Performance Benchmark:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;The P50 provides a good representation of the “typical” test execution time.&lt;/li&gt;
-  &lt;li&gt;You can use it as a baseline to compare performance over time. For example, if your P50 increases significantly after a code change, it might indicate a performance regression.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;2. Setting Realistic Expectations:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Instead of focusing on the absolute fastest or slowest tests, the P50 gives you a realistic idea of how long most tests take to execute.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;3. Identifying Areas for Improvement:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;While the P50 represents the median, a large difference between the P50 and higher percentiles (like P90 or P95) indicates a wide spread in execution times.&lt;/li&gt;
-  &lt;li&gt;This suggests that some tests are significantly slower than others, and you might want to investigate those outliers for potential optimizations.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Example:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Let’s say your test suite has a P50 execution time of 200 milliseconds. This means:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Half of your tests finish in under 200 milliseconds.&lt;/li&gt;
-  &lt;li&gt;Half of your tests take longer than 200 milliseconds.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;In summary,&lt;/strong&gt; the P50 percentile provides a valuable metric for understanding the typical performance of your tests and identifying areas for optimization. It helps you set realistic expectations, track performance trends, and make informed decisions about your testing process.&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In this guide, we’ve explored how to leverage XUnit and OpenTelemetry to instrument our .NET test projects, providing a deeper insight into our test executions with the Aspire Dashboard. By integrating these tools, developers can gain valuable metrics and traces that illuminate the performance and behavior of tests in a way that traditional testing frameworks cannot match.&lt;/p&gt;
-
-&lt;p&gt;The process of setting up the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;XUnit.Otel.Template&lt;/code&gt; demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard. The examples provided show not only how to implement basic test instrumentation but also how to enrich our tests with additional data, such as custom activities and events, to gain more detailed insights.&lt;/p&gt;
-
-&lt;p&gt;The ability to visualize test executions and metrics on the &lt;em&gt;Aspire Dashboard&lt;/em&gt; transforms the way we perceive and interact with our test suites. It allows us to quickly identify and address failures, understand performance bottlenecks, and improve the reliability and efficiency of our tests over time.&lt;/p&gt;
-
-&lt;p&gt;As we continue to evolve our testing strategies, the integration of OpenTelemetry and Aspire Dashboard with XUnit represents a significant step forward in achieving more observable, reliable, and insightful test suites. This guide serves as a starting point for developers looking to enhance their testing practices with these powerful tools.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&quot;&gt;https://github.com/NikiforovAll/xunit-instrumentation-otel-template&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html&quot;&gt;https://nikiforovall.github.io/dotnet/opentelemtry/2024/06/07/test-instrumentation-with-otel-aspire.html&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Wed, 12 Jun 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html</guid>
 			</item>
 		
 	</channel>
