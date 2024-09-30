@@ -31,7 +31,7 @@ I have been using .NET Aspire for a while now and have learned a lot along the w
 - [Lesson 6. It can be challenging to run things without Aspire](#lesson-6-it-can-be-challenging-to-run-things-without-aspire)
 - [Lesson 7. There is no easy way to run a partial setup](#lesson-7-there-is-no-easy-way-to-run-a-partial-setup)
 - [Lesson 8. Using Podman instead of Docker can be troublesome](#lesson-8-using-podman-instead-of-docker-can-be-troublesome)
-- [Lesson 9. Aspire client integrations requires IHostApplicationBuilder](#lesson-9-aspire-client-integrations-requires-ihostapplicationbuilder)
+- [Lesson 9. Aspire client integrations require IHostApplicationBuilder](#lesson-9-aspire-client-integrations-require-ihostapplicationbuilder)
 - [Lesson 10. Learn by example](#lesson-10-learn-by-example)
 - [Conclusion](#conclusion)
 
@@ -303,7 +303,7 @@ The problem exists to this day, and there are no workarounds available.
 
 See the related GitHub issue: [Podman-hosted containers may not be able to reach Aspire services #4136](https://github.com/dotnet/aspire/issues/4136)
 
-## Lesson 9. Aspire client integrations requires IHostApplicationBuilder
+## Lesson 9. Aspire client integrations require IHostApplicationBuilder
 
 Aspire client integrations require `IHostApplicationBuilder`, which might not always be available. For instance, if you want to use client integrations and add dependencies to `IServiceCollection` in a console application, or if you have existing code that uses `IServiceCollection` and `ConfigurationManager` separately, you may find out your self in a tricky situation. Now, you have to refactor entire codebase just to use a client integration.
 
@@ -338,4 +338,4 @@ The best way to learn how to use Aspire is by example. I recommend checking out 
 
 Aspire is more than just an alternative to docker-compose; it is a comprehensive ecosystem designed to simplify the building, running, and management of your applications. The key feature of Aspire is its **programmability**, which enables you to extend and customize the platform to meet your specific requirements.
 
-> 🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you'd like to support my work, a star on GitHub would be greatly appreciated! 🙏
+> 🙌 I hope you found it helpful. If you have any questions, please feel free to reach out.
