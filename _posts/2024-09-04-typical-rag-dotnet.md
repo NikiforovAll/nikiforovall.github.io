@@ -2,7 +2,7 @@
 layout: post
 title: "Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET"
 categories: [ dotnet, ai ]
-tags: [ dotnet, semantic-kernel, kernel-memory, opentelemetry, ai, aspire ]
+tags: [ dotnet, semantic-kernel, kernel-memory, opentelemetry, ai, aspire, rag ]
 published: true
 shortinfo: "Learn how to use the out-of-the-box solution provided by Kernel Memory to build a typical RAG in .NET."
 fullview: false
