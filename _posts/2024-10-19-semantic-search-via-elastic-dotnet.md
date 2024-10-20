@@ -2,7 +2,7 @@
 layout: post
 title: "Semantic Search with Elasticsearch in .NET"
 categories: [ dotnet ]
-tags: [ dotnet, elasticsearch, ai, rag ]
+tags: [ dotnet, elasticsearch, ai, rag, search ]
 published: true
 shortinfo: "This post demonstrates how to perform Semantic Search using Elasticsearch and Polyglot Notebooks"
 fullview: false
