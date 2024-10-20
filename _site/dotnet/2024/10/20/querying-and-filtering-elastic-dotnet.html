@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Querying and Filtering via Elastic.Clients.Elasticsearch in .NET</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Querying and Filtering via Elastic.Clients.Elasticsearch in .NET </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			October
+			20th,
+			
+			2024
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html">Semantic Search with Elasticsearch in .NET <span class="label label-default">dotnet</span>  <span class="label label-default">elasticsearch</span>  <span class="label label-default">search</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/01-keyword-querying-filtering.ipynb" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/01-keyword-querying-filtering.ipynb</a></p>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#hands-on">Hands-on</a></li>
+  <li>
+<a href="#querying">Querying</a>
+    <ul>
+      <li>
+<a href="#full-text-queries">Full text queries</a>
+        <ul>
+          <li><a href="#match-query">Match query</a></li>
+          <li><a href="#multi-match-query">Multi-match query</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+<a href="#term-level-queries">Term-level Queries</a>
+    <ul>
+      <li>
+<a href="#term-search">Term search</a>
+        <ul>
+          <li><a href="#range-search">Range search</a></li>
+          <li><a href="#prefix-search">Prefix search</a></li>
+          <li><a href="#fuzzy-search">Fuzzy search</a></li>
+        </ul>
+      </li>
+      <li>
+<a href="#combining-query-conditions">Combining Query Conditions</a>
+        <ul>
+          <li><a href="#boolmust-and">bool.must (AND)</a></li>
+          <li><a href="#boolshould-or">bool.should (OR)</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+<a href="#filtering">Filtering</a>
+    <ul>
+      <li><a href="#boolfilter">bool.filter</a></li>
+      <li><a href="#boolmust_not">bool.must_not</a></li>
+      <li><a href="#using-filters-with-queries">Using Filters with Queries</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Querying and filtering are two fundamental operations when working with <a href="https://www.elastic.co/docs" target="_blank" rel="noopener noreferrer">Elasticsearch</a>. <strong>Querying</strong> involves searching for documents that match certain criteria, often using full-text search capabilities. This is useful when you need to find documents based on relevance or specific content. <strong>Filtering</strong>, on the other hand, is used to narrow down the search results by applying specific conditions, such as range filters or term filters. Filters are generally faster and more efficient because they do not score documents like queries do. Understanding the distinction between querying and filtering can help you optimize your search operations and improve the performance of your Elasticsearch queries.</p>
+
+<h2 id="hands-on">Hands-on</h2>
+
+<p>I’ve prepared a Jupyter notebook that demonstrates how to query and filter Elasticsearch using <code class="language-plaintext highlighter-rouge">Elastic.Clients.Elasticsearch</code>. You can find the source code <a href="https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/01-keyword-querying-filtering.ipynb" target="_blank" rel="noopener noreferrer">here</a>.</p>
+
+<center>
+    <video src="https://github.com/user-attachments/assets/12eaf406-537d-4013-9364-f5b5e69b90e8" width="90%" controls="controls"></video>
+</center>
+
+<blockquote>
+  <p>⚠️ Note: to run the queries that follow you need the “book_index” dataset from my previous post <a href="https://nikiforovall.github.io/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html" target="_blank" rel="noopener noreferrer">Semantic Search with Elasticsearch in .NET</a>.</p>
+</blockquote>
+
+<h2 id="querying">Querying</h2>
+
+<p>In the query context, a query clause answers the question <em>“How well does this document match this query clause?”</em>. In addition to deciding whether or not the document matches, the query clause also calculates a relevance score in the <code class="language-plaintext highlighter-rouge">_score</code> metadata field.</p>
+
+<h3 id="full-text-queries">Full text queries</h3>
+
+<p>Full text queries enable you to search analyzed text fields such as the body of an email. The query string is processed using the same analyzer that was applied to the field during indexing.</p>
+
+<ul>
+  <li>
+<strong>match</strong>. The standard query for performing full text queries, including fuzzy matching and phrase or proximity queries.</li>
+  <li>
+<strong>multi-match</strong>. The multi-field version of the match query.</li>
+</ul>
+
+<h4 id="match-query">Match query</h4>
+
+<p>Returns documents that <code class="language-plaintext highlighter-rouge">match</code> a provided text, number, date or boolean value. The provided text is analyzed before matching.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">match</code> query is the standard query for performing a full-text search, including options for fuzzy matching.</p>
+
+<p>💡 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html#match-query-ex-request" target="_blank" rel="noopener noreferrer">Docs: Read more</a></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span>
+        <span class="p">.</span><span class="nf">Match</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Summary</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="s">"guide"</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="p">.</span><span class="nf">Size</span><span class="p">(</span><span class="m">5</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Match query</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q1.png" style="margin: 15px;">
+</center>
+
+<h4 id="multi-match-query">Multi-match query</h4>
+
+<p>The <code class="language-plaintext highlighter-rouge">multi_match</code> query builds on the match query to allow multi-field queries.</p>
+
+<p>💡 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html" target="_blank" rel="noopener noreferrer">Docs: Read more</a>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span> <span class="p">.</span><span class="nf">MultiMatch</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+        <span class="p">.</span><span class="nf">Fields</span><span class="p">(</span><span class="n">Fields</span><span class="p">.</span><span class="nf">FromStrings</span><span class="p">([</span><span class="s">"summary"</span><span class="p">,</span> <span class="s">"title"</span><span class="p">]))</span>
+        <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="s">"javascript"</span><span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Multi-match query</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q2.png" style="margin: 15px;">
+</center>
+
+<p>➕ Individual fields can be boosted with the <strong>caret (^) notation</strong>. Note in the following query how the score of the results that have “JavaScript” in their title is multiplied.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span> <span class="p">.</span><span class="nf">MultiMatch</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+        <span class="p">.</span><span class="nf">Fields</span><span class="p">(</span><span class="n">Fields</span><span class="p">.</span><span class="nf">FromStrings</span><span class="p">([</span><span class="s">"summary"</span><span class="p">,</span> <span class="s">"title^3"</span><span class="p">]))</span>
+        <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="s">"javascript"</span><span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Multi-match query with boost</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q3.png" style="margin: 15px;">
+</center>
+
+<h2 id="term-level-queries">Term-level Queries</h2>
+
+<p>You can use term-level queries to find documents based on precise values in structured data. Examples of structured data include date ranges, IP addresses, prices, or product IDs.</p>
+
+<h3 id="term-search">Term search</h3>
+
+<p>Returns document that contain exactly the search term.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Term</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span>
+        <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Publisher</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"addison-wesley"</span><span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Term search</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q4.png" style="margin: 15px;">
+</center>
+
+<h4 id="range-search">Range search</h4>
+
+<p>Returns documents that contain terms within a provided range.</p>
+
+<p>The following example returns books that have at least 45 reviews.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Range</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span>
+        <span class="p">.</span><span class="nf">NumberRange</span><span class="p">(</span><span class="n">nr</span> <span class="p">=&gt;</span> <span class="n">nr</span><span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">num_reviews</span><span class="p">).</span><span class="nf">Gte</span><span class="p">(</span><span class="m">45</span><span class="p">)))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Range search</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q5.png" style="margin: 15px;">
+</center>
+
+<h4 id="prefix-search">Prefix search</h4>
+
+<p>Returns documents that contain a specific prefix in a provided field.</p>
+
+<p>💡 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-prefix-query.html" target="_blank" rel="noopener noreferrer">Docs: Read more</a>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Prefix</span><span class="p">(</span><span class="n">p</span> <span class="p">=&gt;</span> <span class="n">p</span>
+        <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Title</span><span class="p">)</span>
+        <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"java"</span><span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Prefix search</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q6.png" style="margin: 15px;">
+</center>
+
+<h4 id="fuzzy-search">Fuzzy search</h4>
+
+<p>Returns documents that contain terms similar to the search term, as measured by a <em>Levenshtein edit</em> distance.</p>
+
+<p>An edit distance is the number of one-character changes needed to turn one term into another. These changes can include:</p>
+
+<ul>
+  <li>Changing a character (box → fox)</li>
+  <li>Removing a character (black → lack)</li>
+  <li>Inserting a character (sic → sick)</li>
+  <li>Transposing two adjacent characters (act → cat)</li>
+</ul>
+
+<p>💡 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-fuzzy-query.html" target="_blank" rel="noopener noreferrer">Docs: Read more</a>.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span>
+        <span class="p">.</span><span class="nf">Fuzzy</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span>
+            <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">ff</span> <span class="p">=&gt;</span> <span class="n">ff</span><span class="p">.</span><span class="n">Title</span><span class="p">)</span>
+            <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"pyvascript"</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Fuzzy search</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q7.png" style="margin: 15px;">
+</center>
+
+<h3 id="combining-query-conditions">Combining Query Conditions</h3>
+
+<p>Compound queries wrap other compound or leaf queries, either to combine their results and scores, or to change their behaviour. They also allow you to switch from query to filter context, but that will be covered later in the Filtering section.</p>
+
+<h4 id="boolmust-and">bool.must (AND)</h4>
+
+<p>The clauses must appear in matching documents and will contribute to the score. This effectively performs an “AND” logical operation on the given sub-queries.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="n">b</span> <span class="p">=&gt;</span> <span class="n">b</span>
+        <span class="p">.</span><span class="nf">Must</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Term</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span>
+                <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Publisher</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"addison-wesley"</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Term</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span>
+                <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Authors</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"richard helm"</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>bool.must (AND)</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q8.png" style="margin: 15px;">
+</center>
+
+<h4 id="boolshould-or">bool.should (OR)</h4>
+
+<p>The clause should appear in the matching document. This performs an “OR” logical operation on the given sub-queries.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="n">b</span> <span class="p">=&gt;</span> <span class="n">b</span>
+        <span class="p">.</span><span class="nf">Should</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Term</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span>
+                <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Publisher</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"addison-wesley"</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Term</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span>
+                <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Authors</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"richard helm"</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>bool.should (OR)</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q9.png" style="margin: 15px;">
+</center>
+
+<h2 id="filtering">Filtering</h2>
+<p>In a filter context, a query clause answers the question “Does this document match this query clause?” The answer is a simple Yes or No — no scores are calculated. Filter context is mostly used for filtering structured data, for example:</p>
+
+<ul>
+  <li>Does this <code class="language-plaintext highlighter-rouge">timestamp</code> fall into the range 2015 to 2016?</li>
+  <li>Is the <code class="language-plaintext highlighter-rouge">status</code> field set to <em>“published”</em>?</li>
+</ul>
+
+<p>Filter context is in effect whenever a query clause is passed to a <code class="language-plaintext highlighter-rouge">filter</code> parameter, such as the <code class="language-plaintext highlighter-rouge">filter</code> or <code class="language-plaintext highlighter-rouge">must_not</code> parameters in the <code class="language-plaintext highlighter-rouge">bool</code> query.</p>
+
+<p>💡 <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-bool-query.html" target="_blank" rel="noopener noreferrer">Docs: Read more</a>.</p>
+
+<h3 id="boolfilter">bool.filter</h3>
+
+<p>The clause (query) must appear for the document to be included in the results. Unlike query context searches such as term, bool.must or bool.should, a matching score isn’t calculated because filter clauses are executed in filter context.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="n">b</span> <span class="p">=&gt;</span> <span class="n">b</span>
+        <span class="p">.</span><span class="nf">Filter</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Term</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span>
+                <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Publisher</span><span class="p">)</span>
+                <span class="p">.</span><span class="nf">Value</span><span class="p">(</span><span class="s">"prentice hall"</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>bool.filter</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q10.png" style="margin: 15px;">
+</center>
+
+<h3 id="boolmust_not">bool.must_not</h3>
+
+<p>The clause (query) must not appear in the matching documents. Because this query also runs in filter context, no scores are calculated; the filter just determines if a document is included in the results or not.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="n">b</span> <span class="p">=&gt;</span> <span class="n">b</span>
+        <span class="p">.</span><span class="nf">MustNot</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Range</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">.</span><span class="nf">NumberRange</span><span class="p">(</span><span class="n">nr</span> <span class="p">=&gt;</span> <span class="n">nr</span><span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">num_reviews</span><span class="p">).</span><span class="nf">Lte</span><span class="p">(</span><span class="m">45</span><span class="p">)))</span>
+        <span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>bool.must_not</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q11.png" style="margin: 15px;">
+</center>
+
+<h3 id="using-filters-with-queries">Using Filters with Queries</h3>
+
+<p>Filters are often added to search queries with the intention of limiting the search to a subset of the documents. A filter can cleanly eliminate documents from a search, without altering the relevance scores of the results.</p>
+
+<p>The next example returns books that have the word “javascript” in their title, only among the books that have more than 45 reviews.</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">searchResponse</span> <span class="p">=</span> <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="n">SearchAsync</span><span class="p">&lt;</span><span class="n">Book</span><span class="p">&gt;(</span><span class="n">s</span> <span class="p">=&gt;</span> <span class="n">s</span>
+    <span class="p">.</span><span class="nf">Query</span><span class="p">(</span><span class="n">q</span> <span class="p">=&gt;</span> <span class="n">q</span><span class="p">.</span><span class="nf">Bool</span><span class="p">(</span><span class="n">b</span> <span class="p">=&gt;</span> <span class="n">b</span>
+        <span class="p">.</span><span class="nf">Must</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Match</span><span class="p">(</span><span class="n">t</span> <span class="p">=&gt;</span> <span class="n">t</span>
+                <span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">Title</span><span class="p">).</span><span class="nf">Query</span><span class="p">(</span><span class="s">"javascript"</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="p">.</span><span class="nf">MustNot</span><span class="p">(</span><span class="n">m</span> <span class="p">=&gt;</span> <span class="n">m</span>
+            <span class="p">.</span><span class="nf">Range</span><span class="p">(</span><span class="n">r</span> <span class="p">=&gt;</span> <span class="n">r</span><span class="p">.</span><span class="nf">NumberRange</span><span class="p">(</span><span class="n">nr</span> <span class="p">=&gt;</span> <span class="n">nr</span><span class="p">.</span><span class="nf">Field</span><span class="p">(</span><span class="n">f</span> <span class="p">=&gt;</span> <span class="n">f</span><span class="p">.</span><span class="n">num_reviews</span><span class="p">).</span><span class="nf">Lte</span><span class="p">(</span><span class="m">45</span><span class="p">)))</span>
+        <span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">);</span>
+
+<span class="nf">DumpRequest</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+<span class="nf">PrettyPrint</span><span class="p">(</span><span class="n">searchResponse</span><span class="p">);</span>
+</code></pre></div></div>
+
+<center>⚙️Output: <b>Filters and Queries</b>
+</center>
+
+<center>
+  <img src="/assets/querying-elastic/q12.png" style="margin: 15px;">
+</center>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>That is all for now! 🎉 We’ve covered the basics of querying and filtering in Elasticsearch using the <code class="language-plaintext highlighter-rouge">Elastic.Clients.Elasticsearch</code> NuGet package. Understanding how to construct queries and filters can help you build powerful search capabilities in your applications.</p>
+
+<blockquote>
+  <p>🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏</p>
+</blockquote>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/NikiforovAll/elasticsearch-dotnet-playground/tree/main/src/elasticsearch-getting-started" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/elasticsearch-dotnet-playground/tree/main/src/elasticsearch-getting-started</a></li>
+  <li><a href="https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/01-keyword-querying-filtering.ipynb" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/01-keyword-querying-filtering.ipynb</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(47)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(53)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#elasticsearch-ref" target="_blank" rel="noopener noreferrer">
+				elasticsearch <span>(2)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#search-ref" target="_blank" rel="noopener noreferrer">
+				search <span>(2)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html" title="Semantic Search with Elasticsearch in .NET" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2024 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
