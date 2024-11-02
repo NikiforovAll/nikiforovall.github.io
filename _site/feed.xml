@@ -7,6 +7,125 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Hybrid Search with Elasticsearch in .NET</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;Use the reciprocal rank fusion algorithm to combine the results of BM25 and kNN semantic search.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/02-hybrid-search.ipynb&quot;&gt;https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/02-hybrid-search.ipynb&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;I’ve prepared a Jupyter notebook that demonstrates how to use the reciprocal rank fusion algorithm using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Elastic.Clients.Elasticsearch&lt;/code&gt;. You can find the source code &lt;a href=&quot;https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/02-hybrid-search.ipynb&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;video src=&quot;https://github.com/user-attachments/assets/cf989ebc-64c8-4c8a-937a-d04016a8c403&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;hybrid-search&quot;&gt;Hybrid Search&lt;/h2&gt;
+
+&lt;p&gt;In my previous blog posts, you have seen two different approaches to search a collection of documents (&lt;a href=&quot;https://nikiforovall.github.io/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html&quot;&gt;Semantic Search with Elasticsearch in .NET&lt;/a&gt; and &lt;a href=&quot;https://nikiforovall.github.io/dotnet/2024/10/20/querying-and-filtering-elastic-dotnet.html&quot;&gt;Querying and Filtering via Elastic.Clients.Elasticsearch in .NET&lt;/a&gt;), each with its own particular benefits. If one of these methods matches your needs then you don’t need anything else, but in many cases each method of searching returns valuable results that the other method would miss, so the best option is to offer a combined result set.&lt;/p&gt;
+
+&lt;p&gt;For these cases, Elasticsearch offers &lt;a href=&quot;https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html&quot;&gt;Reciprocal Rank Fusion&lt;/a&gt;, an algorithm that combines results from two or more lists into a single list.&lt;/p&gt;
+
+&lt;h3 id=&quot;how-rrf-works-in-elasticsearch&quot;&gt;How RRF Works in Elasticsearch&lt;/h3&gt;
+
+&lt;p&gt;☝️ RRF is based on the concept of reciprocal rank, which is the inverse of the rank of the first relevant document in a list of search results. The goal of the technique is to take into account the position of the items in the original rankings, and give higher importance to items that are ranked higher in multiple lists. This can help improve the overall quality and reliability of the final ranking, making it more useful for the task of fusing multiple ordered search results.&lt;/p&gt;
+
+&lt;p&gt;Elasticsearch integrates the &lt;em&gt;RRF algorithm&lt;/em&gt; into the search query. Consider the following example, which has &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;query&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;knn&lt;/code&gt; sections to request full-text and vector searches respectively, and a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rrf&lt;/code&gt; section that combines them into a single result list.&lt;/p&gt;
+
+&lt;div class=&quot;language-jsonc highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;query&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;// full-text search query here&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;knn&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;// vector search query here&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;rank&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;rrf&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;While RRF works fairly well for short lists of results without any configuration, there are some parameters that can be tuned to provide the best results. Consult the &lt;a href=&quot;https://www.elastic.co/guide/en/elasticsearch/reference/current/rrf.html#rrf-api&quot;&gt;documentation&lt;/a&gt; to learn about these in detail.&lt;/p&gt;
+
+&lt;h3 id=&quot;demo&quot;&gt;Demo&lt;/h3&gt;
+
+&lt;p&gt;⚠️ I assume you already have the “book_index” dataset from my previous post &lt;a href=&quot;https://nikiforovall.github.io/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html&quot;&gt;Semantic Search with Elasticsearch in .NET&lt;/a&gt;. If you don’t, please follow the instructions in that post to set up the dataset.&lt;/p&gt;
+
+&lt;p&gt;1️⃣ First, let’s define a method to convert a search query to an embedding vector. I will use &lt;a href=&quot;https://devblogs.microsoft.com/dotnet/introducing-microsoft-extensions-ai-preview/&quot;&gt;Microsoft.Extensions.AI&lt;/a&gt;. It requires Azure Open AI model to generate embeddings. I will go with (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;text-embedding-3-small&lt;/code&gt;) because it allows you to specify embedding size. This is important because the size of the embedding vector should match the size of the vector field in the Elasticsearch index and Elasticsearch has a limit of 512 dimensions for vector fields.&lt;/p&gt;
+
+&lt;p&gt;💡 Larger embeddings can capture more nuances and subtle relationships in the data, potentially leading to better model accuracy. However, very large embeddings can also lead to overfitting, where the model performs well on training data but poorly on unseen data. This is because the model might learn to memorize the training data rather than generalize from it.&lt;/p&gt;
+
+&lt;p&gt;Here is the code to generate an embedding vector for a given text:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Azure.AI.OpenAI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.Extensions.AI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;System.ClientModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;AzureOpenAIClient&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aiClient&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AzureOpenAIClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Uri&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;envs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;AZURE_OPENAI_ENDPOINT&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]),&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ApiKeyCredential&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;envs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;AZURE_OPENAI_APIKEY&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]));&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;generator&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aiClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AsEmbeddingGenerator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;modelId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;text-embedding-3-small&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;]&amp;gt;&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ToEmbedding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textEmbeddingDimension&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;384&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;embeddings&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;generator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GenerateAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;EmbeddingGenerationOptions&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Dimensions&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textEmbeddingDimension&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;embeddings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;First&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Vector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ToArray&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;2️⃣ Now we can use this method to generate an embedding vector for a search query and use it in both full-text and vector search queries.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;searchQuery&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;python programming&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;queryEmbedding&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ToEmbedding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;searchQuery&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;searchResponse&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SearchAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Book&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Index&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;book_index&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Match&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Field&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Summary&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;searchQuery&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Knn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Field&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TitleVector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;QueryVector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;queryEmbedding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;NumCandidates&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Rank&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Rrf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rrf&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}))&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;nf&quot;&gt;PrettyPrint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;searchResponse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;center&gt;⚙️Output: &lt;b&gt;Hybrid Search&lt;/b&gt;&lt;/center&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/hybrid-search-elastic/hybrid-query.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/elasticsearch-dotnet-playground/tree/main/src/elasticsearch-getting-started&quot;&gt;https://github.com/NikiforovAll/elasticsearch-dotnet-playground/tree/main/src/elasticsearch-getting-started&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/02-hybrid-search.ipynb&quot;&gt;https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/02-hybrid-search.ipynb&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome&quot;&gt;https://www.elastic.co/search-labs/tutorials/search-tutorial/welcome&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/azure/search/hybrid-search-ranking&quot;&gt;https://learn.microsoft.com/en-us/azure/search/hybrid-search-ranking&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 02 Nov 2024 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/2024/11/02/elastic-hybrid-search.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2024/11/02/elastic-hybrid-search.html</guid>
+			</item>
+		
+			<item>
 				<title>Querying and Filtering via Elastic.Clients.Elasticsearch in .NET</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -3018,158 +3137,6 @@ dotnet user-secrets &lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt; &lt;span c
 				<pubDate>Fri, 09 Aug 2024 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/2024/08/09/dependify-ai.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2024/08/09/dependify-ai.html</guid>
-			</item>
-		
-			<item>
-				<title>Explore .NET application dependencies by using Dependify tool</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;This post demonstrates how to install and use the Dependify tool. It can be used to explore application dependencies between modules.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code&lt;/strong&gt;: &lt;a href=&quot;https://github.com/NikiforovAll/dependify&quot;&gt;https://github.com/NikiforovAll/dependify&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;In large projects, managing dependencies can become challenging due to the complexity and interconnectedness of various components. It can be difficult to navigate through the project and make assumptions about the dependencies without proper tooling or documentation.&lt;/p&gt;
-
-&lt;p&gt;Here are a few reasons why it can be hard to navigate project dependencies in large projects:&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Complexity&lt;/strong&gt;: Large projects often consist of numerous modules. Understanding how these dependencies interact with each other can be overwhelming, especially when there are multiple layers of dependencies.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Dependency Chains&lt;/strong&gt;: Dependencies can form long chains, where one module depends on another, which in turn depends on another, and so on. Tracking these chains and understanding the impact of changes can be challenging, as a modification in one module may have cascading effects on other modules.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Lack of Documentation&lt;/strong&gt;: In some cases, projects may lack comprehensive documentation that clearly outlines the dependencies and their relationships. Without proper documentation, developers may need to spend extra time investigating and reverse-engineering the project structure to understand the dependencies.&lt;/p&gt;
-
-&lt;p&gt;To address these challenges, you can use the Dependify tool, which provides a visual representation of the dependencies in your .NET application. This tool allows you to explore the dependency graph, view the relationships between components, and identify potential issues or bottlenecks in your project.&lt;/p&gt;
-
-&lt;p&gt;The tool can be used in different ways, such as through a graphical user interface (&lt;em&gt;UI&lt;/em&gt;), a command-line interface (&lt;em&gt;CLI&lt;/em&gt;), or an application programming interface (&lt;em&gt;API&lt;/em&gt;). This flexibility allows you to choose the most suitable method for your workflow and preferences.&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Package&lt;/th&gt;
-      &lt;th&gt;Version&lt;/th&gt;
-      &lt;th&gt;Description&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dependify.Cli&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Dependify.Cli&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Dependify.Cli.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;CLI&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dependify.Core&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Dependify.Core&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Dependify.Core.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;Core library (API)&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dependify.Aspire.Hosting&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Dependify.Aspire.Hosting&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Dependify.Aspire.Hosting.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
-      &lt;td&gt;Aspire support&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;h2 id=&quot;usage&quot;&gt;Usage&lt;/h2&gt;
-
-&lt;p&gt;Here is how to install it:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet tool &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt; Dependify.Cli
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;❯ dependify &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt;
-USAGE:
-    Dependify.Cli.dll &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;OPTIONS] &amp;lt;COMMAND&amp;gt;
-
-EXAMPLES:
-    Dependify.Cli.dll graph scan ./path/to/folder &lt;span class=&quot;nt&quot;&gt;--framework&lt;/span&gt; net8
-    Dependify.Cli.dll graph show ./path/to/project &lt;span class=&quot;nt&quot;&gt;--framework&lt;/span&gt; net8
-
-OPTIONS:
-    &lt;span class=&quot;nt&quot;&gt;-h&lt;/span&gt;, &lt;span class=&quot;nt&quot;&gt;--help&lt;/span&gt;    Prints &lt;span class=&quot;nb&quot;&gt;help &lt;/span&gt;information
-
-COMMANDS:
-    graph
-    serve &amp;lt;path&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;As you can see, there is a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;serve&lt;/code&gt; command. It starts a web server that allows you to explore the dependencies in your project using a web browser.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dependify serve &lt;span class=&quot;nv&quot;&gt;$dev&lt;/span&gt;/path-to-folder/
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;You will see something like the following output in the terminal.&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;img src=&quot;/assets/dependify/serve-terminal.png&quot; style=&quot;margin: 15px;&quot; width=&quot;90%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;features&quot;&gt;Features&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Workbench ⚙️&lt;/strong&gt; gives you high level overview of the dependencies in the solution and allows you to show dependencies between component in a form of a mermaid diagram. It can be a graph diagram or simple C4 component diagram.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;center&gt;
-    &lt;video src=&quot;https://github.com/user-attachments/assets/e3eecf59-864d-4a7b-9411-60ee7a364c57&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
-&lt;/center&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Dependency Explorer 🔎&lt;/strong&gt;: This feature offers a more interactive user interface. It allows you to select dependencies and their descendants on-demand.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;center&gt;
-    &lt;video src=&quot;https://github.com/user-attachments/assets/555df3ef-b0c3-4354-911f-81d4dfd07607&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;My suggestion is to install the tool and try it out on your project. It can be a great help in understanding the dependencies and relationships between components. 🚀&lt;/p&gt;
-
-&lt;h3 id=&quot;aspire-support&quot;&gt;Aspire support&lt;/h3&gt;
-
-&lt;p&gt;You can add &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dependify.Web&lt;/code&gt; as resource to your Aspire AppHost project.&lt;/p&gt;
-
-&lt;p&gt;Add the package to AppHost:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add package Dependify.Aspire.Hosting
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In the code below, I’ve added the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Dependify&lt;/code&gt; to the Aspire starter project. (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet new aspire-starter&lt;/code&gt;)&lt;/p&gt;
-
-&lt;p&gt;Register via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IDistributedApplicationBuilder&lt;/code&gt;. Add the following code to your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Program.cs&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;apiService&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aspire_project_ApiService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;apiservice&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aspire_project_Web&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;webfrontend&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithExternalHttpEndpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;apiService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddDependify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ServeFrom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;../../aspire-project/&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// &amp;lt;-- location of .sln file&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;All you need to do is to add the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;builder.AddDependify().ServeFrom()&lt;/code&gt; to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; and run it:&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;video src=&quot;https://github.com/user-attachments/assets/fe4a6d1e-2779-480a-aec4-9b7999cf138c&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In this post, we explored the Dependify tool, which can help you navigate the dependency graph of your .NET application. By using this tool, you can visualize the dependencies between modules, identify potential issues, and gain a better understanding of your project structure.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/dependify&quot;&gt;https://github.com/NikiforovAll/dependify&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sat, 03 Aug 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/2024/08/03/dependify.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2024/08/03/dependify.html</guid>
 			</item>
 		
 	</channel>
