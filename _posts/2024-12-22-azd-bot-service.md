@@ -38,7 +38,6 @@ Here is the sneak peek of the bot that we are going to deploy:
 ```csharp
 // Program.cs
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddNewtonsoftJson();
 builder.Services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
 builder.Services.AddTransient<IBot, EchoBotHandler>();
 
@@ -57,7 +56,6 @@ app.MapPost(
         await adapter.ProcessAsync(req, res, bot);
     }
 );
-app.MapHealthChecks("/health");
 app.Run();
 ```
 
@@ -106,7 +104,7 @@ The `azd` CLI outputs the URL of the deployed bot. You can test it by sending a 
   <img src="/assets/azd-bot-service-starter/test-chat.png" style="margin: 15px;" />
 </center>
 
-The benefit of using `azd` template is that it automatically creates a new resource group, app service plan, application insights, vault, and app service for you. You don't need to worry about the infrastructure, just focus on your code.
+The benefit of using `azd` template is that it automatically creates a new **resource group**, app **service plan**, **application insights**, **vault**, and **app service** for you. You don't need to worry about the infrastructure, just focus on your code.
 
 For example, here is an application insights dashboard for the bot:
 
