@@ -23,11 +23,11 @@ Using GitHub Copilot with custom instructions can improve the quality of generat
 
 ## Introduction
 
-If you want to build a successful and maintainable project, ensuring your code is clean, maintainable, and idiomatic is crucial. This is where *coding guidelines* come into play.
+🎯 If you want to build a successful project, ensuring your code is clean, maintainable, and idiomatic is crucial. This is where *coding guidelines* come into play.
 
 Coding guidelines promote consistency, readability, and maintainability within a project. Documenting these guidelines helps developers adhere to best practices, streamline collaboration, and minimize technical debt.
 
-As AI coding tools and agents become integral team members, clear coding guidelines are more important than ever. These tools assist in generating, refactoring, and reviewing code, but they rely on well-defined rules to align with project standards. Documenting coding guidelines provides essential context, ensuring AI-generated code maintains consistency, readability, and best practices. Without structured rules, AI contributions may introduce inconsistencies, increasing technical debt and maintenance overhead.
+🤖 As AI coding tools and agents become more pervasive, clear coding guidelines are more important than ever. These tools assist in generating, refactoring, and reviewing code. Documenting coding guidelines provides essential context, ensuring AI-generated code maintains consistency, readability, and best practices. Without structured rules, AI contributions may introduce inconsistencies, increasing technical debt and maintenance overhead.
 
 ## Configure
 
@@ -113,10 +113,10 @@ C# code should be written to maximize readability, maintainability, and correctn
 
 ## Practice
 
-🤖 Let's see how it works in practice. Here is a result of simple prompt: *"Generate fizz buzz"*:
+🤖 Let's see how it works in practice. Here is a result of simple prompt: *"Generate FizzBuzz"*:
 
 <center>
-  <img src="/assets/github-copilot-instructions-for-dotnet/example-code-gen.png" style="margin: 15px;" width="80%" />
+  <img src="/assets/github-copilot-instructions-for-dotnet/example-code-gen.png" style="margin: 15px;" width="90%" />
 </center>
 
 As you can see, two additional files were used to generate the code:
@@ -126,7 +126,11 @@ As you can see, two additional files were used to generate the code:
 
 The generated code is something that I would expect from a developer who follows the rules. ☝️
 
-🧠 Here are my findings after using this setup for a little while:
+### Limitations
+
+🧠 Keep in mind that Copilot is not perfect and may generate code that does not follow the rules. It is important to review the generated code and provide feedback to Copilot. .
+
+Here are my findings after using this setup for a little while:
 
 - In practice, if you have too many rules it may degrade the overall quality of generated code or make copilot hallucinate
 - It is definitely easier to tell Copilot what to do rather than what not to do (LLMs are not good at negations)
@@ -136,7 +140,6 @@ The generated code is something that I would expect from a developer who follows
 ## Conclusion
 
 Using GitHub Copilot with custom instructions can significantly improve the quality of generated code by enforcing coding guidelines. This approach has a lot of potential and is worth investing time in. With the advancement of LLMs and GitHub Copilot, I expect even better results in the future. 🚀
-
 
 ## References
 
