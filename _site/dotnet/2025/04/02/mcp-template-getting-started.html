@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
-	<title>Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd)</title>
+	<title>Simplifying Model Context Protocol (MCP) Server Distribution with a .NET Global Tool</title>
 	
 	<meta name="author" content="Oleksii Nikiforov">
 
@@ -161,7 +161,7 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-	<h1>Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd) </h1>
+	<h1>Simplifying Model Context Protocol (MCP) Server Distribution with a .NET Global Tool </h1>
 </div>
 <article>
 
@@ -169,10 +169,10 @@
 
 		<span class="post-date">
 			
-			December
-			22nd,
+			April
+			2nd,
 			
-			2024
+			2025
 		</span>
 
 	
@@ -742,116 +742,134 @@
 	
 
 	<div class="article_body" style="margin-top: 30px;">
-		<h2 id="tldr">TL;DR</h2>
+		<center>
+  <img src="/assets/mcp/light.png" style="margin: 15px;" width="80%">
+</center>
 
-<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/azd-bot-service-starter" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/azd-bot-service-starter</a></p>
+<h2 id="tldr">TL;DR</h2>
+
+<p>Use the <code class="language-plaintext highlighter-rouge">Nall.ModelContextProtocol.Template</code> template to create a Model Context Protocol (MCP) server that can be distributed as a global tool:</p>
+
+<p>Install:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new <span class="nb">install </span>Nall.ModelContextProtocol.Template
+</code></pre></div></div>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/mcp-template-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/mcp-template-dotnet</a></p>
 
 <h2 id="introduction">Introduction</h2>
 
-<p>Bots are everywhere, as developers, we should embrace this trend and learn how to prototype and deploy bots quickly.</p>
+<p>In this post, I would like to show you how you can use <a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools" target="_blank" rel="noopener noreferrer">.NET Global Tool</a> to distribute your Model Context Protocol (MCP) server. I’ve created <code class="language-plaintext highlighter-rouge">dotnet new</code> template to support this approach and I will show you how to use it.</p>
 
-<p>Using <a href="https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/" target="_blank" rel="noopener noreferrer">Azure Developer CLI (azd)</a>, we can quickly deploy and manage our solutions. This tutorial shows you how to deploy a bot to Azure in just five minutes using a starter template.</p>
+<h2 id="getting-started">Getting Started</h2>
 
-<p>🚀 Let’s get started and deploy your bot to Azure!</p>
+<h3 id="install">Install</h3>
 
-<h2 id="install-from-template">Install From Template</h2>
-
-<p>Since I already prepared a starter template, you can deploy a bot to Azure in just a few minutes.</p>
-
-<p>Here’s how:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>azd init <span class="nt">--template</span> https://github.com/NikiforovAll/azd-bot-service-starter
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new <span class="nb">install </span>Nall.ModelContextProtocol.Template
 </code></pre></div></div>
 
-<p>Here is the sneak peek of the bot that we are going to deploy:</p>
+<p>Verify installation:</p>
 
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Program.cs</span>
-<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">WebApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
-<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">&lt;</span><span class="n">IBotFrameworkHttpAdapter</span><span class="p">,</span> <span class="n">AdapterWithErrorHandler</span><span class="p">&gt;();</span>
-<span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddTransient</span><span class="p">&lt;</span><span class="n">IBot</span><span class="p">,</span> <span class="n">EchoBotHandler</span><span class="p">&gt;();</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new list mcp
+<span class="c"># These templates matched your input: 'mcp'</span>
 
-<span class="kt">var</span> <span class="n">app</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">();</span>
-<span class="n">app</span>
-    <span class="p">.</span><span class="nf">UseDefaultFiles</span><span class="p">()</span>
-    <span class="p">.</span><span class="nf">UseStaticFiles</span><span class="p">()</span>
-    <span class="p">.</span><span class="nf">UseWebSockets</span><span class="p">()</span>
-    <span class="p">.</span><span class="nf">UseRouting</span><span class="p">()</span>
-    <span class="p">.</span><span class="nf">UseAuthorization</span><span class="p">();</span>
-
-<span class="n">app</span><span class="p">.</span><span class="nf">MapPost</span><span class="p">(</span>
-    <span class="s">"/api/messages"</span><span class="p">,</span>
-    <span class="k">async</span> <span class="p">(</span><span class="n">IBotFrameworkHttpAdapter</span> <span class="n">adapter</span><span class="p">,</span> <span class="n">IBot</span> <span class="n">bot</span><span class="p">,</span> <span class="n">HttpRequest</span> <span class="n">req</span><span class="p">,</span> <span class="n">HttpResponse</span> <span class="n">res</span><span class="p">)</span> <span class="p">=&gt;</span>
-    <span class="p">{</span>
-        <span class="k">await</span> <span class="n">adapter</span><span class="p">.</span><span class="nf">ProcessAsync</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">bot</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">);</span>
-<span class="n">app</span><span class="p">.</span><span class="nf">Run</span><span class="p">();</span>
+<span class="c"># Template Name  Short Name  Language  Tags</span>
+<span class="c"># -------------  ----------  --------  -------------</span>
+<span class="c"># MCP Server     mcp-server  [C#]      dotnet/ai/mcp</span>
 </code></pre></div></div>
 
-<p>It’s a simple echo bot that repeats the user’s message back to them. Nothing special, but this is a good starting point for your bot.</p>
+<p>Verify output:</p>
 
-<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">class</span> <span class="nc">EchoBotHandler</span> <span class="p">:</span> <span class="n">ActivityHandler</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new mcp-server <span class="nt">-o</span> MyAwesomeMCPServer <span class="nt">-n</span> MyAwesomeMCPServer <span class="nt">--dry-run</span>
+<span class="c"># File actions would have been taken:</span>
+<span class="c">#   Create: MyAwesomeMCPServer\.vscode\launch.json</span>
+<span class="c">#   Create: MyAwesomeMCPServer\MyAwesomeMCPServer.csproj</span>
+<span class="c">#   Create: MyAwesomeMCPServer\Program.cs</span>
+<span class="c">#   Create: MyAwesomeMCPServer\Properties\launchSettings.json</span>
+<span class="c">#   Create: MyAwesomeMCPServer\README.md</span>
+<span class="c">#   Create: MyAwesomeMCPServer\appsettings.Development.json</span>
+<span class="c">#   Create: MyAwesomeMCPServer\appsettings.json</span>
+</code></pre></div></div>
+
+<p>Create from template:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet new mcp-server <span class="nt">-o</span> MyAwesomeMCPServer <span class="nt">-n</span> MyAwesomeMCPServer
+</code></pre></div></div>
+
+<p>Here is a content of <code class="language-plaintext highlighter-rouge">Program.cs</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">using</span> <span class="nn">Microsoft.Extensions.Hosting</span><span class="p">;</span>
+
+<span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">Host</span><span class="p">.</span><span class="nf">CreateApplicationBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="n">builder</span><span class="p">.</span><span class="n">Services</span>
+    <span class="p">.</span><span class="nf">AddMcpServer</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithStdioServerTransport</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithToolsFromAssembly</span><span class="p">();</span>
+
+<span class="k">await</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">RunAsync</span><span class="p">();</span>
+
+<span class="p">[</span><span class="n">McpServerToolType</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">static</span> <span class="k">class</span> <span class="nc">EchoTool</span>
 <span class="p">{</span>
-    <span class="k">protected</span> <span class="k">override</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">OnMessageActivityAsync</span><span class="p">(</span>
-        <span class="n">ITurnContext</span><span class="p">&lt;</span><span class="n">IMessageActivity</span><span class="p">&gt;</span> <span class="n">turnContext</span><span class="p">,</span>
-        <span class="n">CancellationToken</span> <span class="n">cancellationToken</span>
-    <span class="p">)</span>
-    <span class="p">{</span>
-        <span class="kt">var</span> <span class="n">replyText</span> <span class="p">=</span> <span class="s">$"Echo: </span><span class="p">{</span><span class="n">turnContext</span><span class="p">.</span><span class="n">Activity</span><span class="p">.</span><span class="n">Text</span><span class="p">}</span><span class="s">"</span><span class="p">;</span>
-        <span class="k">await</span> <span class="n">turnContext</span><span class="p">.</span><span class="nf">SendActivityAsync</span><span class="p">(</span>
-            <span class="n">MessageFactory</span><span class="p">.</span><span class="nf">Text</span><span class="p">(</span><span class="n">replyText</span><span class="p">,</span> <span class="n">replyText</span><span class="p">),</span>
-            <span class="n">cancellationToken</span>
-        <span class="p">);</span>
-    <span class="p">}</span>
+    <span class="p">[</span><span class="n">McpServerTool</span><span class="p">,</span> <span class="nf">Description</span><span class="p">(</span><span class="s">"Echoes the message back to the client."</span><span class="p">)]</span>
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">string</span> <span class="nf">Echo</span><span class="p">(</span><span class="kt">string</span> <span class="n">message</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="s">$"hello </span><span class="p">{</span><span class="n">message</span><span class="p">}</span><span class="s">"</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
-<h2 id="run-and-deploy">Run and Deploy</h2>
+<p>It is a simple echo server that listens for incoming messages and responds with a greeting. You can add more tools by creating additional methods with the <code class="language-plaintext highlighter-rouge">[McpServerTool]</code> attribute. The <code class="language-plaintext highlighter-rouge">WithToolsFromAssembly()</code> method automatically registers all tools in the assembly.</p>
 
-<p>Now, we can create a new azd environment:</p>
+<h3 id="run-locally">Run Locally</h3>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>azd <span class="nb">env </span>new azd-bot-service-dev
+<p>⚙️ Build from the project directory:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet build <span class="nt">-o</span> Artefacts <span class="nt">-c</span> Release
 </code></pre></div></div>
 
-<p>And deploy the bot to Azure.</p>
+<p>🚀 Run the inspector:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>azd up
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npx @modelcontextprotocol/inspector <span class="nt">-e</span> <span class="nv">DOTNET_ENVIRONMENT</span><span class="o">=</span>Production dotnet <span class="s2">"</span><span class="si">$(</span>PWD<span class="si">)</span><span class="s2">/Artefacts/MyAwesomeMCPServer.dll"</span>
 </code></pre></div></div>
 
-<p>Here is the output of the deployment (it took me less than 5 minutes to deploy the bot 🤯):</p>
+<p>Open inspector in your browser and test the server:</p>
 
 <center>
-  <img src="/assets/azd-bot-service-starter/azd-up.png" style="margin: 15px;">
+  <img src="/assets/mcp/inspector-demo.png" style="margin: 15px;">
 </center>
 
-<p>The <code class="language-plaintext highlighter-rouge">azd</code> CLI outputs the URL of the deployed bot. You can test it by sending a message to the bot.</p>
+<h3 id="distribute-as-net-tool">Distribute as .NET Tool</h3>
 
-<center>
-  <img src="/assets/azd-bot-service-starter/test-chat.png" style="margin: 15px;">
-</center>
+<p>The basic idea behind this approach is to create a .NET tool that can be installed globally on the user’s machine. This allows users to run the MCP server from anywhere without needing to specify the full path to the executable.</p>
 
-<p>The benefit of using <code class="language-plaintext highlighter-rouge">azd</code> template is that it automatically creates a new <strong>resource group</strong>, app <strong>service plan</strong>, <strong>application insights</strong>, <strong>vault</strong>, and <strong>app service</strong> for you. You don’t need to worry about the infrastructure, just focus on your code.</p>
+<blockquote>
+  <p>💡 Another benefit of this approach is that you can <strong>package your MCP server as a NuGet package</strong>, making it easy to distribute, version, and share with others.</p>
+</blockquote>
 
-<p>For example, here is an application insights dashboard for the bot:</p>
+<p>📦 Pack from the project directory:</p>
 
-<center>
-  <img src="/assets/azd-bot-service-starter/app-insights.png" style="margin: 15px;">
-</center>
-
-<h2 id="teardown">Teardown</h2>
-
-<p>When you are done with the bot, you can delete the resources using the following command:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>azd down
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet pack <span class="nt">-o</span> Artefacts <span class="nt">-c</span> Release
 </code></pre></div></div>
 
-<p>This command will delete all the resources created by the <code class="language-plaintext highlighter-rouge">azd up</code> command.</p>
+<p>Install the tool globally:</p>
 
-<center>
-  <img src="/assets/azd-bot-service-starter/azd-down.png" style="margin: 15px;">
-</center>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet tool <span class="nb">install</span> <span class="nt">--global</span> <span class="nt">--add-source</span> ./Artefacts MyAwesomeMCPServer
+<span class="c"># You can invoke the tool using the following command: MyAwesomeMCPServer</span>
+<span class="c"># Tool 'myawesomemcpserver' (version '1.0.0') was successfully installed.</span>
+</code></pre></div></div>
+
+<p>Now, after you installed this tool globally, you can run it from anywhere on your system. The tool will be available as <code class="language-plaintext highlighter-rouge">MyAwesomeMCPServer</code> (or <code class="language-plaintext highlighter-rouge">myawesomemcpserver</code>) in your terminal.</p>
+
+<blockquote>
+  <p>💡 You can also create local tool manifest and install specific MCP versions per manifest.</p>
+</blockquote>
+
+<p>🚀 Run the inspector:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npx @modelcontextprotocol/inspector <span class="nt">-e</span> <span class="nv">DOTNET_ENVIRONMENT</span><span class="o">=</span>Production myawesomemcpserver
+</code></pre></div></div>
 
 <h2 id="conclusion">Conclusion</h2>
+
+<p>I think MCP opens up a lot of fun possibilities for building AI applications. In post, I showed you how to you <code class="language-plaintext highlighter-rouge">mcp-server</code> template to make your life a little easier.</p>
 
 <blockquote>
   <p>🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏</p>
@@ -860,8 +878,11 @@
 <h2 id="references">References</h2>
 
 <ul>
-  <li><a href="https://azure.github.io/awesome-azd/" target="_blank" rel="noopener noreferrer">awesome-azd</a></li>
-  <li><a href="https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/get-started" target="_blank" rel="noopener noreferrer">Azure Developer CLI - Getting Started</a></li>
+  <li><a href="https://github.com/NikiforovAll/mcp-template-dotnet" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/mcp-template-dotnet</a></li>
+  <li><a href="https://www.nuget.org/packages/Nall.ModelContextProtocol.Template" target="_blank" rel="noopener noreferrer">https://www.nuget.org/packages/Nall.ModelContextProtocol.Template</a></li>
+  <li><a href="https://github.com/modelcontextprotocol/csharp-sdk" target="_blank" rel="noopener noreferrer">https://github.com/modelcontextprotocol/csharp-sdk</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools" target="_blank" rel="noopener noreferrer">https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools</a></li>
+  <li><a href="https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates" target="_blank" rel="noopener noreferrer">https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates</a></li>
 </ul>
 
 	</div>
@@ -897,15 +918,15 @@
 		</li>
 		
 		<li>
-			<a href="https://nikiforovall.github.io/tags.html#azure-ref" target="_blank" rel="noopener noreferrer">
-				azure <span>(1)</span>
+			<a href="https://nikiforovall.github.io/tags.html#ai-ref" target="_blank" rel="noopener noreferrer">
+				ai <span>(7)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
-			<a href="https://nikiforovall.github.io/tags.html#bot-ref" target="_blank" rel="noopener noreferrer">
-				bot <span>(1)</span>
+			<a href="https://nikiforovall.github.io/tags.html#mcp-ref" target="_blank" rel="noopener noreferrer">
+				mcp <span>(1)</span>
 				
 			</a>
 		</li>
@@ -937,15 +958,15 @@
 
 	<ul class="pager">
 		
-		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/2024/11/02/elastic-hybrid-search.html" title="Hybrid Search with Elasticsearch in .NET" target="_blank" rel="noopener noreferrer">←
+		<li class="previous"><a href="https://nikiforovall.github.io/dotnet/ai/2025/03/30/introduction-to-dial.html" title="Introducing AI DIAL: The Open-Source AI Orchestration Platform" target="_blank" rel="noopener noreferrer">←
 				Previous</a></li>
 		
 		
-		<li class="next">
-<a href="https://nikiforovall.github.io/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html" title="Enforcing .NET Coding Guidelines with GitHub Copilot Custom Instructions" target="_blank" rel="noopener noreferrer">Next →</a>
-		</li>
-		
-	</ul>
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
 
 	<hr>
 	</div>
@@ -978,6 +999,17 @@
 	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
 	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
 	
 </body>
 </html>
