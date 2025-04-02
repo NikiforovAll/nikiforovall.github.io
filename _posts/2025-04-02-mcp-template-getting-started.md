@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Simplifying Model Context Protocol (MCP) Server Distribution with a .NET Global Tool"
+title: "Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools"
 categories: [ dotnet ]
 tags: [ dotnet, ai, mcp ]
 published: true
