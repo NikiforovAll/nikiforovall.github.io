@@ -7,6 +7,155 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Simplifying Model Context Protocol (MCP) Server Development with Aspire</title>
+				<description>&lt;center&gt;
+  &lt;img src=&quot;/assets/mcp/light.png&quot; style=&quot;margin: 15px;&quot; width=&quot;80%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#stdio-mode&quot;&gt;‘Stdio’ Mode&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#sse-mode&quot;&gt;‘SSE’ Mode&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#stdio-vs-sse&quot;&gt;Stdio vs SSE&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;You can use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Inspector.Aspire.Hosting&lt;/code&gt; hosting integration to run &lt;em&gt;MCP Inspector&lt;/em&gt; and integrate it with your MCP Servers using Aspire.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/mcp-template-dotnet&quot;&gt;https://github.com/NikiforovAll/mcp-template-dotnet&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;This blog will be in a form of tutorial, we will build a simple &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;echo&lt;/code&gt; MCP server by using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Template&lt;/code&gt; template that I’ve shared with you in the &lt;a href=&quot;https://nikiforovall.github.io/dotnet/2025/04/02/mcp-template-getting-started.html&quot;&gt;previous post&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;🚀 Let’s get started. I want to demonstrate two ways (aka &lt;em&gt;Transports&lt;/em&gt;) to run the MCP server: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;stdio&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sse&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;But first, let’s create &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire&lt;/code&gt; project.&lt;/p&gt;
+
+&lt;p&gt;➕ Create AppHost:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new aspire-apphost &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; AppHost &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; AppHost
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;📦 Install &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Inspector.Aspire.Hosting&lt;/code&gt; &lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Inspector.Aspire.Hosting&quot;&gt;package&lt;/a&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add ./Apphost package Nall.ModelContextProtocol.Inspector.Aspire.Hosting
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;📦 As in my previous post, let’ install &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Aspire.Hosting&lt;/code&gt; &lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Template&quot;&gt;package&lt;/a&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;Nall.ModelContextProtocol.Template
+&lt;span class=&quot;c&quot;&gt;# These templates matched your input: &apos;mcp&apos;&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Template Name   Short Name      Language  Tags&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# --------------  --------------  --------  -------------&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# MCP Server      mcp-server      [C#]      dotnet/ai/mcp&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# MCP Server SSE  mcp-server-sse  [C#]      dotnet/ai/mcp&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;stdio-mode&quot;&gt;‘Stdio’ Mode&lt;/h2&gt;
+
+&lt;p&gt;➕Create an MCP server:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; dotnet new mcp-server &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; MyAwesomeMCPServer &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; MyAwesomeMCPServer
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;🔗 Add project reference to AppHost:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add ./AppHost/AppHost.csproj reference ./MyAwesomeMCPServer/MyAwesomeMCPServer.csproj
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Program.cs&lt;/code&gt; of the AppHost, add the following code:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMCPInspector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WithStdio&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MyAwesomeMCPServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It run’s &lt;a href=&quot;https://www.npmjs.com/package/@modelcontextprotocol/inspector&quot;&gt;@modelcontextprotocol/inspector&lt;/a&gt; under the hood. It is an MCP proxy that allows you to test and debug MCP servers.&lt;/p&gt;
+
+&lt;p&gt;💡 &lt;strong&gt;Note:&lt;/strong&gt; The &lt;em&gt;Inspector&lt;/em&gt; is responsible for starting the .NET project. So, no corresponding Aspire Resource will be available on the dashboard for the ‘Stdio’ mode.&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/mcp/stdio-demo-dashboard.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Open &lt;a href=&quot;http://127.0.0.1:6274&quot;&gt;http://127.0.0.1:6274&lt;/a&gt; in your browser and click “Connect.”. Now, you can test the server using the &lt;em&gt;Inspector&lt;/em&gt; tool.&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/mcp/stdio-demo-inspector.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;sse-mode&quot;&gt;‘SSE’ Mode&lt;/h2&gt;
+
+&lt;p&gt;Let’s generate a new MCP server using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sse&lt;/code&gt; transport. You can learn more about MCP transports here - &lt;a href=&quot;https://modelcontextprotocol.io/docs/concepts/transports&quot;&gt;https://modelcontextprotocol.io/docs/concepts/transports&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;➕ Create a new MCP server:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new mcp-server-sse &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; MyAwesomeMCPServerSSE &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; MyAwesomeMCPServerSSE
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;🔗 Add project reference to AppHost:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add ./AppHost/AppHost.csproj reference ./MyAwesomeMCPServerSSE/MyAwesomeMCPServerSSE.csproj
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Program.cs&lt;/code&gt; of the AppHost, add the following code:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mcp&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MyAwesomeMCPServerSSE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// NOTE, for SSE mode it&apos;s a separate project&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMCPInspector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithSSE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The Aspire Dashboard looks slightly different for the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sse&lt;/code&gt; mode. Because, this approach creates a separate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire.Hosting.ApplicationModel.ProjectResource&lt;/code&gt; with an exposed &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/sse&lt;/code&gt; endpoint. This endpoint allows you to seamlessly connect to the MCP server using the &lt;em&gt;Inspector&lt;/em&gt; tool.&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/mcp/sse-demo-dashboard.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Open &lt;a href=&quot;http://127.0.0.1:6274&quot;&gt;http://127.0.0.1:6274&lt;/a&gt; in your browser and click “Connect.”. Now, you can test the server using the &lt;em&gt;Inspector&lt;/em&gt; tool.&lt;/p&gt;
+
+&lt;center&gt;
+  &lt;img src=&quot;/assets/mcp/sse-demo-inspector.png&quot; style=&quot;margin: 15px;&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;⚠️ As for now, it is not possible to specify &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sse&lt;/code&gt; endpoint in the &lt;em&gt;Inspector&lt;/em&gt; command line to automatically configure &lt;em&gt;MCP Inspector&lt;/em&gt;. I plan to extend the Aspire integration when the feature will be implemented - &lt;a href=&quot;https://github.com/modelcontextprotocol/inspector/issues/239&quot;&gt;modelcontextprotocol/inspector/issues/239&lt;/a&gt;. For now, you have to configure the &lt;em&gt;Inspector&lt;/em&gt; manually if you divert from standard configuration.&lt;/p&gt;
+
+&lt;h2 id=&quot;stdio-vs-sse&quot;&gt;Stdio vs SSE&lt;/h2&gt;
+
+&lt;p&gt;I demonstrated two approaches to running MCP servers. Personally, I favor the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sse&lt;/code&gt; mode due to its transparency and ease of troubleshooting. For instance, you can launch an MCP server with a debugger attached or view the output logs directly. In contrast, the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;stdio&lt;/code&gt; mode relies on the &lt;em&gt;Inspector&lt;/em&gt; to start the server, which disables logging on the MCP server to maintain compatibility with the &lt;em&gt;Inspector&lt;/em&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;I hope this blog post has provided you with a clear way to start building your own MCP servers using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Aspire&lt;/code&gt; hosting integration.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/mcp-template-dotnet&quot;&gt;https://github.com/NikiforovAll/mcp-template-dotnet&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/dotnet/2025/04/02/mcp-template-getting-started.html&quot;&gt;https://nikiforovall.github.io/dotnet/2025/04/02/mcp-template-getting-started.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://modelcontextprotocol.io/docs/concepts/transports&quot;&gt;https://modelcontextprotocol.io/docs/concepts/transports&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Fri, 04 Apr 2025 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html</guid>
+			</item>
+		
+			<item>
 				<title>Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools</title>
 				<description>&lt;center&gt;
   &lt;img src=&quot;/assets/mcp/light.png&quot; style=&quot;margin: 15px;&quot; width=&quot;80%&quot; /&gt;
@@ -2202,242 +2351,6 @@ Formatted 1 files &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;952ms.
 				<pubDate>Sat, 14 Sep 2024 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/2024/09/14/quality-gates-dotnet.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2024/09/14/quality-gates-dotnet.html</guid>
-			</item>
-		
-			<item>
-				<title>Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;Learn how to use Polyglot Notebooks and Kernel Memory together to enhance your day-to-day tasks with the power of AI.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#motivation&quot;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#example---generate-a-summary-of-a-blog&quot;&gt;Example - ‘Generate a summary of a blog’&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#demo&quot;&gt;Demo&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#anatomy-of-the-setup-aka-notebook-agent&quot;&gt;Anatomy of the Setup (aka &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;notebook-agent&lt;/code&gt;)&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#another-example---ask-net-9-release-notes&quot;&gt;Another Example - ‘Ask .NET 9 Release Notes’&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/notebook-agent&quot;&gt;https://github.com/NikiforovAll/notebook-agent&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;motivation&quot;&gt;Motivation&lt;/h2&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://github.com/dotnet/interactive&quot;&gt;Polyglot Notebooks&lt;/a&gt; is a powerful tool for developers. They allow you to combine code, text, and visualizations in a single document. This makes it easy to explore data, experiment with different tasks, and share your results with others.&lt;/p&gt;
-
-&lt;p&gt;💡 Notebooks are a great way to bring &lt;em&gt;programmability&lt;/em&gt; to your work, allowing you to use code to automate repetitive tasks, analyze data, and generate reports. AI capabilities are a great addition to that.&lt;/p&gt;
-
-&lt;p&gt;💡 The more you invest in notebooks, the easier it becomes for you to be productive. Your experiments are stored over time, constituting a knowledge base that you can refer to at any moment.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;🎯 For this blog post, my goal is to show you how to work with LLMs in a notebook environment. It would be great to be able to use external sources as a context for my prompts to support my day-to-day activities.&lt;/p&gt;
-
-&lt;h2 id=&quot;example---generate-a-summary-of-a-blog&quot;&gt;Example - ‘Generate a summary of a blog’&lt;/h2&gt;
-
-&lt;p&gt;Let’s say you have a blog post that you want to summarize. You can use the LLM to generate a summary of the blog post. Here’s how you can do it:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Crawl the blog post and extract the text from the HTML content.&lt;/li&gt;
-  &lt;li&gt;Use the LLM to generate a summary of the blog post.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;It turns out that the &lt;a href=&quot;https://github.com/microsoft/kernel-memory&quot;&gt;Kernel Memory&lt;/a&gt; takes care of it for you. All the heavy lifting is done by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Kernel Memory&lt;/code&gt;. You just need to provide the context and the prompt.&lt;/p&gt;
-
-&lt;p&gt;Here is the code that shows you how to do it:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;docId&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ImportWebPageAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;https://nikiforovall.github.io/tags.html&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;answer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AskAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;What the nikiforovall blog is about?&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MemoryFilters&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ByDocument&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;docId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;demo&quot;&gt;Demo&lt;/h3&gt;
-
-&lt;p&gt;Here is the demo:&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;video src=&quot;https://github.com/user-attachments/assets/e57c3055-532e-4ad6-a272-83cabbba600c&quot; controls=&quot;controls&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;Output:&lt;/p&gt;
-
-&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;The nikiforovall blog, titled &quot;N+1 Blog,&quot; focuses on topics related to programming and IT. It features a variety of posts that cover different aspects of software development, particularly within the .NET ecosystem. The blog includes discussions on modern API development, asynchronous programming, microservices, cloud computing, and tools like Keycloak for identity management. Additionally, it explores design patterns, coding stories, and practical coding techniques, making it a resource for developers looking to enhance their skills and knowledge in these areas.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;🤔 But, how do I get an instance of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;memory&lt;/code&gt; you may ask? Let’s see how to do it using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Testcontainers&lt;/code&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;anatomy-of-the-setup-aka-notebook-agent&quot;&gt;Anatomy of the Setup (aka &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;notebook-agent&lt;/code&gt;)&lt;/h2&gt;
-
-&lt;p&gt;I have created a project called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;notebook-agent&lt;/code&gt;. Basically, it is a starting point that has all the necessary bits to get you started.&lt;/p&gt;
-
-&lt;p&gt;See: &lt;a href=&quot;https://github.com/NikiforovAll/notebook-agent&quot;&gt;https://github.com/NikiforovAll/notebook-agent&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Here is the structure of the project:&lt;/p&gt;
-
-&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;.
-├── .devcontainer
-│  └── devcontainer.json
-├── .gitignore
-├── .vscode
-│  └── extensions.json
-├── README.md
-└── src
-  ├── OpenAiOptions.cs      - Options for OpenAI
-  ├── ServiceDefaults.cs
-  ├── appsettings.json      - Configuration file
-  ├── playground.ipynb      - entry point (example)
-  ├── ask-release-notes.ipynb   - (example)
-  ├── setup-infrastructure.ipynb - PostgreSQL, pgvector
-  └── setup-kernel.ipynb     - Compose Kernel Memory
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We have a few notebooks that will help you get started. Let’s start from the infrastructure bit: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;setup-infrastructure.ipynb&lt;/code&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// setup-infrastructure.ipynb&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Testcontainers.PostgreSql&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Npgsql&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;PostgreSqlBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;pgvector/pgvector:pg16&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithPortBinding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;5432&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;5432&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;memory-db&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithUsername&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;postgres&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithPassword&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;postgres&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReuse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithVolumeMount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;memory-db-volume&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;/var/lib/postgresql/data&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;StartAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;connectionString&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In the code above, we are using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Testcontainers&lt;/code&gt; to start a PostgreSQL instance with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pgvector&lt;/code&gt; extension. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pgvector&lt;/code&gt; extension is used to store the embeddings of the documents. The embeddings are used to search for the most relevant documents based on the context.&lt;/p&gt;
-
-&lt;p&gt;Once the infrastructure is ready, let’s see how to configure the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Kernel Memory&lt;/code&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;setup-kernel.ipynb&lt;/code&gt;&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// setup-kernel.ipynb&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.Extensions.Hosting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.Extensions.DependencyInjection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.Extensions.Configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.KernelMemory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.KernelMemory.SemanticKernel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.SemanticKernel.ChatCompletion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.SemanticKernel.Connectors.OpenAI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;HostApplicationBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateApplicationBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textGenerationOpetions&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Configuration&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// configured in appsettings.json&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetSection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;TextGeneration&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OpenAiOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textEmbeddingOptions&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Configuration&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// configured in appsettings.json&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetSection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;TextEmbeddingGeneration&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OpenAiOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddKernelMemory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemoryServerless&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;memoryBuilder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;memoryBuilder&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithPostgresMemoryDb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; 
-      &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;ConnectionString&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetConnectionString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;memory-db&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)!&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// connection string to the PostgreSQL&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithSemanticKernelTextGenerationService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// text completion&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AzureOpenAIChatCompletionService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;deploymentName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textGenerationOpetions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Deployment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;endpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textGenerationOpetions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Endpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;apiKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textGenerationOpetions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ApiKey&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;SemanticKernelConfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithSemanticKernelTextEmbeddingGenerationService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// text embedding&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;AzureOpenAITextEmbeddingGenerationService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;deploymentName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textEmbeddingOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Deployment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;endpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textEmbeddingOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Endpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;apiKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;textEmbeddingOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ApiKey&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;SemanticKernelConfig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;IHost&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;host&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;IKernelMemory&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;memory&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetRequiredService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IKernelMemory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;IServiceProvider&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;services&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;🚀 Now, we have an the instance &lt;em&gt;Kernel Memory&lt;/em&gt; named - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;memory&lt;/code&gt;. Just run the import command from a notebook: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#!import ./setup-kernel.ipynb&lt;/code&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;another-example---ask-net-9-release-notes&quot;&gt;Another Example - ‘Ask .NET 9 Release Notes’&lt;/h3&gt;
-
-&lt;p&gt;For example, assume we want to be able to chat with LLM about the &lt;em&gt;latest release of .NET 9&lt;/em&gt;. Here is how to do it:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Create a new notebook: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ask-release-notes.ipynb&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Import the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;setup-kernel.ipynb&lt;/code&gt; notebook&lt;/li&gt;
-  &lt;li&gt;Index of the release notes&lt;/li&gt;
-  &lt;li&gt;Ask the question&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;1️⃣ Index release notes:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tags&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;TagCollection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;release&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;.NET 9&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;RC1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// tagging provides additional information, improves search results&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;librariesReleaseNotes&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;https://raw.githubusercontent.com/dotnet/core/main/release-notes/9.0/preview/rc1/libraries.md&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;aspnetCoreReleaseNotes&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;https://raw.githubusercontent.com/dotnet/core/main/release-notes/9.0/preview/rc1/libraries.md&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tasks&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ImportWebPageAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;librariesReleaseNotes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ImportWebPageAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;aspnetCoreReleaseNotes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WhenAll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tasks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;2️⃣ Ask the question:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;answer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;memory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AskAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;What are the latest additions to .NET 9 release?&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;minRelevance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0.80&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;answer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;DisplayAs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;text/markdown&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is the output:&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/notebook-agent/ask-release-notes-demo.png&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In this post, we have seen how to use Polyglot Notebooks and Kernel Memory together to empower your day-to-day tasks with the power of AI. We have seen how to set up the infrastructure using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Testcontainers&lt;/code&gt; and how to configure the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Kernel Memory&lt;/code&gt; to use the LLM.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/notebook-agent&quot;&gt;Source Code: notebook-agent&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/microsoft/semantic-kernel&quot;&gt;Semantic Kernel&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/microsoft/kernel-memory&quot;&gt;Kernel Memory&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/dotnet/interactive&quot;&gt;.NET Interactive&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://testcontainers.com/modules/?language=dotnet&quot;&gt;Testcontainers&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Wed, 11 Sep 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/ai/2024/09/11/notebook-agent.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/ai/2024/09/11/notebook-agent.html</guid>
 			</item>
 		
 	</channel>

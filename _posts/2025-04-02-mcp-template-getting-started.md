@@ -2,9 +2,9 @@
 layout: post
 title: "Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools"
 categories: [ dotnet ]
-tags: [ dotnet, ai, mcp ]
+tags: [ dotnet, ai, mcp, mcp-server ]
 published: true
-shortinfo: "In this post I will show you how to use simple template to create a MCP server that can be distributed as a global tool."
+shortinfo: "In this post, I will show you how to use a simple template to create an MCP server that can be distributed as a global tool."
 fullview: false
 comments: true
 related: true
