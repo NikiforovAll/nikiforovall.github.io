@@ -49,7 +49,7 @@ dotnet new aspire-apphost -n AppHost -o AppHost
 dotnet add ./Apphost package Nall.ModelContextProtocol.Inspector.Aspire.Hosting
 ```
 
-📦 As in my previous post, let' install `Nall.ModelContextProtocol.Aspire.Hosting` [package](https://www.nuget.org/packages/Nall.ModelContextProtocol.Template):
+📦 As in my previous post, let's install `Nall.ModelContextProtocol.Aspire.Template` [package](https://www.nuget.org/packages/Nall.ModelContextProtocol.Template):
 
 ```bash
 dotnet new install Nall.ModelContextProtocol.Template
