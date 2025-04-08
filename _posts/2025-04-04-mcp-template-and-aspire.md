@@ -85,7 +85,7 @@ builder.AddMCPInspector().WithStdio<Projects.MyAwesomeMCPServer>();
 builder.Build().Run();
 ```
 
-It run's [@modelcontextprotocol/inspector](https://www.npmjs.com/package/@modelcontextprotocol/inspector) under the hood. It is an MCP proxy that allows you to test and debug MCP servers.
+It runs [@modelcontextprotocol/inspector](https://www.npmjs.com/package/@modelcontextprotocol/inspector) under the hood. It is an MCP proxy that allows you to test and debug MCP servers.
 
 💡 **Note:** The *Inspector* is responsible for starting the .NET project. So, no corresponding Aspire Resource will be available on the dashboard for the 'Stdio' mode.
 
