@@ -61,7 +61,7 @@ Now, you know what DIAL is. Let's see how to get started with it using [.NET Asp
 First, we want to add DIAL hosting integration to `AppHost` project by adding the `EPAM.Dial.Aspire.Hosting` NuGet package:
 
 ```bash
-dotnet add package EPAM.Dial.Aspire.Hosting
+dotnet add package Nall.EPAM.Dial.Aspire.Hosting
 ```
 
 Then, we need to add the DIAL hosting integration to the `AppHost/Program.cs`:
@@ -71,24 +71,23 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var ollama = builder
     .AddOllama("ollama")
+    .WithOpenWebUI()
     .WithDataVolume()
-    .WithOpenWebUI();
-
+    .WithLifetime(ContainerLifetime.Persistent);
 ollama.AddModel("ollama-deepseek-r1", "deepseek-r1:1.5b");
 ollama.AddModel("ollama-phi3", "phi3.5");
 
-var dial = builder
-    .AddDial("dial", port: 8080)
-    .WaitFor(ollama)
-    .WithChatUI(port: 3000);
+var dial = builder.AddDial("dial", port: 8080).WaitFor(ollama).WithChatUI(port: 3000);
 
-var deepseek = dial.AddModel("deepseek", DeepSeekR1(ollama.Resource.PrimaryEndpoint));
-var phi3 = dial.AddModel("phi3", Phi3(ollama.Resource.PrimaryEndpoint));
+var deepseek = dial.AddModel("deepseek", deploymentName: "deepseek-r1:1.5b")
+    .WithEndpoint(ollama.Resource.PrimaryEndpoint)
+    .WithDisplayName("DeepSeek-R1");
 
-builder.AddProject<Projects.Api>("api")
-    .WithReference(deepseek)
-    .WithReference(phi3)
-    .WaitFor(dial);
+var phi3 = dial.AddModel("phi3", deploymentName: "phi3.5")
+    .WithEndpoint(ollama.Resource.PrimaryEndpoint)
+    .WithDisplayName("Phi-3.5"); 
+
+builder.AddProject<Projects.Api>("api").WithReference(deepseek).WithReference(phi3).WaitFor(dial);
 
 builder.Build().Run();
 ```
