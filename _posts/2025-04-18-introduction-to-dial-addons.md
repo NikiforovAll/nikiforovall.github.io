@@ -13,7 +13,7 @@ mermaid: true
 
 ## TL;DR
 
-> In this post will extend *AI DIAL* with [Addons](https://docs.epam-rail.com/tutorials/quick-start-with-addon) using .NET Aspire. We will build a simple TODO Assistant that allows us to manage our TODO list using natural language.
+> In this post we will extend *AI DIAL* with [Addons](https://docs.epam-rail.com/tutorials/quick-start-with-addon) using .NET Aspire. We will build a simple TODO Assistant that allows us to manage our TODO list using natural language.
 
 **Source code:** <https://github.com/NikiforovAll/ai-dial-dotnet>
 
