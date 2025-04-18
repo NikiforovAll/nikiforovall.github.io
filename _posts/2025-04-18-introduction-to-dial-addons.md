@@ -13,7 +13,7 @@ mermaid: true
 
 ## TL;DR
 
-In this blog I will deploy OpenAI's ["TODO List"](https://github.com/openai/plugins-quickstart) Plugin to *AI DIAL* using the [DIAL Addon](https://docs.epam-rail.com/tutorials/quick-start-with-addon) functionality via .NET Aspire.
+> In this post will extend *AI DIAL* with [Addons](https://docs.epam-rail.com/tutorials/quick-start-with-addon) using .NET Aspire. We will build a simple TODO Assistant that allows us to manage our TODO list using natural language.
 
 **Source code:** <https://github.com/NikiforovAll/ai-dial-dotnet>
 
@@ -37,7 +37,7 @@ In my [previous blog post](https://nikiforovall.github.io/dotnet/ai/2025/03/30/i
 
 The great thing about *DIAL Addons* is that they are based on [OpenAI GPT Actions](https://platform.openai.com/docs/actions/introduction) (aka Plugins). At their core, GPT Actions leverage [Function Calling](https://platform.openai.com/docs/guides/function-calling) to execute API calls.
 
-In this blog, we will build a `todo-assistant` based on the [official TODO Assistant Addon from OpenAI](https://github.com/openai/plugins-quickstart/). This Addon will allow us to manage our TODO list using natural language commands.
+In this blog, we will build a `todo-assistant` based on the official [TODO Assistant](https://github.com/openai/plugins-quickstart/) from OpenAI. This Addon will allow us to manage our TODO list using natural language commands.
 
 In *AI DIAL*, conversational agents enable direct interactions between end-users and applications or language models via the [AI DIAL Chat](https://docs.epam-rail.com/chat-design) interface or [AI DIAL API](https://epam-rail.com/dial_api).
 
@@ -53,6 +53,7 @@ The default `Program.cs` looks like this:
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
+
 builder.Build().Run();
 ```
 
@@ -319,6 +320,8 @@ In this blog post, we have learned how to extend *AI DIAL* with Addons using .NE
 We have also learned how to deploy OpenAI model that supports Function Calling and how to integrate it with the DIAL Core.
 
 This is just the beginning of what you can do with *AI DIAL* and Addons. You can create more complex Addons that integrate with other services or APIs, or you can create your own custom Addons that provide unique functionality.
+
+> 🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you'd like to support my work, a star on GitHub would be greatly appreciated! 🙏
 
 ## References
 
