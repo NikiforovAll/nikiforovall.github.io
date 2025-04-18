@@ -188,6 +188,21 @@
 	
 
 	
+	<div>
+		<h5><a href="/dotnet/ai/2025/04/18/introduction-to-dial-addons.html">Composable AI with .NET Aspire: Extending DIAL Assistants with Add-Ons <span class="label label-default">ai</span>  <span class="label label-default">aspire</span>  <span class="label label-default">dial</span>  <span class="label label-default">llm-orchestration</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
 
 	
 
@@ -826,7 +841,7 @@
 
 <p>First, we want to add DIAL hosting integration to <code class="language-plaintext highlighter-rouge">AppHost</code> project by adding the <code class="language-plaintext highlighter-rouge">EPAM.Dial.Aspire.Hosting</code> NuGet package:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add package EPAM.Dial.Aspire.Hosting
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet add package Nall.EPAM.Dial.Aspire.Hosting
 </code></pre></div></div>
 
 <p>Then, we need to add the DIAL hosting integration to the <code class="language-plaintext highlighter-rouge">AppHost/Program.cs</code>:</p>
@@ -835,24 +850,23 @@
 
 <span class="kt">var</span> <span class="n">ollama</span> <span class="p">=</span> <span class="n">builder</span>
     <span class="p">.</span><span class="nf">AddOllama</span><span class="p">(</span><span class="s">"ollama"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithOpenWebUI</span><span class="p">()</span>
     <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
-    <span class="p">.</span><span class="nf">WithOpenWebUI</span><span class="p">();</span>
-
+    <span class="p">.</span><span class="nf">WithLifetime</span><span class="p">(</span><span class="n">ContainerLifetime</span><span class="p">.</span><span class="n">Persistent</span><span class="p">);</span>
 <span class="n">ollama</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"ollama-deepseek-r1"</span><span class="p">,</span> <span class="s">"deepseek-r1:1.5b"</span><span class="p">);</span>
 <span class="n">ollama</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"ollama-phi3"</span><span class="p">,</span> <span class="s">"phi3.5"</span><span class="p">);</span>
 
-<span class="kt">var</span> <span class="n">dial</span> <span class="p">=</span> <span class="n">builder</span>
-    <span class="p">.</span><span class="nf">AddDial</span><span class="p">(</span><span class="s">"dial"</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="m">8080</span><span class="p">)</span>
-    <span class="p">.</span><span class="nf">WaitFor</span><span class="p">(</span><span class="n">ollama</span><span class="p">)</span>
-    <span class="p">.</span><span class="nf">WithChatUI</span><span class="p">(</span><span class="n">port</span><span class="p">:</span> <span class="m">3000</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">dial</span> <span class="p">=</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddDial</span><span class="p">(</span><span class="s">"dial"</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="m">8080</span><span class="p">).</span><span class="nf">WaitFor</span><span class="p">(</span><span class="n">ollama</span><span class="p">).</span><span class="nf">WithChatUI</span><span class="p">(</span><span class="n">port</span><span class="p">:</span> <span class="m">3000</span><span class="p">);</span>
 
-<span class="kt">var</span> <span class="n">deepseek</span> <span class="p">=</span> <span class="n">dial</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"deepseek"</span><span class="p">,</span> <span class="nf">DeepSeekR1</span><span class="p">(</span><span class="n">ollama</span><span class="p">.</span><span class="n">Resource</span><span class="p">.</span><span class="n">PrimaryEndpoint</span><span class="p">));</span>
-<span class="kt">var</span> <span class="n">phi3</span> <span class="p">=</span> <span class="n">dial</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"phi3"</span><span class="p">,</span> <span class="nf">Phi3</span><span class="p">(</span><span class="n">ollama</span><span class="p">.</span><span class="n">Resource</span><span class="p">.</span><span class="n">PrimaryEndpoint</span><span class="p">));</span>
+<span class="kt">var</span> <span class="n">deepseek</span> <span class="p">=</span> <span class="n">dial</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"deepseek"</span><span class="p">,</span> <span class="n">deploymentName</span><span class="p">:</span> <span class="s">"deepseek-r1:1.5b"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithEndpoint</span><span class="p">(</span><span class="n">ollama</span><span class="p">.</span><span class="n">Resource</span><span class="p">.</span><span class="n">PrimaryEndpoint</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDisplayName</span><span class="p">(</span><span class="s">"DeepSeek-R1"</span><span class="p">);</span>
 
-<span class="n">builder</span><span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">)</span>
-    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">deepseek</span><span class="p">)</span>
-    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">phi3</span><span class="p">)</span>
-    <span class="p">.</span><span class="nf">WaitFor</span><span class="p">(</span><span class="n">dial</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">phi3</span> <span class="p">=</span> <span class="n">dial</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"phi3"</span><span class="p">,</span> <span class="n">deploymentName</span><span class="p">:</span> <span class="s">"phi3.5"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithEndpoint</span><span class="p">(</span><span class="n">ollama</span><span class="p">.</span><span class="n">Resource</span><span class="p">.</span><span class="n">PrimaryEndpoint</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDisplayName</span><span class="p">(</span><span class="s">"Phi-3.5"</span><span class="p">);</span> 
+
+<span class="n">builder</span><span class="p">.</span><span class="n">AddProject</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">Api</span><span class="p">&gt;(</span><span class="s">"api"</span><span class="p">).</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">deepseek</span><span class="p">).</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">phi3</span><span class="p">).</span><span class="nf">WaitFor</span><span class="p">(</span><span class="n">dial</span><span class="p">);</span>
 
 <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">Run</span><span class="p">();</span>
 </code></pre></div></div>
@@ -988,12 +1002,12 @@
 		
 		
 		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
-				dotnet <span>(53)</span>
+				dotnet <span>(54)</span>
 				,
 			</a></li>
 		
 		<li><a href="https://nikiforovall.github.io/categories.html#ai-ref" target="_blank" rel="noopener noreferrer">
-				ai <span>(3)</span>
+				ai <span>(4)</span>
 				
 			</a></li>
 		
@@ -1009,28 +1023,28 @@
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#ai-ref" target="_blank" rel="noopener noreferrer">
-				ai <span>(7)</span>
+				ai <span>(8)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
-				aspire <span>(17)</span>
+				aspire <span>(18)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#dial-ref" target="_blank" rel="noopener noreferrer">
-				dial <span>(1)</span>
+				dial <span>(2)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
 			<a href="https://nikiforovall.github.io/tags.html#llm-orchestration-ref" target="_blank" rel="noopener noreferrer">
-				llm-orchestration <span>(1)</span>
+				llm-orchestration <span>(2)</span>
 				
 			</a>
 		</li>
