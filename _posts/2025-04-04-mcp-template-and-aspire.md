@@ -2,7 +2,7 @@
 layout: post
 title: "Simplifying Model Context Protocol (MCP) Server Development with Aspire"
 categories: [ dotnet ]
-tags: [ dotnet, aspire, mcp, mcp-server ]
+tags: [ dotnet, ai, aspire, mcp, mcp-server ]
 published: true
 shortinfo: "Learn how to develop MCP servers with Aspire."
 fullview: false
@@ -49,7 +49,7 @@ dotnet new aspire-apphost -n AppHost -o AppHost
 dotnet add ./Apphost package Nall.ModelContextProtocol.Inspector.Aspire.Hosting
 ```
 
-📦 As in my previous post, let's install `Nall.ModelContextProtocol.Aspire.Template` [package](https://www.nuget.org/packages/Nall.ModelContextProtocol.Template):
+📦 As in my previous post, let's install `Nall.ModelContextProtocol.Template` [package](https://www.nuget.org/packages/Nall.ModelContextProtocol.Template):
 
 ```bash
 dotnet new install Nall.ModelContextProtocol.Template

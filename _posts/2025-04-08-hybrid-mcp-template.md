@@ -2,7 +2,7 @@
 layout: post
 title: "Learn how to use Model Context Protocol (MCP) Server Template in Hybrid Mode"
 categories: [ dotnet ]
-tags: [ dotnet, aspire, mcp, mcp-server ]
+tags: [ dotnet, ai, aspire, mcp, mcp-server ]
 published: true
 shortinfo: "Use the 'mcp-server-hybrid' template to be able to easily switch between stdio and sse transports."
 fullview: false
