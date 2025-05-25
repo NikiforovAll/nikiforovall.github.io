@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Simplifying Background Job Scheduling Using Hangfire MCP Server"
+title: "Background Job Scheduling Using Hangfire MCP Server"
 categories: [ dotnet ]
 tags: [ dotnet, ai, hangfire, mcp, mcp-server ]
 published: true
