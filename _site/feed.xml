@@ -7,10 +7,108 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
-				<title>Simplifying Background Job Scheduling Using Hangfire MCP Server</title>
+				<title>Hangfire MCP Server in Standalone Mode</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
-&lt;p&gt;Enqueue background jobs using &lt;strong&gt;Hangfire MCP server&lt;/strong&gt;. Source code: &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp&quot;&gt;https://github.com/NikiforovAll/hangfire-mcp&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Enqueue background jobs using the &lt;strong&gt;Hangfire MCP server&lt;/strong&gt; in “standalone” mode using the .NET global tool.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp&quot;&gt;https://github.com/NikiforovAll/hangfire-mcp&lt;/a&gt;&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;video src=&quot;https://github.com/user-attachments/assets/e6abc036-b1f9-4691-a829-65292db5b5e6&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
+&lt;/center&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;In my &lt;a href=&quot;https://nikiforovall.blog/dotnet/2025/05/25/hangfire-mcp.html&quot;&gt;previous&lt;/a&gt; blog post, I showed you how to set up a Hangfire MCP server in a .NET application. We built Hangfire MCP from scratch, and as a prerequisite, you need to reference an assembly that contains Hangfire jobs directly in the Hangfire MCP project. This is a great approach if you want to extend the Hangfire MCP server’s capabilities, but it is not very convenient if you just want to use the Hangfire MCP server to enqueue background jobs.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;In this post, I will show you how to use the Hangfire MCP server in “standalone” mode using the .NET global tool.&lt;/p&gt;
+
+&lt;p&gt;Here is how to setup it as an MCP server in VSCode:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet tool &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--add-source&lt;/span&gt; Nall.HangfireMCP
+&lt;span class=&quot;c&quot;&gt;# You can invoke the tool using the following command: HangfireMCP&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Tool &apos;nall.hangfiremcp&apos; (version &apos;1.0.0&apos;) was successfully installed.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;All we need to do is configure the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mcp.json&lt;/code&gt; file to add the Hangfire MCP server and set the environment variables to specify the Hangfire jobs assembly, the job discovery expression, and the connection string for Hangfire.&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;servers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;hangfire-mcp-standalone&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;stdio&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;command&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;HangfireMCP&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;args&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;--stdio&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;env&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;HANGFIRE_JOBS_ASSEMBLY&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;path/to/Jobs.dll&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;HANGFIRE_JOBS_MATCH_EXPRESSION&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;[?IsInterface &amp;amp;&amp;amp; contains(Name, &apos;Job&apos;)]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;HANGFIRE_CONNECTION_STRING&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=hangfire&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As a result, the jobs are dynamically loaded from the specified assembly and can be enqueued using the MCP protocol. The rules for matching job names can be specified using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HANGFIRE_JOBS_MATCH_EXPRESSION&lt;/code&gt; environment variable. For example, the expression &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[?IsInterface &amp;amp;&amp;amp; contains(Name, &apos;Job&apos;)]&lt;/code&gt; will match all interfaces that contain “Job” in their name. It is a &lt;a href=&quot;https://jmespath.org/tutorial.html&quot;&gt;JMESPath&lt;/a&gt; expression, so you can define how to match job names according to your needs.&lt;/p&gt;
+
+&lt;h3 id=&quot;aspire-bonus&quot;&gt;Aspire (Bonus)&lt;/h3&gt;
+
+&lt;p&gt;Here is how to use the Hangfire MCP server in Standalone Mode using Aspire:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postgresServer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddPostgres&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;postgres-server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDataVolume&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithLifetime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ContainerLifetime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Persistent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postgresServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hangfire&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Web&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mcp&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HangfireMCP_Standalone&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hangfire-mcp&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;HANGFIRE_JOBS_ASSEMBLY&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;path/to/Jobs.dll&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEnvironment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;HANGFIRE_JOBS_MATCH_EXPRESSION&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;[?IsInterface &amp;amp;&amp;amp; contains(Name, &apos;Job&apos;)]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMCPInspector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithSSE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;The Hangfire MCP server can be used in standalone mode to enqueue background jobs without the need to write custom code. This provides greater flexibility and ease of use, especially when you want to quickly set up a Hangfire MCP server for job processing.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.blog/dotnet/2025/05/25/hangfire-mcp.html&quot;&gt;https://nikiforovall.blog/dotnet/2025/05/25/hangfire-mcp.html&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp&quot;&gt;https://github.com/NikiforovAll/hangfire-mcp&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/modelcontextprotocol/csharp-sdk&quot;&gt;modelcontextprotocol/csharp-sdk&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Thu, 29 May 2025 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/2025/05/29/hangfire-mcp-standalone.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/05/29/hangfire-mcp-standalone.html</guid>
+			</item>
+		
+			<item>
+				<title>Background Job Scheduling Using Hangfire MCP Server</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;Enqueue background jobs using the &lt;strong&gt;Hangfire MCP server&lt;/strong&gt;. Source code: &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp&quot;&gt;https://github.com/NikiforovAll/hangfire-mcp&lt;/a&gt;&lt;/p&gt;
 
 &lt;center&gt;
     &lt;video src=&quot;https://github.com/user-attachments/assets/e6abc036-b1f9-4691-a829-65292db5b5e6&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
@@ -22,7 +120,7 @@
 
 &lt;p&gt;I like Hangfire for background job processing in .NET applications. It has a simple and intuitive API, a powerful dashboard, and supports various storage options. Essentially, it provides everything I need for real-world applications that require background processing. However, sometimes I need to run a job with parameters in the background, and there isn’t an easy way to do it directly from the Hangfire dashboard.&lt;/p&gt;
 
-&lt;p&gt;🤔 So, I had an idea to schedule Hangfire Jobs through MCP Server. This is exactly use case for an MCP server.&lt;/p&gt;
+&lt;p&gt;🤔 So, I had an idea to schedule Hangfire jobs through an MCP server. This is exactly the use case for an MCP server.&lt;/p&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;MCP is an open protocol that standardizes how applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C provides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.&lt;/p&gt;
@@ -30,16 +128,16 @@
 
 &lt;h2 id=&quot;setup-mcp-server&quot;&gt;Setup MCP Server&lt;/h2&gt;
 
-&lt;p&gt;If you want to setup your own &lt;em&gt;Hangfire MCP Server&lt;/em&gt;, you can use the &lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Template&quot;&gt;Nall.ModelContextProtocol.Template&lt;/a&gt; template that I’ve shared with you in the &lt;a href=&quot;https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html&quot;&gt;previous post&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;If you want to set up your own &lt;em&gt;Hangfire MCP Server&lt;/em&gt;, you can use the &lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Template&quot;&gt;Nall.ModelContextProtocol.Template&lt;/a&gt; template that I shared with you in the &lt;a href=&quot;https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html&quot;&gt;previous post&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;At high level, you need to do the following:&lt;/p&gt;
+&lt;p&gt;At a high level, you need to do the following:&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;Setup the MCP server.&lt;/li&gt;
+  &lt;li&gt;Set up the MCP server.&lt;/li&gt;
   &lt;li&gt;Register &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;McpServerTool&lt;/code&gt;.&lt;/li&gt;
-  &lt;li&gt;Configure Job discovery.&lt;/li&gt;
-  &lt;li&gt;Connect MCP Server to Hangfire using connection string.&lt;/li&gt;
-  &lt;li&gt;Configure MCP Client to consume Hangfire MCP Server. E.g. in VS Code, you can configure &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mcp.json&lt;/code&gt; file to add your server.&lt;/li&gt;
+  &lt;li&gt;Configure job discovery.&lt;/li&gt;
+  &lt;li&gt;Connect the MCP server to Hangfire using a connection string.&lt;/li&gt;
+  &lt;li&gt;Configure the MCP client to consume the Hangfire MCP server. For example, in VS Code, you can configure the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mcp.json&lt;/code&gt; file to add your server.&lt;/li&gt;
 &lt;/ol&gt;
 
 &lt;h2 id=&quot;code-deep-dive&quot;&gt;Code Deep Dive&lt;/h2&gt;
@@ -64,11 +162,11 @@
 &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;In the above code, we are adding next components:&lt;/p&gt;
+&lt;p&gt;In the above code, we are adding the following components:&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;&lt;strong&gt;Postgres Server&lt;/strong&gt;: This is where Hangfire will store its data.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Web Project (aka Server)&lt;/strong&gt;: This is the main web application that will perform background jobs processing.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Web Project (aka Server)&lt;/strong&gt;: This is the main web application that will perform background job processing.&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;Hangfire MCP Project&lt;/strong&gt;: This is the MCP server that will expose Hangfire jobs as MCP commands.&lt;/li&gt;
   &lt;li&gt;&lt;strong&gt;MCP Inspector&lt;/strong&gt;: This is the MCP inspector that will allow us to interact with the Hangfire MCP server. This is very useful for debugging and testing purposes.&lt;/li&gt;
 &lt;/ol&gt;
@@ -78,13 +176,13 @@
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;aspire run &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./samples/AppHost/AppHost.csproj
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Here is how the Aspire Dashboard looks like:&lt;/p&gt;
+&lt;p&gt;Here is how the Aspire Dashboard looks:&lt;/p&gt;
 
 &lt;center&gt;&lt;img src=&quot;/assets/hangfire-mcp/aspire-dashboard.png&quot; /&gt;&lt;/center&gt;
 
 &lt;hr /&gt;
 
-&lt;p&gt;From high level perspective, here is how it works:&lt;/p&gt;
+&lt;p&gt;From a high-level perspective, here is how it works:&lt;/p&gt;
 
 &lt;div class=&quot;mermaid&quot;&gt;
 sequenceDiagram
@@ -103,7 +201,7 @@ sequenceDiagram
 
 &lt;h3 id=&quot;hangfire-mcp-server&quot;&gt;Hangfire MCP Server&lt;/h3&gt;
 
-&lt;p&gt;This project is quite straightforward. We just need to map MCP tool to a Hangfire job and call it a day. Here is how it looks like:&lt;/p&gt;
+&lt;p&gt;This project is quite straightforward. We just need to map the MCP tool to a Hangfire job and call it a day. Here is how it looks:&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;McpServerToolType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;HangfireTool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IHangfireDynamicScheduler&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scheduler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
@@ -125,7 +223,7 @@ sequenceDiagram
 
 &lt;p&gt;💡 You can find the implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IHangfireDynamicScheduler&lt;/code&gt; in the source code of the project.&lt;/p&gt;
 
-&lt;p&gt;Now, you can ask Github Copilot to enqueue a job using something like this:&lt;/p&gt;
+&lt;p&gt;Now, you can ask GitHub Copilot to enqueue a job using something like this:&lt;/p&gt;
 
 &lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Please run the following job: #RunJob
 
@@ -133,19 +231,19 @@ sequenceDiagram
     &quot;jobName&quot;: &quot;HangfireJobs.ISendMessageJob&quot;,
     &quot;methodName&quot;: &quot;ExecuteAsync&quot;,
     &quot;parameters&quot;: {
-        &quot;text&quot;: &quot;Hello, MCP!&quot;,
+        &quot;text&quot;: &quot;Hello, MCP!&quot;
     }
 }
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Note, in this case we need to specify exactly the job name and method name, as well as the parameters. Wouldn’t it be great if we could discover the jobs by asking Copilot. Let’s see how we can do that.&lt;/p&gt;
+&lt;p&gt;Note that in this case, we need to specify the exact job name and method name, as well as the parameters. Wouldn’t it be great if we could discover the jobs by asking Copilot? Let’s see how we can do that.&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;McpServerTool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Name&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;ListJobs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Lists all jobs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;An array of job descriptors in JSON format&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ListJobs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
     &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jobs&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scheduler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;DiscoverJobs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsInterface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;EndsWith&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Job&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;StringComparison&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OrdinalIgnoreCase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsInterface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;EndsWith&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Job&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;StringComparison&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OrdinalIgnoreCase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
         &lt;span class=&quot;k&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ITimeJob&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Assembly&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// &amp;lt;-- it should point to the assembly where your Hangfire jobs are defined.&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
 
@@ -153,9 +251,9 @@ sequenceDiagram
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;So, in the code above, we define a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ListJobs&lt;/code&gt; method that returns a list of all jobs. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DiscoverJobs&lt;/code&gt; method uses reflection to find all jobs in the specified assembly.&lt;/p&gt;
+&lt;p&gt;In the code above, we define a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ListJobs&lt;/code&gt; method that returns a list of all jobs. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DiscoverJobs&lt;/code&gt; method uses reflection to find all jobs in the specified assembly.&lt;/p&gt;
 
-&lt;p&gt;The idea here, is that you can define rules for job discovery that are specific to your application. In this case, we are matching interfaces that end with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Job&lt;/code&gt;. In my demo application, I have two jobs defined: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ITimeJob&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ISendMessageJob&lt;/code&gt;. Here is how they look like:&lt;/p&gt;
+&lt;p&gt;The idea here is that you can define rules for job discovery that are specific to your application. In this case, we are matching interfaces that end with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Job&lt;/code&gt;. In my demo application, I have two jobs defined: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ITimeJob&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ISendMessageJob&lt;/code&gt;. Here is how they look:&lt;/p&gt;
 
 &lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ITimeJob&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -169,13 +267,13 @@ sequenceDiagram
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Let’s take a look at MCP Server from the MCP Inspector:&lt;/p&gt;
+&lt;p&gt;Let’s take a look at the MCP server from the MCP Inspector:&lt;/p&gt;
 
 &lt;center&gt;&lt;img src=&quot;/assets/hangfire-mcp/inspector.png&quot; /&gt;&lt;/center&gt;
 
 &lt;hr /&gt;
 
-&lt;p&gt;As you can see, we have a bunch of tools available in the MCP Inspector. We can list jobs, enqueue jobs, get job status by job ID and requeue jobs. The MCP Inspector allows us to interact with the Hangfire MCP server, it is a nice way to test and debug the MCP server.&lt;/p&gt;
+&lt;p&gt;As you can see, we have a bunch of tools available in the MCP Inspector. We can list jobs, enqueue jobs, get job status by job ID, and requeue jobs. The MCP Inspector allows us to interact with the Hangfire MCP server, making it a nice way to test and debug the MCP server.&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -187,9 +285,9 @@ sequenceDiagram
   &lt;li&gt;&lt;a href=&quot;https://github.com/modelcontextprotocol/csharp-sdk&quot;&gt;modelcontextprotocol/csharp-sdk&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-				<pubDate>Sat, 03 May 2025 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/2025/05/03/hangfire-mcp.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/05/03/hangfire-mcp.html</guid>
+				<pubDate>Sun, 25 May 2025 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/2025/05/25/hangfire-mcp.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/05/25/hangfire-mcp.html</guid>
 			</item>
 		
 			<item>
@@ -1770,135 +1868,6 @@ C# code should be written to maximize readability, maintainability, and correctn
 				<pubDate>Sat, 08 Mar 2025 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html</guid>
-			</item>
-		
-			<item>
-				<title>Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd)</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/azd-bot-service-starter&quot;&gt;https://github.com/NikiforovAll/azd-bot-service-starter&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;Bots are everywhere, as developers, we should embrace this trend and learn how to prototype and deploy bots quickly.&lt;/p&gt;
-
-&lt;p&gt;Using &lt;a href=&quot;https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/&quot;&gt;Azure Developer CLI (azd)&lt;/a&gt;, we can quickly deploy and manage our solutions. This tutorial shows you how to deploy a bot to Azure in just five minutes using a starter template.&lt;/p&gt;
-
-&lt;p&gt;🚀 Let’s get started and deploy your bot to Azure!&lt;/p&gt;
-
-&lt;h2 id=&quot;install-from-template&quot;&gt;Install From Template&lt;/h2&gt;
-
-&lt;p&gt;Since I already prepared a starter template, you can deploy a bot to Azure in just a few minutes.&lt;/p&gt;
-
-&lt;p&gt;Here’s how:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;azd init &lt;span class=&quot;nt&quot;&gt;--template&lt;/span&gt; https://github.com/NikiforovAll/azd-bot-service-starter
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is the sneak peek of the bot that we are going to deploy:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Program.cs&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddSingleton&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IBotFrameworkHttpAdapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;AdapterWithErrorHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddTransient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IBot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;EchoBotHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseDefaultFiles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseStaticFiles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseWebSockets&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseRouting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapPost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;s&quot;&gt;&quot;/api/messages&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IBotFrameworkHttpAdapter&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;adapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IBot&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;HttpRequest&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;HttpResponse&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;adapter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ProcessAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bot&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;It’s a simple echo bot that repeats the user’s message back to them. Nothing special, but this is a good starting point for your bot.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;EchoBotHandler&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ActivityHandler&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;override&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;OnMessageActivityAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;ITurnContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IMessageActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;turnContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;CancellationToken&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cancellationToken&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;replyText&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&quot;Echo: &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;turnContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Activity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;turnContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;SendActivityAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;MessageFactory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;replyText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;replyText&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;cancellationToken&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;run-and-deploy&quot;&gt;Run and Deploy&lt;/h2&gt;
-
-&lt;p&gt;Now, we can create a new azd environment:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;azd &lt;span class=&quot;nb&quot;&gt;env &lt;/span&gt;new azd-bot-service-dev
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;And deploy the bot to Azure.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;azd up
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is the output of the deployment (it took me less than 5 minutes to deploy the bot 🤯):&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/azd-bot-service-starter/azd-up.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd&lt;/code&gt; CLI outputs the URL of the deployed bot. You can test it by sending a message to the bot.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/azd-bot-service-starter/test-chat.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;The benefit of using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd&lt;/code&gt; template is that it automatically creates a new &lt;strong&gt;resource group&lt;/strong&gt;, app &lt;strong&gt;service plan&lt;/strong&gt;, &lt;strong&gt;application insights&lt;/strong&gt;, &lt;strong&gt;vault&lt;/strong&gt;, and &lt;strong&gt;app service&lt;/strong&gt; for you. You don’t need to worry about the infrastructure, just focus on your code.&lt;/p&gt;
-
-&lt;p&gt;For example, here is an application insights dashboard for the bot:&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/azd-bot-service-starter/app-insights.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;teardown&quot;&gt;Teardown&lt;/h2&gt;
-
-&lt;p&gt;When you are done with the bot, you can delete the resources using the following command:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;azd down
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This command will delete all the resources created by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;azd up&lt;/code&gt; command.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/azd-bot-service-starter/azd-down.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://azure.github.io/awesome-azd/&quot;&gt;awesome-azd&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/get-started&quot;&gt;Azure Developer CLI - Getting Started&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sun, 22 Dec 2024 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/2024/12/22/azd-bot-service.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2024/12/22/azd-bot-service.html</guid>
 			</item>
 		
 	</channel>
