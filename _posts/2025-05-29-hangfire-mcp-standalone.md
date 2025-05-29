@@ -29,7 +29,7 @@ In my [previous](https://nikiforovall.blog/dotnet/2025/05/25/hangfire-mcp.html) 
 
 ---
 
-In this post, I will show you how to use the Hangfire MCP server in "standalone" mode using the .NET global tool.
+In this post, I will show you how to use the Hangfire MCP server in "standalone" mode using the .NET global tool. Here is a NuGet package that I created for this purpose: [Nall.HangfireMCP](https://www.nuget.org/packages/Nall.HangfireMCP).
 
 Here is how to setup it as an MCP server in VSCode:
 
