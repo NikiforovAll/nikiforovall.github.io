@@ -34,7 +34,7 @@ In this post, I will show you how to use the Hangfire MCP server in "standalone"
 Here is how to setup it as an MCP server in VSCode:
 
 ```bash
-dotnet tool install --global --add-source Nall.HangfireMCP
+dotnet tool install --global Nall.HangfireMCP
 # You can invoke the tool using the following command: HangfireMCP
 # Tool 'nall.hangfiremcp' (version '1.0.0') was successfully installed.
 ```
