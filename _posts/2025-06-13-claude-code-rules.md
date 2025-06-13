@@ -3,7 +3,7 @@ layout: post
 title: "My Claude Code Usage Best Practices and Recommendations"
 categories: [ productivity]
 tags: [ productivity, ai, claude, agents]
-shortinfo: "Practical recommendations and principles for using Claude Code."
+shortinfo: "In this post, I share my collection of practical recommendations and principles for using Claude Code."
 published: true
 fullview: false
 comments: true
