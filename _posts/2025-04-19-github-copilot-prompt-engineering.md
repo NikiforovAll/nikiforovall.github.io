@@ -2,7 +2,7 @@
 layout: post
 title: "Prompt Engineering with GitHub Copilot in Visual Studio Code"
 categories: [ productivity ]
-tags: [ productivity, ai, copilot ]
+tags: [ productivity, ai, copilot, agents ]
 published: true
 shortinfo: "Learn how to leverage reusable prompts in GitHub Copilot to enhance your productivity in Visual Studio Code."
 fullview: false

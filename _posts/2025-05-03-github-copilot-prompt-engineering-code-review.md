@@ -2,7 +2,7 @@
 layout: post
 title: "Code Review with GitHub Copilot in Visual Studio Code"
 categories: [ productivity ]
-tags: [ productivity, ai, copilot ]
+tags: [ productivity, ai, copilot, agents ]
 published: true
 shortinfo: "In this blog post, I will show you how to leverage GitHub Copilot's code review capabilities in Visual Studio Code. In addition to the built-in features, I'll introduce my own agent-based code review workflow using a custom prompt."
 fullview: false
