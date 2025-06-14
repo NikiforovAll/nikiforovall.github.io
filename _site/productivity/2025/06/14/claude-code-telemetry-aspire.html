@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
-	<title>Development environment based on Windows Terminal + WSL + ZSH + dotfiles</title>
+	<title>Monitoring Claude Code with .NET Aspire Dashboard</title>
 	
 	<meta name="author" content="Oleksii Nikiforov">
 
@@ -161,7 +161,7 @@
 
 	<div class="col-sm-9 col-sm-offset-3">
 		<div class="page-header">
-	<h1>Development environment based on Windows Terminal + WSL + ZSH + dotfiles </h1>
+	<h1>Monitoring Claude Code with .NET Aspire Dashboard </h1>
 </div>
 <article>
 
@@ -169,10 +169,10 @@
 
 		<span class="post-date">
 			
-			November
-			30th,
+			June
+			14th,
 			
-			2019
+			2025
 		</span>
 
 	
@@ -197,23 +197,11 @@
 	
 
 	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
+	<div>
+		<h5><a href="/productivity/2025/06/13/claude-code-rules.html">My Claude Code Usage Best Practices and Recommendations <span class="label label-default">productivity</span>  <span class="label label-default">ai</span>  <span class="label label-default">claude</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
 	
 	
-
-	
-
 	
 
 	
@@ -232,6 +220,36 @@
 
 	
 
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html">Code Review with GitHub Copilot in Visual Studio Code <span class="label label-default">productivity</span>  <span class="label label-default">ai</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/04/19/github-copilot-prompt-engineering.html">Prompt Engineering with GitHub Copilot in Visual Studio Code <span class="label label-default">productivity</span>  <span class="label label-default">ai</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
 	
 
 	
@@ -825,78 +843,99 @@
 	<div class="article_body" style="margin-top: 30px;">
 		<h2 id="introduction">Introduction</h2>
 
-<p>I would like to share with you how to implement <a href="https://dotfiles.github.io/" target="_blank" rel="noopener noreferrer">dotfiles</a> concept for your working environment lightning fast. This post is based on my <strong>dotfiles</strong> repository - <a href="https://github.com/NikiforovAll/dotfiles" target="_blank" rel="noopener noreferrer">nikiforovall/dotifles</a>.</p>
+<p><a href="https://www.anthropic.com/claude-code" target="_blank" rel="noopener noreferrer">Claude Code</a> is a powerful AI coding assistant that can help you with various development tasks. It support telemetry monitoring, so I thought it would be fun to set up a .NET Aspire dashboard to visualize my usage and see how claude operates under the hood.</p>
 
-<p>It is a good time to be a .NET developer. It is not only mature and enterprise-ready ecosystem but vibrant and active community. I feel like guys from Microsoft doing a lot to support and encourage .NET community. In particular, that is why we have something like <a href="https://docs.microsoft.com/en-us/windows/wsl/about" target="_blank" rel="noopener noreferrer">Windows Subsystem For Linux</a>, <a href="https://github.com/Microsoft/Terminal" target="_blank" rel="noopener noreferrer">Windows Terminal</a> and many more.</p>
+<center><img src="/assets/claude-code/logs-claude-code.png"></center>
 
-<p>So I use Windows Terminal. It is a modern terminal emulator for windows. I switched from a really nice terminal emulator <a href="https://cmder.net/" target="_blank" rel="noopener noreferrer">cmder</a> to Windows Terminal (Preview). And I don’t regret it, especially after the release of <a href="https://devblogs.microsoft.com/commandline/windows-terminal-preview-v0-7-release/" target="_blank" rel="noopener noreferrer">Windows Terminal Preview v0.7 Release</a>. This release includes PowerLine fonts for Cascadia Fonts, tab reordering splitting of tab windows into panes. Sweat!</p>
+<hr>
 
-<p>Windows Terminal is highly configurable, so you could adjust <em>keybindings</em>, <em>color schemes</em>, and <em>profiles</em>.</p>
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/claude-code-rules" target="_blank" rel="noopener noreferrer">github.com/NikiforovAll/claude-code-rules</a></p>
 
-<p>You can install Windows Terminal from Microsoft Store or by using <a href="https://chocolatey.org/" target="_blank" rel="noopener noreferrer">chocolatey</a> windows package manager.</p>
+<h2 id="setting-up-net-aspire-dashboard">Setting Up .NET Aspire Dashboard</h2>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>choco <span class="nb">install </span>microsoft-windows-terminal <span class="nt">-y</span>
+<p>The first step is to run the <a href="https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/standalone" target="_blank" rel="noopener noreferrer">Aspire dashboard</a>. You can do this easily with Podman or Docker:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>podman run <span class="nt">--rm</span> <span class="nt">-it</span> <span class="nt">-d</span> <span class="se">\</span>
+    <span class="nt">-p</span> 18888:18888 <span class="se">\</span>
+    <span class="nt">-p</span> 4317:18889 <span class="se">\</span>
+    <span class="nt">--name</span> aspire-dashboard <span class="se">\</span>
+    mcr.microsoft.com/dotnet/aspire-dashboard
 </code></pre></div></div>
 
-<p>Also, see my Windows Terminal <em>profiles.json</em> <a href="https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/dotfiles/tree/master/artifacts/wt_profile.json</a>.</p>
+<p>This command starts the Aspire dashboard with the following configuration:</p>
 
-<p>I use <a href="https://code.visualstudio.com/" target="_blank" rel="noopener noreferrer">Visual Studio Code</a> as the main editor and development environment. Although, it is possible to use dotfiles for synchronization concept for <code class="language-plaintext highlighter-rouge">vscode</code> I encourage you to use <a href="https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync" target="_blank" rel="noopener noreferrer">Settings Sync</a> extension. It uses GitHub as storage and makes use of API key to authorize and manage your configurations. You could install it like this:</p>
+<ul>
+  <li>Dashboard UI accessible at port 18888</li>
+  <li>OpenTelemetry collector at port 4317</li>
+</ul>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>choco <span class="nb">install </span>vscode <span class="nt">-y</span>
-code <span class="nt">--intall-extension</span> Shan.code-settings-sync
+<h2 id="configuring-claude-code-telemetry">Configuring Claude Code Telemetry</h2>
+
+<p>Next, we need to configure Claude Code to send telemetry data to our Aspire dashboard. This is done through environment variables.</p>
+
+<p>Create an <code class="language-plaintext highlighter-rouge">.env</code> file with the following content:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">CLAUDE_CODE_ENABLE_TELEMETRY</span><span class="o">=</span>1
+<span class="nb">export </span><span class="nv">OTEL_LOG_USER_PROMPTS</span><span class="o">=</span>1
+<span class="nb">export </span><span class="nv">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="o">=</span>http://localhost:4317
+<span class="nb">export </span><span class="nv">OTEL_EXPORTER_OTLP_PROTOCOL</span><span class="o">=</span>grpc
+
+<span class="nb">export </span><span class="nv">OTEL_LOGS_EXPORTER</span><span class="o">=</span>otlp
+<span class="nb">export </span><span class="nv">OTEL_LOGS_EXPORT_INTERVAL</span><span class="o">=</span>5000
+
+<span class="nb">export </span><span class="nv">OTEL_EXPORTER_OTLP_METRICS_PROTOCOL</span><span class="o">=</span>grpc
+<span class="nb">export </span><span class="nv">OTEL_METRICS_EXPORTER</span><span class="o">=</span>otlp
+<span class="nb">export </span><span class="nv">OTEL_METRIC_EXPORT_INTERVAL</span><span class="o">=</span>10000
+
+<span class="nb">export </span><span class="nv">OTEL_SERVICE_NAME</span><span class="o">=</span>claude-code
+<span class="nb">export </span><span class="nv">OTEL_RESOURCE_ATTRIBUTES</span><span class="o">=</span>service.instance.id<span class="o">=</span>nikiforovall
 </code></pre></div></div>
 
-<p>And now, here where the fun begins. The end goal is to bootstrap and configure working environment with the minimum effort. Basically, we want to run bash one-liner and have everything arranged nice and clean. Something like:</p>
+<p>Then load these environment variables in your terminal:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bash <span class="nt">-c</span> <span class="s2">"</span><span class="si">$(</span>wget <span class="nt">-qO</span> - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh<span class="si">)</span><span class="s2">"</span>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export</span> <span class="si">$(</span><span class="nb">grep</span> <span class="nt">-v</span> <span class="s1">'^#'</span> .env | xargs<span class="si">)</span>
 </code></pre></div></div>
 
-<h3 id="wsl-setup">WSL Setup</h3>
+<p>See <a href="https://docs.anthropic.com/en/docs/claude-code/monitoring-usage" target="_blank" rel="noopener noreferrer">Monitoring Usage</a> for more details on how to configure telemetry for Claude Code.</p>
 
-<p>But first, let’s see how we set up brand new WSL instance. Here I list available Linux distros and unregister ubuntu-18.04</p>
+<h2 id="using-the-dashboard">Using the Dashboard</h2>
 
-<p><img src="/assets/nikiforovall-setup/test1.gif" alt="setup-1"></p>
+<p>With everything set up, you can now:</p>
 
-<p>Let’s register new user in Ubuntu-18.04 LTS.
-<img src="/assets/nikiforovall-setup/test2.gif" alt="setup-2"></p>
+<ol>
+  <li>Open your browser and navigate to <code class="language-plaintext highlighter-rouge">http://localhost:18888</code>
+</li>
+  <li>Use Claude Code as you normally would</li>
+  <li>Watch as telemetry data appears in the Aspire dashboard</li>
+</ol>
 
-<p>And set default distro <em>“Ubuntu-18.04”</em></p>
+<p>The dashboard will show various metrics and logs that can help you understand:</p>
 
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># $wsl -h</span>
-<span class="c"># -setdefault, -s &lt;DistributionName&gt;</span>
-wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
-</code></pre></div></div>
+<ul>
+  <li>What kind of models and tools are being used</li>
+  <li>How often Claude Code is invoked</li>
+  <li>What prompts are being sent</li>
+  <li>Token usage patterns</li>
+  <li>Any errors or issues that occur</li>
+</ul>
 
-<p>We can login to WSL via Windows Terminal by specifying <code class="language-plaintext highlighter-rouge">"source": "Windows.Terminal.Wsl"</code> in corresponding Windows Terminal <em>profile</em>.</p>
+<center>
+    <video src="https://github.com/user-attachments/assets/d145afcd-a562-4c6c-8589-78d2439a2290" width="90%" controls="controls"></video>
+</center>
 
-<h2 id="installation">Installation</h2>
+<h2 id="benefits-of-monitoring">Benefits of Monitoring</h2>
 
-<p>🔧 If it is a brand-new WSL instance you might want to run <code class="language-plaintext highlighter-rouge">apt upgrade</code>. In the demo below I’ve already had everything.</p>
+<p>Setting up telemetry monitoring for Claude Code offers several advantages:</p>
 
-<p>Let’s see how the bash one-liner works:</p>
-
-<p><code class="language-plaintext highlighter-rouge">bash -c "$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh)"</code></p>
-
-<p><img src="/assets/nikiforovall-setup/test3.gif" alt="setup-3"></p>
-
-<p>It installs a bunch of <a href="https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh" target="_blank" rel="noopener noreferrer">essentials</a> for development environment: utils, tools, and <a href="https://dotnet.microsoft.com/download" target="_blank" rel="noopener noreferrer">dotnet sdk</a>. Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don’t need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀</p>
-
-<h2 id="demo">Demo</h2>
-
-<p>At the demonstration below I create a folder for the new <em>dotnet console</em> project. I slightly modify <em>Program.cs</em> and run the application inside WSL. There are a lot of details that make the process of development easier and promote productivity. I just mention a few of them: simplicity of setup, syntax and commands highlighting and autocompletion.</p>
-
-<p><img src="/assets/nikiforovall-setup/test4.gif" alt="setup-4"></p>
-
-<h2 id="summary">Summary</h2>
-
-<p>It was a brief overview of my dotfiles setup. I encourage you to investigate the internals of my dotfiles repository for mode details. Feel free to fork and work on dream setup of your own. Let me know what you think about it!</p>
+<ul>
+  <li>
+<strong>Usage Insights</strong>: Understand how Claude Code performs in real-world scenarios.</li>
+  <li>
+<strong>Resource Management</strong>: Monitor token usage and adjust your subscription if necessary.</li>
+</ul>
 
 	</div>
 
-	
-	<h3 style="margin-top: 30px;">Reference</h3>
-	<a href="https://www.theurlist.com/os-bootstrap" target="_blank" rel="noopener noreferrer">https://www.theurlist.com/os-bootstrap</a>
-	<div class="col-sm-12" style="margin-bottom: 30px;"></div>
 	
 
 	
@@ -921,29 +960,50 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 		
 		
 		<li>
-			<a href="https://nikiforovall.github.io/tags.html#windows-terminal-ref" target="_blank" rel="noopener noreferrer">
-				windows-terminal <span>(1)</span>
+			<a href="https://nikiforovall.github.io/tags.html#productivity-ref" target="_blank" rel="noopener noreferrer">
+				productivity <span>(8)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
-			<a href="https://nikiforovall.github.io/tags.html#dotfiles-ref" target="_blank" rel="noopener noreferrer">
-				dotfiles <span>(3)</span>
+			<a href="https://nikiforovall.github.io/tags.html#ai-ref" target="_blank" rel="noopener noreferrer">
+				ai <span>(16)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
-			<a href="https://nikiforovall.github.io/tags.html#wsl-ref" target="_blank" rel="noopener noreferrer">
-				wsl <span>(1)</span>
+			<a href="https://nikiforovall.github.io/tags.html#claude-ref" target="_blank" rel="noopener noreferrer">
+				claude <span>(2)</span>
 				,
 			</a>
 		</li>
 		
 		<li>
-			<a href="https://nikiforovall.github.io/tags.html#deaac-ref" target="_blank" rel="noopener noreferrer">
-				deaac <span>(3)</span>
+			<a href="https://nikiforovall.github.io/tags.html#agents-ref" target="_blank" rel="noopener noreferrer">
+				agents <span>(4)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#aspire-ref" target="_blank" rel="noopener noreferrer">
+				aspire <span>(19)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#telemetry-ref" target="_blank" rel="noopener noreferrer">
+				telemetry <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#monitoring-ref" target="_blank" rel="noopener noreferrer">
+				monitoring <span>(1)</span>
 				
 			</a>
 		</li>
@@ -975,15 +1035,15 @@ wsl <span class="nt">-s</span> <span class="s2">"Ubuntu-18.04"</span>
 
 	<ul class="pager">
 		
-		<li class="previous"><a href="https://nikiforovall.github.io/design-patterns/2019/06/09/design-patterns-first-part.html" title="Design Patterns. Behavioral Patterns. Part I" target="_blank" rel="noopener noreferrer">←
+		<li class="previous"><a href="https://nikiforovall.github.io/productivity/2025/06/13/claude-code-rules.html" title="My Claude Code Usage Best Practices and Recommendations" target="_blank" rel="noopener noreferrer">←
 				Previous</a></li>
 		
 		
-		<li class="next">
-<a href="https://nikiforovall.github.io/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html" title="Sorting algorithms with C# 8, Span{T} and Try .NET" target="_blank" rel="noopener noreferrer">Next →</a>
-		</li>
-		
-	</ul>
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
 
 	<hr>
 	</div>
