@@ -7,6 +7,103 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Monitoring Claude Code with .NET Aspire Dashboard</title>
+				<description>&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.anthropic.com/claude-code&quot;&gt;Claude Code&lt;/a&gt; is a powerful AI coding assistant that can help you with various development tasks. It support telemetry monitoring, so I thought it would be fun to set up a .NET Aspire dashboard to visualize my usage and see how claude operates under the hood.&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/claude-code/logs-claude-code.png&quot; /&gt;&lt;/center&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/claude-code-rules&quot;&gt;github.com/NikiforovAll/claude-code-rules&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;setting-up-net-aspire-dashboard&quot;&gt;Setting Up .NET Aspire Dashboard&lt;/h2&gt;
+
+&lt;p&gt;The first step is to run the &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/standalone&quot;&gt;Aspire dashboard&lt;/a&gt;. You can do this easily with Podman or Docker:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;podman run &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 18888:18888 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 4317:18889 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; aspire-dashboard &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    mcr.microsoft.com/dotnet/aspire-dashboard
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This command starts the Aspire dashboard with the following configuration:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Dashboard UI accessible at port 18888&lt;/li&gt;
+  &lt;li&gt;OpenTelemetry collector at port 4317&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;configuring-claude-code-telemetry&quot;&gt;Configuring Claude Code Telemetry&lt;/h2&gt;
+
+&lt;p&gt;Next, we need to configure Claude Code to send telemetry data to our Aspire dashboard. This is done through environment variables.&lt;/p&gt;
+
+&lt;p&gt;Create an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.env&lt;/code&gt; file with the following content:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;CLAUDE_CODE_ENABLE_TELEMETRY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_LOG_USER_PROMPTS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_EXPORTER_OTLP_ENDPOINT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;http://localhost:4317
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_EXPORTER_OTLP_PROTOCOL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;grpc
+
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_LOGS_EXPORTER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;otlp
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_LOGS_EXPORT_INTERVAL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;5000
+
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_EXPORTER_OTLP_METRICS_PROTOCOL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;grpc
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_METRICS_EXPORTER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;otlp
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_METRIC_EXPORT_INTERVAL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10000
+
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_SERVICE_NAME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;claude-code
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_RESOURCE_ATTRIBUTES&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;service.instance.id&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;nikiforovall
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then load these environment variables in your terminal:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;^#&apos;&lt;/span&gt; .env | xargs&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;See &lt;a href=&quot;https://docs.anthropic.com/en/docs/claude-code/monitoring-usage&quot;&gt;Monitoring Usage&lt;/a&gt; for more details on how to configure telemetry for Claude Code.&lt;/p&gt;
+
+&lt;h2 id=&quot;using-the-dashboard&quot;&gt;Using the Dashboard&lt;/h2&gt;
+
+&lt;p&gt;With everything set up, you can now:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Open your browser and navigate to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;http://localhost:18888&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Use Claude Code as you normally would&lt;/li&gt;
+  &lt;li&gt;Watch as telemetry data appears in the Aspire dashboard&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The dashboard will show various metrics and logs that can help you understand:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;What kind of models and tools are being used&lt;/li&gt;
+  &lt;li&gt;How often Claude Code is invoked&lt;/li&gt;
+  &lt;li&gt;What prompts are being sent&lt;/li&gt;
+  &lt;li&gt;Token usage patterns&lt;/li&gt;
+  &lt;li&gt;Any errors or issues that occur&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;center&gt;
+    &lt;video src=&quot;https://github.com/user-attachments/assets/d145afcd-a562-4c6c-8589-78d2439a2290&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;benefits-of-monitoring&quot;&gt;Benefits of Monitoring&lt;/h2&gt;
+
+&lt;p&gt;Setting up telemetry monitoring for Claude Code offers several advantages:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Usage Insights&lt;/strong&gt;: Understand how Claude Code performs in real-world scenarios.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Resource Management&lt;/strong&gt;: Monitor token usage and adjust your subscription if necessary.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 14 Jun 2025 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/productivity/2025/06/14/claude-code-telemetry-aspire.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/productivity/2025/06/14/claude-code-telemetry-aspire.html</guid>
+			</item>
+		
+			<item>
 				<title>My Claude Code Usage Best Practices and Recommendations</title>
 				<description>&lt;p&gt;This post shares my collection of practical recommendations and principles for using Claude Code. For more details and the full source code, check out my repository:&lt;/p&gt;
 
@@ -1658,221 +1755,6 @@ We have also learned how to deploy OpenAI model that supports Function Calling a
 				<pubDate>Wed, 02 Apr 2025 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/2025/04/02/mcp-template-getting-started.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/04/02/mcp-template-getting-started.html</guid>
-			</item>
-		
-			<item>
-				<title>Introducing AI DIAL: The Open-Source AI Orchestration Platform</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;Use &lt;a href=&quot;https://epam-rail.com/&quot;&gt;AI DIAL&lt;/a&gt; to streamline and orchestrate Software Development Lifecycle (SDLC) for enterprise Gen AI applications. In this post, I will introduce you to the platform and its capabilities and show you how to get started with it using .NET Aspire.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/ai-dial-dotnet&quot;&gt;https://github.com/NikiforovAll/ai-dial-dotnet&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Table of Contents&lt;/strong&gt;:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#key-features&quot;&gt;Key Features&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#getting-started-via-net-aspire&quot;&gt;Getting Started via .NET Aspire&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#hosting-integration&quot;&gt;Hosting Integration&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#client-integration&quot;&gt;Client Integration&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#demo&quot;&gt;Demo&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;AI &lt;strong&gt;&lt;a href=&quot;https://epam-rail.com/platform&quot;&gt;DIAL&lt;/a&gt;&lt;/strong&gt; stands for &lt;strong&gt;D&lt;/strong&gt;eterministic &lt;strong&gt;I&lt;/strong&gt;ntegrator of &lt;strong&gt;A&lt;/strong&gt;pplications and &lt;strong&gt;L&lt;/strong&gt;anguage Models. It is an enterprise-grade, open-source AI orchestration platform that simplifies the development, deployment, and management of AI-driven applications. AI DIAL acts as both a development studio and an application server, enabling seamless integration between various AI models, data pipelines, and business applications.&lt;/p&gt;
-
-&lt;p&gt;See: &lt;a href=&quot;https://www.youtube.com/watch?v=Ud2UyXjNK4I&amp;amp;list=PLhkKkML8gp_fNs5NQdztKwIr2yWnLoQfy&amp;amp;index=1&quot;&gt;DIAL 2.0: The Open Source AI Orchestration Platform Overview - YouTube&lt;/a&gt;&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/dial/arch.png&quot; style=&quot;margin: 15px;&quot; width=&quot;80%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;key-features&quot;&gt;Key Features&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;🔗 &lt;strong&gt;Models Connectivity&lt;/strong&gt; - provides out-of-the-box adapters for all major LLM providers, including all models hosted in Amazon Bedrock, Google’s Vertex AI, and Azure OpenAI Service. Additionally, you can use language models from the open-source community, alternative vendors, and fine-tuned micro models, as well as self-hosted or models listed on HuggingFace or DeepSeek. As of now, there are over 75 ready-to-use adapters, with more being added regularly. If necessary, DIAL SDK can be used to develop adapters for additional models and vendors. &lt;a href=&quot;https://docs.epam-rail.com/supported-models&quot;&gt;[Learn More]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;💻 &lt;strong&gt;Application Server &amp;amp; Unified API&lt;/strong&gt; - provides a single Unified API, based on OpenAI API, for accessing all language models, embedding models and applications. The key design principle is to create a unification layer that allows all models and applications to be interchangeable, delivering a cohesive conversational experience and future-proof development of custom GenAI applications.&lt;a href=&quot;https://epam-rail.com/dial_api&quot;&gt;[Learn More]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;🛠️ &lt;strong&gt;Extensibility&lt;/strong&gt; - AI DIAL can be extended beyond its standard capabilities to meet specific business requirements. You can leverage the SDK to create custom model adapters and GenAI applications, and even include new application types to build fully custom implementations. AI DIAL Chat also enables the creation of custom chat UI components. &lt;a href=&quot;https://epam-rail.com/extension-framework&quot;&gt;[Learn More]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;💬 &lt;strong&gt;Customizable Chat &amp;amp; Overlay&lt;/strong&gt; - Powerful and highly customizable chat application for end-users, with enterprise-grade access control, extendable functionality and ability to add custom GenAI applications. Overlay enables a seamless embedding of chat into any existing web application. &lt;a href=&quot;https://github.com/epam/ai-dial-chat?tab=readme-ov-file#dial-chat&quot;&gt;[Learn More]&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;➕ &lt;strong&gt;Marketplace&lt;/strong&gt; - Marketplace gives access to all conversational agents available within the organization. Additionally, the marketplace offers collaboration tools for users and supports Role-Based Access Control (RBAC) to streamline teamwork and ensure secure access to resources. &lt;a href=&quot;https://docs.epam-rail.com/marketplace&quot;&gt;[Learn More]&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;getting-started-via-net-aspire&quot;&gt;Getting Started via .NET Aspire&lt;/h2&gt;
-
-&lt;p&gt;Now, you know what DIAL is. Let’s see how to get started with it using &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview&quot;&gt;.NET Aspire&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;🎯 &lt;strong&gt;Goal&lt;/strong&gt;. Let’s say we want to:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Create DIAL installation with two models: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;deepseek-r1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;phi3&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Use DIAL Chat UI to interact with the models&lt;/li&gt;
-  &lt;li&gt;Use them in our application programmatically through &lt;em&gt;DIAL Unified API&lt;/em&gt;&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&quot;hosting-integration&quot;&gt;Hosting Integration&lt;/h3&gt;
-
-&lt;p&gt;First, we want to add DIAL hosting integration to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; project by adding the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EPAM.Dial.Aspire.Hosting&lt;/code&gt; NuGet package:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add package Nall.EPAM.Dial.Aspire.Hosting
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Then, we need to add the DIAL hosting integration to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost/Program.cs&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddOllama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ollama&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithOpenWebUI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDataVolume&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithLifetime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ContainerLifetime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Persistent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ollama-deepseek-r1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;deepseek-r1:1.5b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ollama-phi3&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;phi3.5&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dial&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddDial&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;dial&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithChatUI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;3000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;deepseek&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dial&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;deepseek&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;deploymentName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;deepseek-r1:1.5b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Resource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PrimaryEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDisplayName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;DeepSeek-R1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;phi3&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dial&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;phi3&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;deploymentName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;phi3.5&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Resource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;PrimaryEndpoint&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDisplayName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Phi-3.5&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; 
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Api&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;api&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deepseek&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;phi3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dial&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In the example above, we are adding the DIAL hosting integration to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost&lt;/code&gt; project. We are also adding two models: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ollama-deepseek-r1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ollama-phi3&lt;/code&gt;, which are hosted on the Ollama server. We are also adding a DIAL Chat UI that will be available on port 3000.&lt;/p&gt;
-
-&lt;p&gt;💡 You are not limited to only self-hosted models. AI DIAL allows you to access models from all major LLM providers, language models from the open-source community, etc. See &lt;a href=&quot;https://docs.dialx.ai/platform/supported-models&quot;&gt;Supported Models&lt;/a&gt; for more information.&lt;/p&gt;
-
-&lt;p&gt;Now, we can open Aspire Dashboard and explore the component graph.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/dial/aspire-graph-demo.png&quot; style=&quot;margin: 15px;&quot; width=&quot;90%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;Let’s open the DIAL Chat UI and navigate to the marketplace to see the available models.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/dial/dial-marketplace.png&quot; style=&quot;margin: 15px;&quot; width=&quot;90%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;Select the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;deepseek&lt;/code&gt; model and click on the “Use Model” button. You will be redirected to the chat UI, where you can interact with the model.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/dial/prompt-demo.png&quot; style=&quot;margin: 15px;&quot; width=&quot;90%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;The &lt;em&gt;Chat UI&lt;/em&gt; is pretty powerful. For example, you can compare the output of two models by using &lt;em&gt;Compare Mode&lt;/em&gt;. Here you can see the output of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;deepseek&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;phi3&lt;/code&gt; models side by side.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/dial/compare-models-demo.png&quot; style=&quot;margin: 15px;&quot; width=&quot;90%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h3 id=&quot;client-integration&quot;&gt;Client Integration&lt;/h3&gt;
-
-&lt;p&gt;Now, let’s see how to use the &lt;em&gt;DIAL Unified API&lt;/em&gt; in our application. We will use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;EPAM.Dial.Aspire&lt;/code&gt; NuGet package to access the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IChatClient&lt;/code&gt; implementation to trigger chat completions.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add package EPAM.Dial.Aspire
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;All we need is to add the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DialClient&lt;/code&gt; to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Api/Program.cs&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddServiceDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddDialOpenAIClient&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;deepseek&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddChatClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// &amp;lt;--- client integration&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;s&quot;&gt;&quot;/chat&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FromQuery&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FromServices&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IChatClient&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;prompt&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&quot;You are helpful assistant. Answer the following question: &apos;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&apos;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetResponseAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;prompt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Results&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Ok&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapDefaultEndpoints&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In the example above, we are adding the DIAL client implementation of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IChatClient&lt;/code&gt; from &lt;a href=&quot;https://www.nuget.org/packages/Microsoft.Extensions.AI&quot;&gt;Microsoft.Extensions.AI&lt;/a&gt; which is a standard way of integrating with LLMs in .NET.&lt;/p&gt;
-
-&lt;p&gt;💡 Note, it is called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddDialOpenAIClient&lt;/code&gt; because essentially, it adds &lt;a href=&quot;https://www.nuget.org/packages/OpenAI&quot;&gt;OpenAI&lt;/a&gt; under the hood. This is possible because completion part of the &lt;em&gt;Unified API&lt;/em&gt; is compatible with the OpenAI API.&lt;/p&gt;
-
-&lt;h3 id=&quot;demo&quot;&gt;Demo&lt;/h3&gt;
-
-&lt;p&gt;🚀Now, let’s this in action:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl &lt;span class=&quot;nt&quot;&gt;--url&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;http://localhost:5181/chat?query=Test&apos;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Output:&lt;/p&gt;
-
-&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;messages&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;authorName&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;role&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;assistant&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;contents&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-          &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;$type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;text&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-          &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;text&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&amp;lt;think&amp;gt;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;lt;/think&amp;gt;&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;It seems like you might be referring to a &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; or something related to testing, but I don’t have specific information about what you’re asking. Could you clarify your needs? Are you asking about how to perform a test, taking a test as part of an educational purpose, or something else? Let me know so I can assist you better!&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-          &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;additionalProperties&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;messageId&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;chatcmpl-161&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;additionalProperties&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;responseId&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;chatcmpl-161&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;chatThreadId&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;modelId&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;deepseek-r1:1.5b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;createdAt&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;2025-03-30T13:05:43+00:00&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;finishReason&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;stop&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;usage&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;inputTokenCount&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;outputTokenCount&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;76&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;totalTokenCount&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;92&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;additionalCounts&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;additionalProperties&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;SystemFingerprint&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;fp_ollama&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;🙌 In this post, I have introduced you to &lt;a href=&quot;https://epam-rail.com/&quot;&gt;AI DIAL&lt;/a&gt;, an open-source AI orchestration platform that simplifies the development, deployment, and management of AI-driven applications. I have also shown you how to get started with it using .NET Aspire.&lt;/p&gt;
-
-&lt;p&gt;This is just the a scratch of the surface of what you can do with DIAL. I encourage you to explore the platform and its capabilities further. Let me know if you are interested in more posts about DIAL and its features.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://epam-rail.com&quot;&gt;https://epam-rail.com&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://docs.epam-rail.com&quot;&gt;https://docs.epam-rail.com&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/epam/ai-dial&quot;&gt;https://github.com/epam/ai-dial&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview&quot;&gt;https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sun, 30 Mar 2025 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/ai/2025/03/30/introduction-to-dial.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/ai/2025/03/30/introduction-to-dial.html</guid>
 			</item>
 		
 	</channel>
