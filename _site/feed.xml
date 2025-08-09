@@ -7,6 +7,320 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;Introducing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt;, a CLI tool that automates technical debt discovery, triage, and resolution. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; transforms technical debt management into a proactive, automated process that works seamlessly with your existing development tools through MCP integration.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/tech-debt-master&quot;&gt;https://github.com/NikiforovAll/tech-debt-master&lt;/a&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#motivation&quot;&gt;Motivation&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#tdm-workflow&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; workflow&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#lets-get-started&quot;&gt;Let’s Get Started&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#installation&quot;&gt;Installation&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#configuration&quot;&gt;Configuration&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#technical-debt-discovery&quot;&gt;Technical Debt Discovery&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#triaging-technical-debt&quot;&gt;Triaging Technical Debt&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#technical-debt-resolution&quot;&gt;Technical Debt Resolution&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;motivation&quot;&gt;Motivation&lt;/h2&gt;
+
+&lt;p&gt;As software development continues to evolve, one thing remains constant: technical debt accumulates faster than we can manage it.&lt;/p&gt;
+
+&lt;p&gt;This is where &lt;strong&gt;Technical Debt Master&lt;/strong&gt; (hereafter  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt;) comes in. With the emergence of local/&lt;a href=&quot;https://opensource.org/ai/open-weights&quot;&gt;open-weights&lt;/a&gt; LLMs like &lt;a href=&quot;https://huggingface.co/deepseek-ai/DeepSeek-R1&quot;&gt;DeepSeek R1&lt;/a&gt; and &lt;a href=&quot;https://huggingface.co/openai/gpt-oss-20b&quot;&gt;GPT-OSS&lt;/a&gt; models that can run through tools like &lt;a href=&quot;https://ollama.com/&quot;&gt;Ollama&lt;/a&gt; or &lt;a href=&quot;https://lmstudio.ai/&quot;&gt;LM Studio&lt;/a&gt;, we now have an unprecedented opportunity to bring AI-powered code analysis directly to our development environments. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; is not limited to local LLM scenarios, you can use it with any OpenAI compatible API.&lt;/p&gt;
+
+&lt;p&gt;But the advantages of using local LLMs for code analysis are compelling:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Privacy and Security:&lt;/strong&gt; Your code never leaves your environment&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Cost Efficiency:&lt;/strong&gt; No API costs for analysis runs&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Offline Capability:&lt;/strong&gt; Work without internet connectivity&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Control:&lt;/strong&gt; Full control over model versions and behavior&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Another compelling reason to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; in &lt;strong&gt;automation&lt;/strong&gt;. Instead of relying on developers to remember which parts of the codebase need attention or hoping that code reviews will catch accumulating problems, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; transforms this &lt;em&gt;reactive&lt;/em&gt; approach into a &lt;em&gt;proactive&lt;/em&gt;, automated system that works alongside your existing development workflow. More importantly, you catch architectural problems and code quality issues before they become expensive to fix, fundamentally shifting the cost curve in your favor.&lt;/p&gt;
+
+&lt;h2 id=&quot;tdm-workflow&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; workflow&lt;/h2&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; implements a structured, phase-based approach to technical debt management:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Phase1️⃣ - &lt;strong&gt;Discovery&lt;/strong&gt;. Continuous scanning identifies new technical debt as it’s introduced and AI-powered analysis provides context and severity assessment.&lt;/li&gt;
+  &lt;li&gt;Phase2️⃣ - &lt;strong&gt;Triage&lt;/strong&gt;. This stage offers two workflows: interactive CLI for individual developers to review and prioritize issues directly in the terminal, or HTML reports for team-based collaborative sessions where developers can discuss priorities together.&lt;/li&gt;
+  &lt;li&gt;Phase3️⃣ - &lt;strong&gt;Resolution&lt;/strong&gt;. The resolution stage leverages MCP server to enable automated technical debt remediation. Once triaged, identified technical debt items are exposed through the MCP server, effectively creating a structured backlog that AI coding agents can consume and act upon. This approach provides great flexibility - you can integrate &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; with your existing AI tools such as GitHub Copilot, Cursor, Claude Code CLI, Gemini CLI, etc.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;lets-get-started&quot;&gt;Let’s Get Started&lt;/h2&gt;
+
+&lt;h3 id=&quot;installation&quot;&gt;Installation&lt;/h3&gt;
+
+&lt;p&gt;Install &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; from source code:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet cake &lt;span class=&quot;nt&quot;&gt;--target&lt;/span&gt; pack
+dotnet tool &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--add-source&lt;/span&gt; ./Artefacts TechDebtMaster.Cli
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You can use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm help&lt;/code&gt; to get a helpful reference for all available commands.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm &lt;span class=&quot;nb&quot;&gt;help&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Available Commands:&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Repository Management&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# repo                      Repository management and indexing operations&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ index [path]         Index repository content&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   └─ status [path]        Show status of previous analysis and repository changes&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Debt Analysis&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# debt                      Technical debt analysis and reporting&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ analyze [path]       Perform debt analysis on all indexed files&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ show [path]          Show technical debt statistics in a tree structure grouped by tags&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ view [path]          View detailed content of specific technical debt items&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ report [path]        Generate an interactive HTML report of technical debt&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   └─ import [report-file] Import modified HTML report to update analysis data&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# System Management&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# init                      Initialize tdm in the current repository&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# config                    Manage configuration settings&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ show                 Display current configuration&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   └─ set [key] [value]    Set a configuration value&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# prompts                   Manage prompt templates&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ edit                 Edit a prompt template&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ├─ restore              Restore prompt templates to default state&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   └─ set-default          Set the default prompt template&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# mcp                       Start Model Context Protocol server&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# clean                     Remove the .tdm folder from the current directory&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# help                      Show this detailed help information&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;configuration&quot;&gt;Configuration&lt;/h3&gt;
+
+&lt;p&gt;You can manage &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; configuration settings using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm config&lt;/code&gt; command. This allows you to customize various aspects of the tool to better fit your needs.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; integrates with OpenTelemetry to export detailed telemetry data including token consumption, model inference times, and per-analysis cost breakdowns, providing precise visibility into codebase analysis costs. In this blog post I will use it in conjunction with the &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/telemetry&quot;&gt;.NET Aspire Dashboard&lt;/a&gt;. Also, we will use Aspire to work with Ollama to deploy local LLM models.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddOllama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ollama&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImageTag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;0.6.0&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithOpenWebUI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ui&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ui&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithImageTag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;0.5.20&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDataVolume&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithLifetime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ContainerLifetime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Persistent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;deepseek-r1&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;deepseek-r1:1.5b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// (alternatively) if you have free 16GB of RAM you can try something like&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gpt&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ollama&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddModel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;gpt-oss&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;gpt-oss:20b&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// (optional) we use it to get a connecting string and otel configuration&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TechDebtMaster_Cli&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;tdm&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithArgs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;--&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;help&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now, we can run it using &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/aspire/cli/overview&quot;&gt;Aspire CLI&lt;/a&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;aspire run
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/tdm/aspire-dashboard.png&quot; style=&quot;margin-bottom: 2rem;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;Now we can configure &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;OTEL_EXPORTER_OTLP_ENDPOINT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;https://localhost:21050
+&lt;span class=&quot;nv&quot;&gt;OTEL_EXPORTER_OTLP_HEADERS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;x-otlp-api-key&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;ddc6b5e2c7f7ef486697b3a60a9aee52
+&lt;span class=&quot;nv&quot;&gt;OTEL_EXPORTER_OTLP_PROTOCOL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;grpc
+tdm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;ai.provider ollama
+tdm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;ai.url http://localhost:62604
+tdm config &lt;span class=&quot;nb&quot;&gt;set &lt;/span&gt;default.include &lt;span class=&quot;s1&quot;&gt;&apos;\.cs$&apos;&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# we will use it so C# code base, so it makes sense to analyze only C# files&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The beautiful part about &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; is that you can customize analysis prompts to better fit your project’s needs. Run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm prompts edit&lt;/code&gt; to open the prompt in your default system editor.&lt;/p&gt;
+
+&lt;p&gt;💡 For example, you can configure &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; to identify specifically security-related issues by creating dedicated &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;security.prompty&lt;/code&gt; file. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; leverages &lt;a href=&quot;https://www.prompty.ai/&quot;&gt;Prompty&lt;/a&gt; for prompt management.&lt;/p&gt;
+
+&lt;h2 id=&quot;technical-debt-discovery&quot;&gt;Technical Debt Discovery&lt;/h2&gt;
+
+&lt;p&gt;Initialize &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; and index the repository with technical debt. In our case it is called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm-testproject-monkeymcp&lt;/code&gt; (some project with technical debt)&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm init
+&lt;span class=&quot;c&quot;&gt;# √ Updated .gitignore to include .tdm folder&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# √ TechDebtMaster initialization complete!&lt;/span&gt;
+tdm repo index
+&lt;span class=&quot;c&quot;&gt;# Analyzing repository: .&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Include pattern (from default.include): \.cs$ (only files matching this pattern will be analyzed)&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# √ Repository analyzed successfully!&lt;/span&gt;
+tdm repo status
+&lt;span class=&quot;c&quot;&gt;# Analysis Status for: .&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Last analyzed: 2025-08-09 15:53:45 UTC&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Recent Changes:&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# New files (6):&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   + MonkeyMCP/Program.cs&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   + MonkeyMCPShared/MonkeyPrompts.cs&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   + MonkeyMCPShared/MonkeyResources.cs&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   + MonkeyMCPShared/MonkeyTools.cs&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   + MonkeyMCPSSE/Program.cs&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#   ... and 1 more&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we are ready to perform technical debt analysis for the configured prompt using.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm debt analyze
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/tdm/tdm-analyze.png&quot; style=&quot;margin-bottom: 2rem;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;Here is an example of data we can find in the Aspire Dashboard, each command has a separate trace:&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/tdm/tdm-traces-1.png&quot; style=&quot;margin-bottom: 2rem;&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;💡 Each command has a separate trace&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/tdm/tdm-traces-2.png&quot; style=&quot;margin-bottom: 2rem;&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;💡 You can drill down to see individual traces for find per-file analysis traces.&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/tdm/tdm-metrics.png&quot; style=&quot;margin-bottom: 2rem;&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;💡 Metrics give you insights into the overall LLM usage.&lt;/p&gt;
+
+&lt;p&gt;Once we have a backlog of technical debt identified, we can prioritize and address it effectively.&lt;/p&gt;
+
+&lt;h2 id=&quot;triaging-technical-debt&quot;&gt;Triaging Technical Debt&lt;/h2&gt;
+
+&lt;p&gt;Triaging technical debt means prioritizing identified issues based on business impact and remediation effort. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; enables effective team triaging through structured reports where developers can collaboratively assess technical complexity against business priorities.&lt;/p&gt;
+
+&lt;p&gt;Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm debt show&lt;/code&gt; to get a tree view of technical debt items:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm debt show
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/tdm/tdm-debt-show.png&quot; style=&quot;margin-bottom: 2rem;&quot; /&gt;&lt;/center&gt;
+
+&lt;p&gt;You can work with items using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm debt view --interactive&lt;/code&gt; command:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm debt view &lt;span class=&quot;nt&quot;&gt;--interactive&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;center&gt;
+    &lt;video src=&quot;https://github.com/user-attachments/assets/364d279b-5860-4493-bd9d-33b24d7d4a6c&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 1rem;&quot; controls=&quot;controls&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;💡 In the demo above, I showcased how to interactively view, manage, and export backlog items in various formats. For example, using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--xml&lt;/code&gt; can be useful if you prefer not to use MCP and instead want to export backlog items in a more portable format. Similarly, a command like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm debt show --json&lt;/code&gt; would also work.&lt;/p&gt;
+
+&lt;p&gt;If you are not a CLI-type of person, you can use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm debt report&lt;/code&gt; to open a web-based interface for managing your technical debt. The neat trick here is that you can actually save the report once you are done and import it back to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm debt report &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; report.html &lt;span class=&quot;nt&quot;&gt;--open&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;center&gt;
+    &lt;video src=&quot;https://github.com/user-attachments/assets/11e52ba0-7584-4713-a51e-ababd66d40bb&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 1rem;&quot; controls=&quot;controls&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;💡 Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm debt import report.html --apply&lt;/code&gt; to export modified report back to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt;.&lt;/p&gt;
+
+&lt;center&gt;&lt;img src=&quot;/assets/tdm/tdm-debt-report.png&quot; style=&quot;margin-bottom: 2rem;&quot; /&gt;&lt;/center&gt;
+
+&lt;h3 id=&quot;technical-debt-resolution&quot;&gt;Technical Debt Resolution&lt;/h3&gt;
+
+&lt;p&gt;Now, we can use MCP integration to work on technical debt resolution. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; provides out of the box integration/prompts for popular tools like &lt;strong&gt;GitHub Copilot&lt;/strong&gt;, &lt;strong&gt;Claude Code&lt;/strong&gt;, &lt;strong&gt;Gemini CLI&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm init &lt;span class=&quot;nt&quot;&gt;--profile&lt;/span&gt; vscode &lt;span class=&quot;nt&quot;&gt;--force&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# √ Created .vscode/mcp.json configuration&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# √ Created .github/prompts/tdm-work-on-debt.prompt.md&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# √ Updated .gitignore to include .tdm folder&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# √ TechDebtMaster initialization complete!&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# You can now start the MCP server with: tdm mcp&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This initialization command produces the necessary configuration files for integrating with the MCP server.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; offers complete control over agent behavior through customizable prompt files (e.g.: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.github/prompts/tdm-work-on-debt.prompt.md&lt;/code&gt;). These files define how AI coding agents interact with your technical debt backlog via the MCP interface. You can tailor prompts to align with your team’s coding standards, preferences, and risk tolerance. This flexibility allows you to decide whether agents should automatically resolve straightforward issues or require human approval for more complex changes. The prompt-based configuration enables you to adjust the level of automation to suit different scenarios. For those feeling adventurous, you can even run a coding agent like Claude Code in “YOLO mode” with a simple prompt such as “resolve technical debt.”. The benefit of using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tdm&lt;/code&gt; in this case is that coding agent can focus on resolving exactly technical debt you triaged previously.&lt;/p&gt;
+
+&lt;p&gt;For example, here is a default prompt generated during vscode profile initialization:&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;agent&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;tools&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;changes&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;codebase&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;editFiles&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;fetch&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;findTestFiles&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;problems&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;runCommands&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;runTasks&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;search&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;searchResults&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;terminalLastCommand&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;terminalSelection&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;testFailure&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;usages&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;tdm-get-item&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;tdm-list-items&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;tdm-remove-item&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;tdm-show-repo-stats&apos;&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;An&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;autonomous&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;workflow&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;for&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;identifying,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;analyzing,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;and&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;resolving&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;technical&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;debt&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;in&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;codebase&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;to&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;improve&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;maintainability&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;and&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s&quot;&gt;efficiency.&apos;&lt;/span&gt;
+&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;## Workflow&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;Execute the following workflow to systematically address technical debt&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;### 1. Assessment Phase&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Use `tdm-show-repo-stats` to gather repository-wide technical debt metrics&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;### 2. Prioritization Phase&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Use `tdm-list-items` to retrieve first page of technical debt items&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;### 3. Verification Phase&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;For each item in the list&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Use `tdm-get-item` to fetch detailed information about the item&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Present the item to the user for review&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Ask user for confirmation to proceed with the item&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;### 4. Resolution Phase&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Use `tdm-get-item` to fetch detailed item information&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Present user with the item&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;Analyze item validity&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Review related code&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Verify if debt is still relevant&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Document investigation findings&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;For each valid item&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Implement necessary fixes&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Remove resolved items using `tdm-remove-item`&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;### 5. Validation Requirements&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Ensure all changes maintain existing functionality&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Document any architectural decisions&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Request human review for complex changes&lt;/span&gt;
+&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Once an item is resolved or is no longer relevant, remove it from the list using &apos;tdm-remove-item&apos;.&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;🤖Let’s see it in practice:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tdm mcp
+&lt;span class=&quot;c&quot;&gt;# Starting MCP server for repository: .&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Server will listen on: http://localhost:3001&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Press Ctrl+C to stop the server&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# √ MCP server started successfully&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/tdm-work-on-debt &lt;/code&gt; prompt for &lt;strong&gt;GitHub Copilot&lt;/strong&gt; chat window:&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;video src=&quot;https://github.com/user-attachments/assets/b78598cc-2ecd-45f9-a771-f1aa6a28b39f&quot; width=&quot;100%&quot; style=&quot;margin-bottom: 1rem;&quot; controls=&quot;controls&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/tech-debt-master&quot;&gt;github.com/NikiforovAll/tech-debt-master&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;If you have feedback, questions, or want to contribute, feel free to open an issue or pull request on GitHub.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/tech-debt-master&quot;&gt;https://github.com/NikiforovAll/tech-debt-master&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://openai.com/open-models/&quot;&gt;https://openai.com/open-models/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://huggingface.co/openai/gpt-oss-20b&quot;&gt;https://huggingface.co/openai/gpt-oss-20b&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 09 Aug 2025 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/ai/2025/08/09/tech-debt-master.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/ai/2025/08/09/tech-debt-master.html</guid>
+			</item>
+		
+			<item>
 				<title>Monitoring Claude Code with .NET Aspire Dashboard</title>
 				<description>&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
 
@@ -1605,156 +1919,6 @@ We have also learned how to deploy OpenAI model that supports Function Calling a
 				<pubDate>Fri, 04 Apr 2025 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html</guid>
-			</item>
-		
-			<item>
-				<title>Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools</title>
-				<description>&lt;center&gt;
-  &lt;img src=&quot;/assets/mcp/light.png&quot; style=&quot;margin: 15px;&quot; width=&quot;80%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;Use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Template&lt;/code&gt; template to create a Model Context Protocol (MCP) server that can be distributed as a global tool:&lt;/p&gt;
-
-&lt;p&gt;Install:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;Nall.ModelContextProtocol.Template
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/mcp-template-dotnet&quot;&gt;https://github.com/NikiforovAll/mcp-template-dotnet&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;In this post, I would like to show you how you can use &lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools&quot;&gt;.NET Global Tool&lt;/a&gt; to distribute your Model Context Protocol (MCP) server. I’ve created &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet new&lt;/code&gt; template to support this approach and I will show you how to use it.&lt;/p&gt;
-
-&lt;h2 id=&quot;getting-started&quot;&gt;Getting Started&lt;/h2&gt;
-
-&lt;h3 id=&quot;install&quot;&gt;Install&lt;/h3&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;Nall.ModelContextProtocol.Template
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Verify installation:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new list mcp
-&lt;span class=&quot;c&quot;&gt;# These templates matched your input: &apos;mcp&apos;&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Template Name  Short Name  Language  Tags&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# -------------  ----------  --------  -------------&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# MCP Server     mcp-server  [C#]      dotnet/ai/mcp&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Verify output:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new mcp-server &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; MyAwesomeMCPServer &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; MyAwesomeMCPServer &lt;span class=&quot;nt&quot;&gt;--dry-run&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# File actions would have been taken:&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Create: MyAwesomeMCPServer\.vscode\launch.json&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Create: MyAwesomeMCPServer\MyAwesomeMCPServer.csproj&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Create: MyAwesomeMCPServer\Program.cs&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Create: MyAwesomeMCPServer\Properties\launchSettings.json&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Create: MyAwesomeMCPServer\README.md&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Create: MyAwesomeMCPServer\appsettings.Development.json&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   Create: MyAwesomeMCPServer\appsettings.json&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Create from template:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new mcp-server &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; MyAwesomeMCPServer &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; MyAwesomeMCPServer
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is a content of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Program.cs&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Microsoft.Extensions.Hosting&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateApplicationBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithStdioServerTransport&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithToolsFromAssembly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RunAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;McpServerToolType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;EchoTool&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;McpServerTool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Echoes the message back to the client.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Echo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&quot;hello &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;It is a simple echo server that listens for incoming messages and responds with a greeting. You can add more tools by creating additional methods with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[McpServerTool]&lt;/code&gt; attribute. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WithToolsFromAssembly()&lt;/code&gt; method automatically registers all tools in the assembly.&lt;/p&gt;
-
-&lt;h3 id=&quot;run-locally&quot;&gt;Run Locally&lt;/h3&gt;
-
-&lt;p&gt;⚙️ Build from the project directory:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet build &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; Artefacts &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; Release
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;🚀 Run the inspector:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx @modelcontextprotocol/inspector &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DOTNET_ENVIRONMENT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Production dotnet &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;PWD&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/Artefacts/MyAwesomeMCPServer.dll&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Open inspector in your browser and test the server:&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/mcp/inspector-demo.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h3 id=&quot;distribute-as-net-tool&quot;&gt;Distribute as .NET Tool&lt;/h3&gt;
-
-&lt;p&gt;The basic idea behind this approach is to create a .NET tool that can be installed globally on the user’s machine. This allows users to run the MCP server from anywhere without needing to specify the full path to the executable.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;💡 Another benefit of this approach is that you can &lt;strong&gt;package your MCP server as a NuGet package&lt;/strong&gt;, making it easy to distribute, version, and share with others.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;📦 Pack from the project directory:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet pack &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; Artefacts &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; Release
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Install the tool globally:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet tool &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--add-source&lt;/span&gt; ./Artefacts MyAwesomeMCPServer
-&lt;span class=&quot;c&quot;&gt;# You can invoke the tool using the following command: MyAwesomeMCPServer&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Tool &apos;myawesomemcpserver&apos; (version &apos;1.0.0&apos;) was successfully installed.&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now, after you installed this tool globally, you can run it from anywhere on your system. The tool will be available as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MyAwesomeMCPServer&lt;/code&gt; (or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;myawesomemcpserver&lt;/code&gt;) in your terminal.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;💡 You can also create local tool manifest and install specific MCP versions per manifest.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;🚀 Run the inspector:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx @modelcontextprotocol/inspector &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;DOTNET_ENVIRONMENT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;Production myawesomemcpserver
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;I think MCP opens up a lot of fun possibilities for building AI applications. In post, I showed you how to you &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mcp-server&lt;/code&gt; template to make your life a little easier.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/mcp-template-dotnet&quot;&gt;https://github.com/NikiforovAll/mcp-template-dotnet&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Template&quot;&gt;https://www.nuget.org/packages/Nall.ModelContextProtocol.Template&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/modelcontextprotocol/csharp-sdk&quot;&gt;https://github.com/modelcontextprotocol/csharp-sdk&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools&quot;&gt;https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates&quot;&gt;https://learn.microsoft.com/en-us/dotnet/core/tools/custom-templates&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Wed, 02 Apr 2025 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/2025/04/02/mcp-template-getting-started.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/04/02/mcp-template-getting-started.html</guid>
 			</item>
 		
 	</channel>
