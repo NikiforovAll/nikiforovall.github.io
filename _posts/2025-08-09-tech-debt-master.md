@@ -140,7 +140,7 @@ OTEL_EXPORTER_OTLP_HEADERS=x-otlp-api-key=ddc6b5e2c7f7ef486697b3a60a9aee52
 OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 tdm config set ai.provider ollama
 tdm config set ai.url http://localhost:62604
-tdm config set default.include '\.cs$' # we will use it so C# code base, so it makes sense to analyze only C# files
+tdm config set default.include '\.cs$' # we will use it with C# code base, so it makes sense to analyze only C# files
 ```
 
 The beautiful part about `tdm` is that you can customize analysis prompts to better fit your project's needs. Run `tdm prompts edit` to open the prompt in your default system editor.
