@@ -25,7 +25,7 @@ Introducing `tdm`, a CLI tool that automates technical debt discovery, triage, a
   - [Configuration](#configuration)
 - [Technical Debt Discovery](#technical-debt-discovery)
 - [Triaging Technical Debt](#triaging-technical-debt)
-  - [Technical Debt Resolution](#technical-debt-resolution)
+- [Technical Debt Resolution](#technical-debt-resolution)
 - [References](#references)
 
 
@@ -239,7 +239,7 @@ tdm debt report -o report.html --open
 
 <center><img src="/assets/tdm/tdm-debt-report.png" style="margin-bottom: 2rem;" /></center>
 
-### Technical Debt Resolution
+## Technical Debt Resolution
 
 Now, we can use MCP integration to work on technical debt resolution. `tdm` provides out of the box integration/prompts for popular tools like **GitHub Copilot**, **Claude Code**, **Gemini CLI**.
 
