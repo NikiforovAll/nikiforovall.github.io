@@ -33,7 +33,7 @@ Introducing `tdm`, a CLI tool that automates technical debt discovery, triage, a
 
 As software development continues to evolve, one thing remains constant: technical debt accumulates faster than we can manage it.
 
-This is where **Technical Debt Master** (hereafter  `tdm`) comes in. With the emergence of local/[open-weights](https://opensource.org/ai/open-weights) LLMs like [DeepSeek R1](https://huggingface.co/deepseek-ai/DeepSeek-R1) and [GPT-OSS](https://huggingface.co/openai/gpt-oss-20b) models that can run through tools like [Ollama](https://ollama.com/) or [LM Studio](https://lmstudio.ai/), we now have an unprecedented opportunity to bring AI-powered code analysis directly to our development environments. `tdm` is not limited to local LLM scenarios, you can use it with any OpenAI compatible API.
+This is where **Technical Debt Master** (hereafter  `tdm`) comes in. With the emergence of local/[open-weights](https://opensource.org/ai/open-weights) LLMs like [DeepSeek R1](https://huggingface.co/deepseek-ai/DeepSeek-R1) and [GPT-OSS](https://huggingface.co/openai/gpt-oss-20b) models that can run through tools like [Ollama](https://ollama.com/) or [LM Studio](https://lmstudio.ai/), we now have an unprecedented opportunity to bring AI-powered code analysis directly to our development environments.
 
 But the advantages of using local LLMs for code analysis are compelling:
 
@@ -140,6 +140,7 @@ OTEL_EXPORTER_OTLP_HEADERS=x-otlp-api-key=ddc6b5e2c7f7ef486697b3a60a9aee52
 OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 tdm config set ai.provider ollama
 tdm config set ai.url http://localhost:62604
+tdm config set ai.model 'deepseek-r1:1.5b'
 tdm config set default.include '\.cs$' # we will use it with C# code base, so it makes sense to analyze only C# files
 ```
 
