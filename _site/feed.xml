@@ -7,6 +7,241 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Testing with Playwright and Claude Code</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;Learn how to use Playwright MCP servers with Claude Code slash commands to perform manual and exploratory testing of web applications. This combination gives Claude Code “eyes” to interact with browsers and helps bridge the gap between manual testing and automation.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/playwright-claude-code-demo&quot;&gt;https://github.com/NikiforovAll/playwright-claude-code-demo&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;Testing web applications often requires a mix of manual and automated testing. While automated tests catch regressions, manual testing helps us discover unexpected behaviors and usability issues. But what if we could combine the best of both worlds?&lt;/p&gt;
+
+&lt;p&gt;When you add a Playwright MCP server, Claude can directly interact with web browsers - navigate pages, click buttons, fill forms, and observe results just like a human tester would.&lt;/p&gt;
+
+&lt;h3 id=&quot;what-makes-this-combination-powerful&quot;&gt;What Makes This Combination Powerful&lt;/h3&gt;
+
+&lt;p&gt;The magic happens when you combine three things:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Playwright MCP Server&lt;/strong&gt; - Gives Claude browser automation capabilities&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Claude Code Slash Commands&lt;/strong&gt; - Create reusable testing workflows&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Manual Testing Approach with AI Assistance&lt;/strong&gt; - Let Claude explore and report findings. So instead of writing detailed test scripts, you can describe what you want to test in plain English, and Claude will handle the rest.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;This setup is perfect for exploratory testing where you want to understand how an application behaves without writing formal test scripts first.&lt;/p&gt;
+
+&lt;h2 id=&quot;getting-started&quot;&gt;Getting Started&lt;/h2&gt;
+
+&lt;p&gt;First, you need to set up a Playwright MCP server and add following &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.mcp.json&lt;/code&gt; file to your project:&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;mcpServers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;playwright&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;stdio&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;command&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;npx&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;args&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;@playwright/mcp@latest&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;env&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then configure it in your Claude Code MCP settings to connect the server. Once connected, Claude gets access to browser automation tools.&lt;/p&gt;
+
+&lt;p&gt;Here is my &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.claude/settings.json&lt;/code&gt; file:&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;permissions&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;allow&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Read(*)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Search(*)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Edit(*)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Write(*)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;mcp__playwright__browser_navigate&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;mcp__playwright__browser_evaluate&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;mcp__playwright__browser_click&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;mcp__playwright__browser_navigate_back&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;mcp__playwright__browser_take_screenshot&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;mcp__playwright__browser_close&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;enableAllProjectMcpServers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;enabledMcpjsonServers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;playwright&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;creating-custom-slash-commands&quot;&gt;Creating Custom Slash Commands&lt;/h2&gt;
+
+&lt;p&gt;You can create custom slash commands to standardize your testing workflows. Here’s an example of a manual testing command:&lt;/p&gt;
+
+&lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Manually test a site and create a report&lt;/span&gt;
+&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+
+&lt;span class=&quot;gu&quot;&gt;### Manual Testing Instructions&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;
+1.&lt;/span&gt; Use the Playwright MCP Server to manually test the scenario provided by the user. If no scenario is provided, ask the user to provide one.
+&lt;span class=&quot;p&quot;&gt;2.&lt;/span&gt; Navigate to the url provided by the user and perform the described interactions. If no url is provided, ask the user to provide one.
+&lt;span class=&quot;p&quot;&gt;3.&lt;/span&gt; Observe and verify the expected behavior, focusing on accessibility, UI structure, and user experience.
+&lt;span class=&quot;p&quot;&gt;4.&lt;/span&gt; Report back in clear, natural language:
+&lt;span class=&quot;p&quot;&gt;   -&lt;/span&gt; What steps you performed (navigation, interactions, assertions).
+&lt;span class=&quot;p&quot;&gt;   -&lt;/span&gt; What you observed (outcomes, UI changes, accessibility results).
+&lt;span class=&quot;p&quot;&gt;   -&lt;/span&gt; Any issues, unexpected behaviors, or accessibility concerns found.
+&lt;span class=&quot;p&quot;&gt;5.&lt;/span&gt; Reference URLs, element roles, and relevant details to support your findings.
+
+Example report format:
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Scenario:**&lt;/span&gt; [Brief description]
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Steps Taken:**&lt;/span&gt; [List of actions performed]
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Outcome:**&lt;/span&gt; [What happened, including any assertions or accessibility checks]
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Issues Found:**&lt;/span&gt; [List any problems or unexpected results]
+
+Generate a .md file with the report in the &lt;span class=&quot;sb&quot;&gt;`manual-tests`&lt;/span&gt; directory and include any relevant screenshots or snapshots.
+
+Take screenshots or snapshots of the page if necessary to illustrate issues or confirm expected behavior.
+
+Close the browser after completing the manual test.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Save this as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.claude/commands/pw-manual-testing.md&lt;/code&gt; in your project.&lt;/p&gt;
+
+&lt;h3 id=&quot;real-world-example&quot;&gt;Real-World Example&lt;/h3&gt;
+
+&lt;p&gt;Let’s say you want to test a blog website. You can ask Claude:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/pw-manual-testing
+
+Please &lt;span class=&quot;nb&quot;&gt;test &lt;/span&gt;the blog navigation on https://nikiforovall.blog/ - specifically:
+1. Load the homepage
+2. Find and click on the first blog post
+3. Verify the post loads correctly with all content sections
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Claude will then use the Playwright MCP server to:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Navigate to the website&lt;/li&gt;
+  &lt;li&gt;Identify page elements and structure&lt;/li&gt;
+  &lt;li&gt;Click through the navigation&lt;/li&gt;
+  &lt;li&gt;Analyze the results&lt;/li&gt;
+  &lt;li&gt;Create a detailed test report&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Here’s what a typical report looks like:&lt;/p&gt;
+
+&lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;gu&quot;&gt;## Outcome Analysis&lt;/span&gt;
+
+&lt;span class=&quot;gu&quot;&gt;### ✅ Successful Results&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;1.&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Page Navigation:**&lt;/span&gt; Successfully navigated from homepage to specific blog post
+&lt;span class=&quot;p&quot;&gt;2.&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**URL Change:**&lt;/span&gt; Properly updated from homepage to post URL
+&lt;span class=&quot;p&quot;&gt;3.&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Content Loading:**&lt;/span&gt; Full blog post content loaded properly including:
+&lt;span class=&quot;p&quot;&gt;   -&lt;/span&gt; Article header with publication date
+&lt;span class=&quot;p&quot;&gt;   -&lt;/span&gt; Main content sections (TL;DR, Introduction, Getting Started, etc.)
+&lt;span class=&quot;p&quot;&gt;   -&lt;/span&gt; Code examples and technical details
+&lt;span class=&quot;p&quot;&gt;   -&lt;/span&gt; Related articles sidebar
+
+&lt;span class=&quot;gu&quot;&gt;### 🎯 Accessibility &amp;amp; UX Observations&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Semantic HTML:**&lt;/span&gt; Proper use of headings, articles, and navigation elements
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Link Accessibility:**&lt;/span&gt; Clear, descriptive link text for navigation
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**Content Organization:**&lt;/span&gt; Well-structured content with clear hierarchy
+
+&lt;span class=&quot;c&quot;&gt;&amp;lt;!-- And so on... --&amp;gt;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;💡 Check &lt;a href=&quot;https://github.com/NikiforovAll/playwright-claude-code-demo/blob/main/manual-tests/blog-post-navigation-test.md&quot;&gt;https://github.com/NikiforovAll/playwright-claude-code-demo/blob/main/manual-tests/blog-post-navigation-test.md&lt;/a&gt; for the generated test report.&lt;/p&gt;
+
+&lt;h3 id=&quot;from-manual-testing-to-automation&quot;&gt;From Manual Testing to Automation&lt;/h3&gt;
+
+&lt;p&gt;Once Claude has explored your application manually, you can ask it to generate Playwright tests based on the findings using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.claude/commands/pw-generate-tests.md&lt;/code&gt; command:&lt;/p&gt;
+
+&lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Generate Playwright tests based on user scenarios&lt;/span&gt;
+&lt;span class=&quot;nn&quot;&gt;---&lt;/span&gt;
+
+&lt;span class=&quot;gh&quot;&gt;# Context&lt;/span&gt;
+Your goal is to generate a Playwright test based on the provided scenario after completing all prescribed steps.
+
+&lt;span class=&quot;gu&quot;&gt;## Your task&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; You are given a scenario and you need to generate a playwright test for it. If the user does not provide a scenario, you will ask them to provide one.
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; DO NOT generate test code based on the scenario alone.
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; DO run steps one by one using the tools provided by the Playwright MCP.
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; Only after all steps are completed, emit a Playwright TypeScript test that uses &lt;span class=&quot;sb&quot;&gt;`@playwright/test`&lt;/span&gt; based on message history
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; Save generated test file in the tests directory
+&lt;span class=&quot;p&quot;&gt;-&lt;/span&gt; Execute the test file and iterate until the test passes
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In our case, Claude might generate a test like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-typescript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;expect&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;@playwright/test&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;describe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;Blog Navigation Tests&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nf&quot;&gt;test&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;should navigate to blog post from homepage&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;goto&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;// Click on the first blog post title&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;getByRole&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;link&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;first&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;click&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// Verify blog post content is loaded&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;expect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;getByRole&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;heading&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;level&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;not&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;toBeEmpty&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;💡 See &lt;a href=&quot;https://github.com/NikiforovAll/playwright-claude-code-demo/tree/main/tests&quot;&gt;https://github.com/NikiforovAll/playwright-claude-code-demo/tree/main/tests&lt;/a&gt; for more examples of AI-generated Playwright tests.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-this-approach-works&quot;&gt;Why This Approach Works&lt;/h2&gt;
+
+&lt;p&gt;This combination is particularly effective because:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;👁️ &lt;strong&gt;Claude can see the page&lt;/strong&gt; - Unlike traditional testing tools, Claude can understand the visual layout and content&lt;/li&gt;
+  &lt;li&gt;🌱 &lt;strong&gt;Natural language testing&lt;/strong&gt; - You describe what you want to test in plain English&lt;/li&gt;
+  &lt;li&gt;🔎 &lt;strong&gt;Exploratory by nature&lt;/strong&gt; - Claude can discover unexpected issues during testing&lt;/li&gt;
+  &lt;li&gt;📖  &lt;strong&gt;Documentation built-in&lt;/strong&gt; - Every test session generates detailed reports&lt;/li&gt;
+  &lt;li&gt;🤖 &lt;strong&gt;Easy transition to automation&lt;/strong&gt; - Manual findings easily become automated tests&lt;/li&gt;
+  &lt;li&gt;📝 &lt;strong&gt;Spec-driven&lt;/strong&gt; - You can use tests as specifications so Claude Code can validate the code against the spec. This can dramatically improve the correctness of the generated code because Claude Code can verify the code it generates.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;practical-use-cases&quot;&gt;Practical Use Cases&lt;/h3&gt;
+
+&lt;p&gt;This setup shines in several scenarios:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;New feature exploration&lt;/strong&gt; - Test features before writing automated tests&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Accessibility audits&lt;/strong&gt; - Claude can identify accessibility issues during exploration&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Cross-browser testing&lt;/strong&gt; - Quickly test the same flows across different browsers&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Regression testing&lt;/strong&gt; - Manually verify fixes before committing to automation&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;User experience validation&lt;/strong&gt; - Test actual user workflows and identify pain points&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;End-to-end testing&lt;/strong&gt; - Validate complete user journeys through the application&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Combining Playwright MCP Server with Claude Code creates a powerful testing environment. You get the flexibility of manual testing with the consistency of automation, all while building documentation and formal tests along the way.&lt;/p&gt;
+
+&lt;p&gt;The key benefit is that Claude Code gets “eyes” to see and interact with your web applications just like a human tester would, but with the consistency and reporting capabilities that manual testing usually lacks.&lt;/p&gt;
+
+&lt;p&gt;Try it out on your next web application - you might be surprised at what Claude discovers during its explorations!&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/playwright-claude-code-demo&quot;&gt;https://github.com/NikiforovAll/playwright-claude-code-demo&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.anthropic.com/en/docs/claude-code/slash-commands&quot;&gt;https://docs.anthropic.com/en/docs/claude-code/slash-commands&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/debs-obrien/debbie.codes/tree/main/.github/prompts&quot;&gt;https://github.com/debs-obrien/debbie.codes/tree/main/.github/prompts&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.youtube.com/playlist?list=PLXgRgGX8-5UVm9yioRY329rfcfy3MusiY&quot;&gt;CommitQuality - Playwright Test&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.youtube.com/playlist?list=PLtIMuymsF0jf9dnJNrNCE3mIl9_ekaXiw&quot;&gt;Playwright MCP Server by Debbie O’Brien&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 06 Sep 2025 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/ai/2025/09/06/playwright-claude-code-testing.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/ai/2025/09/06/playwright-claude-code-testing.html</guid>
+			</item>
+		
+			<item>
 				<title>Add Authentication to MCP Servers using Microsoft Entra ID</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -1755,240 +1990,6 @@ We have also learned how to deploy OpenAI model that supports Function Calling a
 				<pubDate>Fri, 18 Apr 2025 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/ai/2025/04/18/introduction-to-dial-addons.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/ai/2025/04/18/introduction-to-dial-addons.html</guid>
-			</item>
-		
-			<item>
-				<title>Learn how to use Model Context Protocol (MCP) Server Template in Hybrid Mode</title>
-				<description>&lt;center&gt;
-  &lt;img src=&quot;/assets/mcp/light.png&quot; style=&quot;margin: 15px;&quot; width=&quot;80%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#create-from-template&quot;&gt;Create from Template&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#sse-vs-stdio&quot;&gt;SSE vs Stdio&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#review-the-code&quot;&gt;Review the Code&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#aspire-integration&quot;&gt;Aspire Integration&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mcp-server-hybrid&lt;/code&gt; template to be able to easily switch between &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;stdio&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sse&lt;/code&gt; transports.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/mcp-template-dotnet&quot;&gt;https://github.com/NikiforovAll/mcp-template-dotnet&lt;/a&gt;&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th&gt;Package&lt;/th&gt;
-      &lt;th&gt;Version&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Template&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Nall.ModelContextProtocol.Template&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Nall.ModelContextProtocol.Template.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Inspector.Aspire.Hosting&lt;/code&gt;&lt;/td&gt;
-      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Nall.ModelContextProtocol.Inspector.Aspire.Hosting&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Nall.ModelContextProtocol.Inspector.Aspire.Hosting.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;create-from-template&quot;&gt;Create from Template&lt;/h2&gt;
-
-&lt;p&gt;Previously, I’ve shared with you the blog post - &lt;a href=&quot;https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html&quot;&gt;Simplifying Model Context Protocol (MCP) Server Development with Aspire&lt;/a&gt;. In this post we explored two ways to run the MCP server using Aspire.&lt;/p&gt;
-
-&lt;p&gt;🎯 In reality, depending on the context, you may want to run the MCP server in different ways. For example, you may want to run the MCP server in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sse&lt;/code&gt; mode for debugging/development purposes, but in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;stdio&lt;/code&gt; mode for production.&lt;/p&gt;
-
-&lt;p&gt;In this post, I will show you how to use a simple template to create an MCP server that can be run in both modes.&lt;/p&gt;
-
-&lt;p&gt;📦 As in my previous post, let’s install &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Aspire.Template&lt;/code&gt; &lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Template&quot;&gt;package&lt;/a&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;Nall.ModelContextProtocol.Template
-&lt;span class=&quot;c&quot;&gt;# These templates matched your input: &apos;mcp&apos;&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Template Name      Short Name         Language  Tags&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# -----------------  -----------------  --------  -------------&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# MCP Server         mcp-server         [C#]      dotnet/ai/mcp&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# MCP Server SSE     mcp-server-sse     [C#]      dotnet/ai/mcp&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# MCP Server Hybrid  mcp-server-hybrid  [C#]      dotnet/ai/mcp&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;➕Create an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mcp-server-hybrid&lt;/code&gt; project:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; dotnet new mcp-server-hybrid &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; MyAwesomeMCPServer &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; MyAwesomeMCPServer
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Now we can run it in two different modes:&lt;/p&gt;
-
-&lt;p&gt;In &lt;em&gt;SSE&lt;/em&gt; mode:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet run
-&lt;span class=&quot;c&quot;&gt;# info: Microsoft.Hosting.Lifetime[14]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Now listening on: http://localhost:3001&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Microsoft.Hosting.Lifetime[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Application started. Press Ctrl+C to shut down.&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Microsoft.Hosting.Lifetime[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Hosting environment: Development&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Microsoft.Hosting.Lifetime[0]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#       Content root path: ${HOME}/MyAwesomeMCPServer&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# info: Microsoft.Hosting.Lifetime[0]&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Start the  &lt;em&gt;MCP Inpsector&lt;/em&gt; and configure it to listen on the default address: “http://localhost:3001/sse”.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx @modelcontextprotocol/inspector
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In &lt;em&gt;Stdio&lt;/em&gt; mode:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx @modelcontextprotocol/inspector dotnet run &lt;span class=&quot;nt&quot;&gt;-v&lt;/span&gt; q &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--stdio&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# ⚙️ Proxy server listening on port 6277&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# 🔍 MCP Inspector is up and running at http://127.0.0.1:6274 🚀&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# New SSE connection&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Query parameters: {&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   transportType: &apos;stdio&apos;,&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   command: &apos;dotnet&apos;,&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;#   args: &apos;run -v q --stdio&apos;&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# }&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Stdio transport: command=C:\Program Files\dotnet\dotnet.exe, args=run,-v,q,--stdio&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;sse-vs-stdio&quot;&gt;SSE vs Stdio&lt;/h3&gt;
-
-&lt;p&gt;The benefit of the &lt;em&gt;SSE&lt;/em&gt; mode is that you can run the MCP server with a debugger attached and/or see the logs directly. The &lt;em&gt;Stdio&lt;/em&gt; mode is slightly more complex, as it relies on the &lt;em&gt;MCP Client&lt;/em&gt; (e.g., &lt;em&gt;MCP Inspector&lt;/em&gt;) to start the server, and it disables logging on the MCP server to maintain compatibility with the &lt;em&gt;MCP Client&lt;/em&gt;.&lt;/p&gt;
-
-&lt;p&gt;On the other hand, the &lt;em&gt;Stdio&lt;/em&gt; Server’s lifetime is managed by the &lt;em&gt;MCP Client&lt;/em&gt;. This makes it much easier to consume MCP servers in this mode because you typically don’t have to worry about the server’s lifetime. It is started by the &lt;em&gt;MCP Client&lt;/em&gt; and stopped when the &lt;em&gt;MCP Client&lt;/em&gt; is stopped.&lt;/p&gt;
-
-&lt;h3 id=&quot;review-the-code&quot;&gt;Review the Code&lt;/h3&gt;
-
-&lt;p&gt;Before you start developing your own MCPs using this template, let’s take a look at the code generated by the template. Here is a content of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Program.cs&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithToolsFromAssembly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;McpServerToolType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;EchoTool&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;McpServerTool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Echoes the message back to the client.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Echo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&quot;hello &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;💡 All “magic” happens in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;McpServerExtensions.cs&lt;/code&gt; class. In the code below, we check if the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--stdio&lt;/code&gt; argument is present. If it is, we configure the server to use the &lt;em&gt;Stdio&lt;/em&gt; transport. Otherwise, we use the &lt;em&gt;SSE&lt;/em&gt; transport. You don’t need to worry about how to switch between the two modes. The template does it for you.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IMcpServerBuilder&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;WithMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplicationBuilder&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isStdio&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Contains&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;--stdio&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isStdio&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WebHost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UseUrls&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;http://*:0&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// random port&lt;/span&gt;
-
-        &lt;span class=&quot;c1&quot;&gt;// logs from stderr are shown in the inspector&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddLogging&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
-                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddConsole&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;consoleBuilder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
-                &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-                    &lt;span class=&quot;n&quot;&gt;consoleBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;LogToStandardErrorThreshold&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LogLevel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Trace&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-                    &lt;span class=&quot;n&quot;&gt;consoleBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;FormatterName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;json&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-                &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
-                &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddFilter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LogLevel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Warning&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mcpBuilder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isStdio&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithStdioServerTransport&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mcpBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MapMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;this&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WebApplication&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isSse&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Contains&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;--stdio&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;isSse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapMcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;aspire-integration&quot;&gt;Aspire Integration&lt;/h2&gt;
-
-&lt;p&gt;Down below I demonstrate how to run the MCP server using the &lt;em&gt;Aspire&lt;/em&gt; hosting integration in two different modes simultaneously.&lt;/p&gt;
-
-&lt;p&gt;➕ Create AppHost:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet new aspire-apphost &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; AppHost &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; AppHost
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;📦 Install &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.ModelContextProtocol.Inspector.Aspire.Hosting&lt;/code&gt; &lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Inspector.Aspire.Hosting&quot;&gt;package&lt;/a&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add ./Apphost package Nall.ModelContextProtocol.Inspector.Aspire.Hosting
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;🔗 Add project reference to AppHost:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add ./AppHost/AppHost.csproj reference ./MyAwesomeMCPServer/MyAwesomeMCPServer.csproj
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Add the following code to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Program.cs&lt;/code&gt; of the AppHost:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sse&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MyAwesomeMCPServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMCPInspector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;mcp-sse&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;serverPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;9000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;clientPort&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;8080&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithSSE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMCPInspector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;mcp-stdio&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;WithStdio&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MyAwesomeMCPServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is how the Aspire Dashboard looks like:&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/mcp/mcp-hybrid-aspire-dashboard.png&quot; style=&quot;margin: 15px;&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;And it works like a charm!&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/mcp-template-dotnet&quot;&gt;https://github.com/NikiforovAll/mcp-template-dotnet&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://modelcontextprotocol.io/docs/concepts/transports&quot;&gt;https://modelcontextprotocol.io/docs/concepts/transports&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Tue, 08 Apr 2025 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/dotnet/2025/04/08/hybrid-mcp-template.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/04/08/hybrid-mcp-template.html</guid>
 			</item>
 		
 	</channel>
