@@ -7,6 +7,363 @@
 		<atom:link href="https://nikiforovall.github.io/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;Transform &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt; from a CLI tool into a conversational AI agent that helps you explore and manage technical debt interactively. Learn the pattern by building with &lt;strong&gt;Claude Agent SDK&lt;/strong&gt;. This blog post demonstrates how to use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;claude-agent-sdk&lt;/code&gt; to wrap &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt; commands, expose them via MCP, and create a conversational interface for code quality analysis.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; You could use a general-purpose AI agent to analyze &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt; output by copying and pasting JSON reports. However, a specialized agent offers significant advantages: it automates tool execution, maintains context across multiple queries, provides domain-specific insights, and creates a streamlined workflow. This post shows you how to build one. Also, it is kind of fun! 🎉&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#why-build-specialized-agents&quot;&gt;Why Build Specialized Agents?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#architecture-overview&quot;&gt;Architecture Overview&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#building-with-claude-agent-sdk&quot;&gt;Building with Claude Agent SDK&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#tool-layer-wrapping-dotnet-format&quot;&gt;Tool Layer: Wrapping &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#agent-layer-mcp-integration&quot;&gt;Agent Layer: MCP Integration&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#making-it-conversational&quot;&gt;Making It Conversational&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#demo-interactive-code-quality&quot;&gt;Demo: Interactive Code Quality&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#the-pattern-reusable-building-blocks&quot;&gt;The Pattern: Reusable Building Blocks&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/dotnet-format-agent&quot;&gt;https://github.com/NikiforovAll/dotnet-format-agent&lt;/a&gt;&lt;/p&gt;
+
+&lt;script src=&quot;https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e.js&quot; id=&quot;asciicast-GUdHxDAXQCtQEvko3GZlXz96e&quot; async=&quot;true&quot;&gt;&lt;/script&gt;
+
+&lt;h2 id=&quot;why-build-specialized-agents&quot;&gt;Why Build Specialized Agents?&lt;/h2&gt;
+
+&lt;p&gt;.NET projects often accumulate hundreds of diagnostics - formatting issues, analyzer warnings, code style violations. These can come from your IDE, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt;, or code analysis tools. &lt;strong&gt;The real challenge isn’t finding issues - it’s dealing with the overwhelming volume:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Run format check&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;dotnet format &lt;span class=&quot;nt&quot;&gt;--verify-no-changes&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--severity&lt;/span&gt; warn
+
+&lt;span class=&quot;c&quot;&gt;# Result: 247 diagnostics across 45 files&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# IDE0055, CA1031, IDE1006, CA2007, IDE0290...&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Which ones matter? Where do I start? What&apos;s safe to auto-fix?&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;You’re faced with questions:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;🤔 Which issues should I tackle first?&lt;/li&gt;
+  &lt;li&gt;🤔 What’s safe to auto-fix vs. needs manual review?&lt;/li&gt;
+  &lt;li&gt;🤔 Which diagnostics indicate real problems vs. style preferences?&lt;/li&gt;
+  &lt;li&gt;🤔 How do I prioritize across multiple files and rule types?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Manual triage is exhausting: you need to look up diagnostic IDs, assess their impact, decide on priorities, and then repeat this process for every single issue. But here’s the reality - you probably don’t have time for this. You’ve got features to ship, bugs to fix, and meetings to attend. Code quality is important, but it’s rarely urgent.&lt;/p&gt;
+
+&lt;p&gt;So what happens? You see 247 warnings and think: &lt;em&gt;“I’ll deal with this later.”&lt;/em&gt; Except later never comes. Or worse - you start ignoring warnings entirely. When everything is highlighted as a problem, nothing feels like a problem. The warnings lose their meaning, and suddenly you’ve defeated the whole purpose of having code quality tools in the first place.&lt;/p&gt;
+
+&lt;p&gt;Codebase maintainability matters, but it needs to fit into your actual workflow. You need a way to quickly understand what’s important, what can wait, and what’s safe to fix right now - without spending hours analyzing diagnostics.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;What if you could just have a conversation?&lt;/strong&gt; Instead of parsing diagnostics yourself, ask: &lt;em&gt;“What are the most important issues to fix first?”&lt;/em&gt; or &lt;em&gt;“What can I safely auto-fix without breaking anything?”&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;That’s what specialized agents enable - they transform CLI tools into conversational interfaces that help you &lt;strong&gt;explore, triage, and prioritize&lt;/strong&gt; diagnostic output in minutes.&lt;/p&gt;
+
+&lt;h2 id=&quot;architecture-overview&quot;&gt;Architecture Overview&lt;/h2&gt;
+
+&lt;p&gt;A specialized agent has three layers:&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot; style=&quot;margin-left:20%; margin-right:20%&quot;&gt;
+graph TD
+    A[Conversational Interface] --&amp;gt;|Natural language| B[Agent + Harness]
+    B --&amp;gt;|Tool calls| C[Tool Layer]
+    C --&amp;gt;|dotnet format| D[.NET Project]
+    
+    B -.-&amp;gt;|Uses| E[Claude Agent SDK]
+    C -.-&amp;gt;|Wraps| F[CLI Tools]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#f0e1ff
+&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Layer 1: Conversational Interface&lt;/strong&gt;&lt;br /&gt;
+What users interact with - plain English queries like “Show me formatting issues”&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Layer 2: Agent Harness (Claude Agent SDK)&lt;/strong&gt;&lt;br /&gt;
+Understands intent, calls appropriate tools, formats responses intelligently&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Layer 3: Tool Layer&lt;/strong&gt;&lt;br /&gt;
+Wraps &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt; commands, parses output, returns structured data&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The key insight:&lt;/strong&gt; Keep your tool layer independent. The agent is just a conversational wrapper around existing functionality.&lt;/p&gt;
+
+&lt;h2 id=&quot;building-with-claude-agent-sdk&quot;&gt;Building with Claude Agent SDK&lt;/h2&gt;
+
+&lt;p&gt;Let’s build the agent piece by piece using the &lt;a href=&quot;https://github.com/anthropics/claude-agent-sdk-python&quot;&gt;Claude Agent SDK&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;tool-layer-wrapping-dotnet-format&quot;&gt;Tool Layer: Wrapping &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Start with a clean abstraction over &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet format&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;DotnetFormatRunner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Wraps dotnet format CLI with structured input/output.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;run_style_check&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;project_path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Run dotnet format style check.&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;# Build command
+&lt;/span&gt;        &lt;span class=&quot;n&quot;&gt;cmd&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;dotnet&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;format&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;--verify-no-changes&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;--report&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;report.json&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;cmd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;extend&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;--severity&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;# Execute
+&lt;/span&gt;        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;subprocess&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cmd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;capture_output&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cwd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;project_path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;# Parse JSON report
+&lt;/span&gt;        &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;report.json&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;diagnostics&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;load&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;# Return structured data
+&lt;/span&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;diagnostics&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;diagnostics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;summary&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_generate_summary&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;diagnostics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Key principles:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;✅ Accept structured inputs (paths, options)&lt;/li&gt;
+  &lt;li&gt;✅ Return structured outputs (dicts with diagnostics)&lt;/li&gt;
+  &lt;li&gt;✅ Handle errors gracefully&lt;/li&gt;
+  &lt;li&gt;✅ Keep it testable without AI&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;agent-layer-mcp-integration&quot;&gt;Agent Layer: MCP Integration&lt;/h3&gt;
+
+&lt;p&gt;The &lt;a href=&quot;https://modelcontextprotocol.io/&quot;&gt;Model Context Protocol (MCP)&lt;/a&gt; is how Claude discovers and calls your tools. Using the Claude Agent SDK, expose your runner as MCP tools:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;claude_agent_sdk&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tool&lt;/span&gt;
+
+&lt;span class=&quot;nd&quot;&gt;@tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;extract_style_diagnostics&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Extract code style/formatting diagnostics from dotnet format&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;severity&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;exclude&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;extract_style_diagnostics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# Normalize inputs (AI might send unexpected formats)
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;severity&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;all&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]:&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;# Call your existing tool
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;DotnetFormatRunner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;run_style_check&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;project_path&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;getcwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;severity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    
+    &lt;span class=&quot;c1&quot;&gt;# Format response using TOON (Terminal Object Notation)
+&lt;/span&gt;    &lt;span class=&quot;c1&quot;&gt;# This reduces token usage by 30-60% compared to JSON
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;formatted&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;format_diagnostics_toon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;diagnostics&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt;
+            &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;formatted&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Why &lt;a href=&quot;https://github.com/toon-format/toon&quot;&gt;TOON&lt;/a&gt; format?&lt;/strong&gt; Instead of verbose JSON:&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;file&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Program.cs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;line&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;rule&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;IDE0055&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;message&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Fix formatting&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;file&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Program.cs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;line&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;rule&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;IDE0055&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;message&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Fix formatting&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Use compact format:&lt;/p&gt;
+
+&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;IDE0055 (count: 2):
+  Program.cs:10
+  Program.cs:15
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is easier to read and uses fewer tokens = lower costs.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Bundle tools into an MCP server:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;claude_agent_sdk&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;create_sdk_mcp_server&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# Create MCP server with all your tools
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dotnet_format_server&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;create_sdk_mcp_server&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;dotnet-format&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;version&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1.0.0&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;tools&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;extract_style_diagnostics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;extract_analyzers_diagnostics&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;# ... more tools
+&lt;/span&gt;    &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;making-it-conversational&quot;&gt;Making It Conversational&lt;/h3&gt;
+
+&lt;p&gt;Configure the agent with your MCP server and system prompt:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;claude_agent_sdk&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ClaudeAgentOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ClaudeSDKClient&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ClaudeAgentOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# Connect MCP servers
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;mcp_servers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;dotnet-format&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dotnet_format_server&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# Which tools to enable
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;allowed_tools&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;mcp__techdebt__extract_style_diagnostics&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;mcp__techdebt__extract_analyzers_diagnostics&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Read&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Write&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Edit&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Glob&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Grep&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;WebFetch&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# Working directory
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;cwd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;getcwd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# Auto-approve tool calls
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;permission_mode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;bypassPermissions&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# System prompt
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;system_prompt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;preset&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;preset&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;claude_code&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# Base Claude Code behavior
+&lt;/span&gt;        &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;
+You are a .NET code quality expert specializing in technical debt analysis.
+
+When analyzing codebases:
+1. Use &lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;warn&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&apos;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; severity by default
+2. Group similar issues together
+3. Prioritize by impact and fix difficulty
+4. Always include &lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Next Steps&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; section
+&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# Run the agent
+&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ClaudeSDKClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;What are the most important code quality issues?&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    
+    &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;receive_response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;# Display response (markdown formatted)
+&lt;/span&gt;        &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;The system prompt is crucial&lt;/strong&gt; - it teaches the agent:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;✅ Domain expertise (.NET, diagnostics)&lt;/li&gt;
+  &lt;li&gt;✅ Tool usage patterns (default to ‘warn’ severity)&lt;/li&gt;
+  &lt;li&gt;✅ Response formatting (Markdown, sections)&lt;/li&gt;
+  &lt;li&gt;✅ Output structure (always include Next Steps)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;demo-interactive-code-quality&quot;&gt;Demo: Interactive Code Quality&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;uv run &lt;span class=&quot;nt&quot;&gt;--package&lt;/span&gt; tda tda &lt;span class=&quot;s2&quot;&gt;&quot;List  grouped analyzers diagnostics&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--cwd&lt;/span&gt; ../path/to/project &lt;span class=&quot;nt&quot;&gt;--interactive&lt;/span&gt;
+Technical Debt Agent
+Working directory: ~/dev/path/to/project
+Model: claude-sonnet-4-5
+Type &lt;span class=&quot;s1&quot;&gt;&apos;exit&apos;&lt;/span&gt; or &lt;span class=&quot;s1&quot;&gt;&apos;quit&apos;&lt;/span&gt; to end the session.
+
+You&amp;gt; List analyzers diagnostics grouped by diagnostic
+
+&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;Agent Response Truncated&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;
+
+Would you like me to drill down into any specific diagnostic code or analyze particular files where these issues occur?
+
+Cost: &lt;span class=&quot;nv&quot;&gt;$0&lt;/span&gt;.0886
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;center&gt;
+    &lt;a href=&quot;https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e&quot;&gt;
+        &lt;img src=&quot;https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e.svg&quot; width=&quot;50%&quot; style=&quot;margin: 15px;&quot; /&gt;
+    &lt;/a&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;the-pattern-reusable-building-blocks&quot;&gt;The Pattern: Reusable Building Blocks&lt;/h2&gt;
+
+&lt;p&gt;Every specialized agent follows this recipe:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;1. Tool Layer&lt;/strong&gt; (what you already have)&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;YourToolRunner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;run_analysis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;# Call external tool
+&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;# Parse output  
+&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;# Return structured data
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;2. Agent Layer&lt;/strong&gt; (MCP wrapper)&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;your_tool&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;description&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;your_tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;dict&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(...)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;formatted_result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}]}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;create_sdk_mcp_server&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tools&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;your_tool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;3. Conversational Interface&lt;/strong&gt; (configure agent)&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ClaudeAgentOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;mcp_servers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;your&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;system_prompt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;You are a {DOMAIN} expert...&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ClaudeSDKClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Natural language question&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Building specialized agents transforms how we interact with CLI tools:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Before:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet format &lt;span class=&quot;nt&quot;&gt;--verify-no-changes&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--report&lt;/span&gt; report.json
+&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;report.json | jq &lt;span class=&quot;s1&quot;&gt;&apos;...&apos;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# manually analyze, look up docs, decide...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;After:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tda &lt;span class=&quot;s2&quot;&gt;&quot;What should I fix first?&quot;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Get prioritized recommendations with explanations&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;Key takeaways:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;✅ &lt;strong&gt;Keep tool layer independent&lt;/strong&gt; - agent is just a wrapper&lt;/li&gt;
+  &lt;li&gt;✅ &lt;strong&gt;Use MCP&lt;/strong&gt; to expose tools to Claude&lt;/li&gt;
+  &lt;li&gt;✅ &lt;strong&gt;System prompt teaches domain expertise&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;✅ &lt;strong&gt;Optimize output format&lt;/strong&gt; (TOON over JSON)&lt;/li&gt;
+  &lt;li&gt;✅ &lt;strong&gt;Make it conversational&lt;/strong&gt; - multi-turn exploration beats one-shot commands&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;The pattern is reusable.&lt;/strong&gt; Take your existing CLI tools, wrap them with Claude Agent SDK, and give them a conversational interface.&lt;/p&gt;
+
+&lt;p&gt;For more details, check out the &lt;a href=&quot;https://github.com/NikiforovAll/dotnet-format-agent&quot;&gt;full source code&lt;/a&gt;. The code I provided here is a simplified version to illustrate the pattern.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;a href=&quot;https://github.com/NikiforovAll/dotnet-format-agent&quot;&gt;dotnet-format-agent&lt;/a&gt;&lt;/strong&gt; - Full source code&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;a href=&quot;https://github.com/anthropics/claude-agent-sdk-python&quot;&gt;Claude Agent SDK&lt;/a&gt;&lt;/strong&gt; - Python SDK&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;a href=&quot;https://context7.com/anthropics/claude-agent-sdk-python&quot;&gt;Context7 - Claude SDK Docs&lt;/a&gt;&lt;/strong&gt; - API reference&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;a href=&quot;https://learn.microsoft.com/dotnet/core/tools/dotnet-format&quot;&gt;dotnet format&lt;/a&gt;&lt;/strong&gt; - Official docs&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Tue, 11 Nov 2025 00:00:00 +0000</pubDate>
+				<link>https://nikiforovall.github.io/dotnet/ai/2025/11/11/dotnet-format-agent.html</link>
+				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/ai/2025/11/11/dotnet-format-agent.html</guid>
+			</item>
+		
+			<item>
 				<title>Claude Code Handbook: Best Practices and Recommendations</title>
 				<description>&lt;p&gt;Previously, I’ve shared my &lt;a href=&quot;https://nikiforovall.blog/productivity/2025/06/13/claude-code-rules&quot;&gt;Claude Code Usage Best Practices and Recommendations&lt;/a&gt;.&lt;/p&gt;
 
@@ -1357,224 +1714,6 @@ sequenceDiagram
 				<pubDate>Sun, 25 May 2025 00:00:00 +0000</pubDate>
 				<link>https://nikiforovall.github.io/dotnet/2025/05/25/hangfire-mcp.html</link>
 				<guid isPermaLink="true">https://nikiforovall.github.io/dotnet/2025/05/25/hangfire-mcp.html</guid>
-			</item>
-		
-			<item>
-				<title>Code Review with GitHub Copilot in Visual Studio Code</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#code-review-custom-instructions&quot;&gt;Code Review Custom Instructions&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#code-review-in-agent-mode&quot;&gt;Code Review in Agent Mode&lt;/a&gt;
-    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#crafting-the-review-prompt&quot;&gt;Crafting the Review Prompt&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#demo&quot;&gt;Demo&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#conclusion&quot;&gt;Conclusion&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#references&quot;&gt;References&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;In this blog post, I will show you how to leverage GitHub Copilot’s code review capabilities in Visual Studio Code. In addition to the built-in features, I’ll introduce my own agent-based code review workflow using a custom prompt. This approach leverages Copilot’s flexibility to tailor the review process to your team’s needs.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/dotnet-copilot-rules&quot;&gt;https://github.com/NikiforovAll/dotnet-copilot-rules&lt;/a&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;&lt;em&gt;Code review&lt;/em&gt; has always been a cornerstone of high-quality software development, but its importance has only grown with the advent of LLM-based development tools like GitHub Copilot. As AI-generated code becomes more prevalent, careful reading and thorough review are essential to ensure correctness, maintainability, and security.&lt;/p&gt;
-
-&lt;p&gt;🤖 With the latest updates, Copilot code review is seamlessly integrated into Visual Studio Code, providing instant, AI-powered feedback directly in your editor.&lt;/p&gt;
-
-&lt;p&gt;Some of the key features include:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Review Selection:&lt;/strong&gt; Highlight any section of code and request an initial review. Copilot will analyze the selected code and provide feedback, including suggestions for improvements or fixes, which you can apply with a single click.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Review Changes:&lt;/strong&gt; Request a deeper review of all your staged or unstaged changes directly from the Source Control tab. Copilot will review your modifications and surface comments or suggestions inline and in the Problems tab.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;📃 Find out more about these features in the &lt;a href=&quot;https://docs.github.com/en/copilot/using-github-copilot/code-review/using-copilot-code-review?tool=vscode&quot;&gt;GitHub Copilot documentation&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;code-review-custom-instructions&quot;&gt;Code Review Custom Instructions&lt;/h2&gt;
-
-&lt;p&gt;I already described how to ground Copilot Code Review with custom instructions in my previous post - &lt;a href=&quot;https://nikiforovall.github.io/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html&quot;&gt;Enforcing .NET Coding Guidelines with GitHub Copilot Custom Instructions&lt;/a&gt;. Basically, it boils down to something like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;github.copilot.chat.reviewSelection.enabled&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;github.copilot.chat.reviewSelection.instructions&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;file&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;.vscode/rules/csharp/coding-guidelines.md&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;code-review-in-agent-mode&quot;&gt;Code Review in Agent Mode&lt;/h2&gt;
-
-&lt;p&gt;Beyond the built-in features, I’ve crafted a custom code review prompt designed for agent mode. This approach aims to replicate the functionality of the &lt;a href=&quot;https://docs.github.com/en/copilot/using-github-copilot/code-review/using-copilot-code-review?tool=webui#requesting-a-pull-request-review-from-copilot&quot;&gt;Pull Request Review from Copilot&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;While the standard Copilot Pull Request Review is excellent, it has certain limitations:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;It’s restricted to the Web UI, requiring users to leave their IDE.&lt;/li&gt;
-  &lt;li&gt;It cannot be used outside the GitHub environment.&lt;/li&gt;
-  &lt;li&gt;It offers less capability compared to the Agent mode, which allows for the use of MCPs, model switching, etc.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;🎯 To address these limitations, I suggest you to try out my custom code review prompt. This prompt is designed to be used in the agent mode, allowing you to leverage the full power of Copilot while keeping your workflow within Visual Studio Code.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;crafting-the-review-prompt&quot;&gt;Crafting the Review Prompt&lt;/h3&gt;
-
-&lt;p&gt;Here is the prompt I use for code reviews:&lt;/p&gt;
-
-&lt;p&gt;🚀 &lt;a href=&quot;https://github.com/NikiforovAll/dotnet-copilot-rules/blob/main/.vscode/prompts/code-review.prompt.md&quot;&gt;https://github.com/NikiforovAll/dotnet-copilot-rules/blob/main/.vscode/prompts/code-review.prompt.md&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;The prompt has two logical sections:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Description&lt;/strong&gt;: This section describes the purpose of the prompt and sets the context for the review.
-    &lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt; ---&lt;/span&gt;
- description: Perform a code review
-&lt;span class=&quot;p&quot;&gt; ---&lt;/span&gt;
- ## Code Review Expert: Detailed Analysis and Best Practices
-
- As a senior software engineer with expertise in code quality, security, and performance optimization, perform a code review of the provided git diff. 
-
- Focus on delivering actionable feedback in the following areas: (Skipped for brevity)
-
- Format your review using clear sections and bullet points. Include inline code references where applicable.
-
- Note: This review should comply with the project&apos;s established coding standards and architectural guidelines.
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Constraints&lt;/strong&gt;: This section outlines the specific constraints and guidelines that the code should adhere to.
-    &lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; ## Constraints
-&lt;span class=&quot;p&quot;&gt;
- *&lt;/span&gt; &lt;span class=&quot;gs&quot;&gt;**IMPORTANT**&lt;/span&gt;: Use &lt;span class=&quot;sb&quot;&gt;`git --no-pager diff --no-prefix --unified=100000 --minimal $(git merge-base main --fork-point)...head`&lt;/span&gt; to get the diff for code review.
-&lt;span class=&quot;p&quot;&gt; *&lt;/span&gt; In the provided git diff, if the line start with &lt;span class=&quot;sb&quot;&gt;`+`&lt;/span&gt; or &lt;span class=&quot;sb&quot;&gt;`-`&lt;/span&gt;, it means that the line is added or removed. If the line starts with a space, it means that the line is unchanged. If the line starts with &lt;span class=&quot;sb&quot;&gt;`@@`&lt;/span&gt;, it means that the line is a hunk header.
-&lt;span class=&quot;p&quot;&gt;
- *&lt;/span&gt; Use markdown for each suggestion, like
-     &lt;span class=&quot;p&quot;&gt;```&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;
-&lt;/span&gt;     # Code Review for ${feature_description}
-     Overview of the code changes, including the purpose of the feature, any relevant context, and the files involved.
-
-     # Suggestions
-     ## ${code_review_emoji} ${Summary of the suggestion, include necessary context to understand suggestion}
-     * **Priority**: ${priority: (🔥/⚠️/🟡/🟢)}
-     * **File**: ${relative/path/to/file}
-     * **Details**: ...
-     * **Example** (if applicable): ...
-     * **Suggested Change** (if applicable): (code snippet...)
-        
-     ## (other suggestions...)
-     ...
-
-     # Summary
-     &lt;span class=&quot;p&quot;&gt;```&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt; *&lt;/span&gt; Use the following emojis to indicate the priority of the suggestions:
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 🔥 Critical
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; ⚠️ High
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 🟡 Medium
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 🟢 Low
-&lt;span class=&quot;p&quot;&gt; *&lt;/span&gt; Each suggestion should be prefixed with an emoji to indicate the type of suggestion:
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 🔧 Change request
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; ❓ Question
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; ⛏️ Nitpick
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; ♻️ Refactor suggestion
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 💭 Thought process or concern
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 👍 Positive feedback
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 📝 Explanatory note or fun fact
-&lt;span class=&quot;p&quot;&gt;     *&lt;/span&gt; 🌱 Observation for future consideration
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Basically, we ask Copilot to get the diff by running the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;git diff&lt;/code&gt; command and perform a code review based on the output from the terminal.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git &lt;span class=&quot;nt&quot;&gt;--no-pager&lt;/span&gt; diff &lt;span class=&quot;nt&quot;&gt;--no-prefix&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--unified&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;100000 &lt;span class=&quot;nt&quot;&gt;--minimal&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;git merge-base main &lt;span class=&quot;nt&quot;&gt;--fork-point&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;...head
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;demo&quot;&gt;Demo&lt;/h3&gt;
-
-&lt;p&gt;Let’s say we have a simple program that counts the number of capital letters in each line of a text file. We can use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;code-review.prompt.md&lt;/code&gt; file to analyze the proposed solution.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;filePath&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;path/to/your/file.txt&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;FileStream&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fileStream&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;FileStream&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filePath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FileMode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FileAccess&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;StreamReader&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reader&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;StreamReader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fileStream&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EndOfStream&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ReadLineAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Guid&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; - &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CountCapitalLetters&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;]&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;foreach&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lines&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;Console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WriteLine&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;// Counts the number of capital latters in a string, the typo in word &apos;latters&apos; is intentional&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;CountCapitalLetters&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param2&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param3&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;object&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;param4&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;foreach&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;IsUpper&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;++;&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;We can attach the prompt by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CTRL + ALT + /&lt;/code&gt; and select the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;code-review.prompt.md&lt;/code&gt; file. Then, we can ask Copilot to follow the instructions in the prompt and perform a code review.&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;video src=&quot;https://github.com/user-attachments/assets/950ef85f-91eb-4b28-a882-b30e6d964fcb&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
-&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;✅ And here is the result of the code review:&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/github-copilot-instructions-for-dotnet/custom-code-review-demo.png&quot; /&gt;
-&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;I would say that the review is quite good. It is a good starting point to keep chatting with Copilot and ask for more details, or even to ask it to rewrite the code based on the suggestions.&lt;/p&gt;
-
-&lt;p&gt;💡 The great thing about this is that you can tailor the prompt to your specific needs. You can add or remove sections, change the wording, reference the project’s coding standards, etc.&lt;/p&gt;
-
-&lt;p&gt;💡 Treat Copilot as a coworker: start “Voice Chat” mode and engage in a conversation just as you would with a teammate. Ask questions, discuss suggestions, and iterate on solutions together to get the most out of your code review.&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://code.visualstudio.com/docs/copilot/chat/prompt-crafting&quot;&gt;Prompt engineering for Copilot Chat&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://code.visualstudio.com/docs/copilot/copilot-customization#_reusable-prompt-files-experimental&quot;&gt;GitHub Copilot Customization&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.promptingguide.ai/&quot;&gt;Prompt Engineering Guide&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://docs.github.com/en/copilot/using-github-copilot/code-review/using-copilot-code-review?tool=vscode&quot;&gt;Using GitHub Copilot code review&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sat, 03 May 2025 00:00:00 +0000</pubDate>
-				<link>https://nikiforovall.github.io/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html</link>
-				<guid isPermaLink="true">https://nikiforovall.github.io/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html</guid>
 			</item>
 		
 	</channel>
