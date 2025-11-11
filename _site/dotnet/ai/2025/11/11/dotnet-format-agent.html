@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK</title>
+	
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="https://nikiforovall.github.io/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="https://nikiforovall.github.io/assets/css/style.css" rel="stylesheet">
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
+</head>
+
+<body>
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">Home</a></li>
+				<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer">Categories</a></li>
+				<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer">Tags</a></li>
+				<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer"><i class="fa fa-home"></i>Home</a></li>
+			<li><a href="https://nikiforovall.github.io/categories.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-folder"></i>Categories</a></li>
+			<li><a href="https://nikiforovall.github.io/tags.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-tags"></i>Tags</a></li>
+			<li><a href="https://nikiforovall.github.io/about.html" target="_blank" rel="noopener noreferrer"><i class="fa fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="https://nikiforovall.github.io/" target="_blank" rel="noopener noreferrer">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-github-alt fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://twitter.com/nikiforovall" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-pencil-square fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://nikiforovall.github.io/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			November
+			11th,
+			
+			2025
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/10/05/claude-code-handbook.html">Claude Code Handbook: Best Practices and Recommendations <span class="label label-default">ai</span>  <span class="label label-default">claude</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/2025/09/02/mcp-auth.html">Add Authentication to MCP Servers using Microsoft Entra ID <span class="label label-default">dotnet</span>  <span class="label label-default">ai</span>  <span class="label label-default">mcp</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/ai/2025/08/09/tech-debt-master.html">Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs <span class="label label-default">ai</span>  <span class="label label-default">cli</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/06/14/claude-code-telemetry-aspire.html">Monitoring Claude Code with .NET Aspire Dashboard <span class="label label-default">ai</span>  <span class="label label-default">claude</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Transform <code class="language-plaintext highlighter-rouge">dotnet format</code> from a CLI tool into a conversational AI agent that helps you explore and manage technical debt interactively. Learn the pattern by building with <strong>Claude Agent SDK</strong>. This blog post demonstrates how to use <code class="language-plaintext highlighter-rouge">claude-agent-sdk</code> to wrap <code class="language-plaintext highlighter-rouge">dotnet format</code> commands, expose them via MCP, and create a conversational interface for code quality analysis.</p>
+
+<blockquote>
+  <p><strong>Note:</strong> You could use a general-purpose AI agent to analyze <code class="language-plaintext highlighter-rouge">dotnet format</code> output by copying and pasting JSON reports. However, a specialized agent offers significant advantages: it automates tool execution, maintains context across multiple queries, provides domain-specific insights, and creates a streamlined workflow. This post shows you how to build one. Also, it is kind of fun! 🎉</p>
+</blockquote>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#why-build-specialized-agents">Why Build Specialized Agents?</a></li>
+  <li><a href="#architecture-overview">Architecture Overview</a></li>
+  <li>
+<a href="#building-with-claude-agent-sdk">Building with Claude Agent SDK</a>
+    <ul>
+      <li><a href="#tool-layer-wrapping-dotnet-format">Tool Layer: Wrapping <code class="language-plaintext highlighter-rouge">dotnet format</code></a></li>
+      <li><a href="#agent-layer-mcp-integration">Agent Layer: MCP Integration</a></li>
+      <li><a href="#making-it-conversational">Making It Conversational</a></li>
+    </ul>
+  </li>
+  <li><a href="#demo-interactive-code-quality">Demo: Interactive Code Quality</a></li>
+  <li><a href="#the-pattern-reusable-building-blocks">The Pattern: Reusable Building Blocks</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/dotnet-format-agent" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/dotnet-format-agent</a></p>
+
+<script src="https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e.js" id="asciicast-GUdHxDAXQCtQEvko3GZlXz96e" async="true"></script>
+
+<h2 id="why-build-specialized-agents">Why Build Specialized Agents?</h2>
+
+<p>.NET projects often accumulate hundreds of diagnostics - formatting issues, analyzer warnings, code style violations. These can come from your IDE, <code class="language-plaintext highlighter-rouge">dotnet format</code>, or code analysis tools. <strong>The real challenge isn’t finding issues - it’s dealing with the overwhelming volume:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Run format check</span>
+<span class="nv">$ </span>dotnet format <span class="nt">--verify-no-changes</span> <span class="nt">--severity</span> warn
+
+<span class="c"># Result: 247 diagnostics across 45 files</span>
+<span class="c"># IDE0055, CA1031, IDE1006, CA2007, IDE0290...</span>
+<span class="c"># Which ones matter? Where do I start? What's safe to auto-fix?</span>
+</code></pre></div></div>
+
+<p>You’re faced with questions:</p>
+
+<ul>
+  <li>🤔 Which issues should I tackle first?</li>
+  <li>🤔 What’s safe to auto-fix vs. needs manual review?</li>
+  <li>🤔 Which diagnostics indicate real problems vs. style preferences?</li>
+  <li>🤔 How do I prioritize across multiple files and rule types?</li>
+</ul>
+
+<p>Manual triage is exhausting: you need to look up diagnostic IDs, assess their impact, decide on priorities, and then repeat this process for every single issue. But here’s the reality - you probably don’t have time for this. You’ve got features to ship, bugs to fix, and meetings to attend. Code quality is important, but it’s rarely urgent.</p>
+
+<p>So what happens? You see 247 warnings and think: <em>“I’ll deal with this later.”</em> Except later never comes. Or worse - you start ignoring warnings entirely. When everything is highlighted as a problem, nothing feels like a problem. The warnings lose their meaning, and suddenly you’ve defeated the whole purpose of having code quality tools in the first place.</p>
+
+<p>Codebase maintainability matters, but it needs to fit into your actual workflow. You need a way to quickly understand what’s important, what can wait, and what’s safe to fix right now - without spending hours analyzing diagnostics.</p>
+
+<p><strong>What if you could just have a conversation?</strong> Instead of parsing diagnostics yourself, ask: <em>“What are the most important issues to fix first?”</em> or <em>“What can I safely auto-fix without breaking anything?”</em></p>
+
+<p>That’s what specialized agents enable - they transform CLI tools into conversational interfaces that help you <strong>explore, triage, and prioritize</strong> diagnostic output in minutes.</p>
+
+<h2 id="architecture-overview">Architecture Overview</h2>
+
+<p>A specialized agent has three layers:</p>
+
+<div class="mermaid" style="margin-left:20%; margin-right:20%">
+graph TD
+    A[Conversational Interface] --&gt;|Natural language| B[Agent + Harness]
+    B --&gt;|Tool calls| C[Tool Layer]
+    C --&gt;|dotnet format| D[.NET Project]
+    
+    B -.-&gt;|Uses| E[Claude Agent SDK]
+    C -.-&gt;|Wraps| F[CLI Tools]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#f0e1ff
+</div>
+
+<p><strong>Layer 1: Conversational Interface</strong><br>
+What users interact with - plain English queries like “Show me formatting issues”</p>
+
+<p><strong>Layer 2: Agent Harness (Claude Agent SDK)</strong><br>
+Understands intent, calls appropriate tools, formats responses intelligently</p>
+
+<p><strong>Layer 3: Tool Layer</strong><br>
+Wraps <code class="language-plaintext highlighter-rouge">dotnet format</code> commands, parses output, returns structured data</p>
+
+<p><strong>The key insight:</strong> Keep your tool layer independent. The agent is just a conversational wrapper around existing functionality.</p>
+
+<h2 id="building-with-claude-agent-sdk">Building with Claude Agent SDK</h2>
+
+<p>Let’s build the agent piece by piece using the <a href="https://github.com/anthropics/claude-agent-sdk-python" target="_blank" rel="noopener noreferrer">Claude Agent SDK</a>.</p>
+
+<h3 id="tool-layer-wrapping-dotnet-format">Tool Layer: Wrapping <code class="language-plaintext highlighter-rouge">dotnet format</code>
+</h3>
+
+<p>Start with a clean abstraction over <code class="language-plaintext highlighter-rouge">dotnet format</code>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DotnetFormatRunner</span><span class="p">:</span>
+    <span class="sh">"""</span><span class="s">Wraps dotnet format CLI with structured input/output.</span><span class="sh">"""</span>
+    
+    <span class="k">def</span> <span class="nf">run_style_check</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">project_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span><span class="n">severity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="bp">None</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sh">"""</span><span class="s">Run dotnet format style check.</span><span class="sh">"""</span>
+
+        <span class="c1"># Build command
+</span>        <span class="n">cmd</span> <span class="o">=</span> <span class="p">[</span><span class="sh">"</span><span class="s">dotnet</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">format</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">--verify-no-changes</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">--report</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">report.json</span><span class="sh">"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">severity</span><span class="p">:</span>
+            <span class="n">cmd</span><span class="p">.</span><span class="nf">extend</span><span class="p">([</span><span class="sh">"</span><span class="s">--severity</span><span class="sh">"</span><span class="p">,</span> <span class="n">severity</span><span class="p">])</span>
+        <span class="c1"># Execute
+</span>        <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">project_path</span><span class="p">)</span>
+        <span class="c1"># Parse JSON report
+</span>        <span class="k">with</span> <span class="nf">open</span><span class="p">(</span><span class="sh">"</span><span class="s">report.json</span><span class="sh">"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">diagnostics</span> <span class="o">=</span> <span class="n">json</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="c1"># Return structured data
+</span>        <span class="k">return</span> <span class="p">{</span>
+            <span class="sh">"</span><span class="s">diagnostics</span><span class="sh">"</span><span class="p">:</span> <span class="n">diagnostics</span><span class="p">,</span>
+            <span class="sh">"</span><span class="s">summary</span><span class="sh">"</span><span class="p">:</span> <span class="n">self</span><span class="p">.</span><span class="nf">_generate_summary</span><span class="p">(</span><span class="n">diagnostics</span><span class="p">)</span>
+        <span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Key principles:</strong></p>
+
+<ul>
+  <li>✅ Accept structured inputs (paths, options)</li>
+  <li>✅ Return structured outputs (dicts with diagnostics)</li>
+  <li>✅ Handle errors gracefully</li>
+  <li>✅ Keep it testable without AI</li>
+</ul>
+
+<h3 id="agent-layer-mcp-integration">Agent Layer: MCP Integration</h3>
+
+<p>The <a href="https://modelcontextprotocol.io/" target="_blank" rel="noopener noreferrer">Model Context Protocol (MCP)</a> is how Claude discovers and calls your tools. Using the Claude Agent SDK, expose your runner as MCP tools:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">claude_agent_sdk</span> <span class="kn">import</span> <span class="n">tool</span>
+
+<span class="nd">@tool</span><span class="p">(</span>
+    <span class="sh">"</span><span class="s">extract_style_diagnostics</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Extract code style/formatting diagnostics from dotnet format</span><span class="sh">"</span><span class="p">,</span>
+    <span class="p">{</span><span class="sh">"</span><span class="s">severity</span><span class="sh">"</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="sh">"</span><span class="s">exclude</span><span class="sh">"</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]}</span>
+<span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">extract_style_diagnostics</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="c1"># Normalize inputs (AI might send unexpected formats)
+</span>    <span class="n">severity</span> <span class="o">=</span> <span class="n">args</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">"</span><span class="s">severity</span><span class="sh">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">severity</span> <span class="ow">in</span> <span class="p">[</span><span class="sh">"</span><span class="s">all</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">None</span><span class="sh">"</span><span class="p">,</span> <span class="sh">""</span><span class="p">,</span> <span class="bp">None</span><span class="p">]:</span>
+        <span class="n">severity</span> <span class="o">=</span> <span class="bp">None</span>
+    
+    <span class="c1"># Call your existing tool
+</span>    <span class="n">runner</span> <span class="o">=</span> <span class="nc">DotnetFormatRunner</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="p">.</span><span class="nf">run_style_check</span><span class="p">(</span><span class="n">project_path</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="nf">getcwd</span><span class="p">(),</span><span class="n">severity</span><span class="o">=</span><span class="n">severity</span><span class="p">)</span>
+    
+    <span class="c1"># Format response using TOON (Terminal Object Notation)
+</span>    <span class="c1"># This reduces token usage by 30-60% compared to JSON
+</span>    <span class="n">formatted</span> <span class="o">=</span> <span class="nf">format_diagnostics_toon</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="sh">"</span><span class="s">diagnostics</span><span class="sh">"</span><span class="p">])</span>
+    
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="sh">"</span><span class="s">content</span><span class="sh">"</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="sh">"</span><span class="s">type</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">text</span><span class="sh">"</span><span class="p">,</span>
+            <span class="sh">"</span><span class="s">text</span><span class="sh">"</span><span class="p">:</span> <span class="n">formatted</span>
+        <span class="p">}]</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>Why <a href="https://github.com/toon-format/toon" target="_blank" rel="noopener noreferrer">TOON</a> format?</strong> Instead of verbose JSON:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="nl">"file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Program.cs"</span><span class="p">,</span><span class="w"> </span><span class="nl">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nl">"rule"</span><span class="p">:</span><span class="w"> </span><span class="s2">"IDE0055"</span><span class="p">,</span><span class="w"> </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fix formatting"</span><span class="p">},</span><span class="w">
+  </span><span class="p">{</span><span class="nl">"file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Program.cs"</span><span class="p">,</span><span class="w"> </span><span class="nl">"line"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="nl">"rule"</span><span class="p">:</span><span class="w"> </span><span class="s2">"IDE0055"</span><span class="p">,</span><span class="w"> </span><span class="nl">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Fix formatting"</span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Use compact format:</p>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>IDE0055 (count: 2):
+  Program.cs:10
+  Program.cs:15
+</code></pre></div></div>
+
+<p>This is easier to read and uses fewer tokens = lower costs.</p>
+
+<p><strong>Bundle tools into an MCP server:</strong></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">claude_agent_sdk</span> <span class="kn">import</span> <span class="n">create_sdk_mcp_server</span>
+
+<span class="c1"># Create MCP server with all your tools
+</span><span class="n">dotnet_format_server</span> <span class="o">=</span> <span class="nf">create_sdk_mcp_server</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">dotnet-format</span><span class="sh">"</span><span class="p">,</span>
+    <span class="n">version</span><span class="o">=</span><span class="sh">"</span><span class="s">1.0.0</span><span class="sh">"</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">extract_style_diagnostics</span><span class="p">,</span>
+        <span class="n">extract_analyzers_diagnostics</span><span class="p">,</span>
+        <span class="c1"># ... more tools
+</span>    <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="making-it-conversational">Making It Conversational</h3>
+
+<p>Configure the agent with your MCP server and system prompt:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">claude_agent_sdk</span> <span class="kn">import</span> <span class="n">ClaudeAgentOptions</span><span class="p">,</span> <span class="n">ClaudeSDKClient</span>
+
+<span class="n">options</span> <span class="o">=</span> <span class="nc">ClaudeAgentOptions</span><span class="p">(</span>
+    <span class="c1"># Connect MCP servers
+</span>    <span class="n">mcp_servers</span><span class="o">=</span><span class="p">{</span><span class="sh">"</span><span class="s">dotnet-format</span><span class="sh">"</span><span class="p">:</span> <span class="n">dotnet_format_server</span><span class="p">},</span>
+    <span class="c1"># Which tools to enable
+</span>    <span class="n">allowed_tools</span><span class="o">=</span><span class="p">[</span>
+        <span class="sh">"</span><span class="s">mcp__techdebt__extract_style_diagnostics</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">mcp__techdebt__extract_analyzers_diagnostics</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">Read</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">Write</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">Edit</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">Glob</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">Grep</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">WebFetch</span><span class="sh">"</span>
+    <span class="p">],</span>
+    <span class="c1"># Working directory
+</span>    <span class="n">cwd</span><span class="o">=</span><span class="n">os</span><span class="p">.</span><span class="nf">getcwd</span><span class="p">(),</span>
+    <span class="c1"># Auto-approve tool calls
+</span>    <span class="n">permission_mode</span><span class="o">=</span><span class="sh">"</span><span class="s">bypassPermissions</span><span class="sh">"</span><span class="p">,</span>
+    <span class="c1"># System prompt
+</span>    <span class="n">system_prompt</span><span class="o">=</span><span class="p">{</span>
+        <span class="sh">"</span><span class="s">type</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">preset</span><span class="sh">"</span><span class="p">,</span>
+        <span class="sh">"</span><span class="s">preset</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">claude_code</span><span class="sh">"</span><span class="p">,</span>  <span class="c1"># Base Claude Code behavior
+</span>        <span class="sh">"</span><span class="s">append</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"""</span><span class="s">
+You are a .NET code quality expert specializing in technical debt analysis.
+
+When analyzing codebases:
+1. Use </span><span class="sh">'</span><span class="s">warn</span><span class="sh">'</span><span class="s"> severity by default
+2. Group similar issues together
+3. Prioritize by impact and fix difficulty
+4. Always include </span><span class="sh">"</span><span class="s">Next Steps</span><span class="sh">"</span><span class="s"> section
+</span><span class="sh">"""</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># Run the agent
+</span><span class="k">async</span> <span class="k">with</span> <span class="nc">ClaudeSDKClient</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="sh">"</span><span class="s">What are the most important code quality issues?</span><span class="sh">"</span><span class="p">)</span>
+    
+    <span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">client</span><span class="p">.</span><span class="nf">receive_response</span><span class="p">():</span>
+        <span class="c1"># Display response (markdown formatted)
+</span>        <span class="nf">print</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">text</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>The system prompt is crucial</strong> - it teaches the agent:</p>
+
+<ul>
+  <li>✅ Domain expertise (.NET, diagnostics)</li>
+  <li>✅ Tool usage patterns (default to ‘warn’ severity)</li>
+  <li>✅ Response formatting (Markdown, sections)</li>
+  <li>✅ Output structure (always include Next Steps)</li>
+</ul>
+
+<h2 id="demo-interactive-code-quality">Demo: Interactive Code Quality</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>uv run <span class="nt">--package</span> tda tda <span class="s2">"List  grouped analyzers diagnostics"</span> <span class="nt">--cwd</span> ../path/to/project <span class="nt">--interactive</span>
+Technical Debt Agent
+Working directory: ~/dev/path/to/project
+Model: claude-sonnet-4-5
+Type <span class="s1">'exit'</span> or <span class="s1">'quit'</span> to end the session.
+
+You&gt; List analyzers diagnostics grouped by diagnostic
+
+<span class="k">*</span>Agent Response Truncated<span class="k">*</span>
+
+Would you like me to drill down into any specific diagnostic code or analyze particular files where these issues occur?
+
+Cost: <span class="nv">$0</span>.0886
+</code></pre></div></div>
+
+<center>
+    <a href="https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e" target="_blank" rel="noopener noreferrer">
+        <img src="https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e.svg" width="50%" style="margin: 15px;">
+    </a>
+</center>
+
+<h2 id="the-pattern-reusable-building-blocks">The Pattern: Reusable Building Blocks</h2>
+
+<p>Every specialized agent follows this recipe:</p>
+
+<p><strong>1. Tool Layer</strong> (what you already have)</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">YourToolRunner</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">run_analysis</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="c1"># Call external tool
+</span>        <span class="c1"># Parse output  
+</span>        <span class="c1"># Return structured data
+</span></code></pre></div></div>
+
+<p><strong>2. Agent Layer</strong> (MCP wrapper)</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@tool</span><span class="p">(</span><span class="sh">"</span><span class="s">your_tool</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">description</span><span class="sh">"</span><span class="p">,</span> <span class="p">{</span><span class="n">schema</span><span class="p">})</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">your_tool</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="p">.</span><span class="nf">run</span><span class="p">(...)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="sh">"</span><span class="s">content</span><span class="sh">"</span><span class="p">:</span> <span class="p">[{</span><span class="sh">"</span><span class="s">type</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">text</span><span class="sh">"</span><span class="p">,</span> <span class="sh">"</span><span class="s">text</span><span class="sh">"</span><span class="p">:</span> <span class="n">formatted_result</span><span class="p">}]}</span>
+
+<span class="n">server</span> <span class="o">=</span> <span class="nf">create_sdk_mcp_server</span><span class="p">(</span><span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">your_tool</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p><strong>3. Conversational Interface</strong> (configure agent)</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">options</span> <span class="o">=</span> <span class="nc">ClaudeAgentOptions</span><span class="p">(</span>
+    <span class="n">mcp_servers</span><span class="o">=</span><span class="p">{</span><span class="sh">"</span><span class="s">your</span><span class="sh">"</span><span class="p">:</span> <span class="n">server</span><span class="p">},</span>
+    <span class="n">system_prompt</span><span class="o">=</span><span class="p">{</span><span class="sh">"</span><span class="s">append</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">You are a {DOMAIN} expert...</span><span class="sh">"</span><span class="p">}</span>
+<span class="p">)</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="nc">ClaudeSDKClient</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">client</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="sh">"</span><span class="s">Natural language question</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Building specialized agents transforms how we interact with CLI tools:</p>
+
+<p><strong>Before:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dotnet format <span class="nt">--verify-no-changes</span> <span class="nt">--report</span> report.json
+<span class="nb">cat </span>report.json | jq <span class="s1">'...'</span>
+<span class="c"># manually analyze, look up docs, decide...</span>
+</code></pre></div></div>
+
+<p><strong>After:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tda <span class="s2">"What should I fix first?"</span>
+<span class="c"># Get prioritized recommendations with explanations</span>
+</code></pre></div></div>
+
+<p><strong>Key takeaways:</strong></p>
+
+<ul>
+  <li>✅ <strong>Keep tool layer independent</strong> - agent is just a wrapper</li>
+  <li>✅ <strong>Use MCP</strong> to expose tools to Claude</li>
+  <li>✅ <strong>System prompt teaches domain expertise</strong>
+</li>
+  <li>✅ <strong>Optimize output format</strong> (TOON over JSON)</li>
+  <li>✅ <strong>Make it conversational</strong> - multi-turn exploration beats one-shot commands</li>
+</ul>
+
+<p><strong>The pattern is reusable.</strong> Take your existing CLI tools, wrap them with Claude Agent SDK, and give them a conversational interface.</p>
+
+<p>For more details, check out the <a href="https://github.com/NikiforovAll/dotnet-format-agent" target="_blank" rel="noopener noreferrer">full source code</a>. The code I provided here is a simplified version to illustrate the pattern.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>
+<strong><a href="https://github.com/NikiforovAll/dotnet-format-agent" target="_blank" rel="noopener noreferrer">dotnet-format-agent</a></strong> - Full source code</li>
+  <li>
+<strong><a href="https://github.com/anthropics/claude-agent-sdk-python" target="_blank" rel="noopener noreferrer">Claude Agent SDK</a></strong> - Python SDK</li>
+  <li>
+<strong><a href="https://context7.com/anthropics/claude-agent-sdk-python" target="_blank" rel="noopener noreferrer">Context7 - Claude SDK Docs</a></strong> - API reference</li>
+  <li>
+<strong><a href="https://learn.microsoft.com/dotnet/core/tools/dotnet-format" target="_blank" rel="noopener noreferrer">dotnet format</a></strong> - Official docs</li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="tag_box list-unstyled list-inline">
+		<li><i class="fa fa-folder-open"></i></li>
+		
+		
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(58)</span>
+				,
+			</a></li>
+		
+		<li><a href="https://nikiforovall.github.io/categories.html#ai-ref" target="_blank" rel="noopener noreferrer">
+				ai <span>(8)</span>
+				
+			</a></li>
+		
+		
+	</ul>
+	
+
+	
+	<ul class="list-inline">
+		<li><i class="fa fa-tags"></i></li>
+		
+		
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#dotnet-ref" target="_blank" rel="noopener noreferrer">
+				dotnet <span>(63)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#ai-ref" target="_blank" rel="noopener noreferrer">
+				ai <span>(22)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#agents-ref" target="_blank" rel="noopener noreferrer">
+				agents <span>(7)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#claude-ref" target="_blank" rel="noopener noreferrer">
+				claude <span>(4)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#cli-ref" target="_blank" rel="noopener noreferrer">
+				cli <span>(9)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#code-quality-ref" target="_blank" rel="noopener noreferrer">
+				code-quality <span>(1)</span>
+				,
+			</a>
+		</li>
+		
+		<li>
+			<a href="https://nikiforovall.github.io/tags.html#mcp-ref" target="_blank" rel="noopener noreferrer">
+				mcp <span>(9)</span>
+				
+			</a>
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://twitter.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa fa-twitter fa-lg"></i>
+				Twitter
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="https://nikiforovall.github.io/productivity/2025/10/05/claude-code-handbook.html" title="Claude Code Handbook: Best Practices and Recommendations" target="_blank" rel="noopener noreferrer">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2025 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="https://nikiforovall.github.io/assets/js/app.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
