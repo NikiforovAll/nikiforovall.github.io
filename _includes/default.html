@@ -1,10 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="utf-8">
-	{% seo %}
-	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<title>{{ page.title }}{% if page.title %} | {% endif %}{{ site.title }}</title>
+
+	<!-- Meta Description -->
+	{% if page.description %}
+	<meta name="description" content="{{ page.description }}">
+	{% elsif page.shortinfo %}
+	<meta name="description" content="{{ page.shortinfo }}">
+	{% elsif page.excerpt %}
+	<meta name="description" content="{{ page.excerpt | strip_html | strip_newlines | truncatewords: 30 }}">
+	{% else %}
+	<meta name="description" content="{{ site.description }}">
+	{% endif %}
+
 	<meta name="author" content="{{ site.author.name }}">
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href="{{ page.url | absolute_url }}">
+
+	<!-- Open Graph -->
+	<meta property="og:title" content="{{ page.title | default: site.title }}">
+	<meta property="og:description" content="{{ page.description | default: page.shortinfo | default: site.description }}">
+	<meta property="og:url" content="{{ page.url | absolute_url }}">
+	<meta property="og:site_name" content="{{ site.title }}">
+	<meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
+	{% if page.date %}
+	<meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}">
+	{% endif %}
+	{% if page.image %}
+	<meta property="og:image" content="{{ page.image | absolute_url }}">
+	{% endif %}
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:site" content="@{{ site.author.twitter }}">
+	<meta name="twitter:title" content="{{ page.title | default: site.title }}">
+	<meta name="twitter:description" content="{{ page.description | default: page.shortinfo | default: site.description }}">
+	{% if page.image %}
+	<meta name="twitter:image" content="{{ page.image | absolute_url }}">
+	{% endif %}
 
 	<!-- Enable responsive viewport -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -4,18 +4,13 @@
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": "{{ page.title | escape }}",
-  "description": "{{ page.description | default: page.shortinfo | default: page.excerpt | strip_html | strip_newlines | escape }}",
-  {% if page.image %}
-  "image": {
-    "@type": "ImageObject",
-    "url": "{{ page.image | absolute_url }}"
-  },
+  {% assign post_description = page.description | default: page.shortinfo %}
+  {% if post_description %}
+  "description": "{{ post_description | strip_html | strip_newlines | escape }}",
   {% else %}
-  "image": {
-    "@type": "ImageObject",
-    "url": "{{ site.url }}/assets/media/default-post-image.png"
-  },
+  "description": "{{ page.excerpt | strip_html | strip_newlines | truncatewords: 30 | escape }}",
   {% endif %}
+  "image": {% if page.image %}["{{ page.image | absolute_url }}"]{% else %}["{{ site.url }}/assets/media/favicon.ico"]{% endif %},
   "datePublished": "{{ page.date | date_to_xmlschema }}",
   "dateModified": "{{ page.last_modified_at | default: page.date | date_to_xmlschema }}",
   "author": {
