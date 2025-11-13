@@ -1,28 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="utf-8">
-	<!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Building pipelines with IAsyncEnumerable in .NET | N+1 Blog</title>
-<meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="Building pipelines with IAsyncEnumerable in .NET" />
-<meta name="author" content="Oleksii Nikiforov" />
-<meta property="og:locale" content="en_US" />
-<meta name="description" content="TL;DR" />
-<meta property="og:description" content="TL;DR" />
-<link rel="canonical" href="http://localhost:4000/dotnet/2024/08/22/async-enumerable-pipelines.html" />
-<meta property="og:url" content="http://localhost:4000/dotnet/2024/08/22/async-enumerable-pipelines.html" />
-<meta property="og:site_name" content="N+1 Blog" />
-<meta property="og:type" content="article" />
-<meta property="article:published_time" content="2024-08-22T00:00:00+03:00" />
-<meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Building pipelines with IAsyncEnumerable in .NET" />
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Oleksii Nikiforov"},"dateModified":"2024-08-22T00:00:00+03:00","datePublished":"2024-08-22T00:00:00+03:00","description":"TL;DR","headline":"Building pipelines with IAsyncEnumerable in .NET","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/dotnet/2024/08/22/async-enumerable-pipelines.html"},"url":"http://localhost:4000/dotnet/2024/08/22/async-enumerable-pipelines.html"}</script>
-<!-- End Jekyll SEO tag -->
+	<title>Building pipelines with IAsyncEnumerable in .NET | N+1 Blog</title>
 
-	<!-- <meta http-equiv="Content-Security-Policy" content="frame-src https://try.dot.net;"> -->
+	<!-- Meta Description -->
+	
+	<meta name="description" content="This article demonstrates how to use IAsyncEnumerable and System.Linq.Async to build pipelines in C#.">
+	
+
 	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href="https://nikiforovall.github.io/dotnet/2024/08/22/async-enumerable-pipelines.html">
+
+	<!-- Open Graph -->
+	<meta property="og:title" content="Building pipelines with IAsyncEnumerable in .NET">
+	<meta property="og:description" content="This article demonstrates how to use IAsyncEnumerable and System.Linq.Async to build pipelines in C#.">
+	<meta property="og:url" content="https://nikiforovall.github.io/dotnet/2024/08/22/async-enumerable-pipelines.html">
+	<meta property="og:site_name" content="N+1 Blog">
+	<meta property="og:type" content="article">
+	
+	<meta property="article:published_time" content="2024-08-22T00:00:00+03:00">
+	
+	
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:site" content="@nikiforovall">
+	<meta name="twitter:title" content="Building pipelines with IAsyncEnumerable in .NET">
+	<meta name="twitter:description" content="This article demonstrates how to use IAsyncEnumerable and System.Linq.Async to build pipelines in C#.">
+	
 
 	<!-- Enable responsive viewport -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -79,7 +87,7 @@
 	-->
 	<link rel="shortcut icon" href="/assets/media/favicon.ico">
 
-	<link rel="alternate" type="application/rss+xml" title="" href="http://localhost:4000/feed.xml">
+	<link rel="alternate" type="application/rss+xml" title="" href="https://nikiforovall.github.io/feed.xml">
 
 	
 <script type="application/ld+json">
@@ -87,19 +95,17 @@
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "headline": "Building pipelines with IAsyncEnumerable in .NET",
+  
+  
   "description": "This article demonstrates how to use IAsyncEnumerable and System.Linq.Async to build pipelines in C#.",
   
-  "image": {
-    "@type": "ImageObject",
-    "url": "http://localhost:4000/assets/media/default-post-image.png"
-  },
-  
+  "image": ["https://nikiforovall.github.io/assets/media/favicon.ico"],
   "datePublished": "2024-08-22T00:00:00+03:00",
   "dateModified": "2024-08-22T00:00:00+03:00",
   "author": {
     "@type": "Person",
     "name": "Oleksii Nikiforov",
-    "url": "http://localhost:4000/about.html",
+    "url": "https://nikiforovall.github.io/about.html",
     "sameAs": [
       "https://github.com/nikiforovAll",
       "https://twitter.com/nikiforovall",
@@ -117,7 +123,7 @@
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "http://localhost:4000/dotnet/2024/08/22/async-enumerable-pipelines.html"
+    "@id": "https://nikiforovall.github.io/dotnet/2024/08/22/async-enumerable-pipelines.html"
   },
   
   "articleSection": "dotnet",
@@ -1074,7 +1080,7 @@
 
 <p>Pipelines are a common pattern in modern software development. They are used to process data in a streaming fashion, which can be more efficient than processing it all at once. Pipelines are also composable, meaning that you can combine multiple stages together to create more complex processing logic.</p>
 
-<p>💡 I already describe an approach to building pipelines in my previous blog post, you might want to take a look at <a href="https://nikiforovall.github.io/dotnet/async/2024/04/21/channels-composition.html" target="_blank" rel="noopener noreferrer">Building pipelines with System.Threading.Channels</a>. Both <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> and <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> provide powerful tools for managing asynchronous data streams in .NET. However, while <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> offers a more explicit approach to handling producer-consumer scenarios, <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> brings a more integrated and LINQ-friendly way to work with asynchronous sequences. Understanding the strengths and nuances of each can help you choose the right tool for your specific use case.</p>
+<p>💡 I already describe an approach to building pipelines in my previous blog post, you might want to take a look at <a href="https://nikiforovall.github.io/dotnet/async/2024/04/21/channels-composition.html">Building pipelines with System.Threading.Channels</a>. Both <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> and <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> provide powerful tools for managing asynchronous data streams in .NET. However, while <code class="language-plaintext highlighter-rouge">System.Threading.Channels</code> offers a more explicit approach to handling producer-consumer scenarios, <code class="language-plaintext highlighter-rouge">IAsyncEnumerable</code> brings a more integrated and LINQ-friendly way to work with asynchronous sequences. Understanding the strengths and nuances of each can help you choose the right tool for your specific use case.</p>
 
 <h2 id="examples">Examples</h2>
 
