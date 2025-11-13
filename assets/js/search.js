@@ -136,7 +136,7 @@
      * Check if modal is currently open
      */
     function isModalOpen() {
-        return $searchModal.is(':visible');
+        return $searchModal.hasClass('open');
     }
 
     /**

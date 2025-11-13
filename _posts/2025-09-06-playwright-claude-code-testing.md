@@ -2,7 +2,7 @@
 layout: post
 title: "Testing with Playwright and Claude Code"
 categories: [ ai ]
-tags: [ playwright, testing, claude-code, mcp, automation, ai ]
+tags: [ playwright, testing, claude, mcp, automation, ai ]
 published: true
 shortinfo: "Discover how Playwright MCP Server and Claude Code can help you perform manual and exploratory testing of web applications."
 fullview: false
