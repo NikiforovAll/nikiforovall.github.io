@@ -86,6 +86,10 @@
                     navigateResults(-1);
                     break;
                 case 'Enter':
+                    // Don't intercept Enter if the close button is focused
+                    if (document.activeElement.id === 'search-close') {
+                        return;
+                    }
                     e.preventDefault();
                     selectResult();
                     break;
