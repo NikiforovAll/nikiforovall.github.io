@@ -31,7 +31,7 @@ Transform `dotnet format` from a CLI tool into a conversational AI agent that he
 
 **Source code:** <https://github.com/NikiforovAll/dotnet-format-agent>
 
-<script src="https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e.js" id="asciicast-GUdHxDAXQCtQEvko3GZlXz96e" async="true"></script>
+<script src="https://asciinema.org/a/756557.js" id="asciicast-756557" async="true"></script>
 
 ## Why Build Specialized Agents?
 
@@ -275,10 +275,9 @@ Would you like me to drill down into any specific diagnostic code or analyze par
 
 Cost: $0.0886
 ```
-
 <center>
-    <a href="https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e">
-        <img src="https://asciinema.org/a/GUdHxDAXQCtQEvko3GZlXz96e.svg" width="50%" style="margin: 15px;"/>
+    <a href="https://asciinema.org/a/756557">
+        <img src="https://asciinema.org/a/756557.svg" width="50%" style="margin: 15px;"/>
     </a>
 </center>
 
