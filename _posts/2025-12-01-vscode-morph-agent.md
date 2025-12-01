@@ -90,8 +90,6 @@ layout {
 }
 ```
 
-This creates a 60/40 split with code on the left and the AI chat panel on the right. Simple, readable, and shareable.
-
 Here is a demo showing different layout configurations being applied:
 
 <center>
