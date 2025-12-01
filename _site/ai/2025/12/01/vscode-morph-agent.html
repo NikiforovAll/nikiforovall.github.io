@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>VSCode Morph Agent: Let AI Control Your Workspace | N+1 Blog</title>
+
+	<!-- Meta Description -->
+	
+	<meta name="description" content="Explore how AI agents can manipulate your IDE workspace to enhance agentic coding workflows">
+	
+
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href="http://localhost:4000/ai/2025/12/01/vscode-morph-agent.html">
+
+	<!-- Open Graph -->
+	<meta property="og:title" content="VSCode Morph Agent: Let AI Control Your Workspace">
+	<meta property="og:description" content="Explore how AI agents can manipulate your IDE workspace to enhance agentic coding workflows">
+	<meta property="og:url" content="http://localhost:4000/ai/2025/12/01/vscode-morph-agent.html">
+	<meta property="og:site_name" content="N+1 Blog">
+	<meta property="og:type" content="article">
+	
+	<meta property="article:published_time" content="2025-12-01T00:00:00+02:00">
+	
+	<meta property="og:image" content="http://localhost:4000/assets/media/default-post-image.png">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@nikiforovall">
+	<meta name="twitter:title" content="VSCode Morph Agent: Let AI Control Your Workspace">
+	<meta name="twitter:description" content="Explore how AI agents can manipulate your IDE workspace to enhance agentic coding workflows">
+	<meta name="twitter:image" content="http://localhost:4000/assets/media/default-post-image.png">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<link href="/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="/assets/css/style.css" rel="stylesheet">
+
+	<!-- Search Feature Styles -->
+	<style>
+		.layout-page .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; height: 34px; box-sizing: border-box; }
+		.layout-post .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 0; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; width: 34px; height: 34px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; box-sizing: border-box; }
+		.search-trigger:hover { background: #ebebeb; border-color: #c0c0c0; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+		.search-icon { color: #666; font-size: 14px; display: flex; align-items: center; }
+		.search-placeholder { flex: 1; color: #999; font-size: 14px; user-select: none; }
+		.search-keybind { display: flex; gap: 4px; align-items: center; }
+		.search-key { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 6px; background: #e0e0e0; border: 1px solid #ccc; border-bottom: 2px solid #bbb; border-radius: 3px; color: #333; line-height: 1.2; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+		.layout-post .search-placeholder { display: none; }
+		.layout-post .search-keybind { display: none; }
+		.search-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; display: none; align-items: flex-start; justify-content: center; padding-top: 10vh; }
+		.search-modal.open { display: flex; animation: fadeIn 0.2s ease; }
+		@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+		.search-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+		.search-modal-container { position: relative; width: 90%; max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); overflow: hidden; }
+		.search-input-container { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e0e0e0; gap: 12px; }
+		.search-modal-icon { color: #666; font-size: 18px; }
+		.search-modal-input { flex: 1; border: none; outline: none; font-size: 16px; color: #333; background: transparent; }
+		.search-modal-input::placeholder { color: #999; }
+		.search-close-btn { background: transparent; border: none; color: #999; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.15s ease; }
+		.search-close-btn:hover { background: #f0f0f0; color: #333; }
+		.search-results { max-height: 60vh; overflow-y: auto; padding: 8px; }
+		.search-hint { padding: 40px 20px; text-align: center; color: #999; font-size: 14px; }
+		.search-result-item { padding: 12px 16px; border-radius: 6px; cursor: pointer; transition: background-color 0.15s ease; border: 2px solid transparent; margin-bottom: 4px; }
+		.search-result-item:hover { background: #f5f5f5; }
+		.search-result-item.selected { background: #e8f4f8; border-color: #4a90e2; }
+		.search-footer { display: flex; justify-content: center; gap: 20px; padding: 12px 20px; border-top: 1px solid #e0e0e0; background: #fafafa; font-size: 12px; color: #666; }
+		.search-footer kbd { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 5px; background: white; border: 1px solid #ddd; border-radius: 3px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+		@media (max-width: 768px) { .layout-page .search-trigger, .layout-post .search-trigger { display: none; } .search-modal { padding-top: 5vh; } .search-modal-container { width: 95%; max-width: none; margin: 0 10px; } .search-results { max-height: 50vh; } .search-footer { flex-wrap: wrap; gap: 10px; } }
+	</style>
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="http://localhost:4000/feed.xml">
+
+	
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "VSCode Morph Agent: Let AI Control Your Workspace",
+  
+  
+  "description": "Explore how AI agents can manipulate your IDE workspace to enhance agentic coding workflows",
+  
+  "image": ["http://localhost:4000/assets/media/default-post-image.png"],
+  "datePublished": "2025-12-01T00:00:00+02:00",
+  "dateModified": "2025-12-01T00:00:00+02:00",
+  "author": {
+    "@type": "Person",
+    "name": "Oleksii Nikiforov",
+    "url": "http://localhost:4000/about.html",
+    "sameAs": [
+      "https://github.com/nikiforovAll",
+      "https://twitter.com/nikiforovall",
+      "https://www.linkedin.com/in/nikiforov-oleksii",
+      "https://t.me/nikiforovallblog"
+    ]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Oleksii Nikiforov",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=200"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:4000/ai/2025/12/01/vscode-morph-agent.html"
+  },
+  
+  "articleSection": "ai",
+  
+  
+  "keywords": "vscode, ai, agents, productivity, copilot",
+  
+  "inLanguage": "en-US"
+}
+</script>
+
+
+</head>
+
+<body class="layout-post">
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-x-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa-solid fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="/">Home</a></li>
+				<li><a href="/topics.html">Topics</a></li>
+				<li><a href="/about.html">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa-solid fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="/"><i class="fa-solid fa-home"></i>Home</a></li>
+			<li><a href="/topics.html"><i class="fa-solid fa-bookmark"></i>Topics</a></li>
+			<li><a href="/about.html"><i class="fa-solid fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa-solid fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<!-- Search Control -->
+	<button id="search-trigger" class="search-trigger" type="button" aria-label="Open search">
+		<span class="search-icon"><i class="fa-solid fa-search"></i></span>
+		<span class="search-placeholder">Search</span>
+		<div class="search-keybind">
+			<kbd class="search-key" id="search-modifier">ctrl</kbd>
+			<kbd class="search-key">K</kbd>
+		</div>
+	</button>
+
+	<!-- Search Modal -->
+	<div id="search-modal" class="search-modal">
+		<div class="search-backdrop"></div>
+		<div class="search-modal-container">
+			<div class="search-input-container">
+				<i class="fa-solid fa-search search-modal-icon"></i>
+				<input type="text" id="search-input" class="search-modal-input" placeholder="Search blog posts..." autocomplete="off">
+				<button id="search-close" class="search-close-btn" title="Close (ESC)">
+					<i class="fa-solid fa-times"></i>
+				</button>
+			</div>
+			<div id="search-results" class="search-results">
+				<div class="search-hint">Type at least 2 characters to search...</div>
+			</div>
+			<div class="search-footer">
+				<span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+				<span><kbd>↵</kbd> to select</span>
+				<span><kbd>ESC</kbd> to close</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="/">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle">
+	</a>
+	<h3 class="title">
+        <a href="/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-github fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-x-twitter fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-telegram fa-lg"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-linkedin fa-lg"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa-solid fa-envelope fa-lg"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa-solid fa-rss fa-lg"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>VSCode Morph Agent: Let AI Control Your Workspace </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			December
+			1st,
+			
+			2025
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/10/05/claude-code-handbook.html">Claude Code Handbook: Best Practices and Recommendations <span class="label label-default">productivity</span>  <span class="label label-default">ai</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/06/14/claude-code-telemetry-aspire.html">Monitoring Claude Code with .NET Aspire Dashboard <span class="label label-default">productivity</span>  <span class="label label-default">ai</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/06/13/claude-code-rules.html">My Claude Code Usage Best Practices and Recommendations <span class="label label-default">productivity</span>  <span class="label label-default">ai</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html">Code Review with GitHub Copilot in Visual Studio Code <span class="label label-default">productivity</span>  <span class="label label-default">ai</span>  <span class="label label-default">copilot</span>  <span class="label label-default">agents</span> </a></h5>
+	</div>
+	
+	
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>What if AI agents could not only write code but also organize your workspace? <strong>Morph Agent</strong> is a VSCode extension that lets AI control your editor layout through natural language. It’s a proof of concept demonstrating a powerful principle: <strong>agents should be able to manipulate the ambient environment</strong> to help us focus on what matters.</p>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/vscode-morph" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/vscode-morph</a></p>
+
+<hr>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Modern software development increasingly involves working with multiple artifacts simultaneously—specifications, implementation plans, task lists, code files, tests, and documentation. When using AI coding assistants, this complexity multiplies: you’re juggling context windows, chat panels, terminal output, and reference materials.</p>
+
+<p>The problem isn’t just having the right files open—it’s having them arranged in a way that supports your current workflow. Manually reorganizing your workspace breaks your flow. What if your AI assistant could do this for you?</p>
+
+<p><strong>Morph Agent</strong> explores this idea. It’s a VSCode extension that gives AI the ability to control your editor layout. Through GitHub Copilot Chat, you can describe how you want your workspace arranged, and Morph makes it happen.</p>
+
+<p>The idea is based on a simple principle: <strong>AI should control the ambient workspace, not just the code</strong>.</p>
+
+<p>Furthermore, an agent should be able to produce additional tools or UI elements to facilitate better interaction with the user.</p>
+
+<h3 id="find-this-principle-in-the-other-tools">Find this Principle in the Other Tools</h3>
+
+<p>For example, in <a href="https://github.com/anthropics/claude-code" target="_blank" rel="noopener noreferrer">Claude Code</a>, the user is presented with a special tool to clarify questions - <code class="language-plaintext highlighter-rouge">AskUserQuestion</code>. This tool opens a special input inside the terminal so that the user can provide input back to the agent. This is a great example of an agent manipulating the ambient environment to facilitate better interaction.</p>
+
+<center>
+<img src="/assets/morph/AskUserQuestionExample.png" alt="AskUserQuestion tool example">
+</center>
+
+<h2 id="what-is-morph-agent">What is Morph Agent?</h2>
+
+<p>Morph Agent bridges the gap between natural language intent and editor configuration. It provides:</p>
+
+<ol>
+  <li>
+    <p><strong>Natural Language Layout Control</strong> — Use <code class="language-plaintext highlighter-rouge">@morph-layout</code> in Copilot Chat to request arrangements like “split my files side by side” or “open the tests next to the implementation”</p>
+  </li>
+  <li>
+    <p><strong>KDL Layout DSL</strong> — A declarative configuration language (KDL) for precise, reproducible layouts</p>
+  </li>
+  <li>
+    <p><strong>Bidirectional Conversion</strong> — Capture your current layout as KDL code, or apply KDL to transform your workspace</p>
+  </li>
+</ol>
+
+<p>The key insight is that layouts become <em>first-class artifacts</em>. You can version control them, share them with your team, and let AI generate them contextually.</p>
+
+<h3 id="the-kdl-format">The KDL Format</h3>
+
+<p>KDL (pronounced “cuddle”) is a minimal document language perfect for configuration. Here’s a quick taste:</p>
+
+<p><strong>Side-by-side:</strong></p>
+<pre><code class="language-kdl">layout {
+  cols {
+    group { file "src/main.ts" }
+    group { file "src/test.ts" }
+  }
+}
+</code></pre>
+
+<p><strong>Stacked:</strong></p>
+<pre><code class="language-kdl">layout {
+  rows {
+    group { file "README.md" }
+    group { file "CHANGELOG.md" }
+  }
+}
+</code></pre>
+
+<p><strong>2x2 Grid:</strong></p>
+<pre><code class="language-kdl">layout {
+  rows {
+    cols {
+      group { file "a.ts" }
+      group { file "b.ts" }
+    }
+    cols {
+      group { file "c.ts" }
+      group { file "d.ts" }
+    }
+  }
+}
+</code></pre>
+
+<p>This creates a 60/40 split with code on the left and the AI chat panel on the right. Simple, readable, and shareable.</p>
+
+<p>Here is a demo showing different layout configurations being applied:</p>
+
+<center>
+<img src="/assets/morph/demo.gif" alt="KDL layout examples with Apply Layout CodeLens">
+</center>
+
+<h2 id="scenario-1-agentic-coding-layout">Scenario 1: Agentic Coding Layout</h2>
+
+<p>When working with AI coding assistants, I find myself constantly arranging windows: specification on one side, implementation plan visible, chat ready for questions, terminal for running tests. Setting this up manually each session is tedious.</p>
+
+<p>With Morph, I can define a persistent layout configuration:</p>
+
+<pre><code class="language-kdl">window {
+  layout {
+    cols {
+      rows size="60" {
+        cols size="50" {
+          group size="50" { file "spec.md" }
+          group size="50" { file "plan.md" }
+        }
+        group size="50" { file "extension.ts" }
+      }
+      rows size="40" {
+        group size="80" { chat }
+        group size="20" { terminal }
+      }
+    }
+  }
+}
+</code></pre>
+
+<p>This layout gives me:</p>
+<ul>
+  <li>
+<strong>Top-left</strong>: Spec and plan files side by side (reference materials)</li>
+  <li>
+<strong>Bottom-left</strong>: The code I’m working on</li>
+  <li>
+<strong>Right side</strong>: AI chat (80%) and terminal (20%)</li>
+</ul>
+
+<p>Save this as <code class="language-plaintext highlighter-rouge">.layout.kdl</code> in your project, and you can restore it instantly next time you return to work on the same project. Your workspace becomes reproducible.</p>
+
+<center>
+<img src="/assets/morph/demo3.gif" alt="Agentic coding layout with spec, plan, chat, and terminal">
+</center>
+
+<h2 id="scenario-2-spec-driven-development">Scenario 2: Spec-Driven Development</h2>
+
+<p>Spec-driven development follows a natural progression:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>spec.md → plan.md → tasks.md → implementation
+</code></pre></div></div>
+
+<p>At each stage, different files are relevant. Instead of manually opening and closing files, imagine an agent that understands where you are in the workflow and adjusts the workspace accordingly.</p>
+
+<p>When you’re in the planning phase:</p>
+<pre><code class="language-kdl">layout {
+  cols {
+    group size="50" { file "spec.md" }
+    group size="50" { file "plan.md" }
+  }
+}
+</code></pre>
+
+<p>When you move to implementation:</p>
+<pre><code class="language-kdl">layout {
+  cols {
+    group size="30" { file "plan.md" file "tasks.md" }
+    group size="70" { file "src/feature.ts" }
+  }
+}
+</code></pre>
+
+<p>The workspace <em>morphs</em> to match your mental context. This is the kind of ambient intelligence that makes AI assistants truly helpful.</p>
+
+<h2 id="scenario-3-context-aware-file-opening">Scenario 3: Context-Aware File Opening</h2>
+
+<p>Sometimes the agent just needs to show you the right files. During a conversation about testing, the agent might realize you need to see both the implementation and its tests:</p>
+
+<pre><code class="language-kdl">layout {
+  file "extension.ts" "test/parser.test.ts"
+}
+</code></pre>
+
+<p>Or when debugging an issue across multiple files:</p>
+
+<pre><code class="language-kdl">layout {
+  cols {
+    group { file "src/parser.ts" }
+    group { file "src/compiler.ts" }
+    group { file "src/types.ts" }
+  }
+}
+</code></pre>
+
+<p>The agent opens exactly what’s relevant based on the conversation context, providing better assistance through relevant file visibility.</p>
+
+<h2 id="the-future-vision">The Future Vision</h2>
+
+<p>Morph Agent is just a proof of concept, but it demonstrates a principle I believe will become fundamental to agentic coding:</p>
+
+<p><strong>Agents will manipulate the ambient workspace to help us focus.</strong></p>
+
+<p>Today’s coding assistants are constrained to text—they can read and write code, but they can’t:</p>
+<ul>
+  <li>Open relevant files when discussing a topic</li>
+  <li>Arrange windows to match your workflow</li>
+  <li>Adjust the environment based on the task at hand</li>
+</ul>
+
+<p>This will change. Future agents will:</p>
+<ul>
+  <li>
+<strong>Understand workflow phases</strong> and adapt the workspace automatically</li>
+  <li>
+<strong>Learn your preferences</strong> and suggest layouts based on past behavior</li>
+  <li>
+<strong>Coordinate multiple tools</strong> — editor, browser, documentation, terminal — as a unified environment</li>
+  <li>
+<strong>Preserve context</strong> across sessions, restoring not just files but the entire cognitive workspace</li>
+</ul>
+
+<p>The interface between human and AI isn’t just about generating code. It’s about shaping the environment where that code gets written.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>Install Morph Agent from the <a href="https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent" target="_blank" rel="noopener noreferrer">VSCode Marketplace</a>.</p>
+
+<p>Try it out:</p>
+<ol>
+  <li>Open Copilot Chat</li>
+  <li>Type <code class="language-plaintext highlighter-rouge">@morph-layout generate a grid layout and apply from opened files</code>
+</li>
+  <li>Watch your workspace transform</li>
+</ol>
+
+<center>
+<img src="/assets/morph/demo2.gif" alt="Using @morph-layout in Copilot Chat">
+</center>
+
+<p>Or create a <code class="language-plaintext highlighter-rouge">.layout.kdl</code> file in your project and use the “Apply Layout” CodeLens to restore your preferred arrangement.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Morph Agent is an experiment in giving AI control over the workspace—not just the code. It’s a small step toward a future where agents understand not just <em>what</em> we’re building, but <em>how</em> we work.</p>
+
+<p>The source code is available on <a href="https://github.com/NikiforovAll/vscode-morph" target="_blank" rel="noopener noreferrer">GitHub</a>. Try it, break it, and imagine what ambient AI assistance could look like.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent" target="_blank" rel="noopener noreferrer">Morph Agent - VSCode Marketplace</a></li>
+  <li><a href="https://github.com/NikiforovAll/vscode-morph" target="_blank" rel="noopener noreferrer">Morph Agent - GitHub Repository</a></li>
+  <li><a href="https://kdl.dev/" target="_blank" rel="noopener noreferrer">KDL - The KDL Document Language</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="list-inline">
+		<li>
+<i class="fa-solid fa-bookmark"></i> Topics:</li>
+		
+		
+		
+		<li>
+			<a href="/topics.html#ai-cat-ref">
+				ai <span>(9)</span>
+			</a>
+			 ·
+		</li>
+		
+		
+		
+		
+		
+		<li>
+			<a href="/topics.html#vscode-tag-ref">
+				vscode <span>(3)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#ai-tag-ref">
+				ai <span>(23)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#agents-tag-ref">
+				agents <span>(8)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#productivity-tag-ref">
+				productivity <span>(10)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#copilot-tag-ref">
+				copilot <span>(4)</span>
+			</a>
+			
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://x.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'x-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa-brands fa-x-twitter fa-lg"></i>
+				X
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="/dotnet/ai/2025/11/11/dotnet-format-agent.html" title="Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2025 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/assets/js/app.js"></script>
+	<script src="https://unpkg.com/lunr/lunr.js"></script>
+	<script type="text/javascript" src="/assets/js/search.js"></script>
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+

@@ -7,6 +7,247 @@
 		<atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>VSCode Morph Agent: Let AI Control Your Workspace</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;p&gt;What if AI agents could not only write code but also organize your workspace? &lt;strong&gt;Morph Agent&lt;/strong&gt; is a VSCode extension that lets AI control your editor layout through natural language. It’s a proof of concept demonstrating a powerful principle: &lt;strong&gt;agents should be able to manipulate the ambient environment&lt;/strong&gt; to help us focus on what matters.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/vscode-morph&quot;&gt;https://github.com/NikiforovAll/vscode-morph&lt;/a&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;Modern software development increasingly involves working with multiple artifacts simultaneously—specifications, implementation plans, task lists, code files, tests, and documentation. When using AI coding assistants, this complexity multiplies: you’re juggling context windows, chat panels, terminal output, and reference materials.&lt;/p&gt;
+
+&lt;p&gt;The problem isn’t just having the right files open—it’s having them arranged in a way that supports your current workflow. Manually reorganizing your workspace breaks your flow. What if your AI assistant could do this for you?&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Morph Agent&lt;/strong&gt; explores this idea. It’s a VSCode extension that gives AI the ability to control your editor layout. Through GitHub Copilot Chat, you can describe how you want your workspace arranged, and Morph makes it happen.&lt;/p&gt;
+
+&lt;p&gt;The idea is based on a simple principle: &lt;strong&gt;AI should control the ambient workspace, not just the code&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;Furthermore, an agent should be able to produce additional tools or UI elements to facilitate better interaction with the user.&lt;/p&gt;
+
+&lt;h3 id=&quot;find-this-principle-in-the-other-tools&quot;&gt;Find this Principle in the Other Tools&lt;/h3&gt;
+
+&lt;p&gt;For example, in &lt;a href=&quot;https://github.com/anthropics/claude-code&quot;&gt;Claude Code&lt;/a&gt;, the user is presented with a special tool to clarify questions - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AskUserQuestion&lt;/code&gt;. This tool opens a special input inside the terminal so that the user can provide input back to the agent. This is a great example of an agent manipulating the ambient environment to facilitate better interaction.&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;/assets/morph/AskUserQuestionExample.png&quot; alt=&quot;AskUserQuestion tool example&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;what-is-morph-agent&quot;&gt;What is Morph Agent?&lt;/h2&gt;
+
+&lt;p&gt;Morph Agent bridges the gap between natural language intent and editor configuration. It provides:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Natural Language Layout Control&lt;/strong&gt; — Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@morph-layout&lt;/code&gt; in Copilot Chat to request arrangements like “split my files side by side” or “open the tests next to the implementation”&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;KDL Layout DSL&lt;/strong&gt; — A declarative configuration language (KDL) for precise, reproducible layouts&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Bidirectional Conversion&lt;/strong&gt; — Capture your current layout as KDL code, or apply KDL to transform your workspace&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The key insight is that layouts become &lt;em&gt;first-class artifacts&lt;/em&gt;. You can version control them, share them with your team, and let AI generate them contextually.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-kdl-format&quot;&gt;The KDL Format&lt;/h3&gt;
+
+&lt;p&gt;KDL (pronounced “cuddle”) is a minimal document language perfect for configuration. Here’s a quick taste:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Side-by-side:&lt;/strong&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
+  cols {
+    group { file &quot;src/main.ts&quot; }
+    group { file &quot;src/test.ts&quot; }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;Stacked:&lt;/strong&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
+  rows {
+    group { file &quot;README.md&quot; }
+    group { file &quot;CHANGELOG.md&quot; }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;2x2 Grid:&lt;/strong&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
+  rows {
+    cols {
+      group { file &quot;a.ts&quot; }
+      group { file &quot;b.ts&quot; }
+    }
+    cols {
+      group { file &quot;c.ts&quot; }
+      group { file &quot;d.ts&quot; }
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This creates a 60/40 split with code on the left and the AI chat panel on the right. Simple, readable, and shareable.&lt;/p&gt;
+
+&lt;p&gt;Here is a demo showing different layout configurations being applied:&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;/assets/morph/demo.gif&quot; alt=&quot;KDL layout examples with Apply Layout CodeLens&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;scenario-1-agentic-coding-layout&quot;&gt;Scenario 1: Agentic Coding Layout&lt;/h2&gt;
+
+&lt;p&gt;When working with AI coding assistants, I find myself constantly arranging windows: specification on one side, implementation plan visible, chat ready for questions, terminal for running tests. Setting this up manually each session is tedious.&lt;/p&gt;
+
+&lt;p&gt;With Morph, I can define a persistent layout configuration:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;window {
+  layout {
+    cols {
+      rows size=&quot;60&quot; {
+        cols size=&quot;50&quot; {
+          group size=&quot;50&quot; { file &quot;spec.md&quot; }
+          group size=&quot;50&quot; { file &quot;plan.md&quot; }
+        }
+        group size=&quot;50&quot; { file &quot;extension.ts&quot; }
+      }
+      rows size=&quot;40&quot; {
+        group size=&quot;80&quot; { chat }
+        group size=&quot;20&quot; { terminal }
+      }
+    }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This layout gives me:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Top-left&lt;/strong&gt;: Spec and plan files side by side (reference materials)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Bottom-left&lt;/strong&gt;: The code I’m working on&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Right side&lt;/strong&gt;: AI chat (80%) and terminal (20%)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Save this as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.layout.kdl&lt;/code&gt; in your project, and you can restore it instantly next time you return to work on the same project. Your workspace becomes reproducible.&lt;/p&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;/assets/morph/demo3.gif&quot; alt=&quot;Agentic coding layout with spec, plan, chat, and terminal&quot; /&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;scenario-2-spec-driven-development&quot;&gt;Scenario 2: Spec-Driven Development&lt;/h2&gt;
+
+&lt;p&gt;Spec-driven development follows a natural progression:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;spec.md → plan.md → tasks.md → implementation
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;At each stage, different files are relevant. Instead of manually opening and closing files, imagine an agent that understands where you are in the workflow and adjusts the workspace accordingly.&lt;/p&gt;
+
+&lt;p&gt;When you’re in the planning phase:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
+  cols {
+    group size=&quot;50&quot; { file &quot;spec.md&quot; }
+    group size=&quot;50&quot; { file &quot;plan.md&quot; }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When you move to implementation:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
+  cols {
+    group size=&quot;30&quot; { file &quot;plan.md&quot; file &quot;tasks.md&quot; }
+    group size=&quot;70&quot; { file &quot;src/feature.ts&quot; }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The workspace &lt;em&gt;morphs&lt;/em&gt; to match your mental context. This is the kind of ambient intelligence that makes AI assistants truly helpful.&lt;/p&gt;
+
+&lt;h2 id=&quot;scenario-3-context-aware-file-opening&quot;&gt;Scenario 3: Context-Aware File Opening&lt;/h2&gt;
+
+&lt;p&gt;Sometimes the agent just needs to show you the right files. During a conversation about testing, the agent might realize you need to see both the implementation and its tests:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
+  file &quot;extension.ts&quot; &quot;test/parser.test.ts&quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Or when debugging an issue across multiple files:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
+  cols {
+    group { file &quot;src/parser.ts&quot; }
+    group { file &quot;src/compiler.ts&quot; }
+    group { file &quot;src/types.ts&quot; }
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The agent opens exactly what’s relevant based on the conversation context, providing better assistance through relevant file visibility.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-future-vision&quot;&gt;The Future Vision&lt;/h2&gt;
+
+&lt;p&gt;Morph Agent is just a proof of concept, but it demonstrates a principle I believe will become fundamental to agentic coding:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Agents will manipulate the ambient workspace to help us focus.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Today’s coding assistants are constrained to text—they can read and write code, but they can’t:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Open relevant files when discussing a topic&lt;/li&gt;
+  &lt;li&gt;Arrange windows to match your workflow&lt;/li&gt;
+  &lt;li&gt;Adjust the environment based on the task at hand&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This will change. Future agents will:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Understand workflow phases&lt;/strong&gt; and adapt the workspace automatically&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Learn your preferences&lt;/strong&gt; and suggest layouts based on past behavior&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Coordinate multiple tools&lt;/strong&gt; — editor, browser, documentation, terminal — as a unified environment&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Preserve context&lt;/strong&gt; across sessions, restoring not just files but the entire cognitive workspace&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The interface between human and AI isn’t just about generating code. It’s about shaping the environment where that code gets written.&lt;/p&gt;
+
+&lt;h2 id=&quot;getting-started&quot;&gt;Getting Started&lt;/h2&gt;
+
+&lt;p&gt;Install Morph Agent from the &lt;a href=&quot;https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent&quot;&gt;VSCode Marketplace&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Try it out:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Open Copilot Chat&lt;/li&gt;
+  &lt;li&gt;Type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@morph-layout generate a grid layout and apply from opened files&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Watch your workspace transform&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;center&gt;
+&lt;img src=&quot;/assets/morph/demo2.gif&quot; alt=&quot;Using @morph-layout in Copilot Chat&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Or create a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.layout.kdl&lt;/code&gt; file in your project and use the “Apply Layout” CodeLens to restore your preferred arrangement.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Morph Agent is an experiment in giving AI control over the workspace—not just the code. It’s a small step toward a future where agents understand not just &lt;em&gt;what&lt;/em&gt; we’re building, but &lt;em&gt;how&lt;/em&gt; we work.&lt;/p&gt;
+
+&lt;p&gt;The source code is available on &lt;a href=&quot;https://github.com/NikiforovAll/vscode-morph&quot;&gt;GitHub&lt;/a&gt;. Try it, break it, and imagine what ambient AI assistance could look like.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent&quot;&gt;Morph Agent - VSCode Marketplace&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/vscode-morph&quot;&gt;Morph Agent - GitHub Repository&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://kdl.dev/&quot;&gt;KDL - The KDL Document Language&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Mon, 01 Dec 2025 00:00:00 +0200</pubDate>
+				<link>http://localhost:4000/ai/2025/12/01/vscode-morph-agent.html</link>
+				<guid isPermaLink="true">http://localhost:4000/ai/2025/12/01/vscode-morph-agent.html</guid>
+			</item>
+		
+			<item>
 				<title>Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -1527,192 +1768,6 @@ tdm repo status
 				<pubDate>Thu, 29 May 2025 00:00:00 +0300</pubDate>
 				<link>http://localhost:4000/dotnet/2025/05/29/hangfire-mcp-standalone.html</link>
 				<guid isPermaLink="true">http://localhost:4000/dotnet/2025/05/29/hangfire-mcp-standalone.html</guid>
-			</item>
-		
-			<item>
-				<title>Background Job Scheduling Using Hangfire MCP Server</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;Enqueue background jobs using the &lt;strong&gt;Hangfire MCP server&lt;/strong&gt;. Source code: &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp&quot;&gt;https://github.com/NikiforovAll/hangfire-mcp&lt;/a&gt;&lt;/p&gt;
-
-&lt;center&gt;
-    &lt;video src=&quot;https://github.com/user-attachments/assets/e6abc036-b1f9-4691-a829-65292db5b5e6&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
-&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;motivation&quot;&gt;Motivation&lt;/h2&gt;
-
-&lt;p&gt;I like Hangfire for background job processing in .NET applications. It has a simple and intuitive API, a powerful dashboard, and supports various storage options. Essentially, it provides everything I need for real-world applications that require background processing. However, sometimes I need to run a job with parameters in the background, and there isn’t an easy way to do it directly from the Hangfire dashboard.&lt;/p&gt;
-
-&lt;p&gt;🤔 So, I had an idea to schedule Hangfire jobs through an MCP server. This is exactly the use case for an MCP server.&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;MCP is an open protocol that standardizes how applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C provides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;setup-mcp-server&quot;&gt;Setup MCP Server&lt;/h2&gt;
-
-&lt;p&gt;If you want to set up your own &lt;em&gt;Hangfire MCP Server&lt;/em&gt;, you can use the &lt;a href=&quot;https://www.nuget.org/packages/Nall.ModelContextProtocol.Template&quot;&gt;Nall.ModelContextProtocol.Template&lt;/a&gt; template that I shared with you in the &lt;a href=&quot;https://nikiforovall.github.io/dotnet/2025/04/04/mcp-template-and-aspire.html&quot;&gt;previous post&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;At a high level, you need to do the following:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Set up the MCP server.&lt;/li&gt;
-  &lt;li&gt;Register &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;McpServerTool&lt;/code&gt;.&lt;/li&gt;
-  &lt;li&gt;Configure job discovery.&lt;/li&gt;
-  &lt;li&gt;Connect the MCP server to Hangfire using a connection string.&lt;/li&gt;
-  &lt;li&gt;Configure the MCP client to consume the Hangfire MCP server. For example, in VS Code, you can configure the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mcp.json&lt;/code&gt; file to add your server.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;code-deep-dive&quot;&gt;Code Deep Dive&lt;/h2&gt;
-
-&lt;p&gt;Let’s see how this whole thing is composed by reviewing the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AppHost/Program.cs&lt;/code&gt; file:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DistributedApplication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreateBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postgresServer&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddPostgres&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;postgres-server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithDataVolume&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postgresServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hangfire&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Web&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mcp&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HangfireMCP&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;hangfire-mcp&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithReference&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WaitFor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postgresDatabase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMCPInspector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithSSE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In the above code, we are adding the following components:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;&lt;strong&gt;Postgres Server&lt;/strong&gt;: This is where Hangfire will store its data.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Web Project (aka Server)&lt;/strong&gt;: This is the main web application that will perform background job processing.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Hangfire MCP Project&lt;/strong&gt;: This is the MCP server that will expose Hangfire jobs as MCP commands.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;MCP Inspector&lt;/strong&gt;: This is the MCP inspector that will allow us to interact with the Hangfire MCP server. This is very useful for debugging and testing purposes.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;🚀 You can clone the repository (&lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp&quot;&gt;https://github.com/NikiforovAll/hangfire-mcp&lt;/a&gt;) and run the project to see how it works.&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;aspire run &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; ./samples/AppHost/AppHost.csproj
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Here is how the Aspire Dashboard looks:&lt;/p&gt;
-
-&lt;center&gt;&lt;img src=&quot;/assets/hangfire-mcp/aspire-dashboard.png&quot; /&gt;&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;From a high-level perspective, here is how it works:&lt;/p&gt;
-
-&lt;div class=&quot;mermaid&quot;&gt;
-sequenceDiagram
-    participant User as User
-    participant MCPHangfire as MCP Hangfire
-    participant IBackgroundJobClient as IBackgroundJobClient
-    participant Database as Database
-    participant HangfireServer as Hangfire Server
-
-    User-&amp;gt;&amp;gt;MCPHangfire: Enqueue Job (via MCP Client)
-    MCPHangfire-&amp;gt;&amp;gt;IBackgroundJobClient: Send Job Message
-    IBackgroundJobClient-&amp;gt;&amp;gt;Database: Store Job Message
-    HangfireServer-&amp;gt;&amp;gt;Database: Fetch Job Message
-    HangfireServer-&amp;gt;&amp;gt;HangfireServer: Process Job
-&lt;/div&gt;
-
-&lt;h3 id=&quot;hangfire-mcp-server&quot;&gt;Hangfire MCP Server&lt;/h3&gt;
-
-&lt;p&gt;This project is quite straightforward. We just need to map the MCP tool to a Hangfire job and call it a day. Here is how it looks:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;McpServerToolType&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;HangfireTool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IHangfireDynamicScheduler&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scheduler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;McpServerTool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Name&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;RunJob&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Required&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jobName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Required&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;methodName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Dictionary&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;parameters&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;assembly&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ITimeJob&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Assembly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// &amp;lt;-- it should point to the assembly where your Hangfire jobs are defined.&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scheduler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Enqueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jobName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;methodName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;parameters&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;assembly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;This code defines a Hangfire MCP tool that allows us to enqueue jobs using the MCP protocol. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Run&lt;/code&gt; method takes the job name, method name, and optional parameters, and enqueues the job using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IHangfireDynamicScheduler&lt;/code&gt;. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IHangfireDynamicScheduler&lt;/code&gt; is a custom scheduler that uses reflection to find the job method in the specified assembly and enqueue it.&lt;/p&gt;
-
-&lt;p&gt;💡 You can find the implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IHangfireDynamicScheduler&lt;/code&gt; in the source code of the project.&lt;/p&gt;
-
-&lt;p&gt;Now, you can ask GitHub Copilot to enqueue a job using something like this:&lt;/p&gt;
-
-&lt;div class=&quot;language-markdown highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Please run the following job: #RunJob
-
-{
-    &quot;jobName&quot;: &quot;HangfireJobs.ISendMessageJob&quot;,
-    &quot;methodName&quot;: &quot;ExecuteAsync&quot;,
-    &quot;parameters&quot;: {
-        &quot;text&quot;: &quot;Hello, MCP!&quot;
-    }
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Note that in this case, we need to specify the exact job name and method name, as well as the parameters. Wouldn’t it be great if we could discover the jobs by asking Copilot? Let’s see how we can do that.&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;McpServerTool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Name&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;ListJobs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Lists all jobs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;An array of job descriptors in JSON format&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ListJobs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jobs&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scheduler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;DiscoverJobs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsInterface&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;EndsWith&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Job&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;StringComparison&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OrdinalIgnoreCase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;typeof&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ITimeJob&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Assembly&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// &amp;lt;-- it should point to the assembly where your Hangfire jobs are defined.&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;JsonSerializer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Serialize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jobs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In the code above, we define a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ListJobs&lt;/code&gt; method that returns a list of all jobs. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DiscoverJobs&lt;/code&gt; method uses reflection to find all jobs in the specified assembly.&lt;/p&gt;
-
-&lt;p&gt;The idea here is that you can define rules for job discovery that are specific to your application. In this case, we are matching interfaces that end with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Job&lt;/code&gt;. In my demo application, I have two jobs defined: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ITimeJob&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ISendMessageJob&lt;/code&gt;. Here is how they look:&lt;/p&gt;
-
-&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ITimeJob&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ExecuteAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;ISendMessageJob&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ExecuteAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// You can specify parameters&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;ExecuteAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Message&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Works with complex types as well&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Let’s take a look at the MCP server from the MCP Inspector:&lt;/p&gt;
-
-&lt;center&gt;&lt;img src=&quot;/assets/hangfire-mcp/inspector.png&quot; /&gt;&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;As you can see, we have a bunch of tools available in the MCP Inspector. We can list jobs, enqueue jobs, get job status by job ID, and requeue jobs. The MCP Inspector allows us to interact with the Hangfire MCP server, making it a nice way to test and debug the MCP server.&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;Now you can easily enqueue Hangfire jobs using MCP. You can use it to schedule jobs from any MCP client, such as VS Code, or even from your own custom application. If you want to see the end-to-end demo, you can check out the video at the beginning of this post.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/modelcontextprotocol/csharp-sdk&quot;&gt;modelcontextprotocol/csharp-sdk&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sun, 25 May 2025 00:00:00 +0300</pubDate>
-				<link>http://localhost:4000/dotnet/2025/05/25/hangfire-mcp.html</link>
-				<guid isPermaLink="true">http://localhost:4000/dotnet/2025/05/25/hangfire-mcp.html</guid>
 			</item>
 		
 	</channel>
