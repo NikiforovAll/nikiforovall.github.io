@@ -2,7 +2,7 @@
 layout: post
 title: "Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs"
 categories: [ ai ]
-tags: [ ai, cli, agents, aspire, otel ]
+tags: [ ai, cli, agents, aspire, otel, developer-tools ]
 published: true
 shortinfo: "An AI-based CLI tool that automates technical debt discovery, triage, and resolution. It transforms technical debt management into a proactive and automated process"
 fullview: false

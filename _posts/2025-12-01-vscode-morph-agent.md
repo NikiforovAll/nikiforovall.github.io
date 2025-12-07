@@ -2,7 +2,7 @@
 layout: post
 title: "VSCode Morph Agent: Let AI Control Your Workspace"
 categories: [ ai ]
-tags: [ vscode, ai, agents, productivity, copilot ]
+tags: [ vscode, ai, agents, productivity, copilot, developer-tools ]
 published: true
 shortinfo: "Explore how AI agents can manipulate your IDE workspace to enhance agentic coding workflows"
 fullview: false
@@ -14,7 +14,10 @@ related: true
 
 What if AI agents could not only write code but also organize your workspace? **Morph Agent** is a VSCode extension that lets AI control your editor layout through natural language. It's a proof of concept demonstrating a powerful principle: **agents should be able to manipulate the ambient environment** to help us focus on what matters.
 
-**Source code:** <https://github.com/NikiforovAll/vscode-morph>
+<center style="margin-top: 2rem;">
+<p><strong>Source:</strong> <a href="https://github.com/NikiforovAll/vscode-morph">github.com/NikiforovAll/vscode-morph</a></p>
+<p><strong>Install:</strong> <a href="https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent">VSCode Marketplace</a></p>
+</center>
 
 ---
 

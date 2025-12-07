@@ -2,7 +2,7 @@
 layout: post
 title: "Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK"
 categories: [ dotnet, ai ]
-tags: [ dotnet, ai, agents, claude, cli, code-quality, mcp ]
+tags: [ dotnet, ai, agents, claude, cli, code-quality, mcp, developer-tools ]
 published: true
 shortinfo: "Learn how to build specialized AI agents that transform CLI tools into conversational interfaces using Claude Agent SDK and dotnet format as a practical example."
 fullview: false
