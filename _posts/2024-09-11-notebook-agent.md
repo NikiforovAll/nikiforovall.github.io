@@ -2,7 +2,7 @@
 layout: post
 title: "Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks"
 categories: [ dotnet, ai ]
-tags: [ dotnet, semantic-kernel, kernel-memory, ai, aspire ]
+tags: [ dotnet, semantic-kernel, kernel-memory, ai, aspire, developer-tools ]
 published: true
 shortinfo: "Learn how to use Polyglot Notebooks and Kernel Memory together to enhance your day-to-day tasks with the power of AI."
 fullview: false

@@ -2,7 +2,7 @@
 layout: post
 title: "Simplifying Model Context Protocol (MCP) Server Development with Aspire"
 categories: [ dotnet ]
-tags: [ dotnet, ai, aspire, mcp, mcp-server ]
+tags: [ dotnet, ai, aspire, mcp, mcp-server, developer-tools ]
 published: true
 shortinfo: "Learn how to develop MCP servers with Aspire."
 fullview: false
