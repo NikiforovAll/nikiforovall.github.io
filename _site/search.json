@@ -2,6 +2,17 @@
   
     {
       "id": "0",
+      "title": "Building RAG with .NET Aspire and Python",
+      "url": "/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html",
+      "date": "February 22, 2026",
+      "categories": ["dotnet","ai"],
+      "tags": ["dotnet","aspire","python","pydantic-ai","rag","opentelemetry","qdrant","ollama"],
+      "shortinfo": "How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability.",
+      "content": "TL;DRI built a RAG-based company research assistant where .NET Aspire orchestrates a Python backend (Pydantic AI + FastAPI), a Next.js frontend (CopilotKit), Qdrant for hybrid vector search, and Ollama for local LLM inference. One dotnet run starts everything. This post walks through the architecture, the RAG pipeline, and how Aspire makes polyglot orchestration and observability surprisingly painless.Source code: https://github.com/NikiforovAll/company-intel  TL;DR  Introduction  Architecture overview  Aspire as the orchestrator          Connection strings flow to Python        The RAG pipeline          Ingestion      Hybrid retrieval      Streaming to the frontend        Observability  RAG evaluation with Aspire  Demo  Summary  ReferencesIntroductionMost RAG tutorials show you the happy path: embed some text, throw it into a vector store, query it. Real systems are messier. You need a scraper, a chunking pipeline, embeddings, a vector store with hybrid search, an LLM, a frontend, and something to wire it all together. Each piece has its own runtime, its own configuration, its own way of failing.I wanted to build a company research assistant, where you ingest data about companies (websites, Wikipedia, news) and then ask questions with grounded, cited answers. The interesting part isn’t any single component. It’s how they fit together..NET Aspire turned out to be the right tool for this. Not because it’s .NET (the backend is Python, the frontend is Node.js), but because it handles the boring-but-hard parts: service discovery, connection string injection, health checks, and OpenTelemetry collection. You define the topology once, run it, and everything talks to everything.Architecture overviewThe system has two phases.  Phase 1️⃣: a backoffice agent scrapes company data, chunks it, embeds it (dense + sparse vectors), and stores everything in Qdrant.  Phase 2️⃣: a chat agent takes user questions, runs hybrid retrieval against Qdrant, and generates grounded answers with citations. No internet access required during query time.Phase 1: INGEST (online)          Phase 2: QUERY (offline)─────────────────────────         ────────────────────────User: \"ingest Figma\"              User: \"Who are competitors?\"  → Scrape websites (Crawl4AI)      → Hybrid retrieval (Qdrant)  → Clean → Chunk → Embed           → RRF fusion (dense + BM25)  → Store in Qdrant                 → LLM generates grounded answerThe data flow for queries: UI (CopilotKit) → AG-UI protocol → FastAPI → Pydantic AI agent → Ollama (Qwen3 8B). The agent calls a search_knowledge_base tool that embeds the query, runs hybrid search in Qdrant, applies a context budget, and returns chunks to the LLM.graph LR    UI[\"Next.js(CopilotKit)\"] --&gt;|AG-UI SSE| API[\"FastAPI(Pydantic AI)\"]    API --&gt;|embed query| Ollama_E[\"Ollamaarctic-embed\"]    API --&gt;|hybrid search| Qdrant[\"Qdrant(dense + BM25)\"]    API --&gt;|generate answer| Ollama_L[\"OllamaQwen3 8B\"]    Qdrant --&gt;|top-k chunks| API    Ollama_E --&gt;|384-dim vector| APIAspire as the orchestratorHere’s the entire AppHost/Program.cs. This is the only .NET code in the project, and it defines everything:var builder = DistributedApplication.CreateBuilder(args);var ollama = builder    .AddOllama(\"ollama\")    .WithImageTag(\"latest\")    .WithDataVolume()    .WithLifetime(ContainerLifetime.Persistent);var qwen3 = ollama.AddModel(\"qwen3:latest\");var embedModel = ollama.AddModel(\"snowflake-arctic-embed:33m\");var qdrant = builder    .AddQdrant(\"qdrant\", apiKey: builder.AddParameter(\"qdrant-apikey\", \"localdev\"))    .WithDataVolume()    .WithLifetime(ContainerLifetime.Persistent);var agent = builder    .AddUvicornApp(\"company-intel-agent\", \"../agent\", \"main:app\")    .WithUv()    .WithHttpHealthCheck(\"/health\")    .WithReference(qwen3)    .WithReference(embedModel)    .WithReference(qdrant)    .WithOtlpExporter();var ui = builder    .AddNpmApp(\"ui\", \"../ui\", \"dev\")    .WithPnpmPackageInstallation()    .WithHttpEndpoint(port: 3000, env: \"PORT\")    .WithEnvironment(\"AGENT_URL\", agent.GetEndpoint(\"http\"))    .WithOtlpExporter();await builder.Build().RunAsync();A few things worth noting:AddOllama and AddModel pull and run Ollama as a container, then register specific models. The Python agent gets connection strings for both qwen3 (the LLM) and snowflake-arctic-embed (the embedding model) automatically through WithReference. Qdrant is the same story. WithLifetime(ContainerLifetime.Persistent) means Ollama and Qdrant survive between runs, so you don’t re-download models every time.AddUvicornApp is a community extension that runs a Python FastAPI app via uvicorn, managed by uv for dependency resolution. Aspire treats it like any other resource: health checks, logs, traces, all piped into the dashboard.AddNpmApp does the same for the Next.js frontend. WithPnpmPackageInstallation runs pnpm install on startup. The AGENT_URL environment variable points the frontend at the Python backend, and Aspire resolves the endpoint dynamically.Connection strings flow to PythonWhen Aspire starts the Python agent, it injects environment variables like ConnectionStrings__ollama-qwen3 with the format Endpoint=http://localhost:XXXX;Model=qwen3:latest. The Python side parses these in settings.pyNo hardcoded URLs. No .env files to manage. Aspire assigns ports dynamically, and the Python code just reads them. If you add a second Qdrant instance or swap Ollama for a remote endpoint, you change the AppHost, not the Python code.The RAG pipelineIngestionThe ingestion pipeline in pipeline.py is straightforward: load raw documents, chunk them, embed them, upsert to Qdrant.async def ingest_company(company: str, data_dir: Path) -&gt; IngestionResult:    with logfire.span(\"ingest_company {company}\", company=company):        store = get_vectorstore()        store.delete_company(company)  # idempotent: wipe and re-ingest        docs = load_raw_documents(company, data_dir)        chunks = chunk_documents(docs)        embedder = get_embedder()        texts = [c.text for c in chunks]        dense, sparse = await embedder.embed_texts(texts)        total = store.upsert_chunks(chunks, dense, sparse)        return IngestionResult(            company=company,            documents_loaded=len(docs),            chunks_produced=len(chunks),            vectors_stored=total,        )The chunking is semantic: split by headings, then paragraphs, then sentences, targeting 256-512 tokens with 50-token overlap. Each chunk gets both a dense vector (from snowflake-arctic-embed-s, 384 dimensions) and a sparse BM25 vector via fastembed.Hybrid retrievalThe query side uses Qdrant’s prefetch + fusion to combine dense and sparse search:def search(self, dense_vector, sparse_vector, company=None, limit=SEARCH_FUSION_LIMIT):    query_filter = None    if company:        query_filter = Filter(must=[            FieldCondition(key=\"company\", match=MatchValue(value=company.strip().lower()))        ])    response = self._client.query_points(        collection_name=COLLECTION_NAME,        prefetch=[            Prefetch(                query=dense_vector,                using=DENSE_VECTOR_NAME,                score_threshold=DENSE_SCORE_THRESHOLD,                limit=SEARCH_DENSE_LIMIT,            ),            Prefetch(                query=SparseVector(indices=sparse_vector.indices, values=sparse_vector.values),                using=SPARSE_VECTOR_NAME,                limit=SEARCH_SPARSE_LIMIT,            ),        ],        query=FusionQuery(fusion=Fusion.RRF),        query_filter=query_filter,        limit=limit,        with_payload=True,    )    # ... return resultsTwo prefetch branches run in parallel inside Qdrant: top-10 dense results and top-10 sparse results. Reciprocal Rank Fusion (RRF) merges them into a single ranked list. Dense search catches semantic similarity; sparse search catches exact keyword matches. The combination is more robust than either alone.The agent then generates an answer with inline citations from the retrieved chunks based on agent’s system prompt.Streaming to the frontendThe FastAPI backend uses the AG-UI protocol (via pydantic_ai.ui.ag_ui.AGUIAdapter) to stream agent responses as server-sent events. The frontend uses CopilotKit, which connects to the Python backend through an HttpAgent:@app.post(\"/\")async def run_agent(request: Request) -&gt; Response:    with logfire.span(\"agent request\"):        response = await AGUIAdapter.dispatch_request(request, agent=agent)        return responseOne line dispatches the request. CopilotKit on the React side handles message rendering, tool call visualization, and streaming updates.Observability🤔 Getting OpenTelemetry from Python into the Aspire dashboard has a catch: Python’s OTLP exporter defaults to gRPC, but Aspire’s gRPC endpoint requires HTTP/2 with ALPN, which Python’s grpcio doesn’t support. The fix is to use HTTP/protobuf instead:def _configure_aspire_otlp() -&gt; None:    http_endpoint = os.environ.get(\"DOTNET_DASHBOARD_OTLP_HTTP_ENDPOINT_URL\")    if http_endpoint:        os.environ[\"OTEL_EXPORTER_OTLP_ENDPOINT\"] = http_endpoint        os.environ[\"OTEL_EXPORTER_OTLP_PROTOCOL\"] = \"http/protobuf\"Aspire sets DOTNET_DASHBOARD_OTLP_HTTP_ENDPOINT_URL automatically via WithOtlpExporter(). The Python code picks it up and redirects telemetry to the HTTP endpoint.🤔 Another gotcha: the Aspire dashboard can’t render exponential histograms, so you need explicit bucket histograms. Logfire’s defaults use exponential, so the code overrides them with ExplicitBucketHistogramAggregation.Once configured, you get distributed traces across the entire request path: HTTP request → agent execution → embedding → Qdrant search → LLM generation. All visible in the Aspire dashboard alongside the .NET services.Logfire instruments Pydantic AI and HTTPX automatically:logfire.configure(service_name=\"company-intel-agent\", send_to_logfire=False)logfire.instrument_pydantic_ai() # adds Semantic Conventions for Generative AIlogfire.instrument_httpx()This gives you GenAI semantic conventions (token usage per LLM call) and HTTP client spans for free.Here’s what a distributed trace looks like for a backoffice ingestion request. You can see every span: the agent run, scraping (Wikipedia, website, search), and the final ingestion into Qdrant:    And the metrics view, showing scraper page content size broken down by source type:    RAG evaluation with AspireHere’s where Aspire really pays off. The eval test uses DistributedApplicationTestingBuilder to spin up the entire stack, a fresh Qdrant, Ollama, and the Python agent, run ingestion against a golden dataset, then check retrieval quality:[Fact]public async Task RetrievalQualityMeetsThresholds(){    var appHost = await DistributedApplicationTestingBuilder.CreateAsync&lt;Projects.AppHost&gt;(        [\"UseVolumes=false\"],  // fresh Qdrant, no stale data        (appOptions, _) =&gt; appOptions.DisableDashboard = true,        cts.Token    );    await using var app = await appHost.BuildAsync(cts.Token);    await app.StartAsync(cts.Token);    await app.ResourceNotifications.WaitForResourceHealthyAsync(        \"company-intel-agent\", cts.Token    );    using var http = app.CreateHttpClient(\"company-intel-agent\");    // Start eval, poll until done, assert thresholds    var startResp = await http.PostAsJsonAsync(\"/eval/run\", new { company = \"paypal\" }, cts.Token);    // ... poll status ...    Assert.True(status.Metrics!.HitRate &gt;= 0.50);    Assert.True(status.Metrics!.ContextRecall &gt;= 0.50);}UseVolumes=false ensures a clean Qdrant on every run. No leftover data from previous tests. Aspire assigns random ports, so there are no conflicts if you run tests in parallel. The test exercises the real ingestion and retrieval pipelines, not a mock.The eval itself uses substring matching: each query in the golden dataset has expected facts, and the test checks whether retrieved chunks contain those facts. No LLM-as-judge needed for this; deterministic substring matching gives reliable signal in seconds instead of minutes.🤔 We could use LLM-as-judge for a more semantic evaluation, but that would require a fast local model. Qwen3 8B is good for generation but slow for evaluation, so substring matching was a pragmatic choice here.Two metrics: Hit Rate (did at least one expected fact get retrieved?) and Context Recall (what fraction of expected facts were found?). Both must exceed 50% or CI fails.DemoThe chat tab. Ask a question, get a grounded answer with citations from the knowledge base:        Multi-company research with detailed, structured answers:    The backoffice tab. Tell it to gather data for a company, and it scrapes, chunks, embeds, and stores everything in the background:    SummaryThe main takeaway: Aspire isn’t just for .NET microservices. It’s a polyglot orchestrator. If your system has containers, Python apps, and Node.js frontends that need to discover each other and report telemetry to the same place, Aspire handles that with less configuration than Docker Compose.What worked well:  Connection string injection removed all hardcoded URLs from Python code  WithOtlpExporter() gave the Python agent observability for free (once you work around the HTTP/2 issue)  DistributedApplicationTestingBuilder made RAG evaluation reproducible: fresh stack per test, no manual setupWhat I’d do differently next time: use a remote LLM for evaluation instead of local Qwen3. Substring matching works, but semantic matching would catch paraphrased facts. That needs a fast model though, not a 8B one running on CPU.References  .NET Aspire documentation  Pydantic AI  AG-UI protocol  CopilotKit  Qdrant hybrid search  Crawl4AI"
+    },
+  
+    {
+      "id": "1",
       "title": "Risks of AI-Assisted Development",
       "url": "/ai/2026/02/15/risks-of-ai-assisted-development.html",
       "date": "February 15, 2026",
@@ -12,7 +23,7 @@
     },
   
     {
-      "id": "1",
+      "id": "2",
       "title": " Observing Claude Code Task Orchestration in Real Time using 'claude-code-kanban'",
       "url": "/ai/productivity/2026/02/07/claude-code-kanban.html",
       "date": "February 07, 2026",
@@ -23,7 +34,7 @@
     },
   
     {
-      "id": "2",
+      "id": "3",
       "title": "LazyClaude 0.12.0: Marketplace Plugin Management",
       "url": "/ai/2025/12/21/lazyclaude-0-12-0.html",
       "date": "December 21, 2025",
@@ -34,7 +45,7 @@
     },
   
     {
-      "id": "3",
+      "id": "4",
       "title": "LazyClaude: Explore Your Claude Code Setup Without Breaking Flow",
       "url": "/ai/2025/12/07/lazyclaude.html",
       "date": "December 07, 2025",
@@ -45,7 +56,7 @@
     },
   
     {
-      "id": "4",
+      "id": "5",
       "title": "VSCode Morph Agent: Let AI Control Your Workspace",
       "url": "/ai/2025/12/01/vscode-morph-agent.html",
       "date": "December 01, 2025",
@@ -56,7 +67,7 @@
     },
   
     {
-      "id": "5",
+      "id": "6",
       "title": "Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK",
       "url": "/dotnet/ai/2025/11/11/dotnet-format-agent.html",
       "date": "November 11, 2025",
@@ -67,7 +78,7 @@
     },
   
     {
-      "id": "6",
+      "id": "7",
       "title": "Claude Code Handbook: Best Practices and Recommendations",
       "url": "/productivity/2025/10/05/claude-code-handbook.html",
       "date": "October 05, 2025",
@@ -78,7 +89,7 @@
     },
   
     {
-      "id": "7",
+      "id": "8",
       "title": "MCP Landscape for .NET Developers",
       "url": "/ai/mcp/2025/10/03/mcp-landscape.html",
       "date": "October 03, 2025",
@@ -89,7 +100,7 @@
     },
   
     {
-      "id": "8",
+      "id": "9",
       "title": "Testing with Playwright and Claude Code",
       "url": "/ai/2025/09/06/playwright-claude-code-testing.html",
       "date": "September 06, 2025",
@@ -100,7 +111,7 @@
     },
   
     {
-      "id": "9",
+      "id": "10",
       "title": "Add Authentication to MCP Servers using Microsoft Entra ID",
       "url": "/dotnet/2025/09/02/mcp-auth.html",
       "date": "September 02, 2025",
@@ -111,7 +122,7 @@
     },
   
     {
-      "id": "10",
+      "id": "11",
       "title": "Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs",
       "url": "/ai/2025/08/09/tech-debt-master.html",
       "date": "August 09, 2025",
@@ -122,7 +133,7 @@
     },
   
     {
-      "id": "11",
+      "id": "12",
       "title": "Monitoring Claude Code with .NET Aspire Dashboard",
       "url": "/productivity/2025/06/14/claude-code-telemetry-aspire.html",
       "date": "June 14, 2025",
@@ -133,7 +144,7 @@
     },
   
     {
-      "id": "12",
+      "id": "13",
       "title": "My Claude Code Usage Best Practices and Recommendations",
       "url": "/productivity/2025/06/13/claude-code-rules.html",
       "date": "June 13, 2025",
@@ -144,7 +155,7 @@
     },
   
     {
-      "id": "13",
+      "id": "14",
       "title": "Hangfire MCP Server in Standalone Mode",
       "url": "/dotnet/2025/05/29/hangfire-mcp-standalone.html",
       "date": "May 29, 2025",
@@ -155,7 +166,7 @@
     },
   
     {
-      "id": "14",
+      "id": "15",
       "title": "Background Job Scheduling Using Hangfire MCP Server",
       "url": "/dotnet/2025/05/25/hangfire-mcp.html",
       "date": "May 25, 2025",
@@ -166,7 +177,7 @@
     },
   
     {
-      "id": "15",
+      "id": "16",
       "title": "Code Review with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html",
       "date": "May 03, 2025",
@@ -177,7 +188,7 @@
     },
   
     {
-      "id": "16",
+      "id": "17",
       "title": "Prompt Engineering with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/04/19/github-copilot-prompt-engineering.html",
       "date": "April 19, 2025",
@@ -188,7 +199,7 @@
     },
   
     {
-      "id": "17",
+      "id": "18",
       "title": "Composable AI with .NET Aspire: Extending DIAL Assistants with Add-Ons",
       "url": "/dotnet/ai/2025/04/18/introduction-to-dial-addons.html",
       "date": "April 18, 2025",
@@ -199,7 +210,7 @@
     },
   
     {
-      "id": "18",
+      "id": "19",
       "title": "Learn how to use Model Context Protocol (MCP) Server Template in Hybrid Mode",
       "url": "/dotnet/2025/04/08/hybrid-mcp-template.html",
       "date": "April 08, 2025",
@@ -210,7 +221,7 @@
     },
   
     {
-      "id": "19",
+      "id": "20",
       "title": "Simplifying Model Context Protocol (MCP) Server Development with Aspire",
       "url": "/dotnet/2025/04/04/mcp-template-and-aspire.html",
       "date": "April 04, 2025",
@@ -221,7 +232,7 @@
     },
   
     {
-      "id": "20",
+      "id": "21",
       "title": "Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools",
       "url": "/dotnet/2025/04/02/mcp-template-getting-started.html",
       "date": "April 02, 2025",
@@ -232,7 +243,7 @@
     },
   
     {
-      "id": "21",
+      "id": "22",
       "title": "Introducing AI DIAL: The Open-Source AI Orchestration Platform",
       "url": "/dotnet/ai/2025/03/30/introduction-to-dial.html",
       "date": "March 30, 2025",
@@ -243,7 +254,7 @@
     },
   
     {
-      "id": "22",
+      "id": "23",
       "title": "Enforcing .NET Coding Guidelines with GitHub Copilot Custom Instructions",
       "url": "/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html",
       "date": "March 08, 2025",
@@ -254,7 +265,7 @@
     },
   
     {
-      "id": "23",
+      "id": "24",
       "title": "Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd)",
       "url": "/dotnet/2024/12/22/azd-bot-service.html",
       "date": "December 22, 2024",
@@ -265,7 +276,7 @@
     },
   
     {
-      "id": "24",
+      "id": "25",
       "title": "Hybrid Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/11/02/elastic-hybrid-search.html",
       "date": "November 02, 2024",
@@ -276,7 +287,7 @@
     },
   
     {
-      "id": "25",
+      "id": "26",
       "title": "Querying and Filtering via Elastic.Clients.Elasticsearch in .NET",
       "url": "/dotnet/2024/10/20/querying-and-filtering-elastic-dotnet.html",
       "date": "October 20, 2024",
@@ -287,7 +298,7 @@
     },
   
     {
-      "id": "26",
+      "id": "27",
       "title": "Semantic Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html",
       "date": "October 19, 2024",
@@ -298,7 +309,7 @@
     },
   
     {
-      "id": "27",
+      "id": "28",
       "title": "10 Lessons I Learned from Using Aspire in Production",
       "url": "/dotnet/aspire/2024/09/30/aspire-lessons-learned.html",
       "date": "September 30, 2024",
@@ -309,7 +320,7 @@
     },
   
     {
-      "id": "28",
+      "id": "29",
       "title": "A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud",
       "url": "/dotnet/2024/09/14/quality-gates-dotnet.html",
       "date": "September 14, 2024",
@@ -320,7 +331,7 @@
     },
   
     {
-      "id": "29",
+      "id": "30",
       "title": "Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks",
       "url": "/dotnet/ai/2024/09/11/notebook-agent.html",
       "date": "September 11, 2024",
@@ -331,7 +342,7 @@
     },
   
     {
-      "id": "30",
+      "id": "31",
       "title": "Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET",
       "url": "/dotnet/ai/2024/09/04/typical-rag-dotnet.html",
       "date": "September 04, 2024",
@@ -342,7 +353,7 @@
     },
   
     {
-      "id": "31",
+      "id": "32",
       "title": "Building pipelines with IAsyncEnumerable in .NET",
       "url": "/dotnet/2024/08/22/async-enumerable-pipelines.html",
       "date": "August 22, 2024",
@@ -353,7 +364,7 @@
     },
   
     {
-      "id": "32",
+      "id": "33",
       "title": "Unlocking the Power of TypedResults in Endpoints: A Consistent Approach to Strongly Typed APIs in .NET",
       "url": "/dotnet/2024/08/17/result-endpoints.html",
       "date": "August 17, 2024",
@@ -364,7 +375,7 @@
     },
   
     {
-      "id": "33",
+      "id": "34",
       "title": "Supercharge your Dependify tool with AI chat assistant",
       "url": "/dotnet/2024/08/09/dependify-ai.html",
       "date": "August 09, 2024",
@@ -375,7 +386,7 @@
     },
   
     {
-      "id": "34",
+      "id": "35",
       "title": "Explore .NET application dependencies by using Dependify tool",
       "url": "/dotnet/2024/08/03/dependify.html",
       "date": "August 03, 2024",
@@ -386,7 +397,7 @@
     },
   
     {
-      "id": "35",
+      "id": "36",
       "title": "Managing Startup Dependencies in .NET Aspire",
       "url": "/dotnet/aspire/2024/06/28/startup-dependencies-aspire.html",
       "date": "June 28, 2024",
@@ -397,7 +408,7 @@
     },
   
     {
-      "id": "36",
+      "id": "37",
       "title": "Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch",
       "url": "/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html",
       "date": "June 18, 2024",
@@ -408,7 +419,7 @@
     },
   
     {
-      "id": "37",
+      "id": "38",
       "title": "A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html",
       "date": "June 12, 2024",
@@ -419,7 +430,7 @@
     },
   
     {
-      "id": "38",
+      "id": "39",
       "title": "Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html",
       "date": "June 07, 2024",
@@ -430,7 +441,7 @@
     },
   
     {
-      "id": "39",
+      "id": "40",
       "title": "Using Keycloak in .NET Aspire projects",
       "url": "/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html",
       "date": "June 02, 2024",
@@ -441,7 +452,7 @@
     },
   
     {
-      "id": "40",
+      "id": "41",
       "title": "Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire",
       "url": "/dotnet/aws/2024/05/27/aws-claim-check-dotnet.html",
       "date": "May 27, 2024",
@@ -452,7 +463,7 @@
     },
   
     {
-      "id": "41",
+      "id": "42",
       "title": "Mastering AWS Batch: A .NET Developer Guide to Batch File Processing",
       "url": "/dotnet/aws/2024/05/26/aws-batch-dotnet.html",
       "date": "May 26, 2024",
@@ -463,7 +474,7 @@
     },
   
     {
-      "id": "42",
+      "id": "43",
       "title": "Announcement - Keycloak.AuthServices v2.3.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/10/keycloak-v2-3-0.html",
       "date": "May 10, 2024",
@@ -474,7 +485,7 @@
     },
   
     {
-      "id": "43",
+      "id": "44",
       "title": "Announcement - Keycloak.AuthServices v2.0.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/05/keycloak-v2-0-0.html",
       "date": "May 05, 2024",
@@ -485,7 +496,7 @@
     },
   
     {
-      "id": "44",
+      "id": "45",
       "title": "Job Offloading Pattern with System.Threading.Channels. A way to deal with long-running tasks in .NET",
       "url": "/dotnet/async/2024/04/21/job-offloading-pattern.html",
       "date": "April 21, 2024",
@@ -496,7 +507,7 @@
     },
   
     {
-      "id": "45",
+      "id": "46",
       "title": "Building pipelines with System.Threading.Channels",
       "url": "/dotnet/async/2024/04/21/channels-composition.html",
       "date": "April 21, 2024",
@@ -507,7 +518,7 @@
     },
   
     {
-      "id": "46",
+      "id": "47",
       "title": "Polymorphic serialization via System.Text.Json in ASP.NET Core Minimal API",
       "url": "/dotnet/aspnetcore/2024/04/06/openapi-polymorphism.html",
       "date": "April 06, 2024",
@@ -518,7 +529,7 @@
     },
   
     {
-      "id": "47",
+      "id": "48",
       "title": "Transactional Outbox in .NET Cloud Native Development via Aspire",
       "url": "/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html",
       "date": "March 30, 2024",
@@ -529,7 +540,7 @@
     },
   
     {
-      "id": "48",
+      "id": "49",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)",
       "url": "/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html",
       "date": "March 24, 2024",
@@ -540,7 +551,7 @@
     },
   
     {
-      "id": "49",
+      "id": "50",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1)",
       "url": "/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html",
       "date": "March 22, 2024",
@@ -551,7 +562,7 @@
     },
   
     {
-      "id": "50",
+      "id": "51",
       "title": "Building a federated search engine from scratch. An introduction.",
       "url": "/dotnet/2023/05/19/federated-search-intro.html",
       "date": "May 19, 2023",
@@ -562,7 +573,7 @@
     },
   
     {
-      "id": "51",
+      "id": "52",
       "title": "Introduction to JMESPath - JSON processor you should definitely know",
       "url": "/dotnet/2023/01/08/jmespath-intro.html",
       "date": "January 08, 2023",
@@ -573,7 +584,7 @@
     },
   
     {
-      "id": "52",
+      "id": "53",
       "title": "Keycloak as Authorization Server in .NET",
       "url": "/dotnet/keycloak/2022/12/28/keycloak-authorization-server.html",
       "date": "December 28, 2022",
@@ -584,7 +595,7 @@
     },
   
     {
-      "id": "53",
+      "id": "54",
       "title": "Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications",
       "url": "/blazor/dotnet/2022/12/08/dotnet-keycloak-blazorwasm-auth.html",
       "date": "December 08, 2022",
@@ -595,7 +606,7 @@
     },
   
     {
-      "id": "54",
+      "id": "55",
       "title": "Add persisted parameters to CLI applications in .NET",
       "url": "/dotnet/2022/08/26/persisted-parameters-in-dotnet-cli.html",
       "date": "August 26, 2022",
@@ -606,7 +617,7 @@
     },
   
     {
-      "id": "55",
+      "id": "56",
       "title": "Use Keycloak as Identity Provider in ASP.NET Core 6",
       "url": "/aspnetcore/dotnet/2022/08/24/dotnet-keycloak-auth.html",
       "date": "August 24, 2022",
@@ -617,7 +628,7 @@
     },
   
     {
-      "id": "56",
+      "id": "57",
       "title": "Dev Environment as a Code (DEaaC) with DevContainers, Dotfiles, and GitHub Codespaces",
       "url": "/productivity/devcontainers/2022/08/13/deaac.html",
       "date": "August 13, 2022",
@@ -628,7 +639,7 @@
     },
   
     {
-      "id": "57",
+      "id": "58",
       "title": "Creating and Using HTTP Client SDKs in .NET 6",
       "url": "/dotnet/aspnetcore/microservices/2022/04/04/creating-and-using-http-sdks.html",
       "date": "April 04, 2022",
@@ -639,7 +650,7 @@
     },
   
     {
-      "id": "58",
+      "id": "59",
       "title": "Creating and Using HTTP Client SDKs in .NET 6. (Announcement)",
       "url": "/dotnet/aspnetcore/microservices/2022/02/06/http-sdks.html",
       "date": "February 06, 2022",
@@ -650,7 +661,7 @@
     },
   
     {
-      "id": "59",
+      "id": "60",
       "title": "Console applications with Spectre.Console",
       "url": "/dotnet/2022/01/22/building-console-application-with-spectre-console.html",
       "date": "January 22, 2022",
@@ -661,7 +672,7 @@
     },
   
     {
-      "id": "60",
+      "id": "61",
       "title": "Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.",
       "url": "/dotnet/2021/12/20/dotnet-global-tool-copy-paster.html",
       "date": "December 20, 2021",
@@ -672,7 +683,7 @@
     },
   
     {
-      "id": "61",
+      "id": "62",
       "title": "A developer guide to automated testing with Postman. Run postman collections inside Docker via newman CLI.",
       "url": "/dotnet/docker/testing/2021/11/27/testing-with-newman.html",
       "date": "November 27, 2021",
@@ -683,7 +694,7 @@
     },
   
     {
-      "id": "62",
+      "id": "63",
       "title": "Rapid Microservices Development in .NET. An introduction.",
       "url": "/dotnet/microservices/csharp/2021/11/06/rapid-microservices-development-part1-build-project.html",
       "date": "November 06, 2021",
@@ -694,7 +705,7 @@
     },
   
     {
-      "id": "63",
+      "id": "64",
       "title": "What's new in .NET 6 and C# 10. Everything you wanted to know.",
       "url": "/dotnet/csharp/coding-stories/2021/10/29/whats-new-in-dotnet6.html",
       "date": "October 29, 2021",
@@ -705,7 +716,7 @@
     },
   
     {
-      "id": "64",
+      "id": "65",
       "title": "Try out .NET 6 inside your own development environment built with devcontainers, docker, and vscode",
       "url": "/productivity/devcontainers/2021/10/14/devcontainer-for-dotnet6.html",
       "date": "October 14, 2021",
@@ -716,7 +727,7 @@
     },
   
     {
-      "id": "65",
+      "id": "66",
       "title": "An opinionated look at Minimal API in .NET 6",
       "url": "/dotnet/aspnetcore/2021/09/10/opinionated-minimal-api.html",
       "date": "September 10, 2021",
@@ -727,7 +738,7 @@
     },
   
     {
-      "id": "66",
+      "id": "67",
       "title": "How to add Health Checks to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/07/25/add-health-checks-to-aspnetcore.html",
       "date": "July 25, 2021",
@@ -738,7 +749,7 @@
     },
   
     {
-      "id": "67",
+      "id": "68",
       "title": "How to add OpenAPI to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html",
       "date": "June 13, 2021",
@@ -749,7 +760,7 @@
     },
   
     {
-      "id": "68",
+      "id": "69",
       "title": "Develop Clean Command Line Applications with System.CommandLine. Clean CLI.",
       "url": "/dotnet/cli/2021/06/06/clean-cli.html",
       "date": "June 06, 2021",
@@ -760,7 +771,7 @@
     },
   
     {
-      "id": "69",
+      "id": "70",
       "title": "Publish NuGet packages via Docker Release Container",
       "url": "/dotnet/nuget/docker/2021/05/09/nuget-release-container.html",
       "date": "May 09, 2021",
@@ -771,7 +782,7 @@
     },
   
     {
-      "id": "70",
+      "id": "71",
       "title": "ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method",
       "url": "/dotnet/aspnetcore/2021/03/23/endpoint-route-builder-extension-pattern.html",
       "date": "March 23, 2021",
@@ -782,7 +793,7 @@
     },
   
     {
-      "id": "71",
+      "id": "72",
       "title": "Advance the practical side of your coding skills with CodingStories",
       "url": "/dotnet/coding-stories/2021/03/14/coding-story.html",
       "date": "March 14, 2021",
@@ -793,7 +804,7 @@
     },
   
     {
-      "id": "72",
+      "id": "73",
       "title": "Task-based asynchronous Pattern and Composition (aka Task Combinators)",
       "url": "/dotnet/async/2021/02/26/tap-composition.html",
       "date": "February 26, 2021",
@@ -804,7 +815,7 @@
     },
   
     {
-      "id": "73",
+      "id": "74",
       "title": "Awaitable/awaiter pattern and logical micro-threading in C#",
       "url": "/csharp/compcsi/dotnet/2020/10/20/awaitable-pattern.html",
       "date": "October 20, 2020",
@@ -815,7 +826,7 @@
     },
   
     {
-      "id": "74",
+      "id": "75",
       "title": "Publish images to GitHub Container Registry (ghcr)",
       "url": "/docker/2020/09/19/publish-package-to-ghcr.html",
       "date": "September 19, 2020",
@@ -826,7 +837,7 @@
     },
   
     {
-      "id": "75",
+      "id": "76",
       "title": "Bringing \"surround with\" functionality to vscode. Check out this extension.",
       "url": "/productivity/csharp/vscode/2020/08/21/surround-with-csharp.html",
       "date": "August 21, 2020",
@@ -837,7 +848,7 @@
     },
   
     {
-      "id": "76",
+      "id": "77",
       "title": "How to organize learning process with mindmaps, spreadsheets and .NET Core",
       "url": "/productivity/2020/05/03/how-to-organize-your-learning-process-with-xmind.html",
       "date": "May 03, 2020",
@@ -848,7 +859,7 @@
     },
   
     {
-      "id": "77",
+      "id": "78",
       "title": "Catch up with .NET Core - System.Text.JSON",
       "url": "/dotnet-core/2020/04/27/catch-dotnetcore-json.html",
       "date": "April 27, 2020",
@@ -859,7 +870,7 @@
     },
   
     {
-      "id": "78",
+      "id": "79",
       "title": "Catch up with .NET Core - System.IO.Pipelines",
       "url": "/dotnet-core/2020/04/24/catch-dotnetcore-piepelines.html",
       "date": "April 24, 2020",
@@ -870,7 +881,7 @@
     },
   
     {
-      "id": "79",
+      "id": "80",
       "title": "Sorting algorithms with C# 8, Span{T} and Try .NET",
       "url": "/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html",
       "date": "April 15, 2020",
@@ -881,7 +892,7 @@
     },
   
     {
-      "id": "80",
+      "id": "81",
       "title": "Development environment based on Windows Terminal + WSL + ZSH + dotfiles",
       "url": "/productivity/2019/11/30/nikiforovall-setup.html",
       "date": "November 30, 2019",
@@ -892,7 +903,7 @@
     },
   
     {
-      "id": "81",
+      "id": "82",
       "title": "Design Patterns. Behavioral Patterns. Part I",
       "url": "/design-patterns/2019/06/09/design-patterns-first-part.html",
       "date": "June 09, 2019",

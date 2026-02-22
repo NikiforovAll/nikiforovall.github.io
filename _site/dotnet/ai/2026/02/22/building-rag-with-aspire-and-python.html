@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Building RAG with .NET Aspire and Python | N+1 Blog</title>
+
+	<!-- Meta Description -->
+	
+	<meta name="description" content="How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability.">
+	
+
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href="http://localhost:4000/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html">
+
+	<!-- Open Graph -->
+	<meta property="og:title" content="Building RAG with .NET Aspire and Python">
+	<meta property="og:description" content="How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability.">
+	<meta property="og:url" content="http://localhost:4000/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html">
+	<meta property="og:site_name" content="N+1 Blog">
+	<meta property="og:type" content="article">
+	
+	<meta property="article:published_time" content="2026-02-22T00:00:00+02:00">
+	
+	<meta property="og:image" content="http://localhost:4000/assets/media/default-post-image.png">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@nikiforovall">
+	<meta name="twitter:title" content="Building RAG with .NET Aspire and Python">
+	<meta name="twitter:description" content="How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability.">
+	<meta name="twitter:image" content="http://localhost:4000/assets/media/default-post-image.png">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<link href="/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="/assets/css/style.css" rel="stylesheet">
+
+	<!-- Search Feature Styles -->
+	<style>
+		.layout-page .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; height: 34px; box-sizing: border-box; }
+		.layout-post .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 0; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; width: 34px; height: 34px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; box-sizing: border-box; }
+		.search-trigger:hover { background: #ebebeb; border-color: #c0c0c0; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+		.search-icon { color: #666; font-size: 14px; display: flex; align-items: center; }
+		.search-placeholder { flex: 1; color: #999; font-size: 14px; user-select: none; }
+		.search-keybind { display: flex; gap: 4px; align-items: center; }
+		.search-key { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 6px; background: #e0e0e0; border: 1px solid #ccc; border-bottom: 2px solid #bbb; border-radius: 3px; color: #333; line-height: 1.2; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+		.layout-post .search-placeholder { display: none; }
+		.layout-post .search-keybind { display: none; }
+		.search-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; display: none; align-items: flex-start; justify-content: center; padding-top: 10vh; }
+		.search-modal.open { display: flex; animation: fadeIn 0.2s ease; }
+		@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+		.search-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+		.search-modal-container { position: relative; width: 90%; max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); overflow: hidden; }
+		.search-input-container { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e0e0e0; gap: 12px; }
+		.search-modal-icon { color: #666; font-size: 18px; }
+		.search-modal-input { flex: 1; border: none; outline: none; font-size: 16px; color: #333; background: transparent; }
+		.search-modal-input::placeholder { color: #999; }
+		.search-close-btn { background: transparent; border: none; color: #999; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.15s ease; }
+		.search-close-btn:hover { background: #f0f0f0; color: #333; }
+		.search-results { max-height: 60vh; overflow-y: auto; padding: 8px; }
+		.search-hint { padding: 40px 20px; text-align: center; color: #999; font-size: 14px; }
+		.search-result-item { padding: 12px 16px; border-radius: 6px; cursor: pointer; transition: background-color 0.15s ease; border: 2px solid transparent; margin-bottom: 4px; }
+		.search-result-item:hover { background: #f5f5f5; }
+		.search-result-item.selected { background: #e8f4f8; border-color: #4a90e2; }
+		.search-footer { display: flex; justify-content: center; gap: 20px; padding: 12px 20px; border-top: 1px solid #e0e0e0; background: #fafafa; font-size: 12px; color: #666; }
+		.search-footer kbd { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 5px; background: white; border: 1px solid #ddd; border-radius: 3px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+		@media (max-width: 768px) { .layout-page .search-trigger, .layout-post .search-trigger { display: none; } .search-modal { padding-top: 5vh; } .search-modal-container { width: 95%; max-width: none; margin: 0 10px; } .search-results { max-height: 50vh; } .search-footer { flex-wrap: wrap; gap: 10px; } }
+	</style>
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="http://localhost:4000/feed.xml">
+
+	
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Building RAG with .NET Aspire and Python",
+  
+  
+  "description": "How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability.",
+  
+  "image": ["http://localhost:4000/assets/media/default-post-image.png"],
+  "datePublished": "2026-02-22T00:00:00+02:00",
+  "dateModified": "2026-02-22T00:00:00+02:00",
+  "author": {
+    "@type": "Person",
+    "name": "Oleksii Nikiforov",
+    "url": "http://localhost:4000/about.html",
+    "sameAs": [
+      "https://github.com/nikiforovAll",
+      "https://twitter.com/nikiforovall",
+      "https://www.linkedin.com/in/nikiforov-oleksii",
+      "https://t.me/nikiforovallblog"
+    ]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Oleksii Nikiforov",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=200"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:4000/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html"
+  },
+  
+  "articleSection": "dotnet",
+  
+  
+  "keywords": "dotnet, aspire, python, pydantic-ai, rag, opentelemetry, qdrant, ollama",
+  
+  "inLanguage": "en-US"
+}
+</script>
+
+
+</head>
+
+<body class="layout-post">
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-x-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa-solid fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="/">Home</a></li>
+				<li><a href="/topics.html">Topics</a></li>
+				<li><a href="/about.html">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa-solid fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="/"><i class="fa-solid fa-home"></i>Home</a></li>
+			<li><a href="/topics.html"><i class="fa-solid fa-bookmark"></i>Topics</a></li>
+			<li><a href="/about.html"><i class="fa-solid fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa-solid fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<!-- Search Control -->
+	<button id="search-trigger" class="search-trigger" type="button" aria-label="Open search">
+		<span class="search-icon"><i class="fa-solid fa-search"></i></span>
+		<span class="search-placeholder">Search</span>
+		<div class="search-keybind">
+			<kbd class="search-key" id="search-modifier">ctrl</kbd>
+			<kbd class="search-key">K</kbd>
+		</div>
+	</button>
+
+	<!-- Search Modal -->
+	<div id="search-modal" class="search-modal">
+		<div class="search-backdrop"></div>
+		<div class="search-modal-container">
+			<div class="search-input-container">
+				<i class="fa-solid fa-search search-modal-icon"></i>
+				<input type="text" id="search-input" class="search-modal-input" placeholder="Search blog posts..." autocomplete="off">
+				<button id="search-close" class="search-close-btn" title="Close (ESC)">
+					<i class="fa-solid fa-times"></i>
+				</button>
+			</div>
+			<div id="search-results" class="search-results">
+				<div class="search-hint">Type at least 2 characters to search...</div>
+			</div>
+			<div class="search-footer">
+				<span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+				<span><kbd>↵</kbd> to select</span>
+				<span><kbd>ESC</kbd> to close</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="/" class="profile-link">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle profile-image">
+		<div class="profile-accent"></div>
+	</a>
+	<h3 class="title">
+        <a href="/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-github fa-xl"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-x-twitter fa-xl"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-telegram fa-xl"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-linkedin fa-xl"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa-solid fa-envelope fa-xl"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa-solid fa-rss fa-xl"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Building RAG with .NET Aspire and Python </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			February
+			22nd,
+			
+			2026
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/ai/2024/09/04/typical-rag-dotnet.html">Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET <span class="label label-default">dotnet</span>  <span class="label label-default">opentelemetry</span>  <span class="label label-default">aspire</span>  <span class="label label-default">rag</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html">A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">opentelemetry</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+	<div>
+		<h5><a href="/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html">Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard <span class="label label-default">dotnet</span>  <span class="label label-default">opentelemetry</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>I built a RAG-based company research assistant where <strong>.NET Aspire</strong> orchestrates a Python backend (<strong>Pydantic AI</strong> + <strong>FastAPI</strong>), a <strong>Next.js</strong> frontend (CopilotKit), Qdrant for hybrid vector search, and Ollama for local LLM inference. One <code class="language-plaintext highlighter-rouge">dotnet run</code> starts everything. This post walks through the architecture, the RAG pipeline, and how Aspire makes polyglot orchestration and observability surprisingly painless.</p>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/company-intel" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/company-intel</a></p>
+
+<iframe src="https://nikiforovall.blog/company_intel/rag-pydantic-ai-example" width="100%" height="600" frameborder="0" allowfullscreen=""></iframe>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#architecture-overview">Architecture overview</a></li>
+  <li>
+<a href="#aspire-as-the-orchestrator">Aspire as the orchestrator</a>
+    <ul>
+      <li><a href="#connection-strings-flow-to-python">Connection strings flow to Python</a></li>
+    </ul>
+  </li>
+  <li>
+<a href="#the-rag-pipeline">The RAG pipeline</a>
+    <ul>
+      <li><a href="#ingestion">Ingestion</a></li>
+      <li><a href="#hybrid-retrieval">Hybrid retrieval</a></li>
+      <li><a href="#streaming-to-the-frontend">Streaming to the frontend</a></li>
+    </ul>
+  </li>
+  <li><a href="#observability">Observability</a></li>
+  <li><a href="#rag-evaluation-with-aspire">RAG evaluation with Aspire</a></li>
+  <li><a href="#demo">Demo</a></li>
+  <li><a href="#summary">Summary</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Most RAG tutorials show you the happy path: embed some text, throw it into a vector store, query it. Real systems are messier. You need a scraper, a chunking pipeline, embeddings, a vector store with hybrid search, an LLM, a frontend, and something to wire it all together. Each piece has its own runtime, its own configuration, its own way of failing.</p>
+
+<p>I wanted to build a company research assistant, where you ingest data about companies (websites, Wikipedia, news) and then ask questions with grounded, cited answers. The interesting part isn’t any single component. It’s how they fit together.</p>
+
+<p>.NET Aspire turned out to be the right tool for this. Not because it’s .NET (the backend is Python, the frontend is Node.js), but because it handles the boring-but-hard parts: service discovery, connection string injection, health checks, and OpenTelemetry collection. You define the topology once, run it, and everything talks to everything.</p>
+
+<h2 id="architecture-overview">Architecture overview</h2>
+
+<p>The system has two phases.</p>
+
+<ul>
+  <li>Phase 1️⃣: a backoffice agent scrapes company data, chunks it, embeds it (dense + sparse vectors), and stores everything in Qdrant.</li>
+  <li>Phase 2️⃣: a chat agent takes user questions, runs hybrid retrieval against Qdrant, and generates grounded answers with citations. No internet access required during query time.</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Phase 1: INGEST (online)          Phase 2: QUERY (offline)
+─────────────────────────         ────────────────────────
+User: "ingest Figma"              User: "Who are competitors?"
+  → Scrape websites (Crawl4AI)      → Hybrid retrieval (Qdrant)
+  → Clean → Chunk → Embed           → RRF fusion (dense + BM25)
+  → Store in Qdrant                 → LLM generates grounded answer
+</code></pre></div></div>
+
+<p>The data flow for queries: UI (CopilotKit) → AG-UI protocol → FastAPI → Pydantic AI agent → Ollama (Qwen3 8B). The agent calls a <code class="language-plaintext highlighter-rouge">search_knowledge_base</code> tool that embeds the query, runs hybrid search in Qdrant, applies a context budget, and returns chunks to the LLM.</p>
+
+<center>
+<div class="mermaid">
+graph LR
+    UI["Next.js<br>(CopilotKit)"] --&gt;|AG-UI SSE| API["FastAPI<br>(Pydantic AI)"]
+    API --&gt;|embed query| Ollama_E["Ollama<br>arctic-embed"]
+    API --&gt;|hybrid search| Qdrant["Qdrant<br>(dense + BM25)"]
+    API --&gt;|generate answer| Ollama_L["Ollama<br>Qwen3 8B"]
+    Qdrant --&gt;|top-k chunks| API
+    Ollama_E --&gt;|384-dim vector| API
+</div>
+</center>
+
+<h2 id="aspire-as-the-orchestrator">Aspire as the orchestrator</h2>
+
+<p>Here’s the entire <code class="language-plaintext highlighter-rouge">AppHost/Program.cs</code>. This is the only .NET code in the project, and it defines everything:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">builder</span> <span class="p">=</span> <span class="n">DistributedApplication</span><span class="p">.</span><span class="nf">CreateBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">ollama</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddOllama</span><span class="p">(</span><span class="s">"ollama"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithImageTag</span><span class="p">(</span><span class="s">"latest"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithLifetime</span><span class="p">(</span><span class="n">ContainerLifetime</span><span class="p">.</span><span class="n">Persistent</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">qwen3</span> <span class="p">=</span> <span class="n">ollama</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"qwen3:latest"</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">embedModel</span> <span class="p">=</span> <span class="n">ollama</span><span class="p">.</span><span class="nf">AddModel</span><span class="p">(</span><span class="s">"snowflake-arctic-embed:33m"</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">qdrant</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddQdrant</span><span class="p">(</span><span class="s">"qdrant"</span><span class="p">,</span> <span class="n">apiKey</span><span class="p">:</span> <span class="n">builder</span><span class="p">.</span><span class="nf">AddParameter</span><span class="p">(</span><span class="s">"qdrant-apikey"</span><span class="p">,</span> <span class="s">"localdev"</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">WithDataVolume</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithLifetime</span><span class="p">(</span><span class="n">ContainerLifetime</span><span class="p">.</span><span class="n">Persistent</span><span class="p">);</span>
+
+<span class="kt">var</span> <span class="n">agent</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddUvicornApp</span><span class="p">(</span><span class="s">"company-intel-agent"</span><span class="p">,</span> <span class="s">"../agent"</span><span class="p">,</span> <span class="s">"main:app"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithUv</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithHttpHealthCheck</span><span class="p">(</span><span class="s">"/health"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">qwen3</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">embedModel</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithReference</span><span class="p">(</span><span class="n">qdrant</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithOtlpExporter</span><span class="p">();</span>
+
+<span class="kt">var</span> <span class="n">ui</span> <span class="p">=</span> <span class="n">builder</span>
+    <span class="p">.</span><span class="nf">AddNpmApp</span><span class="p">(</span><span class="s">"ui"</span><span class="p">,</span> <span class="s">"../ui"</span><span class="p">,</span> <span class="s">"dev"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithPnpmPackageInstallation</span><span class="p">()</span>
+    <span class="p">.</span><span class="nf">WithHttpEndpoint</span><span class="p">(</span><span class="n">port</span><span class="p">:</span> <span class="m">3000</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="s">"PORT"</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">WithEnvironment</span><span class="p">(</span><span class="s">"AGENT_URL"</span><span class="p">,</span> <span class="n">agent</span><span class="p">.</span><span class="nf">GetEndpoint</span><span class="p">(</span><span class="s">"http"</span><span class="p">))</span>
+    <span class="p">.</span><span class="nf">WithOtlpExporter</span><span class="p">();</span>
+
+<span class="k">await</span> <span class="n">builder</span><span class="p">.</span><span class="nf">Build</span><span class="p">().</span><span class="nf">RunAsync</span><span class="p">();</span>
+</code></pre></div></div>
+
+<p>A few things worth noting:</p>
+
+<p><code class="language-plaintext highlighter-rouge">AddOllama</code> and <code class="language-plaintext highlighter-rouge">AddModel</code> pull and run Ollama as a container, then register specific models. The Python agent gets connection strings for both <code class="language-plaintext highlighter-rouge">qwen3</code> (the LLM) and <code class="language-plaintext highlighter-rouge">snowflake-arctic-embed</code> (the embedding model) automatically through <code class="language-plaintext highlighter-rouge">WithReference</code>. Qdrant is the same story. <code class="language-plaintext highlighter-rouge">WithLifetime(ContainerLifetime.Persistent)</code> means Ollama and Qdrant survive between runs, so you don’t re-download models every time.</p>
+
+<p><code class="language-plaintext highlighter-rouge">AddUvicornApp</code> is a community extension that runs a Python FastAPI app via <code class="language-plaintext highlighter-rouge">uvicorn</code>, managed by <code class="language-plaintext highlighter-rouge">uv</code> for dependency resolution. Aspire treats it like any other resource: health checks, logs, traces, all piped into the dashboard.</p>
+
+<p><code class="language-plaintext highlighter-rouge">AddNpmApp</code> does the same for the Next.js frontend. <code class="language-plaintext highlighter-rouge">WithPnpmPackageInstallation</code> runs <code class="language-plaintext highlighter-rouge">pnpm install</code> on startup. The <code class="language-plaintext highlighter-rouge">AGENT_URL</code> environment variable points the frontend at the Python backend, and Aspire resolves the endpoint dynamically.</p>
+
+<h3 id="connection-strings-flow-to-python">Connection strings flow to Python</h3>
+
+<p>When Aspire starts the Python agent, it injects environment variables like <code class="language-plaintext highlighter-rouge">ConnectionStrings__ollama-qwen3</code> with the format <code class="language-plaintext highlighter-rouge">Endpoint=http://localhost:XXXX;Model=qwen3:latest</code>. The Python side parses these in <code class="language-plaintext highlighter-rouge">settings.py</code></p>
+
+<p>No hardcoded URLs. No <code class="language-plaintext highlighter-rouge">.env</code> files to manage. Aspire assigns ports dynamically, and the Python code just reads them. If you add a second Qdrant instance or swap Ollama for a remote endpoint, you change the AppHost, not the Python code.</p>
+
+<h2 id="the-rag-pipeline">The RAG pipeline</h2>
+
+<h3 id="ingestion">Ingestion</h3>
+
+<p>The ingestion pipeline in <code class="language-plaintext highlighter-rouge">pipeline.py</code> is straightforward: load raw documents, chunk them, embed them, upsert to Qdrant.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">ingest_company</span><span class="p">(</span><span class="n">company</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IngestionResult</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">logfire</span><span class="p">.</span><span class="nf">span</span><span class="p">(</span><span class="sh">"</span><span class="s">ingest_company {company}</span><span class="sh">"</span><span class="p">,</span> <span class="n">company</span><span class="o">=</span><span class="n">company</span><span class="p">):</span>
+        <span class="n">store</span> <span class="o">=</span> <span class="nf">get_vectorstore</span><span class="p">()</span>
+        <span class="n">store</span><span class="p">.</span><span class="nf">delete_company</span><span class="p">(</span><span class="n">company</span><span class="p">)</span>  <span class="c1"># idempotent: wipe and re-ingest
+</span>
+        <span class="n">docs</span> <span class="o">=</span> <span class="nf">load_raw_documents</span><span class="p">(</span><span class="n">company</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">)</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="nf">chunk_documents</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+
+        <span class="n">embedder</span> <span class="o">=</span> <span class="nf">get_embedder</span><span class="p">()</span>
+        <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="p">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">]</span>
+        <span class="n">dense</span><span class="p">,</span> <span class="n">sparse</span> <span class="o">=</span> <span class="k">await</span> <span class="n">embedder</span><span class="p">.</span><span class="nf">embed_texts</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span>
+
+        <span class="n">total</span> <span class="o">=</span> <span class="n">store</span><span class="p">.</span><span class="nf">upsert_chunks</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">dense</span><span class="p">,</span> <span class="n">sparse</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nc">IngestionResult</span><span class="p">(</span>
+            <span class="n">company</span><span class="o">=</span><span class="n">company</span><span class="p">,</span>
+            <span class="n">documents_loaded</span><span class="o">=</span><span class="nf">len</span><span class="p">(</span><span class="n">docs</span><span class="p">),</span>
+            <span class="n">chunks_produced</span><span class="o">=</span><span class="nf">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">),</span>
+            <span class="n">vectors_stored</span><span class="o">=</span><span class="n">total</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div></div>
+
+<p>The chunking is semantic: split by headings, then paragraphs, then sentences, targeting 256-512 tokens with 50-token overlap. Each chunk gets both a dense vector (from <code class="language-plaintext highlighter-rouge">snowflake-arctic-embed-s</code>, 384 dimensions) and a sparse BM25 vector via <code class="language-plaintext highlighter-rouge">fastembed</code>.</p>
+
+<h3 id="hybrid-retrieval">Hybrid retrieval</h3>
+
+<p>The query side uses Qdrant’s prefetch + fusion to combine dense and sparse search:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">dense_vector</span><span class="p">,</span> <span class="n">sparse_vector</span><span class="p">,</span> <span class="n">company</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">SEARCH_FUSION_LIMIT</span><span class="p">):</span>
+    <span class="n">query_filter</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">company</span><span class="p">:</span>
+        <span class="n">query_filter</span> <span class="o">=</span> <span class="nc">Filter</span><span class="p">(</span><span class="n">must</span><span class="o">=</span><span class="p">[</span>
+            <span class="nc">FieldCondition</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="sh">"</span><span class="s">company</span><span class="sh">"</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="nc">MatchValue</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">company</span><span class="p">.</span><span class="nf">strip</span><span class="p">().</span><span class="nf">lower</span><span class="p">()))</span>
+        <span class="p">])</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">_client</span><span class="p">.</span><span class="nf">query_points</span><span class="p">(</span>
+        <span class="n">collection_name</span><span class="o">=</span><span class="n">COLLECTION_NAME</span><span class="p">,</span>
+        <span class="n">prefetch</span><span class="o">=</span><span class="p">[</span>
+            <span class="nc">Prefetch</span><span class="p">(</span>
+                <span class="n">query</span><span class="o">=</span><span class="n">dense_vector</span><span class="p">,</span>
+                <span class="n">using</span><span class="o">=</span><span class="n">DENSE_VECTOR_NAME</span><span class="p">,</span>
+                <span class="n">score_threshold</span><span class="o">=</span><span class="n">DENSE_SCORE_THRESHOLD</span><span class="p">,</span>
+                <span class="n">limit</span><span class="o">=</span><span class="n">SEARCH_DENSE_LIMIT</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="nc">Prefetch</span><span class="p">(</span>
+                <span class="n">query</span><span class="o">=</span><span class="nc">SparseVector</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">sparse_vector</span><span class="p">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">sparse_vector</span><span class="p">.</span><span class="n">values</span><span class="p">),</span>
+                <span class="n">using</span><span class="o">=</span><span class="n">SPARSE_VECTOR_NAME</span><span class="p">,</span>
+                <span class="n">limit</span><span class="o">=</span><span class="n">SEARCH_SPARSE_LIMIT</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">],</span>
+        <span class="n">query</span><span class="o">=</span><span class="nc">FusionQuery</span><span class="p">(</span><span class="n">fusion</span><span class="o">=</span><span class="n">Fusion</span><span class="p">.</span><span class="n">RRF</span><span class="p">),</span>
+        <span class="n">query_filter</span><span class="o">=</span><span class="n">query_filter</span><span class="p">,</span>
+        <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+        <span class="n">with_payload</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># ... return results
+</span></code></pre></div></div>
+
+<p>Two prefetch branches run in parallel inside Qdrant: top-10 dense results and top-10 sparse results. Reciprocal Rank Fusion (RRF) merges them into a single ranked list. Dense search catches semantic similarity; sparse search catches exact keyword matches. The combination is more robust than either alone.</p>
+
+<p>The agent then generates an answer with inline citations from the retrieved chunks based on agent’s system prompt.</p>
+
+<h3 id="streaming-to-the-frontend">Streaming to the frontend</h3>
+
+<p>The FastAPI backend uses the AG-UI protocol (via <code class="language-plaintext highlighter-rouge">pydantic_ai.ui.ag_ui.AGUIAdapter</code>) to stream agent responses as server-sent events. The frontend uses CopilotKit, which connects to the Python backend through an <code class="language-plaintext highlighter-rouge">HttpAgent</code>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@app.post</span><span class="p">(</span><span class="sh">"</span><span class="s">/</span><span class="sh">"</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">run_agent</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">logfire</span><span class="p">.</span><span class="nf">span</span><span class="p">(</span><span class="sh">"</span><span class="s">agent request</span><span class="sh">"</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AGUIAdapter</span><span class="p">.</span><span class="nf">dispatch_request</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">agent</span><span class="o">=</span><span class="n">agent</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span>
+</code></pre></div></div>
+
+<p>One line dispatches the request. CopilotKit on the React side handles message rendering, tool call visualization, and streaming updates.</p>
+
+<h2 id="observability">Observability</h2>
+
+<p>🤔 Getting OpenTelemetry from Python into the Aspire dashboard has a catch: Python’s OTLP exporter defaults to gRPC, but Aspire’s gRPC endpoint requires HTTP/2 with ALPN, which Python’s <code class="language-plaintext highlighter-rouge">grpcio</code> doesn’t support. The fix is to use HTTP/protobuf instead:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">_configure_aspire_otlp</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">http_endpoint</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">environ</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">"</span><span class="s">DOTNET_DASHBOARD_OTLP_HTTP_ENDPOINT_URL</span><span class="sh">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">http_endpoint</span><span class="p">:</span>
+        <span class="n">os</span><span class="p">.</span><span class="n">environ</span><span class="p">[</span><span class="sh">"</span><span class="s">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="sh">"</span><span class="p">]</span> <span class="o">=</span> <span class="n">http_endpoint</span>
+        <span class="n">os</span><span class="p">.</span><span class="n">environ</span><span class="p">[</span><span class="sh">"</span><span class="s">OTEL_EXPORTER_OTLP_PROTOCOL</span><span class="sh">"</span><span class="p">]</span> <span class="o">=</span> <span class="sh">"</span><span class="s">http/protobuf</span><span class="sh">"</span>
+</code></pre></div></div>
+
+<p>Aspire sets <code class="language-plaintext highlighter-rouge">DOTNET_DASHBOARD_OTLP_HTTP_ENDPOINT_URL</code> automatically via <code class="language-plaintext highlighter-rouge">WithOtlpExporter()</code>. The Python code picks it up and redirects telemetry to the HTTP endpoint.</p>
+
+<p>🤔 Another gotcha: the Aspire dashboard can’t render exponential histograms, so you need explicit bucket histograms. Logfire’s defaults use exponential, so the code overrides them with <code class="language-plaintext highlighter-rouge">ExplicitBucketHistogramAggregation</code>.</p>
+
+<p>Once configured, you get distributed traces across the entire request path: HTTP request → agent execution → embedding → Qdrant search → LLM generation. All visible in the Aspire dashboard alongside the .NET services.</p>
+
+<p>Logfire instruments Pydantic AI and HTTPX automatically:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">logfire</span><span class="p">.</span><span class="nf">configure</span><span class="p">(</span><span class="n">service_name</span><span class="o">=</span><span class="sh">"</span><span class="s">company-intel-agent</span><span class="sh">"</span><span class="p">,</span> <span class="n">send_to_logfire</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">logfire</span><span class="p">.</span><span class="nf">instrument_pydantic_ai</span><span class="p">()</span> <span class="c1"># adds Semantic Conventions for Generative AI
+</span><span class="n">logfire</span><span class="p">.</span><span class="nf">instrument_httpx</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>This gives you GenAI semantic conventions (token usage per LLM call) and HTTP client spans for free.</p>
+
+<p>Here’s what a distributed trace looks like for a backoffice ingestion request. You can see every span: the agent run, scraping (Wikipedia, website, search), and the final ingestion into Qdrant:</p>
+
+<center>
+    <img src="/assets/building-rag-aspire-python/backoffice_02.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>And the metrics view, showing scraper page content size broken down by source type:</p>
+
+<center>
+    <img src="/assets/building-rag-aspire-python/backoffice_03.png" style="margin: 15px;" width="100%">
+</center>
+
+<h2 id="rag-evaluation-with-aspire">RAG evaluation with Aspire</h2>
+
+<p>Here’s where Aspire really pays off. The eval test uses <code class="language-plaintext highlighter-rouge">DistributedApplicationTestingBuilder</code> to spin up the entire stack, a fresh Qdrant, Ollama, and the Python agent, run ingestion against a golden dataset, then check retrieval quality:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">Fact</span><span class="p">]</span>
+<span class="k">public</span> <span class="k">async</span> <span class="n">Task</span> <span class="nf">RetrievalQualityMeetsThresholds</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">appHost</span> <span class="p">=</span> <span class="k">await</span> <span class="n">DistributedApplicationTestingBuilder</span><span class="p">.</span><span class="n">CreateAsync</span><span class="p">&lt;</span><span class="n">Projects</span><span class="p">.</span><span class="n">AppHost</span><span class="p">&gt;(</span>
+        <span class="p">[</span><span class="s">"UseVolumes=false"</span><span class="p">],</span>  <span class="c1">// fresh Qdrant, no stale data</span>
+        <span class="p">(</span><span class="n">appOptions</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="n">appOptions</span><span class="p">.</span><span class="n">DisableDashboard</span> <span class="p">=</span> <span class="k">true</span><span class="p">,</span>
+        <span class="n">cts</span><span class="p">.</span><span class="n">Token</span>
+    <span class="p">);</span>
+
+    <span class="k">await</span> <span class="k">using</span> <span class="nn">var</span> <span class="n">app</span> <span class="p">=</span> <span class="k">await</span> <span class="n">appHost</span><span class="p">.</span><span class="nf">BuildAsync</span><span class="p">(</span><span class="n">cts</span><span class="p">.</span><span class="n">Token</span><span class="p">);</span>
+    <span class="k">await</span> <span class="n">app</span><span class="p">.</span><span class="nf">StartAsync</span><span class="p">(</span><span class="n">cts</span><span class="p">.</span><span class="n">Token</span><span class="p">);</span>
+
+    <span class="k">await</span> <span class="n">app</span><span class="p">.</span><span class="n">ResourceNotifications</span><span class="p">.</span><span class="nf">WaitForResourceHealthyAsync</span><span class="p">(</span>
+        <span class="s">"company-intel-agent"</span><span class="p">,</span> <span class="n">cts</span><span class="p">.</span><span class="n">Token</span>
+    <span class="p">);</span>
+
+    <span class="k">using</span> <span class="nn">var</span> <span class="n">http</span> <span class="p">=</span> <span class="n">app</span><span class="p">.</span><span class="nf">CreateHttpClient</span><span class="p">(</span><span class="s">"company-intel-agent"</span><span class="p">);</span>
+
+    <span class="c1">// Start eval, poll until done, assert thresholds</span>
+    <span class="kt">var</span> <span class="n">startResp</span> <span class="p">=</span> <span class="k">await</span> <span class="n">http</span><span class="p">.</span><span class="nf">PostAsJsonAsync</span><span class="p">(</span><span class="s">"/eval/run"</span><span class="p">,</span> <span class="k">new</span> <span class="p">{</span> <span class="n">company</span> <span class="p">=</span> <span class="s">"paypal"</span> <span class="p">},</span> <span class="n">cts</span><span class="p">.</span><span class="n">Token</span><span class="p">);</span>
+    <span class="c1">// ... poll status ...</span>
+
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">Metrics</span><span class="p">!.</span><span class="n">HitRate</span> <span class="p">&gt;=</span> <span class="m">0.50</span><span class="p">);</span>
+    <span class="n">Assert</span><span class="p">.</span><span class="nf">True</span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">Metrics</span><span class="p">!.</span><span class="n">ContextRecall</span> <span class="p">&gt;=</span> <span class="m">0.50</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">UseVolumes=false</code> ensures a clean Qdrant on every run. No leftover data from previous tests. Aspire assigns random ports, so there are no conflicts if you run tests in parallel. The test exercises the real ingestion and retrieval pipelines, not a mock.</p>
+
+<p>The eval itself uses substring matching: each query in the golden dataset has expected facts, and the test checks whether retrieved chunks contain those facts. No LLM-as-judge needed for this; deterministic substring matching gives reliable signal in seconds instead of minutes.</p>
+
+<p>🤔 We could use LLM-as-judge for a more semantic evaluation, but that would require a fast local model. Qwen3 8B is good for generation but slow for evaluation, so substring matching was a pragmatic choice here.</p>
+
+<p>Two metrics: <strong>Hit Rate</strong> (did at least one expected fact get retrieved?) and <strong>Context Recall</strong> (what fraction of expected facts were found?). Both must exceed 50% or CI fails.</p>
+
+<h2 id="demo">Demo</h2>
+
+<p>The chat tab. Ask a question, get a grounded answer with citations from the knowledge base:</p>
+
+<center>
+    <img src="/assets/building-rag-aspire-python/chat-01.png" style="margin: 15px;" width="100%">
+</center>
+
+<center>
+    <img src="/assets/building-rag-aspire-python/chat-02.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>Multi-company research with detailed, structured answers:</p>
+
+<center>
+    <img src="/assets/building-rag-aspire-python/chat-03.png" style="margin: 15px;" width="100%">
+</center>
+
+<p>The backoffice tab. Tell it to gather data for a company, and it scrapes, chunks, embeds, and stores everything in the background:</p>
+
+<center>
+    <img src="/assets/building-rag-aspire-python/backoffice_01.png" style="margin: 15px;" width="100%">
+</center>
+
+<h2 id="summary">Summary</h2>
+
+<p>The main takeaway: Aspire isn’t just for .NET microservices. It’s a polyglot orchestrator. If your system has containers, Python apps, and Node.js frontends that need to discover each other and report telemetry to the same place, Aspire handles that with less configuration than Docker Compose.</p>
+
+<p>What worked well:</p>
+<ul>
+  <li>Connection string injection removed all hardcoded URLs from Python code</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">WithOtlpExporter()</code> gave the Python agent observability for free (once you work around the HTTP/2 issue)</li>
+  <li>
+<code class="language-plaintext highlighter-rouge">DistributedApplicationTestingBuilder</code> made RAG evaluation reproducible: fresh stack per test, no manual setup</li>
+</ul>
+
+<p>What I’d do differently next time: use a remote LLM for evaluation instead of local Qwen3. Substring matching works, but semantic matching would catch paraphrased facts. That needs a fast model though, not a 8B one running on CPU.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://aspire.dev/get-started/what-is-aspire/" target="_blank" rel="noopener noreferrer">.NET Aspire documentation</a></li>
+  <li><a href="https://ai.pydantic.dev/" target="_blank" rel="noopener noreferrer">Pydantic AI</a></li>
+  <li><a href="https://docs.ag-ui.com/" target="_blank" rel="noopener noreferrer">AG-UI protocol</a></li>
+  <li><a href="https://docs.copilotkit.ai/" target="_blank" rel="noopener noreferrer">CopilotKit</a></li>
+  <li><a href="https://qdrant.tech/documentation/concepts/hybrid-queries/" target="_blank" rel="noopener noreferrer">Qdrant hybrid search</a></li>
+  <li><a href="https://docs.crawl4ai.com/" target="_blank" rel="noopener noreferrer">Crawl4AI</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="list-inline">
+		<li>
+<i class="fa-solid fa-bookmark"></i> Topics:</li>
+		
+		
+		
+		<li>
+			<a href="/topics.html#dotnet-cat-ref">
+				dotnet <span>(59)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#ai-cat-ref">
+				ai <span>(14)</span>
+			</a>
+			 ·
+		</li>
+		
+		
+		
+		
+		
+		<li>
+			<a href="/topics.html#dotnet-tag-ref">
+				dotnet <span>(64)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#aspire-tag-ref">
+				aspire <span>(21)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#python-tag-ref">
+				python <span>(3)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#pydantic-ai-tag-ref">
+				pydantic-ai <span>(1)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#rag-tag-ref">
+				rag <span>(3)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#opentelemetry-tag-ref">
+				opentelemetry <span>(5)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#qdrant-tag-ref">
+				qdrant <span>(1)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#ollama-tag-ref">
+				ollama <span>(1)</span>
+			</a>
+			
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://x.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'x-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa-brands fa-x-twitter fa-lg"></i>
+				X
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="/ai/2026/02/15/risks-of-ai-assisted-development.html" title="Risks of AI-Assisted Development">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2026 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/assets/js/app.js"></script>
+	<script src="https://unpkg.com/lunr/lunr.js"></script>
+	<script type="text/javascript" src="/assets/js/search.js"></script>
+	<script type="text/javascript" src="/assets/js/copy-code.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'forest'
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
