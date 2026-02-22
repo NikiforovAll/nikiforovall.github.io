@@ -15,7 +15,7 @@ mermaid: true
 
 I built a RAG-based company research assistant where **.NET Aspire** orchestrates a Python backend (**Pydantic AI** + **FastAPI**), a **Next.js** frontend (**CopilotKit**), **Qdrant** for hybrid vector search, and **Ollama** for local LLM inference. One `dotnet run` starts everything. This post walks through the architecture, the RAG pipeline, and how Aspire makes polyglot orchestration and observability surprisingly painless.
 
-**Source code:** <https://github.com/NikiforovAll/company-intel>
+**Source code:** <https://github.com/NikiforovAll/company_intel>
 
 <iframe src="https://nikiforovall.blog/company_intel/rag-pydantic-ai-example" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
 
