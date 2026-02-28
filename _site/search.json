@@ -2,6 +2,17 @@
   
     {
       "id": "0",
+      "title": "Building RAG with .NET AI Building Blocks - Microsoft.Extensions.AI",
+      "url": "/dotnet/ai/2026/02/28/building-rag-with-dotnet-ai-building-blocks.html",
+      "date": "February 28, 2026",
+      "categories": ["dotnet","ai"],
+      "tags": ["dotnet","aspire","meai","rag","qdrant","ollama","vector-data","ai-evaluation"],
+      "shortinfo": "How to build a provider-agnostic RAG system in .NET using Microsoft.Extensions.AI, VectorData, and Aspire for orchestration, testing, and evaluation.",
+      "content": "TL;DRI built a RAG-based document intelligence assistant in .NET using IChatClient and IEmbeddingGenerator from Microsoft.Extensions.AI, VectorStoreCollection from Microsoft.Extensions.VectorData, Qdrant for vector search, Ollama for local inference, and .NET Aspire to wire it all together. The result is a provider-agnostic RAG app where switching from Ollama to OpenAI means changing one line of DI registration. This post walks through the abstractions, the pipeline, and how Aspire enables LLM-as-Judge evaluation in integration tests.  TL;DR  Introduction  The building blocks          IChatClient and IEmbeddingGenerator      DelegatingChatClient: middleware for AI      VectorData with auto-embedding        The RAG pipeline          Ingestion      Query        Aspire orchestration  RAG evaluation with LLM-as-Judge  Demo  Summary  ReferencesSource code: https://github.com/NikiforovAll/company-intel-dotnetIntroductionMost AI integrations are tightly coupled to a specific provider. Your code imports the OpenAI SDK, or the Ollama client, or the Azure AI library. Switching providers means rewriting application code, not just configuration.Microsoft.Extensions.AI (MEAI) gives you IChatClient and IEmbeddingGenerator. You register an implementation at startup. The rest of your code uses the abstraction. Change one line in DI. Your RAG pipeline, your agent, your evaluation tests — none of them care.Microsoft.Extensions.VectorData does the same for vector stores. Define your data model with attributes, and the framework handles embedding and search.This post walks through building a complete RAG application using these abstractions, with Aspire for orchestration and LLM-as-Judge for quality evaluation.The building blocks.NET has four AI building blocks. This post focuses on the first two.            Block      Package      What it gives you                  MEAI      Microsoft.Extensions.AI      IChatClient, IEmbeddingGenerator — provider-agnostic interfaces              VectorData      Microsoft.Extensions.VectorData      VectorStoreCollection, attribute-driven data models, auto-embedding              Agent Framework      Microsoft.Agents.AI      IAIAgent, AG-UI protocol for streaming to frontends      IChatClient and IEmbeddingGeneratorHere’s the entire AI registration for the app:builder.AddOllamaApiClient(\"ollama-llama3-1\").AddChatClient();builder.AddOllamaApiClient(\"ollama-all-minilm\").AddEmbeddingGenerator();After this, any service can inject IChatClient or IEmbeddingGenerator&lt;string, Embedding&lt;float&gt;&gt; and use them without knowing what’s behind them.The chat client usage looks like this:IChatClient chatClient = sp.GetRequiredService&lt;IChatClient&gt;();var response = await chatClient.GetResponseAsync(messages);The same applies to embeddings:var embedder = sp.GetRequiredService&lt;IEmbeddingGenerator&lt;string, Embedding&lt;float&gt;&gt;&gt;();var embeddings = await embedder.GenerateAsync([\"some text\"]);384-dimensional vectors from all-minilm, but your code doesn’t know or care about dimensions.DelegatingChatClient: middleware for AIMEAI borrows the middleware pattern from ASP.NET Core. DelegatingChatClient wraps an IChatClient and intercepts calls. You can add logging, caching, telemetry, retry logic — all as composable layers.Here’s a real example from the project. OllamaSharp doesn’t set MessageId on streaming updates, but CopilotKit’s Zod schema rejects null values. The fix is a thin wrapper:internal sealed class EnsureMessageIdChatClient(IChatClient inner) : DelegatingChatClient(inner){    public override async IAsyncEnumerable&lt;ChatResponseUpdate&gt; GetStreamingResponseAsync(        IEnumerable&lt;ChatMessage&gt; messages,        ChatOptions? options = null,        CancellationToken cancellationToken = default)    {        string? messageId = null;        await foreach (var update in base.GetStreamingResponseAsync(            messages, options, cancellationToken))        {            if (update.MessageId is null)            {                messageId ??= Guid.NewGuid().ToString(\"N\");                update.MessageId = messageId;            }            yield return update;        }    }}This is a compatibility shim, but the pattern is general. MEAI ships with built-in delegating clients for logging, OpenTelemetry, caching, and automatic function invocation. You compose them in DI like middleware:builder.AddOllamaApiClient(\"ollama-llama3-1\")    .AddChatClient(pipeline =&gt; pipeline        .UseLogging()        .UseOpenTelemetry()        .UseFunctionInvocation());Each .Use*() call wraps the client in another layer. The outermost layer runs first, just like ASP.NET middleware.VectorData with auto-embeddingThis is the data model for chunks stored in Qdrant:public sealed class DocumentRecord{    [VectorStoreKey]    public Guid Id { get; set; } = Guid.NewGuid();    [VectorStoreData]    public string Text { get; set; } = \"\";    [VectorStoreData]    public string FileName { get; set; } = \"\";    [VectorStoreData]    public int ChunkIndex { get; set; }    [VectorStoreData(IsIndexed = true)]    public string Source { get; set; } = \"\";    [VectorStoreVector(Dimensions: 384)]    public string Embedding =&gt; Text;}The interesting part is the last property. [VectorStoreVector(Dimensions: 384)] on a string property means “embed this text automatically when upserting.” The Embedding property points to Text, so VectorData calls your registered IEmbeddingGenerator, gets the 384-dim vector, and stores it in Qdrant. No manual embedding calls anywhere in the ingestion code.Registration ties it together:builder.Services.AddSingleton&lt;VectorStoreCollection&lt;Guid, DocumentRecord&gt;&gt;(sp =&gt;{    var embeddingGenerator = sp.GetRequiredService&lt;IEmbeddingGenerator&lt;string, Embedding&lt;float&gt;&gt;&gt;();    var vectorStore = new QdrantVectorStore(        sp.GetRequiredService&lt;QdrantClient&gt;(),        ownsClient: false,        new QdrantVectorStoreOptions { EmbeddingGenerator = embeddingGenerator }    );    return vectorStore.GetCollection&lt;Guid, DocumentRecord&gt;(CollectionName);});Pass the embedding generator to the vector store options. From that point, every UpsertAsync call automatically embeds text before storage. Every SearchAsync call automatically embeds the query before searching.The RAG pipelineTwo phases:Phase 1: INGEST                      Phase 2: QUERY─────────────────                    ─────────────────Upload PDF                           \"What does the report say about X?\"  → Extract text (PdfPig)              → Embed query (all-minilm)  → Chunk (recursive, 128 tokens)      → Vector search (Qdrant, top-5)  → Auto-embed + upsert (Qdrant)       → LLM generates grounded answerIngestionThe ingestion service is straightforward:public async Task&lt;IngestionRecord&gt; IngestPdfAsync(    Stream pdfStream, string fileName, string source,    long fileSizeBytes, CancellationToken ct = default){    await collection.EnsureCollectionExistsAsync(ct);    var extraction = PdfTextExtractor.Extract(pdfStream);    var chunks = TextChunker.Chunk(extraction.Text);    var records = chunks        .Select((chunk, index) =&gt; new DocumentRecord        {            Text = chunk,            FileName = fileName,            ChunkIndex = index,            Source = source,        })        .ToList();    await collection.UpsertAsync(records, ct);}Notice what’s missing: no embedding calls. collection.UpsertAsync handles it because we configured auto-embedding on the DocumentRecord. PdfPig extracts text (pure .NET, no native dependencies), TextChunker splits it into chunks, and the vector store takes care of the rest.The chunker is a recursive splitter targeting 128 tokens (~512 chars) with 25-token overlap. It tries paragraph boundaries first (\\n\\n), then lines (\\n), then sentences (. ), then words.QueryThe search adapter creates a function that retrieves relevant chunks:public static Func&lt;string, CancellationToken, Task&lt;IEnumerable&lt;TextSearchResult&gt;&gt;&gt; Create(    VectorStoreCollection&lt;Guid, DocumentRecord&gt; collection, int top = 5) =&gt;    async (query, ct) =&gt;    {        var results = new List&lt;TextSearchResult&gt;();        await foreach (var result in collection.SearchAsync(            query, top: top, cancellationToken: ct))        {            var sourceName = FormatSourceName(                result.Record.FileName, result.Record.Text);            results.Add(new TextSearchResult            {                Text = result.Record.Text,                SourceName = sourceName,                SourceLink = result.Record.Source,            });        }        return results;    };collection.SearchAsync takes a plain string query. The vector store auto-embeds it, runs similarity search against Qdrant, and returns matching records. Page numbers are extracted from chunk text via regex and formatted into the source name (e.g., “report.pdf (Page 5)”).The agent then passes these chunks as context to the LLM with instructions to answer only from the provided context and cite sources.graph LR    UI[\"Next.js(CopilotKit)\"] --&gt;|AG-UI SSE| API[\"ASP.NET Core(MEAI Agent)\"]    API --&gt;|embed query| Ollama_E[\"Ollamaall-minilm\"]    API --&gt;|vector search| Qdrant[\"Qdrant\"]    API --&gt;|generate answer| Ollama_L[\"OllamaLlama 3.1\"]    Qdrant --&gt;|top-5 chunks| API    Ollama_E --&gt;|384-dim vector| APIAspire orchestrationHere’s the AppHost. This defines the entire system:var builder = DistributedApplication.CreateBuilder(args);var ollama = builder    .AddOllama(\"ollama\")    .WithImageTag(\"latest\")    .WithDataVolume()    .WithLifetime(ContainerLifetime.Persistent);var llama = ollama.AddModel(\"llama3.1\");var embedModel = ollama.AddModel(\"all-minilm\");var qdrant = builder    .AddQdrant(\"qdrant\", apiKey: builder.AddParameter(\"qdrant-apikey\", \"localdev\"))    .WithImageTag(\"latest\")    .WithDataVolume()    .WithLifetime(ContainerLifetime.Persistent);var sqlite = builder    .AddSqlite(\"ingestion-db\", databasePath: sqlitePath, databaseFileName: \"ingestion.db\")    .WithSqliteWeb();var api = builder    .AddProject&lt;Projects.CompanyIntel_Api&gt;(\"api\")    .WithReference(llama)    .WithReference(embedModel)    .WithReference(qdrant)    .WithReference(sqlite);builder    .AddJavaScriptApp(\"ui\", \"../CompanyIntel.UI\", \"dev\")    .WithPnpm()    .WithHttpEndpoint(port: 3000, env: \"PORT\")    .WithEnvironment(\"AGENT_URL\", api.GetEndpoint(\"http\"))    .WithOtlpExporter();await builder.Build().RunAsync();dotnet aspire run starts Ollama (pulls models if needed), Qdrant, SQLite with a web UI, the ASP.NET Core API, and the Next.js frontend. WithLifetime(ContainerLifetime.Persistent) means Ollama and Qdrant survive between runs. WithReference injects connection strings automatically — the API project never hardcodes a URL.RAG evaluation with LLM-as-JudgeThis is where Aspire really pays off. The evaluation tests spin up the entire stack — Ollama, Qdrant, API — in ephemeral containers, ingest a test PDF, ask questions, and score the answers using LLM-as-Judge.The test fixture:public class AspireAppFixture : IAsyncLifetime{    public async ValueTask InitializeAsync()    {        var appHost = await DistributedApplicationTestingBuilder.CreateAsync&lt;Projects.CompanyIntel_AppHost&gt;();        _app = await appHost.BuildAsync(cts.Token);        await _app.StartAsync(cts.Token);        await _app.ResourceNotifications.WaitForResourceHealthyAsync(\"api\", cts.Token);        ApiClient = _app.CreateHttpClient(\"api\", \"http\");    }}The evaluation itself uses Microsoft.Extensions.AI.Evaluation.Quality, which provides four evaluators:            Metric      What it measures                  Relevance      Does the answer address the question?              Coherence      Is the answer well-structured and logical?              Groundedness      Is every claim backed by the retrieved context?              Retrieval      Did the search find the right chunks?      Each evaluator uses the same Ollama llama3.1 as a judge and scores on a 1-5 scale:[Theory][MemberData(nameof(EvalScenarios))]public async Task EvaluateRagResponseQuality(string question){    var chatResponse = await fixture.ApiClient.PostAsJsonAsync(\"/api/chat\", new { message = question });    var result = await chatResponse.Content.ReadFromJsonAsync&lt;ChatApiResponse&gt;();    IChatClient judgeChatClient = new OllamaApiClient(fixture.OllamaEndpoint, \"llama3.1\");    var chatConfig = new ChatConfiguration(judgeChatClient);    IEvaluator[] evaluators =    [        new RelevanceEvaluator(),        new CoherenceEvaluator(),        new GroundednessEvaluator(),        new RetrievalEvaluator(),    ];    foreach (var evaluator in evaluators)    {        var evalResult = await evaluator.EvaluateAsync(            messages, modelResponse, chatConfig, additionalContext, cts.Token);        foreach (var metricName in evaluator.EvaluationMetricNames)        {            var metric = evalResult.Get&lt;NumericMetric&gt;(metricName);            Assert.True(metric.Value &gt;= 3,                $\"{metricName} score too low: {metric.Value}\");        }    }}graph LR    Aspire[\"AspireTest Runner\"] --&gt;|start stack| Stack[\"Ollama + Qdrant + API(ephemeral containers)\"]    Stack --&gt;|ready| Ingest[\"Ingesttest PDF\"]    Ingest --&gt;|for each scenario| ChatAPI[\"Chat API/api/chat\"]    ChatAPI --&gt;|answer + context| Judge[\"Judge LLM(llama3.1)\"]    Judge --&gt;|scores 1-5| Metrics[\"Relevance · CoherenceGroundedness · Retrieval\"]    Metrics --&gt;|all &gt;= 3?| Assert[\"xUnit Assert\"]Groundedness is the most interesting metric here. It checks whether every claim in the answer can be traced back to the retrieved context. A score below 3 means the model is hallucinating — making claims the documents don’t support.DemoThe chat tab. Ask a question, get a grounded answer with citations:    The documents tab. Upload PDFs, see ingestion stats (pages, chunks, size):    SummaryThe .NET AI building blocks let you write RAG applications without coupling to a specific provider.What worked well:  VectorData’s auto-embedding removed all manual embedding calls from the codebase. Define [VectorStoreVector] on a string property, and upsert/search just works.  DelegatingChatClient handled a real compatibility issue (missing MessageId in OllamaSharp streaming) without touching the rest of the code.  Aspire’s DistributedApplicationTestingBuilder made RAG evaluation reproducible: ephemeral containers, random ports, clean state per run.  Microsoft.Extensions.AI.Evaluation.Quality gave us four evaluation metrics out of the box, using the same local LLM as judge.References  Microsoft.Extensions.AI documentation  Microsoft.Extensions.VectorData documentation  Microsoft.Extensions.AI.Evaluation  AG-UI protocol"
+    },
+  
+    {
+      "id": "1",
       "title": "Building RAG with .NET Aspire and Python",
       "url": "/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html",
       "date": "February 22, 2026",
@@ -12,7 +23,7 @@
     },
   
     {
-      "id": "1",
+      "id": "2",
       "title": "Risks of AI-Assisted Development",
       "url": "/ai/2026/02/15/risks-of-ai-assisted-development.html",
       "date": "February 15, 2026",
@@ -23,7 +34,7 @@
     },
   
     {
-      "id": "2",
+      "id": "3",
       "title": " Observing Claude Code Task Orchestration in Real Time using 'claude-code-kanban'",
       "url": "/ai/productivity/2026/02/07/claude-code-kanban.html",
       "date": "February 07, 2026",
@@ -34,7 +45,7 @@
     },
   
     {
-      "id": "3",
+      "id": "4",
       "title": "LazyClaude 0.12.0: Marketplace Plugin Management",
       "url": "/ai/2025/12/21/lazyclaude-0-12-0.html",
       "date": "December 21, 2025",
@@ -45,7 +56,7 @@
     },
   
     {
-      "id": "4",
+      "id": "5",
       "title": "LazyClaude: Explore Your Claude Code Setup Without Breaking Flow",
       "url": "/ai/2025/12/07/lazyclaude.html",
       "date": "December 07, 2025",
@@ -56,7 +67,7 @@
     },
   
     {
-      "id": "5",
+      "id": "6",
       "title": "VSCode Morph Agent: Let AI Control Your Workspace",
       "url": "/ai/2025/12/01/vscode-morph-agent.html",
       "date": "December 01, 2025",
@@ -67,7 +78,7 @@
     },
   
     {
-      "id": "6",
+      "id": "7",
       "title": "Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK",
       "url": "/dotnet/ai/2025/11/11/dotnet-format-agent.html",
       "date": "November 11, 2025",
@@ -78,7 +89,7 @@
     },
   
     {
-      "id": "7",
+      "id": "8",
       "title": "Claude Code Handbook: Best Practices and Recommendations",
       "url": "/productivity/2025/10/05/claude-code-handbook.html",
       "date": "October 05, 2025",
@@ -89,7 +100,7 @@
     },
   
     {
-      "id": "8",
+      "id": "9",
       "title": "MCP Landscape for .NET Developers",
       "url": "/ai/mcp/2025/10/03/mcp-landscape.html",
       "date": "October 03, 2025",
@@ -100,7 +111,7 @@
     },
   
     {
-      "id": "9",
+      "id": "10",
       "title": "Testing with Playwright and Claude Code",
       "url": "/ai/2025/09/06/playwright-claude-code-testing.html",
       "date": "September 06, 2025",
@@ -111,7 +122,7 @@
     },
   
     {
-      "id": "10",
+      "id": "11",
       "title": "Add Authentication to MCP Servers using Microsoft Entra ID",
       "url": "/dotnet/2025/09/02/mcp-auth.html",
       "date": "September 02, 2025",
@@ -122,7 +133,7 @@
     },
   
     {
-      "id": "11",
+      "id": "12",
       "title": "Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs",
       "url": "/ai/2025/08/09/tech-debt-master.html",
       "date": "August 09, 2025",
@@ -133,7 +144,7 @@
     },
   
     {
-      "id": "12",
+      "id": "13",
       "title": "Monitoring Claude Code with .NET Aspire Dashboard",
       "url": "/productivity/2025/06/14/claude-code-telemetry-aspire.html",
       "date": "June 14, 2025",
@@ -144,7 +155,7 @@
     },
   
     {
-      "id": "13",
+      "id": "14",
       "title": "My Claude Code Usage Best Practices and Recommendations",
       "url": "/productivity/2025/06/13/claude-code-rules.html",
       "date": "June 13, 2025",
@@ -155,7 +166,7 @@
     },
   
     {
-      "id": "14",
+      "id": "15",
       "title": "Hangfire MCP Server in Standalone Mode",
       "url": "/dotnet/2025/05/29/hangfire-mcp-standalone.html",
       "date": "May 29, 2025",
@@ -166,7 +177,7 @@
     },
   
     {
-      "id": "15",
+      "id": "16",
       "title": "Background Job Scheduling Using Hangfire MCP Server",
       "url": "/dotnet/2025/05/25/hangfire-mcp.html",
       "date": "May 25, 2025",
@@ -177,7 +188,7 @@
     },
   
     {
-      "id": "16",
+      "id": "17",
       "title": "Code Review with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html",
       "date": "May 03, 2025",
@@ -188,7 +199,7 @@
     },
   
     {
-      "id": "17",
+      "id": "18",
       "title": "Prompt Engineering with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/04/19/github-copilot-prompt-engineering.html",
       "date": "April 19, 2025",
@@ -199,7 +210,7 @@
     },
   
     {
-      "id": "18",
+      "id": "19",
       "title": "Composable AI with .NET Aspire: Extending DIAL Assistants with Add-Ons",
       "url": "/dotnet/ai/2025/04/18/introduction-to-dial-addons.html",
       "date": "April 18, 2025",
@@ -210,7 +221,7 @@
     },
   
     {
-      "id": "19",
+      "id": "20",
       "title": "Learn how to use Model Context Protocol (MCP) Server Template in Hybrid Mode",
       "url": "/dotnet/2025/04/08/hybrid-mcp-template.html",
       "date": "April 08, 2025",
@@ -221,7 +232,7 @@
     },
   
     {
-      "id": "20",
+      "id": "21",
       "title": "Simplifying Model Context Protocol (MCP) Server Development with Aspire",
       "url": "/dotnet/2025/04/04/mcp-template-and-aspire.html",
       "date": "April 04, 2025",
@@ -232,7 +243,7 @@
     },
   
     {
-      "id": "21",
+      "id": "22",
       "title": "Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools",
       "url": "/dotnet/2025/04/02/mcp-template-getting-started.html",
       "date": "April 02, 2025",
@@ -243,7 +254,7 @@
     },
   
     {
-      "id": "22",
+      "id": "23",
       "title": "Introducing AI DIAL: The Open-Source AI Orchestration Platform",
       "url": "/dotnet/ai/2025/03/30/introduction-to-dial.html",
       "date": "March 30, 2025",
@@ -254,7 +265,7 @@
     },
   
     {
-      "id": "23",
+      "id": "24",
       "title": "Enforcing .NET Coding Guidelines with GitHub Copilot Custom Instructions",
       "url": "/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html",
       "date": "March 08, 2025",
@@ -265,7 +276,7 @@
     },
   
     {
-      "id": "24",
+      "id": "25",
       "title": "Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd)",
       "url": "/dotnet/2024/12/22/azd-bot-service.html",
       "date": "December 22, 2024",
@@ -276,7 +287,7 @@
     },
   
     {
-      "id": "25",
+      "id": "26",
       "title": "Hybrid Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/11/02/elastic-hybrid-search.html",
       "date": "November 02, 2024",
@@ -287,7 +298,7 @@
     },
   
     {
-      "id": "26",
+      "id": "27",
       "title": "Querying and Filtering via Elastic.Clients.Elasticsearch in .NET",
       "url": "/dotnet/2024/10/20/querying-and-filtering-elastic-dotnet.html",
       "date": "October 20, 2024",
@@ -298,7 +309,7 @@
     },
   
     {
-      "id": "27",
+      "id": "28",
       "title": "Semantic Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html",
       "date": "October 19, 2024",
@@ -309,7 +320,7 @@
     },
   
     {
-      "id": "28",
+      "id": "29",
       "title": "10 Lessons I Learned from Using Aspire in Production",
       "url": "/dotnet/aspire/2024/09/30/aspire-lessons-learned.html",
       "date": "September 30, 2024",
@@ -320,7 +331,7 @@
     },
   
     {
-      "id": "29",
+      "id": "30",
       "title": "A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud",
       "url": "/dotnet/2024/09/14/quality-gates-dotnet.html",
       "date": "September 14, 2024",
@@ -331,7 +342,7 @@
     },
   
     {
-      "id": "30",
+      "id": "31",
       "title": "Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks",
       "url": "/dotnet/ai/2024/09/11/notebook-agent.html",
       "date": "September 11, 2024",
@@ -342,7 +353,7 @@
     },
   
     {
-      "id": "31",
+      "id": "32",
       "title": "Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET",
       "url": "/dotnet/ai/2024/09/04/typical-rag-dotnet.html",
       "date": "September 04, 2024",
@@ -353,7 +364,7 @@
     },
   
     {
-      "id": "32",
+      "id": "33",
       "title": "Building pipelines with IAsyncEnumerable in .NET",
       "url": "/dotnet/2024/08/22/async-enumerable-pipelines.html",
       "date": "August 22, 2024",
@@ -364,7 +375,7 @@
     },
   
     {
-      "id": "33",
+      "id": "34",
       "title": "Unlocking the Power of TypedResults in Endpoints: A Consistent Approach to Strongly Typed APIs in .NET",
       "url": "/dotnet/2024/08/17/result-endpoints.html",
       "date": "August 17, 2024",
@@ -375,7 +386,7 @@
     },
   
     {
-      "id": "34",
+      "id": "35",
       "title": "Supercharge your Dependify tool with AI chat assistant",
       "url": "/dotnet/2024/08/09/dependify-ai.html",
       "date": "August 09, 2024",
@@ -386,7 +397,7 @@
     },
   
     {
-      "id": "35",
+      "id": "36",
       "title": "Explore .NET application dependencies by using Dependify tool",
       "url": "/dotnet/2024/08/03/dependify.html",
       "date": "August 03, 2024",
@@ -397,7 +408,7 @@
     },
   
     {
-      "id": "36",
+      "id": "37",
       "title": "Managing Startup Dependencies in .NET Aspire",
       "url": "/dotnet/aspire/2024/06/28/startup-dependencies-aspire.html",
       "date": "June 28, 2024",
@@ -408,7 +419,7 @@
     },
   
     {
-      "id": "37",
+      "id": "38",
       "title": "Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch",
       "url": "/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html",
       "date": "June 18, 2024",
@@ -419,7 +430,7 @@
     },
   
     {
-      "id": "38",
+      "id": "39",
       "title": "A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html",
       "date": "June 12, 2024",
@@ -430,7 +441,7 @@
     },
   
     {
-      "id": "39",
+      "id": "40",
       "title": "Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html",
       "date": "June 07, 2024",
@@ -441,7 +452,7 @@
     },
   
     {
-      "id": "40",
+      "id": "41",
       "title": "Using Keycloak in .NET Aspire projects",
       "url": "/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html",
       "date": "June 02, 2024",
@@ -452,7 +463,7 @@
     },
   
     {
-      "id": "41",
+      "id": "42",
       "title": "Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire",
       "url": "/dotnet/aws/2024/05/27/aws-claim-check-dotnet.html",
       "date": "May 27, 2024",
@@ -463,7 +474,7 @@
     },
   
     {
-      "id": "42",
+      "id": "43",
       "title": "Mastering AWS Batch: A .NET Developer Guide to Batch File Processing",
       "url": "/dotnet/aws/2024/05/26/aws-batch-dotnet.html",
       "date": "May 26, 2024",
@@ -474,7 +485,7 @@
     },
   
     {
-      "id": "43",
+      "id": "44",
       "title": "Announcement - Keycloak.AuthServices v2.3.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/10/keycloak-v2-3-0.html",
       "date": "May 10, 2024",
@@ -485,7 +496,7 @@
     },
   
     {
-      "id": "44",
+      "id": "45",
       "title": "Announcement - Keycloak.AuthServices v2.0.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/05/keycloak-v2-0-0.html",
       "date": "May 05, 2024",
@@ -496,7 +507,7 @@
     },
   
     {
-      "id": "45",
+      "id": "46",
       "title": "Job Offloading Pattern with System.Threading.Channels. A way to deal with long-running tasks in .NET",
       "url": "/dotnet/async/2024/04/21/job-offloading-pattern.html",
       "date": "April 21, 2024",
@@ -507,7 +518,7 @@
     },
   
     {
-      "id": "46",
+      "id": "47",
       "title": "Building pipelines with System.Threading.Channels",
       "url": "/dotnet/async/2024/04/21/channels-composition.html",
       "date": "April 21, 2024",
@@ -518,7 +529,7 @@
     },
   
     {
-      "id": "47",
+      "id": "48",
       "title": "Polymorphic serialization via System.Text.Json in ASP.NET Core Minimal API",
       "url": "/dotnet/aspnetcore/2024/04/06/openapi-polymorphism.html",
       "date": "April 06, 2024",
@@ -529,7 +540,7 @@
     },
   
     {
-      "id": "48",
+      "id": "49",
       "title": "Transactional Outbox in .NET Cloud Native Development via Aspire",
       "url": "/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html",
       "date": "March 30, 2024",
@@ -540,7 +551,7 @@
     },
   
     {
-      "id": "49",
+      "id": "50",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)",
       "url": "/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html",
       "date": "March 24, 2024",
@@ -551,7 +562,7 @@
     },
   
     {
-      "id": "50",
+      "id": "51",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1)",
       "url": "/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html",
       "date": "March 22, 2024",
@@ -562,7 +573,7 @@
     },
   
     {
-      "id": "51",
+      "id": "52",
       "title": "Building a federated search engine from scratch. An introduction.",
       "url": "/dotnet/2023/05/19/federated-search-intro.html",
       "date": "May 19, 2023",
@@ -573,7 +584,7 @@
     },
   
     {
-      "id": "52",
+      "id": "53",
       "title": "Introduction to JMESPath - JSON processor you should definitely know",
       "url": "/dotnet/2023/01/08/jmespath-intro.html",
       "date": "January 08, 2023",
@@ -584,7 +595,7 @@
     },
   
     {
-      "id": "53",
+      "id": "54",
       "title": "Keycloak as Authorization Server in .NET",
       "url": "/dotnet/keycloak/2022/12/28/keycloak-authorization-server.html",
       "date": "December 28, 2022",
@@ -595,7 +606,7 @@
     },
   
     {
-      "id": "54",
+      "id": "55",
       "title": "Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications",
       "url": "/blazor/dotnet/2022/12/08/dotnet-keycloak-blazorwasm-auth.html",
       "date": "December 08, 2022",
@@ -606,7 +617,7 @@
     },
   
     {
-      "id": "55",
+      "id": "56",
       "title": "Add persisted parameters to CLI applications in .NET",
       "url": "/dotnet/2022/08/26/persisted-parameters-in-dotnet-cli.html",
       "date": "August 26, 2022",
@@ -617,7 +628,7 @@
     },
   
     {
-      "id": "56",
+      "id": "57",
       "title": "Use Keycloak as Identity Provider in ASP.NET Core 6",
       "url": "/aspnetcore/dotnet/2022/08/24/dotnet-keycloak-auth.html",
       "date": "August 24, 2022",
@@ -628,7 +639,7 @@
     },
   
     {
-      "id": "57",
+      "id": "58",
       "title": "Dev Environment as a Code (DEaaC) with DevContainers, Dotfiles, and GitHub Codespaces",
       "url": "/productivity/devcontainers/2022/08/13/deaac.html",
       "date": "August 13, 2022",
@@ -639,7 +650,7 @@
     },
   
     {
-      "id": "58",
+      "id": "59",
       "title": "Creating and Using HTTP Client SDKs in .NET 6",
       "url": "/dotnet/aspnetcore/microservices/2022/04/04/creating-and-using-http-sdks.html",
       "date": "April 04, 2022",
@@ -650,7 +661,7 @@
     },
   
     {
-      "id": "59",
+      "id": "60",
       "title": "Creating and Using HTTP Client SDKs in .NET 6. (Announcement)",
       "url": "/dotnet/aspnetcore/microservices/2022/02/06/http-sdks.html",
       "date": "February 06, 2022",
@@ -661,7 +672,7 @@
     },
   
     {
-      "id": "60",
+      "id": "61",
       "title": "Console applications with Spectre.Console",
       "url": "/dotnet/2022/01/22/building-console-application-with-spectre-console.html",
       "date": "January 22, 2022",
@@ -672,7 +683,7 @@
     },
   
     {
-      "id": "61",
+      "id": "62",
       "title": "Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.",
       "url": "/dotnet/2021/12/20/dotnet-global-tool-copy-paster.html",
       "date": "December 20, 2021",
@@ -683,7 +694,7 @@
     },
   
     {
-      "id": "62",
+      "id": "63",
       "title": "A developer guide to automated testing with Postman. Run postman collections inside Docker via newman CLI.",
       "url": "/dotnet/docker/testing/2021/11/27/testing-with-newman.html",
       "date": "November 27, 2021",
@@ -694,7 +705,7 @@
     },
   
     {
-      "id": "63",
+      "id": "64",
       "title": "Rapid Microservices Development in .NET. An introduction.",
       "url": "/dotnet/microservices/csharp/2021/11/06/rapid-microservices-development-part1-build-project.html",
       "date": "November 06, 2021",
@@ -705,7 +716,7 @@
     },
   
     {
-      "id": "64",
+      "id": "65",
       "title": "What's new in .NET 6 and C# 10. Everything you wanted to know.",
       "url": "/dotnet/csharp/coding-stories/2021/10/29/whats-new-in-dotnet6.html",
       "date": "October 29, 2021",
@@ -716,7 +727,7 @@
     },
   
     {
-      "id": "65",
+      "id": "66",
       "title": "Try out .NET 6 inside your own development environment built with devcontainers, docker, and vscode",
       "url": "/productivity/devcontainers/2021/10/14/devcontainer-for-dotnet6.html",
       "date": "October 14, 2021",
@@ -727,7 +738,7 @@
     },
   
     {
-      "id": "66",
+      "id": "67",
       "title": "An opinionated look at Minimal API in .NET 6",
       "url": "/dotnet/aspnetcore/2021/09/10/opinionated-minimal-api.html",
       "date": "September 10, 2021",
@@ -738,7 +749,7 @@
     },
   
     {
-      "id": "67",
+      "id": "68",
       "title": "How to add Health Checks to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/07/25/add-health-checks-to-aspnetcore.html",
       "date": "July 25, 2021",
@@ -749,7 +760,7 @@
     },
   
     {
-      "id": "68",
+      "id": "69",
       "title": "How to add OpenAPI to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html",
       "date": "June 13, 2021",
@@ -760,7 +771,7 @@
     },
   
     {
-      "id": "69",
+      "id": "70",
       "title": "Develop Clean Command Line Applications with System.CommandLine. Clean CLI.",
       "url": "/dotnet/cli/2021/06/06/clean-cli.html",
       "date": "June 06, 2021",
@@ -771,7 +782,7 @@
     },
   
     {
-      "id": "70",
+      "id": "71",
       "title": "Publish NuGet packages via Docker Release Container",
       "url": "/dotnet/nuget/docker/2021/05/09/nuget-release-container.html",
       "date": "May 09, 2021",
@@ -782,7 +793,7 @@
     },
   
     {
-      "id": "71",
+      "id": "72",
       "title": "ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method",
       "url": "/dotnet/aspnetcore/2021/03/23/endpoint-route-builder-extension-pattern.html",
       "date": "March 23, 2021",
@@ -793,7 +804,7 @@
     },
   
     {
-      "id": "72",
+      "id": "73",
       "title": "Advance the practical side of your coding skills with CodingStories",
       "url": "/dotnet/coding-stories/2021/03/14/coding-story.html",
       "date": "March 14, 2021",
@@ -804,7 +815,7 @@
     },
   
     {
-      "id": "73",
+      "id": "74",
       "title": "Task-based asynchronous Pattern and Composition (aka Task Combinators)",
       "url": "/dotnet/async/2021/02/26/tap-composition.html",
       "date": "February 26, 2021",
@@ -815,7 +826,7 @@
     },
   
     {
-      "id": "74",
+      "id": "75",
       "title": "Awaitable/awaiter pattern and logical micro-threading in C#",
       "url": "/csharp/compcsi/dotnet/2020/10/20/awaitable-pattern.html",
       "date": "October 20, 2020",
@@ -826,7 +837,7 @@
     },
   
     {
-      "id": "75",
+      "id": "76",
       "title": "Publish images to GitHub Container Registry (ghcr)",
       "url": "/docker/2020/09/19/publish-package-to-ghcr.html",
       "date": "September 19, 2020",
@@ -837,7 +848,7 @@
     },
   
     {
-      "id": "76",
+      "id": "77",
       "title": "Bringing \"surround with\" functionality to vscode. Check out this extension.",
       "url": "/productivity/csharp/vscode/2020/08/21/surround-with-csharp.html",
       "date": "August 21, 2020",
@@ -848,7 +859,7 @@
     },
   
     {
-      "id": "77",
+      "id": "78",
       "title": "How to organize learning process with mindmaps, spreadsheets and .NET Core",
       "url": "/productivity/2020/05/03/how-to-organize-your-learning-process-with-xmind.html",
       "date": "May 03, 2020",
@@ -859,7 +870,7 @@
     },
   
     {
-      "id": "78",
+      "id": "79",
       "title": "Catch up with .NET Core - System.Text.JSON",
       "url": "/dotnet-core/2020/04/27/catch-dotnetcore-json.html",
       "date": "April 27, 2020",
@@ -870,7 +881,7 @@
     },
   
     {
-      "id": "79",
+      "id": "80",
       "title": "Catch up with .NET Core - System.IO.Pipelines",
       "url": "/dotnet-core/2020/04/24/catch-dotnetcore-piepelines.html",
       "date": "April 24, 2020",
@@ -881,7 +892,7 @@
     },
   
     {
-      "id": "80",
+      "id": "81",
       "title": "Sorting algorithms with C# 8, Span{T} and Try .NET",
       "url": "/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html",
       "date": "April 15, 2020",
@@ -892,7 +903,7 @@
     },
   
     {
-      "id": "81",
+      "id": "82",
       "title": "Development environment based on Windows Terminal + WSL + ZSH + dotfiles",
       "url": "/productivity/2019/11/30/nikiforovall-setup.html",
       "date": "November 30, 2019",
@@ -903,7 +914,7 @@
     },
   
     {
-      "id": "82",
+      "id": "83",
       "title": "Design Patterns. Behavioral Patterns. Part I",
       "url": "/design-patterns/2019/06/09/design-patterns-first-part.html",
       "date": "June 09, 2019",
