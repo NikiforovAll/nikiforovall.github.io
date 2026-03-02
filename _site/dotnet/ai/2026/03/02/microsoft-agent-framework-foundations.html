@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Microsoft Agent Framework — Foundations | N+1 Blog</title>
+
+	<!-- Meta Description -->
+	
+	<meta name="description" content="Build your first AI agents in .NET with MAF — from hello-world to tools, multi-turn conversations, and persistent memory.">
+	
+
+	<meta name="author" content="Oleksii Nikiforov">
+
+	<!-- Canonical URL -->
+	<link rel="canonical" href="http://localhost:4000/dotnet/ai/2026/03/02/microsoft-agent-framework-foundations.html">
+
+	<!-- Open Graph -->
+	<meta property="og:title" content="Microsoft Agent Framework — Foundations">
+	<meta property="og:description" content="Build your first AI agents in .NET with MAF — from hello-world to tools, multi-turn conversations, and persistent memory.">
+	<meta property="og:url" content="http://localhost:4000/dotnet/ai/2026/03/02/microsoft-agent-framework-foundations.html">
+	<meta property="og:site_name" content="N+1 Blog">
+	<meta property="og:type" content="article">
+	
+	<meta property="article:published_time" content="2026-03-02T00:00:00+02:00">
+	
+	<meta property="og:image" content="http://localhost:4000/assets/media/default-post-image.png">
+
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@nikiforovall">
+	<meta name="twitter:title" content="Microsoft Agent Framework — Foundations">
+	<meta name="twitter:description" content="Build your first AI agents in .NET with MAF — from hello-world to tools, multi-turn conversations, and persistent memory.">
+	<meta name="twitter:image" content="http://localhost:4000/assets/media/default-post-image.png">
+
+	<!-- Enable responsive viewport -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+	<!--[if lt IE 9]>
+	<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le styles -->
+	<link href="/assets/resources/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+	<link href="/assets/resources/syntax/syntax.css" rel="stylesheet">
+	<link href="/assets/css/style.css" rel="stylesheet">
+
+	<!-- Search Feature Styles -->
+	<style>
+		.layout-page .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; height: 34px; box-sizing: border-box; }
+		.layout-post .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 0; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; width: 34px; height: 34px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; box-sizing: border-box; }
+		.search-trigger:hover { background: #ebebeb; border-color: #c0c0c0; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+		.search-icon { color: #666; font-size: 14px; display: flex; align-items: center; }
+		.search-placeholder { flex: 1; color: #999; font-size: 14px; user-select: none; }
+		.search-keybind { display: flex; gap: 4px; align-items: center; }
+		.search-key { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 6px; background: #e0e0e0; border: 1px solid #ccc; border-bottom: 2px solid #bbb; border-radius: 3px; color: #333; line-height: 1.2; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+		.layout-post .search-placeholder { display: none; }
+		.layout-post .search-keybind { display: none; }
+		.search-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; display: none; align-items: flex-start; justify-content: center; padding-top: 10vh; }
+		.search-modal.open { display: flex; animation: fadeIn 0.2s ease; }
+		@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+		.search-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); }
+		.search-modal-container { position: relative; width: 90%; max-width: 600px; background: white; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); overflow: hidden; }
+		.search-input-container { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e0e0e0; gap: 12px; }
+		.search-modal-icon { color: #666; font-size: 18px; }
+		.search-modal-input { flex: 1; border: none; outline: none; font-size: 16px; color: #333; background: transparent; }
+		.search-modal-input::placeholder { color: #999; }
+		.search-close-btn { background: transparent; border: none; color: #999; font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.15s ease; }
+		.search-close-btn:hover { background: #f0f0f0; color: #333; }
+		.search-results { max-height: 60vh; overflow-y: auto; padding: 8px; }
+		.search-hint { padding: 40px 20px; text-align: center; color: #999; font-size: 14px; }
+		.search-result-item { padding: 12px 16px; border-radius: 6px; cursor: pointer; transition: background-color 0.15s ease; border: 2px solid transparent; margin-bottom: 4px; }
+		.search-result-item:hover { background: #f5f5f5; }
+		.search-result-item.selected { background: #e8f4f8; border-color: #4a90e2; }
+		.search-footer { display: flex; justify-content: center; gap: 20px; padding: 12px 20px; border-top: 1px solid #e0e0e0; background: #fafafa; font-size: 12px; color: #666; }
+		.search-footer kbd { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 5px; background: white; border: 1px solid #ddd; border-radius: 3px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+		@media (max-width: 768px) { .layout-page .search-trigger, .layout-post .search-trigger { display: none; } .search-modal { padding-top: 5vh; } .search-modal-container { width: 95%; max-width: none; margin: 0 10px; } .search-results { max-height: 50vh; } .search-footer { flex-wrap: wrap; gap: 10px; } }
+	</style>
+
+	<!-- Le fav and touch icons -->
+	<!-- Update these with your own images
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
+	-->
+	<link rel="shortcut icon" href="/assets/media/favicon.ico">
+
+	<link rel="alternate" type="application/rss+xml" title="" href="http://localhost:4000/feed.xml">
+
+	
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Microsoft Agent Framework — Foundations",
+  
+  
+  "description": "Build your first AI agents in .NET with MAF — from hello-world to tools, multi-turn conversations, and persistent memory.",
+  
+  "image": ["http://localhost:4000/assets/media/default-post-image.png"],
+  "datePublished": "2026-03-02T00:00:00+02:00",
+  "dateModified": "2026-03-02T00:00:00+02:00",
+  "author": {
+    "@type": "Person",
+    "name": "Oleksii Nikiforov",
+    "url": "http://localhost:4000/about.html",
+    "sameAs": [
+      "https://github.com/nikiforovAll",
+      "https://twitter.com/nikiforovall",
+      "https://www.linkedin.com/in/nikiforov-oleksii",
+      "https://t.me/nikiforovallblog"
+    ]
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Oleksii Nikiforov",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=200"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:4000/dotnet/ai/2026/03/02/microsoft-agent-framework-foundations.html"
+  },
+  
+  "articleSection": "dotnet",
+  
+  
+  "keywords": "dotnet, maf, agents, microsoft-extensions-ai, microsoft-agent-framework",
+  
+  "inLanguage": "en-US"
+}
+</script>
+
+
+</head>
+
+<body class="layout-post">
+	<nav class="navbar navbar-default visible-xs" role="navigation">
+		<!-- Brand and toggle get grouped for better mobile display -->
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-github"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="http://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-x-twitter"></i>
+			</a>
+			
+			
+			<a type="button" class="navbar-toggle nav-link" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa-solid fa-envelope"></i>
+			</a>
+			
+			<a class="navbar-brand" href="/">
+				<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=35" class="img-circle">
+				N+1 Blog
+			</a>
+		</div>
+
+		<!-- Collect the nav links, forms, and other content for toggling -->
+		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				<li class="active"><a href="/">Home</a></li>
+				<li><a href="/topics.html">Topics</a></li>
+				<li><a href="/about.html">About</a></li>
+			</ul>
+		</div>
+<!-- /.navbar-collapse -->
+	</nav>
+
+	<!-- nav-menu-dropdown -->
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa-solid fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="/"><i class="fa-solid fa-home"></i>Home</a></li>
+			<li><a href="/topics.html"><i class="fa-solid fa-bookmark"></i>Topics</a></li>
+			<li><a href="/about.html"><i class="fa-solid fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa-solid fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+
+	<!-- Search Control -->
+	<button id="search-trigger" class="search-trigger" type="button" aria-label="Open search">
+		<span class="search-icon"><i class="fa-solid fa-search"></i></span>
+		<span class="search-placeholder">Search</span>
+		<div class="search-keybind">
+			<kbd class="search-key" id="search-modifier">ctrl</kbd>
+			<kbd class="search-key">K</kbd>
+		</div>
+	</button>
+
+	<!-- Search Modal -->
+	<div id="search-modal" class="search-modal">
+		<div class="search-backdrop"></div>
+		<div class="search-modal-container">
+			<div class="search-input-container">
+				<i class="fa-solid fa-search search-modal-icon"></i>
+				<input type="text" id="search-input" class="search-modal-input" placeholder="Search blog posts..." autocomplete="off">
+				<button id="search-close" class="search-close-btn" title="Close (ESC)">
+					<i class="fa-solid fa-times"></i>
+				</button>
+			</div>
+			<div id="search-results" class="search-results">
+				<div class="search-hint">Type at least 2 characters to search...</div>
+			</div>
+			<div class="search-footer">
+				<span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+				<span><kbd>↵</kbd> to select</span>
+				<span><kbd>ESC</kbd> to close</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-3 sidebar hidden-xs" style="">
+		<!-- sidebar.html -->
+<header class="sidebar-header" role="banner">
+	<a href="/" class="profile-link">
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle profile-image">
+		<div class="profile-accent"></div>
+	</a>
+	<h3 class="title">
+        <a href="/">N+1 Blog</a>
+    </h3>
+</header>
+
+
+<div id="bio" class="text-center">
+	Jibber-jabbering about programming and IT.
+</div>
+
+
+<div id="contact-list" class="text-center">
+	<ul class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-github fa-xl"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-x-twitter fa-xl"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-telegram fa-xl"></i>
+			</a>
+		</li>
+		
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer noopener noreferrer">
+				<i class="fa-brands fa-linkedin fa-xl"></i>
+			</a>
+		</li>
+		
+	</ul>
+	<ul id="contact-list-secondary" class="list-unstyled list-inline">
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
+				<i class="fa-solid fa-envelope fa-xl"></i>
+			</a>
+		</li>
+		
+		<li>
+			<a class="btn btn-default btn-sm" href="/feed.xml" target="_blank" rel="noopener noreferrer">
+				<i class="fa-solid fa-rss fa-xl"></i>
+			</a>
+		</li>
+	</ul>
+</div>
+<!-- sidebar.html end -->
+
+	</div>
+
+	<div class="col-sm-9 col-sm-offset-3">
+		<div class="page-header">
+	<h1>Microsoft Agent Framework — Foundations </h1>
+</div>
+<article>
+
+	<div class="col-sm-10">
+
+		<span class="post-date">
+			
+			March
+			2nd,
+			
+			2026
+		</span>
+
+	
+	
+	
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+
+	
+	
+
+	
+
+	
+
+	
+	
+
+	<div class="article_body" style="margin-top: 30px;">
+		<h2 id="tldr">TL;DR</h2>
+
+<p>Microsoft Agent Framework (MAF) merges Semantic Kernel and AutoGen into a single, production-ready agent runtime built on <code class="language-plaintext highlighter-rouge">Microsoft.Extensions.AI</code>. This post walks through five progressive samples — creating your first agent, adding tools, composing agents, multi-turn conversations, and persistent memory — all running as single-file C# scripts with <code class="language-plaintext highlighter-rouge">dotnet run</code>.</p>
+
+<ul>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#introduction--what-is-maf">Introduction — What is MAF?</a></li>
+  <li><a href="#your-first-agent">Your first agent</a></li>
+  <li>
+<a href="#tools--giving-agents-the-ability-to-act">Tools — Giving agents the ability to act</a>
+    <ul>
+      <li><a href="#function-tools">Function tools</a></li>
+      <li><a href="#agent-as-tool">Agent-as-tool</a></li>
+    </ul>
+  </li>
+  <li><a href="#multi-turn-conversations">Multi-turn conversations</a></li>
+  <li>
+<a href="#memory-and-persistence">Memory and persistence</a>
+    <ul>
+      <li><a href="#in-memory-and-serialization">In-memory and serialization</a></li>
+      <li><a href="#custom-chathistoryprovider">Custom ChatHistoryProvider</a></li>
+      <li><a href="#session-aware-chathistoryprovider">Session-aware ChatHistoryProvider</a></li>
+    </ul>
+  </li>
+  <li><a href="#key-takeaways">Key takeaways</a></li>
+  <li><a href="#whats-next">What’s next</a></li>
+  <li><a href="#presentation">Presentation</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<p><strong>Source code:</strong> <a href="https://github.com/NikiforovAll/maf-getting-started" target="_blank" rel="noopener noreferrer">https://github.com/NikiforovAll/maf-getting-started</a></p>
+
+<h2 id="introduction--what-is-maf">Introduction — What is MAF?</h2>
+
+<p>.NET had two AI agent frameworks from Microsoft: <strong>Semantic Kernel</strong> for enterprise orchestration and <strong>AutoGen</strong> for multi-agent research. Two ecosystems, overlapping goals, confusion about which to pick. MAF unifies them into one framework.</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+<thead>
+<tr>
+<th>Before</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<strong>Semantic Kernel</strong> — enterprise AI orchestration</td>
+<td>Built on <strong>Microsoft.Extensions.AI</strong> abstractions</td>
+</tr>
+<tr>
+<td>
+<strong>AutoGen</strong> — multi-agent research framework</td>
+<td>
+<strong>Microsoft.Agents.AI</strong> — unified agent runtime</td>
+</tr>
+<tr>
+<td>Two ecosystems, overlapping goals</td>
+<td>Single API for single &amp; multi-agent scenarios</td>
+</tr>
+</tbody>
+</table>
+
+<p>1️⃣ The architecture is layered:</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+<thead>
+<tr>
+<th>Layer</th>
+<th>Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Your Application</strong></td>
+<td>AIAgent, Tools, Sessions, Workflows</td>
+</tr>
+<tr>
+<td><strong>Microsoft.Agents.AI</strong></td>
+<td>Unified agent runtime</td>
+</tr>
+<tr>
+<td><strong>Microsoft.Extensions.AI</strong></td>
+<td>
+<code>IChatClient</code>, <code>AIFunction</code>
+</td>
+</tr>
+<tr>
+<td><strong>Providers</strong></td>
+<td>Azure OpenAI, OpenAI, Ollama, ...</td>
+</tr>
+</tbody>
+</table>
+
+<p>2️⃣ The core concepts:</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+<thead>
+<tr>
+<th>Concept</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AIAgent</strong></td>
+<td><code>IAIAgent</code></td>
+<td>Core agent abstraction</td>
+</tr>
+<tr>
+<td><strong>Tools</strong></td>
+<td><code>AIFunction</code></td>
+<td>Functions the agent can call</td>
+</tr>
+<tr>
+<td><strong>Session</strong></td>
+<td><code>AgentSession</code></td>
+<td>Conversation state &amp; history</td>
+</tr>
+<tr>
+<td><strong>Run</strong></td>
+<td>
+<code>RunAsync</code> / <code>RunStreamingAsync</code>
+</td>
+<td>Execute agent with input</td>
+</tr>
+<tr>
+<td><strong>Workflow</strong></td>
+<td><code>WorkflowBuilder</code></td>
+<td>Multi-agent orchestration</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="your-first-agent">Your first agent</h2>
+
+<p>All samples use .NET 10’s run-file feature — single <code class="language-plaintext highlighter-rouge">.cs</code> files with <code class="language-plaintext highlighter-rouge">#:package</code> directives, no <code class="language-plaintext highlighter-rouge">.csproj</code> needed:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">AZURE_OPENAI_ENDPOINT</span><span class="o">=</span><span class="s2">"https://your-resource.cognitiveservices.azure.com/"</span>
+<span class="nb">export </span><span class="nv">AZURE_OPENAI_DEPLOYMENT_NAME</span><span class="o">=</span><span class="s2">"gpt-4o-mini"</span>
+
+dotnet run src/01-hello-agent.cs
+</code></pre></div></div>
+
+<p>Here’s the full agent — 38 lines from zero to running:</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">#</span><span class="p">:</span><span class="kr">package</span> <span class="nx">Microsoft</span><span class="p">.</span><span class="nx">Agents</span><span class="p">.</span><span class="nx">AI</span><span class="p">.</span><span class="nx">OpenAI</span><span class="p">@</span><span class="nd">1</span><span class="p">.</span><span class="mf">0.0</span><span class="o">-</span><span class="nx">rc2</span>
+<span class="err">#</span><span class="p">:</span><span class="kr">package</span> <span class="nx">Azure</span><span class="p">.</span><span class="nx">AI</span><span class="p">.</span><span class="nx">OpenAI</span><span class="p">@</span><span class="nd">2</span><span class="p">.</span><span class="mf">8.0</span><span class="o">-</span><span class="nx">beta</span><span class="p">.</span><span class="mi">1</span>
+<span class="err">#</span><span class="p">:</span><span class="kr">package</span> <span class="nx">Azure</span><span class="p">.</span><span class="nx">Identity</span><span class="p">@</span><span class="nd">1</span><span class="p">.</span><span class="mf">18.0</span>
+
+<span class="nx">using</span> <span class="nx">Azure</span><span class="p">.</span><span class="nx">AI</span><span class="p">.</span><span class="nx">OpenAI</span><span class="p">;</span>
+<span class="nx">using</span> <span class="nx">Azure</span><span class="p">.</span><span class="nx">Identity</span><span class="p">;</span>
+<span class="nx">using</span> <span class="nx">Microsoft</span><span class="p">.</span><span class="nx">Agents</span><span class="p">.</span><span class="nx">AI</span><span class="p">;</span>
+<span class="nx">using</span> <span class="nx">Microsoft</span><span class="p">.</span><span class="nx">Extensions</span><span class="p">.</span><span class="nx">AI</span><span class="p">;</span>
+<span class="nx">using</span> <span class="nx">OpenAI</span><span class="p">.</span><span class="nx">Chat</span><span class="p">;</span>
+
+<span class="kd">var</span> <span class="nx">endpoint</span> <span class="o">=</span> <span class="nx">Environment</span><span class="p">.</span><span class="nc">GetEnvironmentVariable</span><span class="p">(</span><span class="dl">"</span><span class="s2">AZURE_OPENAI_ENDPOINT</span><span class="dl">"</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">deploymentName</span> <span class="o">=</span> <span class="nx">Environment</span><span class="p">.</span><span class="nc">GetEnvironmentVariable</span><span class="p">(</span><span class="dl">"</span><span class="s2">AZURE_OPENAI_DEPLOYMENT_NAME</span><span class="dl">"</span><span class="p">);</span>
+
+<span class="nx">AIAgent</span> <span class="nx">agent</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AzureOpenAIClient</span><span class="p">(</span><span class="k">new</span> <span class="nc">Uri</span><span class="p">(</span><span class="nx">endpoint</span><span class="o">!</span><span class="p">),</span> <span class="k">new</span> <span class="nc">DefaultAzureCredential</span><span class="p">())</span>
+    <span class="p">.</span><span class="nc">GetChatClient</span><span class="p">(</span><span class="nx">deploymentName</span><span class="p">)</span>
+    <span class="p">.</span><span class="nc">AsAIAgent</span><span class="p">(</span>
+        <span class="k">new</span> <span class="nx">ChatClientAgentOptions</span>
+        <span class="p">{</span>
+            <span class="nx">Name</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">HelloAgent</span><span class="dl">"</span><span class="p">,</span>
+            <span class="nx">ChatOptions</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ChatOptions</span>
+            <span class="p">{</span>
+                <span class="nx">Instructions</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">You are a friendly assistant. Keep your answers brief.</span><span class="dl">"</span><span class="p">,</span>
+                <span class="nx">Temperature</span> <span class="o">=</span> <span class="mf">0.9f</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+    <span class="p">);</span>
+
+<span class="c1">// Non-streaming</span>
+<span class="nx">Console</span><span class="p">.</span><span class="nc">WriteLine</span><span class="p">(</span><span class="k">await</span> <span class="nx">agent</span><span class="p">.</span><span class="nc">RunAsync</span><span class="p">(</span><span class="dl">"</span><span class="s2">Tell me a one-sentence fun fact.</span><span class="dl">"</span><span class="p">));</span>
+
+<span class="c1">// Streaming — process tokens as they arrive</span>
+<span class="k">await</span> <span class="nf">foreach </span><span class="p">(</span><span class="kd">var</span> <span class="nx">update</span> <span class="k">in</span> <span class="nx">agent</span><span class="p">.</span><span class="nc">RunStreamingAsync</span><span class="p">(</span><span class="dl">"</span><span class="s2">Tell me a one-sentence fun fact.</span><span class="dl">"</span><span class="p">))</span>
+<span class="p">{</span>
+    <span class="nx">Console</span><span class="p">.</span><span class="nc">WriteLine</span><span class="p">(</span><span class="nx">update</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The pipeline is straightforward:</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+<thead>
+<tr>
+<th>Step</th>
+<th>Call</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>new AzureOpenAIClient(...)</code></td>
+<td>Azure OpenAI provider</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>.GetChatClient("gpt-4o-mini")</code></td>
+<td>
+<code>ChatClient</code> via <code>IChatClient</code>
+</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>.AsAIAgent(options)</code></td>
+<td>
+<code>AIAgent</code> from MAF</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>.RunAsync("prompt")</code></td>
+<td>Execute and get response</td>
+</tr>
+</tbody>
+</table>
+
+<p><code class="language-plaintext highlighter-rouge">AsAIAgent()</code> is the key extension method. It turns any <code class="language-plaintext highlighter-rouge">IChatClient</code> into a full agent. Because it’s built on <code class="language-plaintext highlighter-rouge">IChatClient</code>, you can swap the provider (Azure OpenAI, OpenAI, Ollama) without touching agent code.</p>
+
+<h2 id="tools--giving-agents-the-ability-to-act">Tools — Giving agents the ability to act</h2>
+
+<h3 id="function-tools">Function tools</h3>
+
+<p>Define a plain C# method with <code class="language-plaintext highlighter-rouge">[Description]</code> attributes and register it via <code class="language-plaintext highlighter-rouge">AIFunctionFactory.Create()</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="nf">Description</span><span class="p">(</span><span class="s">"Get the weather for a given location."</span><span class="p">)]</span>
+<span class="k">static</span> <span class="kt">string</span> <span class="nf">GetWeather</span><span class="p">(</span>
+    <span class="p">[</span><span class="nf">Description</span><span class="p">(</span><span class="s">"The location to get the weather for."</span><span class="p">)]</span> <span class="kt">string</span> <span class="n">location</span><span class="p">)</span> <span class="p">=&gt;</span>
+    <span class="s">$"The weather in </span><span class="p">{</span><span class="n">location</span><span class="p">}</span><span class="s"> is cloudy with a high of 15°C."</span><span class="p">;</span>
+
+<span class="n">AIAgent</span> <span class="n">weatherAgent</span> <span class="p">=</span> <span class="n">client</span>
+    <span class="p">.</span><span class="nf">GetChatClient</span><span class="p">(</span><span class="n">deploymentName</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">AsAIAgent</span><span class="p">(</span>
+        <span class="n">instructions</span><span class="p">:</span> <span class="s">"You are a helpful weather assistant."</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s">"WeatherAgent"</span><span class="p">,</span>
+        <span class="n">description</span><span class="p">:</span> <span class="s">"An agent that answers weather questions."</span><span class="p">,</span>
+        <span class="n">tools</span><span class="p">:</span> <span class="p">[</span><span class="n">AIFunctionFactory</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="n">GetWeather</span><span class="p">)]</span>
+    <span class="p">);</span>
+
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="k">await</span> <span class="n">weatherAgent</span><span class="p">.</span><span class="nf">RunAsync</span><span class="p">(</span><span class="s">"What is the weather like in Amsterdam?"</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>How tool calling works:</p>
+
+<ol>
+  <li>
+<strong>User</strong> sends: <em>“What’s the weather in Amsterdam?”</em>
+</li>
+  <li>
+<strong>LLM</strong> decides to call <code class="language-plaintext highlighter-rouge">GetWeather("Amsterdam")</code>
+</li>
+  <li>
+<strong>MAF</strong> invokes the C# method automatically</li>
+  <li>
+<strong>Result</strong> is fed back to the LLM</li>
+  <li>
+<strong>LLM</strong> generates the final answer using the tool result</li>
+</ol>
+
+<p>The <code class="language-plaintext highlighter-rouge">[Description]</code> attributes are sent to the LLM as the tool schema — write clear, specific descriptions because that’s all the model sees when deciding which tool to call.</p>
+
+<div style="max-width:700px;margin:0 auto">
+<div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant A as WeatherAgent
+    participant T as GetWeather
+    U-&gt;&gt;A: "Weather in Amsterdam?"
+    A-&gt;&gt;T: GetWeather("Amsterdam")
+    T--&gt;&gt;A: "cloudy, 15°C"
+    A--&gt;&gt;U: final answer
+</div>
+</div>
+
+<h3 id="agent-as-tool">Agent-as-tool</h3>
+
+<p>Any agent can become a tool for another agent via <code class="language-plaintext highlighter-rouge">.AsAIFunction()</code>:</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">AIAgent</span> <span class="nx">orchestrator</span> <span class="o">=</span> <span class="nx">client</span>
+    <span class="p">.</span><span class="nc">GetChatClient</span><span class="p">(</span><span class="nx">deploymentName</span><span class="p">)</span>
+    <span class="p">.</span><span class="nc">AsAIAgent</span><span class="p">(</span>
+        <span class="nx">instructions</span><span class="p">:</span> <span class="dl">"</span><span class="s2">You are a helpful assistant. the weather agent when asked about weather.</span><span class="dl">"</span><span class="p">,</span>
+        <span class="nx">tools</span><span class="p">:</span> <span class="p">[</span><span class="nx">weatherAgent</span><span class="p">.</span><span class="nc">AsAIFunction</span><span class="p">()]</span>
+    <span class="p">);</span>
+
+<span class="nx">Console</span><span class="p">.</span><span class="nc">WriteLine</span><span class="p">(</span><span class="k">await</span> <span class="nx">orchestrator</span><span class="p">.</span><span class="nc">RunAsync</span><span class="p">(</span><span class="dl">"</span><span class="s2">What's the weather in Amsterdam and Paris?</span><span class="dl">"</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>The orchestrator delegates to <code class="language-plaintext highlighter-rouge">WeatherAgent</code> when it encounters weather questions. The weather agent, in turn, calls its own <code class="language-plaintext highlighter-rouge">GetWeather</code> tool for each location.</p>
+
+<div style="max-width:700px;margin:0 auto">
+<div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant O as Orchestrator
+    participant W as WeatherAgent
+    participant T as GetWeather
+    U-&gt;&gt;O: "Weather in Amsterdam and Paris?"
+    O-&gt;&gt;W: AsAIFunction()
+    W-&gt;&gt;T: GetWeather("Amsterdam")
+    T--&gt;&gt;W: "cloudy, 15°C"
+    W-&gt;&gt;T: GetWeather("Paris")
+    T--&gt;&gt;W: "cloudy, 15°C"
+    W--&gt;&gt;O: combined result
+    O--&gt;&gt;U: final answer
+</div>
+</div>
+
+<p>Each agent has its own LLM call — be mindful of latency and cost when nesting agents.</p>
+
+<h2 id="multi-turn-conversations">Multi-turn conversations</h2>
+
+<p>Without a session, each <code class="language-plaintext highlighter-rouge">RunAsync</code> call is stateless — the agent has no memory of prior turns. <code class="language-plaintext highlighter-rouge">AgentSession</code> holds the conversation thread:</p>
+
+<div class="language-ts highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">AIAgent</span> <span class="nx">agent</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AzureOpenAIClient</span><span class="p">(</span><span class="k">new</span> <span class="nc">Uri</span><span class="p">(</span><span class="nx">endpoint</span><span class="o">!</span><span class="p">),</span> <span class="k">new</span> <span class="nc">DefaultAzureCredential</span><span class="p">())</span>
+    <span class="p">.</span><span class="nc">GetChatClient</span><span class="p">(</span><span class="nx">deploymentName</span><span class="p">)</span>
+    <span class="p">.</span><span class="nc">AsAIAgent</span><span class="p">(</span>
+        <span class="nx">instructions</span><span class="p">:</span> <span class="dl">"""</span><span class="s2">You are a friendly assistant. Keep your answers brief.
+            And always remember the information the user shares with you
+            during the conversation.
+            </span><span class="dl">"""</span><span class="p">,</span>
+        <span class="nx">name</span><span class="p">:</span> <span class="dl">"</span><span class="s2">ConversationAgent</span><span class="dl">"</span>
+    <span class="p">);</span>
+
+<span class="nx">AgentSession</span> <span class="nx">session</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">agent</span><span class="p">.</span><span class="nc">CreateSessionAsync</span><span class="p">();</span>
+
+<span class="c1">// Turn 1 — introduce context</span>
+<span class="nx">Console</span><span class="p">.</span><span class="nc">WriteLine</span><span class="p">(</span><span class="k">await</span> <span class="nx">agent</span><span class="p">.</span><span class="nc">RunAsync</span><span class="p">(</span><span class="dl">"</span><span class="s2">My name is Alice and I love hiking.</span><span class="dl">"</span><span class="p">,</span> <span class="nx">session</span><span class="p">));</span>
+
+<span class="c1">// Turn 2 — agent remembers from session history</span>
+<span class="nx">Console</span><span class="p">.</span><span class="nc">WriteLine</span><span class="p">(</span><span class="k">await</span> <span class="nx">agent</span><span class="p">.</span><span class="nc">RunAsync</span><span class="p">(</span><span class="dl">"</span><span class="s2">What do you remember about me?</span><span class="dl">"</span><span class="p">,</span> <span class="nx">session</span><span class="p">));</span>
+
+<span class="c1">// Turn 3 — agent uses accumulated context</span>
+<span class="nx">Console</span><span class="p">.</span><span class="nc">WriteLine</span><span class="p">(</span><span class="k">await</span> <span class="nx">agent</span><span class="p">.</span><span class="nc">RunAsync</span><span class="p">(</span><span class="dl">"</span><span class="s2">Suggest a hiking destination for me.</span><span class="dl">"</span><span class="p">,</span> <span class="nx">session</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>Under the hood, the session accumulates the full conversation and sends it with each LLM call:</p>
+
+<table class="table table-sm table-responsive table-striped table-hover">
+<thead>
+<tr>
+<th>Turn</th>
+<th>Input</th>
+<th>ChatHistory contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>created</em></td>
+<td>—</td>
+<td>
+<code>[]</code> (empty)</td>
+</tr>
+<tr>
+<td>1</td>
+<td><em>"My name is Alice..."</em></td>
+<td><code>[system, user₁, assistant₁]</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><em>"What do you remember?"</em></td>
+<td><code>[system, user₁, assistant₁, user₂, assistant₂]</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><em>"Suggest a destination"</em></td>
+<td><code>[system, user₁, assistant₁, user₂, assistant₂, user₃, assistant₃]</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>The default provider is <code class="language-plaintext highlighter-rouge">InMemoryChatHistoryProvider</code> — zero config, but lost on process restart.</p>
+
+<h2 id="memory-and-persistence">Memory and persistence</h2>
+
+<h3 id="in-memory-and-serialization">In-memory and serialization</h3>
+
+<p>The default <code class="language-plaintext highlighter-rouge">InMemoryChatHistoryProvider</code> works for single-process scenarios. For persistence across restarts, MAF provides serialization:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">AgentSession</span> <span class="n">session</span> <span class="p">=</span> <span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">CreateSessionAsync</span><span class="p">();</span>
+
+<span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">RunAsync</span><span class="p">(</span><span class="s">"My name is Alice"</span><span class="p">,</span> <span class="n">session</span><span class="p">);</span>
+
+<span class="c1">// Serialize session to JSON</span>
+<span class="kt">var</span> <span class="n">serialized</span> <span class="p">=</span> <span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">SerializeSessionAsync</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"Session serialized (</span><span class="p">{</span><span class="n">serialized</span><span class="p">.</span><span class="nf">GetRawText</span><span class="p">().</span><span class="n">Length</span><span class="p">}</span><span class="s"> bytes)"</span><span class="p">);</span>
+
+<span class="c1">// Store anywhere — database, file, Redis, blob storage</span>
+
+<span class="c1">// Restore session from serialized data</span>
+<span class="kt">var</span> <span class="n">restoredSession</span> <span class="p">=</span> <span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">DeserializeSessionAsync</span><span class="p">(</span><span class="n">serialized</span><span class="p">);</span>
+
+<span class="c1">// Agent remembers everything from the original session</span>
+<span class="k">await</span> <span class="n">agent</span><span class="p">.</span><span class="nf">RunAsync</span><span class="p">(</span><span class="s">"Do you still remember my name?"</span><span class="p">,</span> <span class="n">restoredSession</span><span class="p">);</span>
+<span class="c1">// → "Yes, your name is Alice!"</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">SerializeSessionAsync</code> / <code class="language-plaintext highlighter-rouge">DeserializeSessionAsync</code> give you portable session state. Export to JSON, store it however you want, restore later.</p>
+
+<h3 id="custom-chathistoryprovider">Custom ChatHistoryProvider</h3>
+
+<p>For more control, implement <code class="language-plaintext highlighter-rouge">ChatHistoryProvider</code> directly. Here’s a simple file-backed provider:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">sealed</span> <span class="k">class</span> <span class="nc">FileChatHistoryProvider</span><span class="p">(</span><span class="kt">string</span> <span class="n">filePath</span><span class="p">)</span> <span class="p">:</span> <span class="n">ChatHistoryProvider</span>
+<span class="p">{</span>
+    <span class="k">protected</span> <span class="k">override</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">ChatMessage</span><span class="p">&gt;&gt;</span> <span class="nf">ProvideChatHistoryAsync</span><span class="p">(</span>
+        <span class="n">InvokingContext</span> <span class="n">context</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(!</span><span class="n">File</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="n">filePath</span><span class="p">))</span>
+            <span class="k">return</span> <span class="k">new</span><span class="p">(</span><span class="n">Enumerable</span><span class="p">.</span><span class="n">Empty</span><span class="p">&lt;</span><span class="n">ChatMessage</span><span class="p">&gt;());</span>
+
+        <span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="n">File</span><span class="p">.</span><span class="nf">ReadAllText</span><span class="p">(</span><span class="n">filePath</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">messages</span> <span class="p">=</span> <span class="n">JsonSerializer</span><span class="p">.</span><span class="nf">Deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="n">ChatHistoryJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">ListChatMessage</span><span class="p">)</span> <span class="p">??</span> <span class="p">[];</span>
+        <span class="k">return</span> <span class="k">new</span><span class="p">(</span><span class="n">messages</span><span class="p">.</span><span class="nf">AsEnumerable</span><span class="p">());</span>
+    <span class="p">}</span>
+
+    <span class="k">protected</span> <span class="k">override</span> <span class="n">ValueTask</span> <span class="nf">StoreChatHistoryAsync</span><span class="p">(</span><span class="n">InvokedContext</span> <span class="n">context</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">List</span><span class="p">&lt;</span><span class="n">ChatMessage</span><span class="p">&gt;</span> <span class="n">existing</span> <span class="p">=</span> <span class="p">[];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">File</span><span class="p">.</span><span class="nf">Exists</span><span class="p">(</span><span class="n">filePath</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">json</span> <span class="p">=</span> <span class="n">File</span><span class="p">.</span><span class="nf">ReadAllText</span><span class="p">(</span><span class="n">filePath</span><span class="p">);</span>
+            <span class="n">existing</span> <span class="p">=</span> <span class="n">JsonSerializer</span><span class="p">.</span><span class="nf">Deserialize</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="n">ChatHistoryJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">ListChatMessage</span><span class="p">)</span> <span class="p">??</span> <span class="p">[];</span>
+        <span class="p">}</span>
+
+        <span class="n">existing</span><span class="p">.</span><span class="nf">AddRange</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">RequestMessages</span><span class="p">);</span>
+        <span class="n">existing</span><span class="p">.</span><span class="nf">AddRange</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">ResponseMessages</span> <span class="p">??</span> <span class="p">[]);</span>
+
+        <span class="n">File</span><span class="p">.</span><span class="nf">WriteAllText</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">filePath</span><span class="p">,</span> <span class="n">JsonSerializer</span><span class="p">.</span><span class="nf">Serialize</span><span class="p">(</span><span class="n">existing</span><span class="p">,</span> <span class="n">ChatHistoryJsonContext</span><span class="p">.</span><span class="n">Default</span><span class="p">.</span><span class="n">ListChatMessage</span><span class="p">));</span>
+        <span class="k">return</span> <span class="k">default</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Wire it up via <code class="language-plaintext highlighter-rouge">ChatClientAgentOptions</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">AIAgent</span> <span class="n">agent</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">AzureOpenAIClient</span><span class="p">(</span><span class="k">new</span> <span class="nf">Uri</span><span class="p">(</span><span class="n">endpoint</span><span class="p">!),</span> <span class="k">new</span> <span class="nf">DefaultAzureCredential</span><span class="p">())</span>
+    <span class="p">.</span><span class="nf">GetChatClient</span><span class="p">(</span><span class="n">deploymentName</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">AsAIAgent</span><span class="p">(</span><span class="k">new</span> <span class="n">ChatClientAgentOptions</span>
+    <span class="p">{</span>
+        <span class="n">Name</span> <span class="p">=</span> <span class="s">"PersistentAgent"</span><span class="p">,</span>
+        <span class="n">ChatOptions</span> <span class="p">=</span> <span class="k">new</span> <span class="n">ChatOptions</span>
+        <span class="p">{</span>
+            <span class="n">Instructions</span> <span class="p">=</span> <span class="s">"You are a friendly assistant. Keep your answers brief."</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="n">ChatHistoryProvider</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">FileChatHistoryProvider</span><span class="p">(</span><span class="n">filePath</span><span class="p">),</span>
+    <span class="p">});</span>
+</code></pre></div></div>
+
+<p>This survives process restarts — create a new agent with the same file, and it picks up where it left off. The limitation: all sessions share the same file. Concurrent sessions will clobber each other’s history.</p>
+
+<h3 id="session-aware-chathistoryprovider">Session-aware ChatHistoryProvider</h3>
+
+<p>For per-session isolation, use <code class="language-plaintext highlighter-rouge">ProviderSessionState&lt;TState&gt;</code>. Each session gets its own file identified by a unique session ID:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">sealed</span> <span class="k">class</span> <span class="nc">FileChatHistoryProvider</span> <span class="p">:</span> <span class="n">ChatHistoryProvider</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="kt">string</span> <span class="n">_directory</span><span class="p">;</span>
+    <span class="k">private</span> <span class="k">readonly</span> <span class="n">ProviderSessionState</span><span class="p">&lt;</span><span class="n">SessionState</span><span class="p">&gt;</span> <span class="n">_sessionState</span><span class="p">;</span>
+
+    <span class="k">public</span> <span class="nf">FileChatHistoryProvider</span><span class="p">(</span><span class="kt">string</span> <span class="n">directory</span><span class="p">,</span> <span class="kt">string</span><span class="p">?</span> <span class="n">existingSessionId</span> <span class="p">=</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_directory</span> <span class="p">=</span> <span class="n">directory</span><span class="p">;</span>
+        <span class="n">_sessionState</span> <span class="p">=</span> <span class="k">new</span> <span class="n">ProviderSessionState</span><span class="p">&lt;</span><span class="n">SessionState</span><span class="p">&gt;(</span>
+            <span class="n">_</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">SessionState</span><span class="p">(</span><span class="n">existingSessionId</span> <span class="p">??</span> <span class="n">Guid</span><span class="p">.</span><span class="nf">NewGuid</span><span class="p">().</span><span class="nf">ToString</span><span class="p">(</span><span class="s">"N"</span><span class="p">)[..</span><span class="m">8</span><span class="p">]),</span>
+            <span class="k">nameof</span><span class="p">(</span><span class="n">FileChatHistoryProvider</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="kt">string</span> <span class="nf">GetSessionId</span><span class="p">(</span><span class="n">AgentSession</span><span class="p">?</span> <span class="n">session</span><span class="p">)</span> <span class="p">=&gt;</span>
+        <span class="n">_sessionState</span><span class="p">.</span><span class="nf">GetOrInitializeState</span><span class="p">(</span><span class="n">session</span><span class="p">).</span><span class="n">SessionId</span><span class="p">;</span>
+
+    <span class="k">protected</span> <span class="k">override</span> <span class="n">ValueTask</span><span class="p">&lt;</span><span class="n">IEnumerable</span><span class="p">&lt;</span><span class="n">ChatMessage</span><span class="p">&gt;&gt;</span> <span class="nf">ProvideChatHistoryAsync</span><span class="p">(</span>
+        <span class="n">InvokingContext</span> <span class="n">context</span><span class="p">,</span> <span class="n">CancellationToken</span> <span class="n">cancellationToken</span> <span class="p">=</span> <span class="k">default</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">state</span> <span class="p">=</span> <span class="n">_sessionState</span><span class="p">.</span><span class="nf">GetOrInitializeState</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">Session</span><span class="p">);</span>
+        <span class="kt">var</span> <span class="n">path</span> <span class="p">=</span> <span class="n">Path</span><span class="p">.</span><span class="nf">Combine</span><span class="p">(</span><span class="n">_directory</span><span class="p">,</span> <span class="s">$"</span><span class="p">{</span><span class="n">state</span><span class="p">.</span><span class="n">SessionId</span><span class="p">}</span><span class="s">.json"</span><span class="p">);</span>
+        <span class="c1">// ... read from session-specific file</span>
+    <span class="p">}</span>
+
+    <span class="c1">// ... StoreChatHistoryAsync implementation similar to before, but using session-specific file</span>
+
+    <span class="k">sealed</span> <span class="k">class</span> <span class="nc">SessionState</span><span class="p">(</span><span class="kt">string</span> <span class="n">sessionId</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="kt">string</span> <span class="n">SessionId</span> <span class="p">{</span> <span class="k">get</span><span class="p">;</span> <span class="p">}</span> <span class="p">=</span> <span class="n">sessionId</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>To restore a session after restart, extract the session ID and pass it to a new provider:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">sessionId</span> <span class="p">=</span> <span class="n">historyProvider</span><span class="p">.</span><span class="nf">GetSessionId</span><span class="p">(</span><span class="n">session</span><span class="p">);</span>
+<span class="kt">var</span> <span class="n">restoredProvider</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">FileChatHistoryProvider</span><span class="p">(</span><span class="n">historyDir</span><span class="p">,</span> <span class="n">sessionId</span><span class="p">);</span>
+
+<span class="n">AIAgent</span> <span class="n">agent2</span> <span class="p">=</span> <span class="n">client</span><span class="p">.</span><span class="nf">GetChatClient</span><span class="p">(</span><span class="n">deploymentName</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">AsAIAgent</span><span class="p">(</span><span class="k">new</span> <span class="n">ChatClientAgentOptions</span>
+    <span class="p">{</span>
+        <span class="n">ChatHistoryProvider</span> <span class="p">=</span> <span class="n">restoredProvider</span><span class="p">,</span>
+    <span class="p">});</span>
+
+<span class="n">AgentSession</span> <span class="n">session2</span> <span class="p">=</span> <span class="k">await</span> <span class="n">agent2</span><span class="p">.</span><span class="nf">CreateSessionAsync</span><span class="p">();</span>
+<span class="k">await</span> <span class="n">agent2</span><span class="p">.</span><span class="nf">RunAsync</span><span class="p">(</span><span class="s">"Do you remember my name?"</span><span class="p">,</span> <span class="n">session2</span><span class="p">);</span> <span class="c1">// → "Alice"</span>
+</code></pre></div></div>
+<h2 id="key-takeaways">Key takeaways</h2>
+
+<ol>
+  <li>
+<strong><code class="language-plaintext highlighter-rouge">AsAIAgent()</code></strong> — one extension method turns any <code class="language-plaintext highlighter-rouge">IChatClient</code> into a full agent</li>
+  <li>
+<strong><code class="language-plaintext highlighter-rouge">[Description]</code> + <code class="language-plaintext highlighter-rouge">AIFunctionFactory.Create()</code></strong> — plain C# methods become LLM-callable tools</li>
+  <li>
+<strong><code class="language-plaintext highlighter-rouge">.AsAIFunction()</code></strong> — any agent can become a tool for another agent</li>
+  <li>
+<strong><code class="language-plaintext highlighter-rouge">AgentSession</code></strong> — pass to <code class="language-plaintext highlighter-rouge">RunAsync</code> to maintain multi-turn conversation history</li>
+  <li>
+<strong><code class="language-plaintext highlighter-rouge">ChatHistoryProvider</code></strong> — the extension point for production persistence</li>
+</ol>
+
+<h2 id="whats-next">What’s next</h2>
+
+<p>Part 2 covers <strong>Workflows, MCP, and AG-UI</strong> — orchestrating multi-agent pipelines, exposing agents as MCP servers, and streaming to frontends via the AG-UI protocol.</p>
+
+<h2 id="presentation">Presentation</h2>
+
+<iframe src="https://nikiforovall.github.io/maf-getting-started/01-foundations.html" width="100%" height="600" frameborder="0" allowfullscreen=""></iframe>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://learn.microsoft.com/en-us/agent-framework/overview" target="_blank" rel="noopener noreferrer">MAF Documentation</a></li>
+  <li><a href="https://github.com/microsoft/agent-framework/tree/main/dotnet/samples" target="_blank" rel="noopener noreferrer">MAF Samples</a></li>
+  <li><a href="https://learn.microsoft.com/dotnet/ai/" target="_blank" rel="noopener noreferrer">Microsoft.Extensions.AI</a></li>
+  <li><a href="https://github.com/NikiforovAll/maf-getting-started" target="_blank" rel="noopener noreferrer">Source code</a></li>
+</ul>
+
+	</div>
+
+	
+
+	
+	<ul class="list-inline">
+		<li>
+<i class="fa-solid fa-bookmark"></i> Topics:</li>
+		
+		
+		
+		<li>
+			<a href="/topics.html#dotnet-cat-ref">
+				dotnet <span>(61)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#ai-cat-ref">
+				ai <span>(16)</span>
+			</a>
+			 ·
+		</li>
+		
+		
+		
+		
+		
+		<li>
+			<a href="/topics.html#dotnet-tag-ref">
+				dotnet <span>(66)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#maf-tag-ref">
+				maf <span>(1)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#agents-tag-ref">
+				agents <span>(10)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#microsoft-extensions-ai-tag-ref">
+				microsoft-extensions-ai <span>(1)</span>
+			</a>
+			 ·
+		</li>
+		
+		<li>
+			<a href="/topics.html#microsoft-agent-framework-tag-ref">
+				microsoft-agent-framework <span>(1)</span>
+			</a>
+			
+		</li>
+		
+		
+		
+	</ul>
+	
+
+	<hr>
+
+	<div>
+		<section class="share col-sm-6">
+			<h4 class="section-title">Share Post</h4>
+			<a class="btn btn-default btn-sm twitter" href="http://x.com/share?&amp;via=nikiforovall" onclick="window.open(this.href, 'x-share', 'width=550,height=235');return false;" target="_blank" rel="noopener noreferrer">
+				<i class="fa-brands fa-x-twitter fa-lg"></i>
+				X
+			</a>
+		</section>
+
+		<section class="col-sm-6 author">
+			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
+			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
+			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+		</section>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<ul class="pager">
+		
+		<li class="previous"><a href="/dotnet/ai/2026/02/28/building-rag-with-dotnet-ai-building-blocks.html" title="Building RAG with .NET AI Building Blocks - Microsoft.Extensions.AI">←
+				Previous</a></li>
+		
+		
+		<li class="next disabled">
+<a>Next →</a>
+			
+	</li>
+</ul>
+
+	<hr>
+	</div>
+
+	<div class="col-sm-2 sidebar-2">
+
+	</div>
+
+</article>
+<div class="clearfix"></div>
+
+
+
+    
+    <script src="https://utteranc.es/client.js" repo="NikiforovAll/nikiforovall.github.io" issue-term="pathname" label="Blog" theme="preferred-color-scheme" crossorigin="anonymous" async>
+    </script>
+
+
+
+
+
+		<footer>
+			<hr>
+			<p>
+				© 2026 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
+			</p>
+		</footer>
+	</div>
+
+	<script type="text/javascript" src="/assets/resources/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="/assets/resources/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/assets/js/app.js"></script>
+	<script src="https://unpkg.com/lunr/lunr.js"></script>
+	<script type="text/javascript" src="/assets/js/search.js"></script>
+	<script type="text/javascript" src="/assets/js/copy-code.js"></script>
+	
+		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
+</script>
+<script>
+$(document).ready(function() {
+    mermaid.initialize({
+        theme: 'base',
+        themeVariables: {
+            primaryColor: '#eef2f7',
+            primaryTextColor: '#2c3e50',
+            primaryBorderColor: '#34495e',
+            secondaryColor: '#f5f5f5',
+            secondaryTextColor: '#2c3e50',
+            secondaryBorderColor: '#8B949E',
+            tertiaryColor: '#f9f9f9',
+            tertiaryTextColor: '#2c3e50',
+            tertiaryBorderColor: '#aaa',
+            lineColor: '#34495e',
+            textColor: '#2c3e50',
+            mainBkg: '#eef2f7',
+            nodeBorder: '#34495e',
+            clusterBkg: '#f5f5f5',
+            clusterBorder: '#34495e',
+            titleColor: '#2c3e50',
+            edgeLabelBackground: '#fff',
+            nodeTextColor: '#2c3e50',
+            actorBorder: '#34495e',
+            actorBkg: '#eef2f7',
+            actorTextColor: '#2c3e50',
+            actorLineColor: '#34495e',
+            signalColor: '#2c3e50',
+            signalTextColor: '#2c3e50',
+            labelBoxBkgColor: '#eef2f7',
+            labelBoxBorderColor: '#34495e',
+            labelTextColor: '#2c3e50',
+            loopTextColor: '#2c3e50',
+            noteBkgColor: '#fef4e8',
+            noteBorderColor: '#D29922',
+            noteTextColor: '#2c3e50',
+            activationBorderColor: '#f2756a',
+            activationBkgColor: '#fdf0ef',
+            sequenceNumberColor: '#fff',
+            sectionBkgColor: '#eef2f7',
+            altSectionBkgColor: '#f5f5f5',
+            sectionBkgColor2: '#fef4e8',
+            taskBorderColor: '#34495e',
+            taskBkgColor: '#eef2f7',
+            taskTextColor: '#2c3e50',
+            taskTextLightColor: '#fff',
+            taskTextOutsideColor: '#2c3e50',
+            activeTaskBorderColor: '#f2756a',
+            activeTaskBkgColor: '#fdf0ef',
+            gridColor: '#ddd',
+            doneTaskBkgColor: '#34495e',
+            doneTaskBorderColor: '#2c3e50',
+            critBorderColor: '#e74c3c',
+            critBkgColor: '#fdf0ef',
+            todayLineColor: '#f2756a',
+            fontFamily: 'Ubuntu, sans-serif',
+            fontSize: '14px'
+        }
+    });
+});
+</script>
+
+	
+</body>
+</html>
+
+
+
+<!-- Asynchronous Google Analytics snippet -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-164555539-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
