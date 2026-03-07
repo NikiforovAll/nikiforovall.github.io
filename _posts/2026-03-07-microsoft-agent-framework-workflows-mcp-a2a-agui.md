@@ -4,7 +4,7 @@ title: "Microsoft Agent Framework — Workflows, MCP, A2A & AG-UI"
 categories: [ dotnet, ai ]
 tags: [ dotnet, maf, agents, microsoft-extensions-ai, microsoft-agent-framework, mcp, agui, a2a ]
 published: true
-shortinfo: "Orchestrate multi-agent workflows, expose agents via MCP/A2A/AG-UI protocols — from directed graphs to streaming web UIs, with agent-to-agent communication."
+shortinfo: "Chain agents into workflow graphs, turn them into MCP servers, wire up A2A discovery, and stream to frontends via AG-UI."
 fullview: false
 comments: true
 related: true
