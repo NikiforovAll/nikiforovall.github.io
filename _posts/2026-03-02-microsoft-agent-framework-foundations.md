@@ -211,7 +211,7 @@ Any agent can become a tool for another agent via `.AsAIFunction()`:
 AIAgent orchestrator = client
     .GetChatClient(deploymentName)
     .AsAIAgent(
-        instructions: "You are a helpful assistant. the weather agent when asked about weather.",
+        instructions: "You are a helpful assistant. Use the weather agent when asked about weather.",
         tools: [weatherAgent.AsAIFunction()]
     );
 
