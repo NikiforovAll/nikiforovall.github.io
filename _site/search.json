@@ -2,6 +2,17 @@
   
     {
       "id": "0",
+      "title": "Microsoft Agent Framework — Azure AI Foundry",
+      "url": "/dotnet/ai/2026/03/24/microsoft-agent-framework-azure-ai-foundry.html",
+      "date": "March 24, 2026",
+      "categories": ["dotnet","ai"],
+      "tags": ["dotnet","maf","agents","microsoft-extensions-ai","microsoft-agent-framework","azure-ai-foundry"],
+      "shortinfo": "Move agents to the cloud — server-managed lifecycle, hosted tools, RAG, declarative workflows, and evaluations with Azure AI Foundry.",
+      "content": "TL;DRThis is Part 3 of the Microsoft Agent Framework series. Part 1 built agents locally with tools, sessions, and memory. Part 2 wired them into workflow graphs, MCP servers, and AG-UI frontends. This post moves everything to Azure AI Foundry — same AIAgent / RunAsync() API, but now the agents live server-side with managed lifecycle, hosted tools (code interpreter, web search, file search), declarative workflows, and built-in evaluations.  TL;DR  Introduction - Why Foundry?  First Foundry agent  Observability - OpenTelemetry + Foundry traces  Persistent sessions  Function tools  Hosted tools - Code Interpreter and Web Search          Code Interpreter      Web Search        RAG via Foundry  Foundry workflows  Evaluations  Key takeaways  Presentation  ReferencesSource code: https://github.com/NikiforovAll/maf-getting-startedIntroduction - Why Foundry?Parts 1 and 2 ran everything in-process. Your app created agents, held their state in memory, and managed tool execution locally. That works for development, but production asks harder questions: where do agents live between requests? Who manages the Python sandbox for code execution? Where does the vector store run?Azure AI Foundry answers these by moving agent lifecycle, tool execution, and data storage to the cloud. The programming model stays the same – you still call RunAsync() on an AIAgent. The difference is what happens behind the call.MAF (local)Azure AI FoundryAgent lifecycleIn-process onlyServer-side (named + versioned)ToolsClient-side AIFunctionClient-side + hosted (Code, Search, Web)MemoryInMemoryChatHistoryProviderManaged conversationsRAGBuild your ownHosted vector stores + HostedFileSearchToolEvaluationN/ABuilt-in quality + safety evaluatorsTo switch, you swap one package and one client:#:package Microsoft.Agents.AI.AzureAI@1.0.0-rc4#:package Azure.AI.Projects@2.0.0-beta.1// Before: AzureOpenAIClient → GetChatClient → AsAIAgent// After:AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());Everything else – RunAsync(), RunStreamingAsync(), tools, sessions – stays the same.First Foundry agentCreateAIAgentAsync creates a Foundry-side agent. Foundry stores it with a name and a version number. Each call with the same name bumps the version; GetAIAgentAsync retrieves the latest.AIProjectClient aiProjectClient = new(new Uri(endpoint), new DefaultAzureCredential());// Foundry-side agent -- named, versioned, persisted in FoundryAIAgent agent = await aiProjectClient.CreateAIAgentAsync(    name: \"FoundryBasicsAgent\",    model: deploymentName,    instructions: \"You are a friendly assistant. Keep your answers brief.\");// Non-streamingConsole.WriteLine(await agent.RunAsync(\"Tell me a fun fact about Azure.\"));// Streamingawait foreach (var update in agent.RunStreamingAsync(\"Tell me a fun fact about .NET.\")){    Console.Write(update);}// Cleanupawait aiProjectClient.Agents.DeleteAgentAsync(agent.Name);Agent definitions are immutable after creation. To change instructions or tools, create a new version:AIAgent v1 = await aiProjectClient.CreateAIAgentAsync(    name: \"MyAgent\", model: \"gpt-4o-mini\",    instructions: \"You are helpful.\");AIAgent v2 = await aiProjectClient.CreateAIAgentAsync(    name: \"MyAgent\", model: \"gpt-4o-mini\",    instructions: \"You are extremely helpful and concise.\");// Returns v2AIAgent latest = await aiProjectClient.GetAIAgentAsync(name: \"MyAgent\");Observability - OpenTelemetry + Foundry tracesWith Foundry agents, traces show up in two places:OTEL (client-side)Server-side (Foundry)WhatAgent spans, chat calls, durationToken counts, cost, response IDsWhereAspire Dashboard / any OTLP backendFoundry Portal -&gt; Traces tabHow.UseOpenTelemetry() + OTLP exporterAutomatic -- built into FoundryThe same Trace ID links both sides. You see the agent execution flow in Aspire, then jump to Foundry Portal for token counts and cost.// OTEL setup -- exports to Aspire dashboardusing var tracerProvider = Sdk.CreateTracerProviderBuilder()    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(\"FoundryBasicsDemo\"))    .AddSource(\"FoundryBasicsDemo\")    .AddSource(\"*Microsoft.Agents.AI\")    .AddOtlpExporter()    .Build();// Wrap agent with telemetryAIAgent agent = (await aiProjectClient.CreateAIAgentAsync(    name: \"FoundryBasicsAgent\", model: deploymentName,    instructions: \"You are a friendly assistant.\"))    .AsBuilder()    .UseOpenTelemetry(sourceName: \"FoundryBasicsDemo\")    .Build();// Parent span groups related callsusing var activitySource = new ActivitySource(\"FoundryBasicsDemo\");using var activity = activitySource.StartActivity(\"foundry-basics-demo\");Console.WriteLine($\"Trace ID: {activity?.TraceId}\");await agent.RunAsync(\"Tell me a fun fact about Azure.\");await agent.RunStreamingAsync(\"Tell me a fun fact about .NET.\");Print the Trace ID, then search for it in Foundry Portal to see the server-side view with token counts and cost breakdown.Persistent sessionsIn Part 1, conversation history lived in memory and died with the process. Foundry gives you server-side conversations that persist across sessions. Store only the conversation.Id in your database – Foundry keeps the full thread.using Azure.AI.Projects.OpenAI;// Create a server-side conversationProjectConversationsClient conversationsClient = aiProjectClient    .GetProjectOpenAIClient()    .GetProjectConversationsClient();ProjectConversation conversation = await conversationsClient.CreateProjectConversationAsync();// Session 1: establish contextAgentSession session1 = await agent.CreateSessionAsync(conversation.Id);Console.WriteLine(await agent.RunAsync(\"My name is Alex.\", session1));// Session 2: new session, same conversation -- agent remembersAgentSession session2 = await agent.CreateSessionAsync(conversation.Id);Console.WriteLine(await agent.RunAsync(\"What's my name?\", session2));// -&gt; \"Your name is Alex.\"sequenceDiagram    participant S1 as Session 1    participant F as Foundry Conversation    participant S2 as Session 2    S1-&gt;&gt;F: \"My name is Alex\"    F--&gt;&gt;S1: \"Nice to meet you, Alex!\"    Note over F: conversation.Id stored    S2-&gt;&gt;F: \"What's my name?\"    F--&gt;&gt;S2: \"Your name is Alex.\"The conversation is visible in the Foundry Portal too, so you can inspect the full message history without writing a single line of debugging code.Function toolsSame pattern as Part 1 – define C# methods with [Description], register them via AIFunctionFactory.Create(). The difference: Foundry stores the tool JSON schemas server-side. The client still provides the actual implementations.[Description(\"Get the current time in a given timezone.\")]static string GetTime([Description(\"The timezone (e.g., UTC, CET)\")] string timezone) =&gt;    $\"The current time in {timezone} is {DateTime.UtcNow:HH:mm} UTC.\";AITool[] tools = [AIFunctionFactory.Create(GetTime)];// Server stores tool schemas, client provides implementationsAIAgent agent = await aiProjectClient.CreateAIAgentAsync(    name: \"TimeAgent\", model: deploymentName,    instructions: \"You are a helpful assistant with time tool.\",    tools: tools);Console.WriteLine(await agent.RunAsync(\"What's the time in Kyiv?\"));// Retrieve existing agent -- must pass tools so MAF can invoke themAIAgent existing = await aiProjectClient.GetAIAgentAsync(name: \"TimeAgent\", tools: tools);Console.WriteLine(await existing.RunAsync(\"What time is it in UTC?\"));When you retrieve an agent with GetAIAgentAsync, the server already knows the tool schemas. But it can’t invoke your C# methods – you have to pass the tools array so MAF can wire up the calls.Hosted tools - Code Interpreter and Web SearchSo far, all tools ran in your process. Hosted tools flip that – they run server-side in Foundry’s infrastructure. No local dependencies, no sandbox to manage.Client tools (Parts 1-2)Hosted tools (Foundry)ExecutionYour processFoundry cloud sandboxSetupDefine + implementOne-liner -- Foundry provides the runtimeExamplesAIFunctionFactory.Create(...)HostedCodeInterpreterTool, HostedWebSearchTool, HostedFileSearchToolUse caseCustom business logicPython execution, web search, file searchCode InterpreterHostedCodeInterpreterTool gives the agent a Python sandbox. It writes code, Foundry runs it, and you get back the results.AIAgent agent = await aiProjectClient.CreateAIAgentAsync(    model: deploymentName,    name: \"MathTutor\",    instructions: \"You are a math tutor. Write and run Python code to solve problems.\",    tools: [new HostedCodeInterpreterTool() { Inputs = [] }]);AgentResponse response = await agent.RunAsync(    \"Solve x^3 - 6x^2 + 11x - 6 = 0. Show the roots.\");The response contains a mix of content types. Walk through them to see the full execution flow – thinking, code, output, answer:foreach (var content in response.Messages.SelectMany(m =&gt; m.Contents)){    switch (content)    {        case TextContent text:            Console.WriteLine($\"Text: {text.Text}\");            break;        case CodeInterpreterToolCallContent toolCall:            var codeInput = toolCall.Inputs?.OfType&lt;DataContent&gt;().FirstOrDefault();            if (codeInput?.HasTopLevelMediaType(\"text\") ?? false)            {                string code = Encoding.UTF8.GetString(codeInput.Data.ToArray());                Console.WriteLine($\"Python: {code}\");            }            break;        case CodeInterpreterToolResultContent toolResult:            foreach (var output in toolResult.Outputs ?? [])            {                if (output is TextContent tc)                    Console.WriteLine($\"Output: {tc.Text}\");            }            break;    }}Web SearchHostedWebSearchTool lets the agent search the web autonomously and return answers with annotated URL citations.AIAgent agent = await aiProjectClient.CreateAIAgentAsync(    name: \"WebSearchAgent\",    model: deploymentName,    instructions: \"Search the web to answer questions accurately. Cite your sources.\",    tools: [new HostedWebSearchTool()]);AgentResponse response = await agent.RunAsync(\"What are the latest features in .NET 10?\");Console.WriteLine(response.Text);// Extract URL citationsforeach (var annotation in response.Messages    .SelectMany(m =&gt; m.Contents)    .SelectMany(c =&gt; c.Annotations ?? [])){    if (annotation.RawRepresentation is UriCitationMessageAnnotation urlCitation)    {        Console.WriteLine($\"  - {urlCitation.Title}: {urlCitation.Uri}\");    }}RAG via FoundryBuilding RAG usually means picking an embedding model, setting up a vector database, writing a chunking pipeline, and wiring it all together. Foundry collapses that into a few API calls:StepAPIWhat happens1. Upload filefilesClient.UploadFile()File stored in Foundry2. Create vector storevectorStoresClient.CreateVectorStoreAsync()Auto-chunked + embedded3. Create agentCreateAIAgentAsync(tools: [HostedFileSearchTool])Agent grounded on your data4. Ask questionsagent.RunAsync()Grounded answers with citations5. CleanupDelete agent, vector store, fileNo orphan resourcesvar projectOpenAIClient = aiProjectClient.GetProjectOpenAIClient();var filesClient = projectOpenAIClient.GetProjectFilesClient();var vectorStoresClient = projectOpenAIClient.GetProjectVectorStoresClient();// Upload knowledge baseOpenAIFile uploaded = filesClient.UploadFile(tempFile, FileUploadPurpose.Assistants);// Create vector store -- auto-chunks and embedsvar vectorStore = await vectorStoresClient.CreateVectorStoreAsync(    options: new() { FileIds = { uploaded.Id }, Name = \"contoso-products\" });string vectorStoreId = vectorStore.Value.Id;// Create agent with file search grounded on the vector storeAIAgent agent = await aiProjectClient.CreateAIAgentAsync(    model: deploymentName,    name: \"RAGAgent\",    instructions: \"Answer questions using the product catalog. Cite the source.\",    tools: [new HostedFileSearchTool()    {        Inputs = [new HostedVectorStoreContent(vectorStoreId)]    }]);// Multi-turn Q&amp;Avar session = await agent.CreateSessionAsync();Console.WriteLine(await agent.RunAsync(\"What's the cheapest product?\", session));Console.WriteLine(await agent.RunAsync(\"Which product supports CI/CD?\", session));flowchart LR    A[Upload File] --&gt; B[Create Vector Store]    B --&gt; C[Auto-chunk + Embed]    C --&gt; D[Create Agent + HostedFileSearchTool]    D --&gt; E[RunAsync - Grounded Q&amp;A]Foundry workflowsPart 2 built workflows in-process with WorkflowBuilder and AddEdge(). Foundry workflows take a different approach – you declare the agent graph in YAML, register it server-side, and Foundry orchestrates the execution.Here’s a workflow where a storyteller writes a story and a critic reviews it:kind: Workflowtrigger:  kind: OnConversationStart  id: story_critic_workflow  actions:    - kind: InvokeAzureAgent      id: storyteller_step      conversationId: =System.ConversationId      agent:        name: StorytellerAgent    - kind: InvokeAzureAgent      id: critic_step      conversationId: =System.ConversationId      agent:        name: CriticAgentFirst create the agents, then register and run the workflow:// Create the agents that the workflow will orchestrateawait aiProjectClient.CreateAIAgentAsync(    name: \"StorytellerAgent\", model: deploymentName,    instructions: \"You are a creative storyteller. Write a short story based on the user's prompt.\");await aiProjectClient.CreateAIAgentAsync(    name: \"CriticAgent\", model: deploymentName,    instructions: \"You are a literary critic. Review the story and provide constructive feedback.\");// Register workflow via raw JSON (the SDK wraps the YAML in a JSON envelope)string escapedYaml = JsonEncodedText.Encode(workflowYaml).ToString();string requestJson = $$\"\"\"    {        \"definition\": { \"kind\": \"workflow\", \"workflow\": \"\" },        \"description\": \"Storyteller writes a story, Critic reviews it.\"    }    \"\"\";await aiProjectClient.Agents.CreateAgentVersionAsync(    \"StoryCriticWorkflow\",    BinaryContent.Create(BinaryData.FromString(requestJson)),    foundryFeatures: null, options: null);// Run with streamingChatClientAgent workflowAgent = await aiProjectClient.GetAIAgentAsync(    name: \"StoryCriticWorkflow\");AgentSession session = await workflowAgent.CreateSessionAsync();ChatClientAgentRunOptions runOptions = new(    new ChatOptions { ConversationId = conversation.Id });await foreach (var update in workflowAgent.RunStreamingAsync(    \"Write a story about a robot who discovers music.\", session, runOptions)){    Console.Write(update.Text);}Same RunStreamingAsync API as always. Foundry handles the orchestration – each agent produces a separate message in the stream.flowchart LR    U[User Prompt] --&gt; W[Foundry Workflow]    W --&gt; S[StorytellerAgent]    S --&gt; C[CriticAgent]    C --&gt; R[Streamed Response]EvaluationsBefore shipping an agent to production, you want to know: are its answers grounded in the context you provided? Are they relevant? Coherent? Safe? Foundry’s evaluation library runs all of these in a single pass.DimensionEvaluatorWhat it measuresGroundednessGroundednessEvaluatorAre answers grounded in provided context?RelevanceRelevanceEvaluatorDoes the answer address the question?CoherenceCoherenceEvaluatorIs the response well-structured and logical?SafetyContentHarmEvaluatorViolence, self-harm, sexual, hate contentQuality evaluators (groundedness, relevance, coherence) use an LLM as a judge. The safety evaluator uses Azure AI Foundry’s content safety service – a separate endpoint, not an LLM call.// Evaluator LLM (the judge)IChatClient chatClient = new AzureOpenAIClient(new Uri(openAiEndpoint), credential)    .GetChatClient(evaluatorDeployment)    .AsIChatClient();// Safety evaluator needs the Foundry content safety endpointContentSafetyServiceConfiguration safetyConfig = new(    credential: credential, endpoint: new Uri(endpoint));ChatConfiguration chatConfiguration = safetyConfig.ToChatConfiguration(    originalChatConfiguration: new ChatConfiguration(chatClient));// Compose all evaluatorsCompositeEvaluator evaluator = new([    new GroundednessEvaluator(),    new RelevanceEvaluator(),    new CoherenceEvaluator(),    new ContentHarmEvaluator(),]);// Run evaluationList&lt;ChatMessage&gt; messages = [new(ChatRole.User, question)];ChatResponse chatResponse = new(new ChatMessage(ChatRole.Assistant, agentResponse.Text));EvaluationResult result = await evaluator.EvaluateAsync(    messages, chatResponse, chatConfiguration,    additionalContext: [new GroundednessEvaluatorContext(context)]);// Read scoresforeach (var metric in result.Metrics.Values){    if (metric is NumericMetric n)        Console.WriteLine($\"{n.Name}: {n.Value:F1}/5 ({n.Interpretation?.Rating})\");    else if (metric is BooleanMetric b)        Console.WriteLine($\"{b.Name}: {b.Value} ({b.Interpretation?.Rating})\");}Quality metrics score 0-5. Safety metrics are boolean (pass/fail). Run these in CI or as a gate before deployment – you’ll catch regressions in answer quality and safety issues before users do.Key takeaways  AIProjectClient.CreateAIAgentAsync() – same AIAgent API, server-managed lifecycle with name + version semantics  .UseOpenTelemetry() + Aspire – client spans correlated with Foundry server traces via shared Trace ID  ProjectConversation – server-side persistent conversations, store only the ID  HostedCodeInterpreterTool / HostedWebSearchTool / HostedFileSearchTool – hosted tools that run in Foundry, zero infrastructure on your side  File upload + vector store + HostedFileSearchTool – RAG without managing an embedding pipeline or vector database  Declarative YAML workflows – server-side multi-agent orchestration, same RunStreamingAsync API  CompositeEvaluator – quality + safety scoring in a single pass before productionPresentationReferences  MAF Documentation  MAF Samples  Azure AI Foundry  Azure.AI.Projects SDK  Microsoft.Extensions.AI.Evaluation  Source code"
+    },
+  
+    {
+      "id": "1",
       "title": "Microsoft Agent Framework — Workflows, MCP, A2A & AG-UI",
       "url": "/dotnet/ai/2026/03/07/microsoft-agent-framework-workflows-mcp-a2a-agui.html",
       "date": "March 07, 2026",
@@ -12,7 +23,7 @@
     },
   
     {
-      "id": "1",
+      "id": "2",
       "title": "Microsoft Agent Framework — Foundations",
       "url": "/dotnet/ai/2026/03/02/microsoft-agent-framework-foundations.html",
       "date": "March 02, 2026",
@@ -23,7 +34,7 @@
     },
   
     {
-      "id": "2",
+      "id": "3",
       "title": "Building RAG with .NET AI Building Blocks - Microsoft.Extensions.AI",
       "url": "/dotnet/ai/2026/02/28/building-rag-with-dotnet-ai-building-blocks.html",
       "date": "February 28, 2026",
@@ -34,7 +45,7 @@
     },
   
     {
-      "id": "3",
+      "id": "4",
       "title": "Building RAG with .NET Aspire and Python",
       "url": "/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html",
       "date": "February 22, 2026",
@@ -45,7 +56,7 @@
     },
   
     {
-      "id": "4",
+      "id": "5",
       "title": "Risks of AI-Assisted Development",
       "url": "/ai/2026/02/15/risks-of-ai-assisted-development.html",
       "date": "February 15, 2026",
@@ -56,7 +67,7 @@
     },
   
     {
-      "id": "5",
+      "id": "6",
       "title": " Observing Claude Code Task Orchestration in Real Time using 'claude-code-kanban'",
       "url": "/ai/productivity/2026/02/07/claude-code-kanban.html",
       "date": "February 07, 2026",
@@ -67,7 +78,7 @@
     },
   
     {
-      "id": "6",
+      "id": "7",
       "title": "LazyClaude 0.12.0: Marketplace Plugin Management",
       "url": "/ai/2025/12/21/lazyclaude-0-12-0.html",
       "date": "December 21, 2025",
@@ -78,7 +89,7 @@
     },
   
     {
-      "id": "7",
+      "id": "8",
       "title": "LazyClaude: Explore Your Claude Code Setup Without Breaking Flow",
       "url": "/ai/2025/12/07/lazyclaude.html",
       "date": "December 07, 2025",
@@ -89,7 +100,7 @@
     },
   
     {
-      "id": "8",
+      "id": "9",
       "title": "VSCode Morph Agent: Let AI Control Your Workspace",
       "url": "/ai/2025/12/01/vscode-morph-agent.html",
       "date": "December 01, 2025",
@@ -100,7 +111,7 @@
     },
   
     {
-      "id": "9",
+      "id": "10",
       "title": "Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK",
       "url": "/dotnet/ai/2025/11/11/dotnet-format-agent.html",
       "date": "November 11, 2025",
@@ -111,7 +122,7 @@
     },
   
     {
-      "id": "10",
+      "id": "11",
       "title": "Claude Code Handbook: Best Practices and Recommendations",
       "url": "/productivity/2025/10/05/claude-code-handbook.html",
       "date": "October 05, 2025",
@@ -122,7 +133,7 @@
     },
   
     {
-      "id": "11",
+      "id": "12",
       "title": "MCP Landscape for .NET Developers",
       "url": "/ai/mcp/2025/10/03/mcp-landscape.html",
       "date": "October 03, 2025",
@@ -133,7 +144,7 @@
     },
   
     {
-      "id": "12",
+      "id": "13",
       "title": "Testing with Playwright and Claude Code",
       "url": "/ai/2025/09/06/playwright-claude-code-testing.html",
       "date": "September 06, 2025",
@@ -144,7 +155,7 @@
     },
   
     {
-      "id": "13",
+      "id": "14",
       "title": "Add Authentication to MCP Servers using Microsoft Entra ID",
       "url": "/dotnet/2025/09/02/mcp-auth.html",
       "date": "September 02, 2025",
@@ -155,7 +166,7 @@
     },
   
     {
-      "id": "14",
+      "id": "15",
       "title": "Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs",
       "url": "/ai/2025/08/09/tech-debt-master.html",
       "date": "August 09, 2025",
@@ -166,7 +177,7 @@
     },
   
     {
-      "id": "15",
+      "id": "16",
       "title": "Monitoring Claude Code with .NET Aspire Dashboard",
       "url": "/productivity/2025/06/14/claude-code-telemetry-aspire.html",
       "date": "June 14, 2025",
@@ -177,7 +188,7 @@
     },
   
     {
-      "id": "16",
+      "id": "17",
       "title": "My Claude Code Usage Best Practices and Recommendations",
       "url": "/productivity/2025/06/13/claude-code-rules.html",
       "date": "June 13, 2025",
@@ -188,7 +199,7 @@
     },
   
     {
-      "id": "17",
+      "id": "18",
       "title": "Hangfire MCP Server in Standalone Mode",
       "url": "/dotnet/2025/05/29/hangfire-mcp-standalone.html",
       "date": "May 29, 2025",
@@ -199,7 +210,7 @@
     },
   
     {
-      "id": "18",
+      "id": "19",
       "title": "Background Job Scheduling Using Hangfire MCP Server",
       "url": "/dotnet/2025/05/25/hangfire-mcp.html",
       "date": "May 25, 2025",
@@ -210,7 +221,7 @@
     },
   
     {
-      "id": "19",
+      "id": "20",
       "title": "Code Review with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html",
       "date": "May 03, 2025",
@@ -221,7 +232,7 @@
     },
   
     {
-      "id": "20",
+      "id": "21",
       "title": "Prompt Engineering with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/04/19/github-copilot-prompt-engineering.html",
       "date": "April 19, 2025",
@@ -232,7 +243,7 @@
     },
   
     {
-      "id": "21",
+      "id": "22",
       "title": "Composable AI with .NET Aspire: Extending DIAL Assistants with Add-Ons",
       "url": "/dotnet/ai/2025/04/18/introduction-to-dial-addons.html",
       "date": "April 18, 2025",
@@ -243,7 +254,7 @@
     },
   
     {
-      "id": "22",
+      "id": "23",
       "title": "Learn how to use Model Context Protocol (MCP) Server Template in Hybrid Mode",
       "url": "/dotnet/2025/04/08/hybrid-mcp-template.html",
       "date": "April 08, 2025",
@@ -254,7 +265,7 @@
     },
   
     {
-      "id": "23",
+      "id": "24",
       "title": "Simplifying Model Context Protocol (MCP) Server Development with Aspire",
       "url": "/dotnet/2025/04/04/mcp-template-and-aspire.html",
       "date": "April 04, 2025",
@@ -265,7 +276,7 @@
     },
   
     {
-      "id": "24",
+      "id": "25",
       "title": "Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools",
       "url": "/dotnet/2025/04/02/mcp-template-getting-started.html",
       "date": "April 02, 2025",
@@ -276,7 +287,7 @@
     },
   
     {
-      "id": "25",
+      "id": "26",
       "title": "Introducing AI DIAL: The Open-Source AI Orchestration Platform",
       "url": "/dotnet/ai/2025/03/30/introduction-to-dial.html",
       "date": "March 30, 2025",
@@ -287,7 +298,7 @@
     },
   
     {
-      "id": "26",
+      "id": "27",
       "title": "Enforcing .NET Coding Guidelines with GitHub Copilot Custom Instructions",
       "url": "/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html",
       "date": "March 08, 2025",
@@ -298,7 +309,7 @@
     },
   
     {
-      "id": "27",
+      "id": "28",
       "title": "Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd)",
       "url": "/dotnet/2024/12/22/azd-bot-service.html",
       "date": "December 22, 2024",
@@ -309,7 +320,7 @@
     },
   
     {
-      "id": "28",
+      "id": "29",
       "title": "Hybrid Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/11/02/elastic-hybrid-search.html",
       "date": "November 02, 2024",
@@ -320,7 +331,7 @@
     },
   
     {
-      "id": "29",
+      "id": "30",
       "title": "Querying and Filtering via Elastic.Clients.Elasticsearch in .NET",
       "url": "/dotnet/2024/10/20/querying-and-filtering-elastic-dotnet.html",
       "date": "October 20, 2024",
@@ -331,7 +342,7 @@
     },
   
     {
-      "id": "30",
+      "id": "31",
       "title": "Semantic Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html",
       "date": "October 19, 2024",
@@ -342,7 +353,7 @@
     },
   
     {
-      "id": "31",
+      "id": "32",
       "title": "10 Lessons I Learned from Using Aspire in Production",
       "url": "/dotnet/aspire/2024/09/30/aspire-lessons-learned.html",
       "date": "September 30, 2024",
@@ -353,7 +364,7 @@
     },
   
     {
-      "id": "32",
+      "id": "33",
       "title": "A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud",
       "url": "/dotnet/2024/09/14/quality-gates-dotnet.html",
       "date": "September 14, 2024",
@@ -364,7 +375,7 @@
     },
   
     {
-      "id": "33",
+      "id": "34",
       "title": "Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks",
       "url": "/dotnet/ai/2024/09/11/notebook-agent.html",
       "date": "September 11, 2024",
@@ -375,7 +386,7 @@
     },
   
     {
-      "id": "34",
+      "id": "35",
       "title": "Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET",
       "url": "/dotnet/ai/2024/09/04/typical-rag-dotnet.html",
       "date": "September 04, 2024",
@@ -386,7 +397,7 @@
     },
   
     {
-      "id": "35",
+      "id": "36",
       "title": "Building pipelines with IAsyncEnumerable in .NET",
       "url": "/dotnet/2024/08/22/async-enumerable-pipelines.html",
       "date": "August 22, 2024",
@@ -397,7 +408,7 @@
     },
   
     {
-      "id": "36",
+      "id": "37",
       "title": "Unlocking the Power of TypedResults in Endpoints: A Consistent Approach to Strongly Typed APIs in .NET",
       "url": "/dotnet/2024/08/17/result-endpoints.html",
       "date": "August 17, 2024",
@@ -408,7 +419,7 @@
     },
   
     {
-      "id": "37",
+      "id": "38",
       "title": "Supercharge your Dependify tool with AI chat assistant",
       "url": "/dotnet/2024/08/09/dependify-ai.html",
       "date": "August 09, 2024",
@@ -419,7 +430,7 @@
     },
   
     {
-      "id": "38",
+      "id": "39",
       "title": "Explore .NET application dependencies by using Dependify tool",
       "url": "/dotnet/2024/08/03/dependify.html",
       "date": "August 03, 2024",
@@ -430,7 +441,7 @@
     },
   
     {
-      "id": "39",
+      "id": "40",
       "title": "Managing Startup Dependencies in .NET Aspire",
       "url": "/dotnet/aspire/2024/06/28/startup-dependencies-aspire.html",
       "date": "June 28, 2024",
@@ -441,7 +452,7 @@
     },
   
     {
-      "id": "40",
+      "id": "41",
       "title": "Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch",
       "url": "/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html",
       "date": "June 18, 2024",
@@ -452,7 +463,7 @@
     },
   
     {
-      "id": "41",
+      "id": "42",
       "title": "A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html",
       "date": "June 12, 2024",
@@ -463,7 +474,7 @@
     },
   
     {
-      "id": "42",
+      "id": "43",
       "title": "Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html",
       "date": "June 07, 2024",
@@ -474,7 +485,7 @@
     },
   
     {
-      "id": "43",
+      "id": "44",
       "title": "Using Keycloak in .NET Aspire projects",
       "url": "/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html",
       "date": "June 02, 2024",
@@ -485,7 +496,7 @@
     },
   
     {
-      "id": "44",
+      "id": "45",
       "title": "Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire",
       "url": "/dotnet/aws/2024/05/27/aws-claim-check-dotnet.html",
       "date": "May 27, 2024",
@@ -496,7 +507,7 @@
     },
   
     {
-      "id": "45",
+      "id": "46",
       "title": "Mastering AWS Batch: A .NET Developer Guide to Batch File Processing",
       "url": "/dotnet/aws/2024/05/26/aws-batch-dotnet.html",
       "date": "May 26, 2024",
@@ -507,7 +518,7 @@
     },
   
     {
-      "id": "46",
+      "id": "47",
       "title": "Announcement - Keycloak.AuthServices v2.3.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/10/keycloak-v2-3-0.html",
       "date": "May 10, 2024",
@@ -518,7 +529,7 @@
     },
   
     {
-      "id": "47",
+      "id": "48",
       "title": "Announcement - Keycloak.AuthServices v2.0.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/05/keycloak-v2-0-0.html",
       "date": "May 05, 2024",
@@ -529,7 +540,7 @@
     },
   
     {
-      "id": "48",
+      "id": "49",
       "title": "Job Offloading Pattern with System.Threading.Channels. A way to deal with long-running tasks in .NET",
       "url": "/dotnet/async/2024/04/21/job-offloading-pattern.html",
       "date": "April 21, 2024",
@@ -540,7 +551,7 @@
     },
   
     {
-      "id": "49",
+      "id": "50",
       "title": "Building pipelines with System.Threading.Channels",
       "url": "/dotnet/async/2024/04/21/channels-composition.html",
       "date": "April 21, 2024",
@@ -551,7 +562,7 @@
     },
   
     {
-      "id": "50",
+      "id": "51",
       "title": "Polymorphic serialization via System.Text.Json in ASP.NET Core Minimal API",
       "url": "/dotnet/aspnetcore/2024/04/06/openapi-polymorphism.html",
       "date": "April 06, 2024",
@@ -562,7 +573,7 @@
     },
   
     {
-      "id": "51",
+      "id": "52",
       "title": "Transactional Outbox in .NET Cloud Native Development via Aspire",
       "url": "/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html",
       "date": "March 30, 2024",
@@ -573,7 +584,7 @@
     },
   
     {
-      "id": "52",
+      "id": "53",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)",
       "url": "/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html",
       "date": "March 24, 2024",
@@ -584,7 +595,7 @@
     },
   
     {
-      "id": "53",
+      "id": "54",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1)",
       "url": "/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html",
       "date": "March 22, 2024",
@@ -595,7 +606,7 @@
     },
   
     {
-      "id": "54",
+      "id": "55",
       "title": "Building a federated search engine from scratch. An introduction.",
       "url": "/dotnet/2023/05/19/federated-search-intro.html",
       "date": "May 19, 2023",
@@ -606,7 +617,7 @@
     },
   
     {
-      "id": "55",
+      "id": "56",
       "title": "Introduction to JMESPath - JSON processor you should definitely know",
       "url": "/dotnet/2023/01/08/jmespath-intro.html",
       "date": "January 08, 2023",
@@ -617,7 +628,7 @@
     },
   
     {
-      "id": "56",
+      "id": "57",
       "title": "Keycloak as Authorization Server in .NET",
       "url": "/dotnet/keycloak/2022/12/28/keycloak-authorization-server.html",
       "date": "December 28, 2022",
@@ -628,7 +639,7 @@
     },
   
     {
-      "id": "57",
+      "id": "58",
       "title": "Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications",
       "url": "/blazor/dotnet/2022/12/08/dotnet-keycloak-blazorwasm-auth.html",
       "date": "December 08, 2022",
@@ -639,7 +650,7 @@
     },
   
     {
-      "id": "58",
+      "id": "59",
       "title": "Add persisted parameters to CLI applications in .NET",
       "url": "/dotnet/2022/08/26/persisted-parameters-in-dotnet-cli.html",
       "date": "August 26, 2022",
@@ -650,7 +661,7 @@
     },
   
     {
-      "id": "59",
+      "id": "60",
       "title": "Use Keycloak as Identity Provider in ASP.NET Core 6",
       "url": "/aspnetcore/dotnet/2022/08/24/dotnet-keycloak-auth.html",
       "date": "August 24, 2022",
@@ -661,7 +672,7 @@
     },
   
     {
-      "id": "60",
+      "id": "61",
       "title": "Dev Environment as a Code (DEaaC) with DevContainers, Dotfiles, and GitHub Codespaces",
       "url": "/productivity/devcontainers/2022/08/13/deaac.html",
       "date": "August 13, 2022",
@@ -672,7 +683,7 @@
     },
   
     {
-      "id": "61",
+      "id": "62",
       "title": "Creating and Using HTTP Client SDKs in .NET 6",
       "url": "/dotnet/aspnetcore/microservices/2022/04/04/creating-and-using-http-sdks.html",
       "date": "April 04, 2022",
@@ -683,7 +694,7 @@
     },
   
     {
-      "id": "62",
+      "id": "63",
       "title": "Creating and Using HTTP Client SDKs in .NET 6. (Announcement)",
       "url": "/dotnet/aspnetcore/microservices/2022/02/06/http-sdks.html",
       "date": "February 06, 2022",
@@ -694,7 +705,7 @@
     },
   
     {
-      "id": "63",
+      "id": "64",
       "title": "Console applications with Spectre.Console",
       "url": "/dotnet/2022/01/22/building-console-application-with-spectre-console.html",
       "date": "January 22, 2022",
@@ -705,7 +716,7 @@
     },
   
     {
-      "id": "64",
+      "id": "65",
       "title": "Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.",
       "url": "/dotnet/2021/12/20/dotnet-global-tool-copy-paster.html",
       "date": "December 20, 2021",
@@ -716,7 +727,7 @@
     },
   
     {
-      "id": "65",
+      "id": "66",
       "title": "A developer guide to automated testing with Postman. Run postman collections inside Docker via newman CLI.",
       "url": "/dotnet/docker/testing/2021/11/27/testing-with-newman.html",
       "date": "November 27, 2021",
@@ -727,7 +738,7 @@
     },
   
     {
-      "id": "66",
+      "id": "67",
       "title": "Rapid Microservices Development in .NET. An introduction.",
       "url": "/dotnet/microservices/csharp/2021/11/06/rapid-microservices-development-part1-build-project.html",
       "date": "November 06, 2021",
@@ -738,7 +749,7 @@
     },
   
     {
-      "id": "67",
+      "id": "68",
       "title": "What's new in .NET 6 and C# 10. Everything you wanted to know.",
       "url": "/dotnet/csharp/coding-stories/2021/10/29/whats-new-in-dotnet6.html",
       "date": "October 29, 2021",
@@ -749,7 +760,7 @@
     },
   
     {
-      "id": "68",
+      "id": "69",
       "title": "Try out .NET 6 inside your own development environment built with devcontainers, docker, and vscode",
       "url": "/productivity/devcontainers/2021/10/14/devcontainer-for-dotnet6.html",
       "date": "October 14, 2021",
@@ -760,7 +771,7 @@
     },
   
     {
-      "id": "69",
+      "id": "70",
       "title": "An opinionated look at Minimal API in .NET 6",
       "url": "/dotnet/aspnetcore/2021/09/10/opinionated-minimal-api.html",
       "date": "September 10, 2021",
@@ -771,7 +782,7 @@
     },
   
     {
-      "id": "70",
+      "id": "71",
       "title": "How to add Health Checks to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/07/25/add-health-checks-to-aspnetcore.html",
       "date": "July 25, 2021",
@@ -782,7 +793,7 @@
     },
   
     {
-      "id": "71",
+      "id": "72",
       "title": "How to add OpenAPI to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html",
       "date": "June 13, 2021",
@@ -793,7 +804,7 @@
     },
   
     {
-      "id": "72",
+      "id": "73",
       "title": "Develop Clean Command Line Applications with System.CommandLine. Clean CLI.",
       "url": "/dotnet/cli/2021/06/06/clean-cli.html",
       "date": "June 06, 2021",
@@ -804,7 +815,7 @@
     },
   
     {
-      "id": "73",
+      "id": "74",
       "title": "Publish NuGet packages via Docker Release Container",
       "url": "/dotnet/nuget/docker/2021/05/09/nuget-release-container.html",
       "date": "May 09, 2021",
@@ -815,7 +826,7 @@
     },
   
     {
-      "id": "74",
+      "id": "75",
       "title": "ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method",
       "url": "/dotnet/aspnetcore/2021/03/23/endpoint-route-builder-extension-pattern.html",
       "date": "March 23, 2021",
@@ -826,7 +837,7 @@
     },
   
     {
-      "id": "75",
+      "id": "76",
       "title": "Advance the practical side of your coding skills with CodingStories",
       "url": "/dotnet/coding-stories/2021/03/14/coding-story.html",
       "date": "March 14, 2021",
@@ -837,7 +848,7 @@
     },
   
     {
-      "id": "76",
+      "id": "77",
       "title": "Task-based asynchronous Pattern and Composition (aka Task Combinators)",
       "url": "/dotnet/async/2021/02/26/tap-composition.html",
       "date": "February 26, 2021",
@@ -848,7 +859,7 @@
     },
   
     {
-      "id": "77",
+      "id": "78",
       "title": "Awaitable/awaiter pattern and logical micro-threading in C#",
       "url": "/csharp/compcsi/dotnet/2020/10/20/awaitable-pattern.html",
       "date": "October 20, 2020",
@@ -859,7 +870,7 @@
     },
   
     {
-      "id": "78",
+      "id": "79",
       "title": "Publish images to GitHub Container Registry (ghcr)",
       "url": "/docker/2020/09/19/publish-package-to-ghcr.html",
       "date": "September 19, 2020",
@@ -870,7 +881,7 @@
     },
   
     {
-      "id": "79",
+      "id": "80",
       "title": "Bringing \"surround with\" functionality to vscode. Check out this extension.",
       "url": "/productivity/csharp/vscode/2020/08/21/surround-with-csharp.html",
       "date": "August 21, 2020",
@@ -881,7 +892,7 @@
     },
   
     {
-      "id": "80",
+      "id": "81",
       "title": "How to organize learning process with mindmaps, spreadsheets and .NET Core",
       "url": "/productivity/2020/05/03/how-to-organize-your-learning-process-with-xmind.html",
       "date": "May 03, 2020",
@@ -892,7 +903,7 @@
     },
   
     {
-      "id": "81",
+      "id": "82",
       "title": "Catch up with .NET Core - System.Text.JSON",
       "url": "/dotnet-core/2020/04/27/catch-dotnetcore-json.html",
       "date": "April 27, 2020",
@@ -903,7 +914,7 @@
     },
   
     {
-      "id": "82",
+      "id": "83",
       "title": "Catch up with .NET Core - System.IO.Pipelines",
       "url": "/dotnet-core/2020/04/24/catch-dotnetcore-piepelines.html",
       "date": "April 24, 2020",
@@ -914,7 +925,7 @@
     },
   
     {
-      "id": "83",
+      "id": "84",
       "title": "Sorting algorithms with C# 8, Span{T} and Try .NET",
       "url": "/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html",
       "date": "April 15, 2020",
@@ -925,7 +936,7 @@
     },
   
     {
-      "id": "84",
+      "id": "85",
       "title": "Development environment based on Windows Terminal + WSL + ZSH + dotfiles",
       "url": "/productivity/2019/11/30/nikiforovall-setup.html",
       "date": "November 30, 2019",
@@ -936,7 +947,7 @@
     },
   
     {
-      "id": "85",
+      "id": "86",
       "title": "Design Patterns. Behavioral Patterns. Part I",
       "url": "/design-patterns/2019/06/09/design-patterns-first-part.html",
       "date": "June 09, 2019",
