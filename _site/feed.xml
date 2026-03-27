@@ -7,6 +7,265 @@
 		<atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>What&apos;s new in Keycloak.AuthServices v2.9.0</title>
+				<description>&lt;h2 id=&quot;whats-new&quot;&gt;What’s new&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet&quot;&gt;Keycloak.AuthServices&lt;/a&gt; just got a round of updates. Keycloak itself has changed a lot between versions 24 and 26 – lightweight access tokens, organizations, RFC 8414 metadata – and the .NET library needed to catch up.&lt;/p&gt;
+
+&lt;p&gt;This post walks through the three biggest additions.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Package&lt;/th&gt;
+      &lt;th&gt;Version&lt;/th&gt;
+      &lt;th&gt;Description&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Authentication&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Keycloak.AuthServices.Authentication&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Keycloak.AuthServices.Authentication.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Authentication for API and Web Apps&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Authorization&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Keycloak.AuthServices.Authorization&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Keycloak.AuthServices.Authorization.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Authorization Services + Authorization Server integration&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Authorization.TokenIntrospection&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Keycloak.AuthServices.Authorization.TokenIntrospection&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Keycloak.AuthServices.Authorization.TokenIntrospection.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Token introspection for lightweight access tokens&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Sdk&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Keycloak.AuthServices.Sdk&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Keycloak.AuthServices.Sdk.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Admin API and Protection API&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Sdk.Kiota&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;a href=&quot;https://nuget.org/packages/Keycloak.AuthServices.Sdk.Kiota&quot;&gt;&lt;img src=&quot;https://img.shields.io/nuget/v/Keycloak.AuthServices.Sdk.Kiota.svg&quot; alt=&quot;Nuget&quot; /&gt;&lt;/a&gt;&lt;/td&gt;
+      &lt;td&gt;Admin API based on OpenAPI (Kiota-generated)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;organization-authorization&quot;&gt;Organization authorization&lt;/h2&gt;
+
+&lt;p&gt;Keycloak 24 introduced &lt;a href=&quot;https://www.keycloak.org/docs/latest/server_admin/#_managing_organizations&quot;&gt;organizations&lt;/a&gt; as a first-class concept – and for multi-tenant applications, this changes things.&lt;/p&gt;
+
+&lt;p&gt;Before organizations, multi-tenancy in Keycloak usually meant one realm per tenant (operational headache) or custom attributes and groups hacked together to represent “who belongs where”. Organizations give you a built-in abstraction: users belong to organizations, organizations have their own identity providers, and membership shows up directly in the token.&lt;/p&gt;
+
+&lt;p&gt;For a SaaS app, this means you can stop reinventing tenant isolation. Keycloak manages the “which user belongs to which tenant” question, and the token carries that answer. Your API just needs to enforce it.&lt;/p&gt;
+
+&lt;p&gt;The library picks that up and gives you authorization policies that work with it.&lt;/p&gt;
+
+&lt;p&gt;Keycloak produces two claim formats depending on the Organization Membership Mapper configuration – a simple string array or a rich JSON map with IDs and attributes. Both are handled transparently.&lt;/p&gt;
+
+&lt;p&gt;To include organization membership in tokens, request the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;organization:*&lt;/code&gt; scope. The plain &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;organization&lt;/code&gt; scope alone does &lt;strong&gt;not&lt;/strong&gt; include the claim.&lt;/p&gt;
+
+&lt;h3 id=&quot;require-any-organization-membership&quot;&gt;Require any organization membership&lt;/h3&gt;
+
+&lt;p&gt;The simplest check – the user must belong to at least one organization:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/orgs&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;You belong to an org&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireOrganizationMembership&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;require-a-specific-organization&quot;&gt;Require a specific organization&lt;/h3&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/acme/settings&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Acme settings&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireOrganizationMembership&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;acme-corp&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;resolve-the-organization-from-route-or-header&quot;&gt;Resolve the organization from route or header&lt;/h3&gt;
+
+&lt;p&gt;Sometimes the organization comes from the request itself. The library ships with built-in resolvers for routes, headers, and query parameters:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/orgs/{orgId}/projects&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;orgId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&quot;Projects for &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;orgId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireOrganizationMembership&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;{orgId}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/tenant/projects&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Tenant projects&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RequireOrganizationMembership&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RouteHandlerBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;HeaderParameterResolver&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;{X-Organization}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;policy-based-approach&quot;&gt;Policy-based approach&lt;/h3&gt;
+
+&lt;p&gt;If you prefer named policies:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAuthorizationBuilder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddPolicy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;AcmeOnly&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;policy&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;policy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireOrganizationMembership&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;acme-corp&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+              &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireRealmRoles&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;user&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;imperative-authorization&quot;&gt;Imperative authorization&lt;/h3&gt;
+
+&lt;p&gt;For more dynamic scenarios:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;authorizationService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AuthorizeAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;OrganizationRequirement&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;orgId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OrganizationRequirementHandler&lt;/code&gt; reads the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;organization&lt;/code&gt; claim, parses the JSON structure Keycloak emits, and checks membership. You can configure which claim type to look at if your setup uses a non-default claim name.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;token-introspection-for-lightweight-access-tokens&quot;&gt;Token introspection for lightweight access tokens&lt;/h2&gt;
+
+&lt;p&gt;This one bit me in production. Keycloak 24+ supports lightweight access tokens – valid signed JWTs, but intentionally stripped of business claims like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;resource_access&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;realm_access&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;preferred_username&lt;/code&gt;. The idea is to keep tokens small.&lt;/p&gt;
+
+&lt;p&gt;The problem: role-based authorization silently fails. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KeycloakRolesClaimsTransformation&lt;/code&gt; looks for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;resource_access&lt;/code&gt;, finds nothing, maps no roles. Every role check returns 403. No errors, no warnings. Just 403s.&lt;/p&gt;
+
+&lt;p&gt;The fix is &lt;a href=&quot;https://datatracker.ietf.org/doc/html/rfc7662&quot;&gt;token introspection&lt;/a&gt;. You send the token back to Keycloak’s introspection endpoint and get the full claim set.&lt;/p&gt;
+
+&lt;h3 id=&quot;installation&quot;&gt;Installation&lt;/h3&gt;
+
+&lt;p&gt;Token introspection ships as a separate package:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add package Keycloak.AuthServices.Authorization.TokenIntrospection
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;enabling-introspection&quot;&gt;Enabling introspection&lt;/h3&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakWebApiAuthentication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;EnableRolesMapping&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RolesClaimTransformationSource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;All&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakTokenIntrospection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;That’s it. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddKeycloakTokenIntrospection&lt;/code&gt; call registers a claims transformation that:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Checks if expected claims (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;resource_access&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;realm_access&lt;/code&gt;) are already present&lt;/li&gt;
+  &lt;li&gt;If missing, calls the introspection endpoint with client credentials&lt;/li&gt;
+  &lt;li&gt;Merges the the full claim set into the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ClaimsPrincipal&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;Caches results per token to avoid redundant calls&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The existing role mapping transformation runs after introspection, so everything works transparently.&lt;/p&gt;
+
+&lt;h3 id=&quot;configuration&quot;&gt;Configuration&lt;/h3&gt;
+
+&lt;p&gt;Via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appsettings.json&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Keycloak&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;realm&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;my-realm&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;auth-server-url&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;https://keycloak.example.com/&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;resource&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;my-api&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;credentials&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;secret&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;my-client-secret&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The introspection client reuses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KeycloakInstallationOptions&lt;/code&gt;, so if you already have Keycloak configured, you likely don’t need to add anything.&lt;/p&gt;
+
+&lt;p&gt;Cache duration defaults to 60 seconds and is configurable:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakTokenIntrospection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;BindKeycloakOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CacheDuration&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TimeSpan&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;FromSeconds&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;m&quot;&gt;120&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;when-to-use-this&quot;&gt;When to use this&lt;/h3&gt;
+
+&lt;p&gt;You need this if:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Your Keycloak admin enabled lightweight access tokens&lt;/li&gt;
+  &lt;li&gt;You’re using KC 26+ admin clients (they use lightweight tokens by default)&lt;/li&gt;
+  &lt;li&gt;You see unexplained 403s after upgrading Keycloak&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The alternative is configuring Keycloak protocol mappers with the “Add to lightweight access token” flag, which avoids the introspection round-trip entirely. Pick your trade-off.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;rfc-8414-metadata-discovery&quot;&gt;RFC 8414 metadata discovery&lt;/h2&gt;
+
+&lt;p&gt;Since Keycloak 26.4, the &lt;a href=&quot;https://datatracker.ietf.org/doc/html/rfc8414&quot;&gt;RFC 8414&lt;/a&gt; metadata endpoint is available at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/.well-known/oauth-authorization-server&lt;/code&gt;, alongside the traditional OIDC discovery at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/.well-known/openid-configuration&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Why does this matter? If you’re building a pure OAuth 2.0 resource server – no ID tokens, no OIDC – then OIDC discovery is technically the wrong endpoint. More practically, Keycloak 26.4 added MCP (Model Context Protocol) authorization server support, which uses RFC 8414 discovery.&lt;/p&gt;
+
+&lt;h3 id=&quot;using-rfc-8414-metadata&quot;&gt;Using RFC 8414 metadata&lt;/h3&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakWebApiAuthentication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;BindKeycloakOptions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MetadataAddress&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;KeycloakConstants&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OAuthAuthorizationServerMetadataPath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MetadataAddress&lt;/code&gt; property overrides the default OIDC discovery path. The constant &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OAuthAuthorizationServerMetadataPath&lt;/code&gt; resolves to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&quot;.well-known/oauth-authorization-server&quot;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you don’t set it, nothing changes – the library defaults to OIDC discovery as before.&lt;/p&gt;
+
+&lt;h3 id=&quot;when-to-use-this-1&quot;&gt;When to use this&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Machine-to-machine flows (client credentials, no ID tokens)&lt;/li&gt;
+  &lt;li&gt;OAuth 2.0-only clients that expect RFC 8414 metadata&lt;/li&gt;
+  &lt;li&gt;MCP authorization server scenarios with Keycloak 26.4+&lt;/li&gt;
+  &lt;li&gt;Protocol correctness for pure resource servers&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;also-in-this-release&quot;&gt;Also in this release&lt;/h2&gt;
+
+&lt;p&gt;A few more things that shipped in this release:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Extensible policy builder&lt;/strong&gt; – &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IProtectedResourcePolicyBuilder&lt;/code&gt; lets you customize how protected resource policies are constructed&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Pluggable parameter resolution&lt;/strong&gt; – custom &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IParameterResolver&lt;/code&gt; implementations for resolving resource names from routes, headers, query strings, or your own sources&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Configurable organization claim type&lt;/strong&gt; – if your Keycloak setup uses a non-standard claim name for organization data&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Kiota SDK updated&lt;/strong&gt; to Keycloak 26.5.6 OpenAPI spec&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Full changelog: &lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/releases&quot;&gt;GitHub Releases&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Documentation: &lt;a href=&quot;https://nikiforovall.github.io/keycloak-authorization-services-dotnet/&quot;&gt;nikiforovall.github.io/keycloak-authorization-services-dotnet&lt;/a&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;ai-skills-for-claude-code&quot;&gt;AI skills for Claude Code&lt;/h2&gt;
+
+&lt;p&gt;This release also ships a &lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/.claude-plugin&quot;&gt;Claude Code plugin&lt;/a&gt; with two AI skills that help you work with Keycloak directly from your terminal.&lt;/p&gt;
+
+&lt;h3 id=&quot;keycloak-auth-services&quot;&gt;keycloak-auth-services&lt;/h3&gt;
+
+&lt;p&gt;An implementation guide that knows the library’s API surface – authentication setup, authorization patterns, resource protection, Admin SDK, Protection API, and configuration options. Ask it how to set up JWT Bearer auth or configure protected resources and it’ll give you working code using the current API.&lt;/p&gt;
+
+&lt;h3 id=&quot;keycloak-administration&quot;&gt;keycloak-administration&lt;/h3&gt;
+
+&lt;p&gt;A Keycloak server administration guide covering realm management, client configuration, authentication flows, RBAC, user federation, security hardening, and troubleshooting. Useful when you need to configure the Keycloak side of things – setting up clients, mappers, organizations, or debugging token issues.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Join us on Discord: &lt;a href=&quot;https://discord.gg/jdYFw2xq&quot;&gt;&lt;img src=&quot;https://img.shields.io/discord/1236946465318768670?color=blue&amp;amp;label=Chat%20on%20Discord&quot; alt=&quot;Discord&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+				<pubDate>Fri, 27 Mar 2026 00:00:00 +0200</pubDate>
+				<link>http://localhost:4000/dotnet/keycloak/2026/03/27/keycloak-authservices-2026.html</link>
+				<guid isPermaLink="true">http://localhost:4000/dotnet/keycloak/2026/03/27/keycloak-authservices-2026.html</guid>
+			</item>
+		
+			<item>
 				<title>Microsoft Agent Framework — Azure AI Foundry</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -2826,248 +3085,6 @@ graph LR
 				<pubDate>Sun, 07 Dec 2025 00:00:00 +0200</pubDate>
 				<link>http://localhost:4000/ai/2025/12/07/lazyclaude.html</link>
 				<guid isPermaLink="true">http://localhost:4000/ai/2025/12/07/lazyclaude.html</guid>
-			</item>
-		
-			<item>
-				<title>VSCode Morph Agent: Let AI Control Your Workspace</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;What if AI agents could not only write code but also organize your workspace? &lt;strong&gt;Morph Agent&lt;/strong&gt; is a VSCode extension that lets AI control your editor layout through natural language. It’s a proof of concept demonstrating a powerful principle: &lt;strong&gt;agents should be able to manipulate the ambient environment&lt;/strong&gt; to help us focus on what matters.&lt;/p&gt;
-
-&lt;center style=&quot;margin-top: 2rem;&quot;&gt;
-&lt;p&gt;&lt;strong&gt;Source:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/vscode-morph&quot;&gt;github.com/NikiforovAll/vscode-morph&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Install:&lt;/strong&gt; &lt;a href=&quot;https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent&quot;&gt;VSCode Marketplace&lt;/a&gt;&lt;/p&gt;
-&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;Modern software development increasingly involves working with multiple artifacts simultaneously—specifications, implementation plans, task lists, code files, tests, and documentation. When using AI coding assistants, this complexity multiplies: you’re juggling context windows, chat panels, terminal output, and reference materials.&lt;/p&gt;
-
-&lt;p&gt;The problem isn’t just having the right files open—it’s having them arranged in a way that supports your current workflow. Manually reorganizing your workspace breaks your flow. What if your AI assistant could do this for you?&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Morph Agent&lt;/strong&gt; explores this idea. It’s a VSCode extension that gives AI the ability to control your editor layout. Through GitHub Copilot Chat, you can describe how you want your workspace arranged, and Morph makes it happen.&lt;/p&gt;
-
-&lt;p&gt;The idea is based on a simple principle: &lt;strong&gt;AI should control the ambient workspace, not just the code&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;Furthermore, an agent should be able to produce additional tools or UI elements to facilitate better interaction with the user.&lt;/p&gt;
-
-&lt;h3 id=&quot;find-this-principle-in-the-other-tools&quot;&gt;Find this Principle in the Other Tools&lt;/h3&gt;
-
-&lt;p&gt;For example, in &lt;a href=&quot;https://github.com/anthropics/claude-code&quot;&gt;Claude Code&lt;/a&gt;, the user is presented with a special tool to clarify questions - &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AskUserQuestion&lt;/code&gt;. This tool opens a special input inside the terminal so that the user can provide input back to the agent. This is a great example of an agent manipulating the ambient environment to facilitate better interaction.&lt;/p&gt;
-
-&lt;center&gt;
-&lt;img src=&quot;/assets/morph/AskUserQuestionExample.png&quot; alt=&quot;AskUserQuestion tool example&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;what-is-morph-agent&quot;&gt;What is Morph Agent?&lt;/h2&gt;
-
-&lt;p&gt;Morph Agent bridges the gap between natural language intent and editor configuration. It provides:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Natural Language Layout Control&lt;/strong&gt; — Use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@morph-layout&lt;/code&gt; in Copilot Chat to request arrangements like “split my files side by side” or “open the tests next to the implementation”&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;KDL Layout DSL&lt;/strong&gt; — A declarative configuration language (KDL) for precise, reproducible layouts&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Bidirectional Conversion&lt;/strong&gt; — Capture your current layout as KDL code, or apply KDL to transform your workspace&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;The key insight is that layouts become &lt;em&gt;first-class artifacts&lt;/em&gt;. You can version control them, share them with your team, and let AI generate them contextually.&lt;/p&gt;
-
-&lt;h3 id=&quot;the-kdl-format&quot;&gt;The KDL Format&lt;/h3&gt;
-
-&lt;p&gt;KDL (pronounced “cuddle”) is a minimal document language perfect for configuration. Here’s a quick taste:&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Side-by-side:&lt;/strong&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
-  cols {
-    group { file &quot;src/main.ts&quot; }
-    group { file &quot;src/test.ts&quot; }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;strong&gt;Stacked:&lt;/strong&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
-  rows {
-    group { file &quot;README.md&quot; }
-    group { file &quot;CHANGELOG.md&quot; }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;strong&gt;2x2 Grid:&lt;/strong&gt;&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
-  rows {
-    cols {
-      group { file &quot;a.ts&quot; }
-      group { file &quot;b.ts&quot; }
-    }
-    cols {
-      group { file &quot;c.ts&quot; }
-      group { file &quot;d.ts&quot; }
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Here is a demo showing different layout configurations being applied:&lt;/p&gt;
-
-&lt;center&gt;
-&lt;img src=&quot;/assets/morph/demo.gif&quot; alt=&quot;KDL layout examples with Apply Layout CodeLens&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;scenario-1-agentic-coding-layout&quot;&gt;Scenario 1: Agentic Coding Layout&lt;/h2&gt;
-
-&lt;p&gt;When working with AI coding assistants, I find myself constantly arranging windows: specification on one side, implementation plan visible, chat ready for questions, terminal for running tests. Setting this up manually each session is tedious.&lt;/p&gt;
-
-&lt;p&gt;With Morph, I can define a persistent layout configuration:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;window {
-  layout {
-    cols {
-      rows size=&quot;60&quot; {
-        cols size=&quot;50&quot; {
-          group size=&quot;50&quot; { file &quot;spec.md&quot; }
-          group size=&quot;50&quot; { file &quot;plan.md&quot; }
-        }
-        group size=&quot;50&quot; { file &quot;extension.ts&quot; }
-      }
-      rows size=&quot;40&quot; {
-        group size=&quot;80&quot; { chat }
-        group size=&quot;20&quot; { terminal }
-      }
-    }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;This layout gives me:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Top-left&lt;/strong&gt;: Spec and plan files side by side (reference materials)&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Bottom-left&lt;/strong&gt;: The code I’m working on&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Right side&lt;/strong&gt;: AI chat (80%) and terminal (20%)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Save this as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.layout.kdl&lt;/code&gt; in your project, and you can restore it instantly next time you return to work on the same project. Your workspace becomes reproducible.&lt;/p&gt;
-
-&lt;center&gt;
-&lt;img src=&quot;/assets/morph/demo3.gif&quot; alt=&quot;Agentic coding layout with spec, plan, chat, and terminal&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;scenario-2-spec-driven-development&quot;&gt;Scenario 2: Spec-Driven Development&lt;/h2&gt;
-
-&lt;p&gt;Spec-driven development follows a natural progression:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;spec.md → plan.md → tasks.md → implementation
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;At each stage, different files are relevant. Instead of manually opening and closing files, imagine an agent that understands where you are in the workflow and adjusts the workspace accordingly.&lt;/p&gt;
-
-&lt;p&gt;When you’re in the planning phase:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
-  cols {
-    group size=&quot;50&quot; { file &quot;spec.md&quot; }
-    group size=&quot;50&quot; { file &quot;plan.md&quot; }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;When you move to implementation:&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
-  cols {
-    group size=&quot;30&quot; { file &quot;plan.md&quot; file &quot;tasks.md&quot; }
-    group size=&quot;70&quot; { file &quot;src/feature.ts&quot; }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;The workspace &lt;em&gt;morphs&lt;/em&gt; to match your mental context. This is the kind of ambient intelligence that makes AI assistants truly helpful.&lt;/p&gt;
-
-&lt;h2 id=&quot;scenario-3-context-aware-file-opening&quot;&gt;Scenario 3: Context-Aware File Opening&lt;/h2&gt;
-
-&lt;p&gt;Sometimes the agent just needs to show you the right files. During a conversation about testing, the agent might realize you need to see both the implementation and its tests:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
-  file &quot;extension.ts&quot; &quot;test/parser.test.ts&quot;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Or when debugging an issue across multiple files:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-kdl&quot;&gt;layout {
-  cols {
-    group { file &quot;src/parser.ts&quot; }
-    group { file &quot;src/compiler.ts&quot; }
-    group { file &quot;src/types.ts&quot; }
-  }
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;The agent opens exactly what’s relevant based on the conversation context, providing better assistance through relevant file visibility.&lt;/p&gt;
-
-&lt;h2 id=&quot;the-future-vision&quot;&gt;The Future Vision&lt;/h2&gt;
-
-&lt;p&gt;Morph Agent is just a proof of concept, but it demonstrates a principle I believe will become fundamental to agentic coding:&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Agents will manipulate the ambient workspace to help us focus.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Today’s coding assistants are constrained to text—they can read and write code, but they can’t:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;Open relevant files when discussing a topic&lt;/li&gt;
-  &lt;li&gt;Arrange windows to match your workflow&lt;/li&gt;
-  &lt;li&gt;Adjust the environment based on the task at hand&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;This will change. Future agents will:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Understand workflow phases&lt;/strong&gt; and adapt the workspace automatically&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Learn your preferences&lt;/strong&gt; and suggest layouts based on past behavior&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Coordinate multiple tools&lt;/strong&gt; — editor, browser, documentation, terminal — as a unified environment&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Preserve context&lt;/strong&gt; across sessions, restoring not just files but the entire cognitive workspace&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;The interface between human and AI isn’t just about generating code. It’s about shaping the environment where that code gets written.&lt;/p&gt;
-
-&lt;h2 id=&quot;getting-started&quot;&gt;Getting Started&lt;/h2&gt;
-
-&lt;p&gt;Install Morph Agent from the &lt;a href=&quot;https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent&quot;&gt;VSCode Marketplace&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Try it out:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;Open Copilot Chat&lt;/li&gt;
-  &lt;li&gt;Type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@morph-layout generate a grid layout and apply from opened files&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;Watch your workspace transform&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;center&gt;
-&lt;img src=&quot;/assets/morph/demo2.gif&quot; alt=&quot;Using @morph-layout in Copilot Chat&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;Or create a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.layout.kdl&lt;/code&gt; file in your project and use the “Apply Layout” CodeLens to restore your preferred arrangement.&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;Morph Agent is an experiment in giving AI control over the workspace—not just the code. It’s a small step toward a future where agents understand not just &lt;em&gt;what&lt;/em&gt; we’re building, but &lt;em&gt;how&lt;/em&gt; we work.&lt;/p&gt;
-
-&lt;p&gt;The source code is available on &lt;a href=&quot;https://github.com/NikiforovAll/vscode-morph&quot;&gt;GitHub&lt;/a&gt;. Try it, break it, and imagine what ambient AI assistance could look like.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://marketplace.visualstudio.com/items?itemName=nikiforovall.morph-agent&quot;&gt;Morph Agent - VSCode Marketplace&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/vscode-morph&quot;&gt;Morph Agent - GitHub Repository&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://kdl.dev/&quot;&gt;KDL - The KDL Document Language&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Mon, 01 Dec 2025 00:00:00 +0200</pubDate>
-				<link>http://localhost:4000/ai/2025/12/01/vscode-morph-agent.html</link>
-				<guid isPermaLink="true">http://localhost:4000/ai/2025/12/01/vscode-morph-agent.html</guid>
 			</item>
 		
 	</channel>
