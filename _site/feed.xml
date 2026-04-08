@@ -7,6 +7,133 @@
 		<atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Claude Code Hub: Kanban, Marketplace, Cost, and Memory in One Place</title>
+				<description>&lt;h2 id=&quot;too-many-tabs&quot;&gt;Too many tabs&lt;/h2&gt;
+
+&lt;p&gt;I built a bunch of small tools around Claude Code over the past few months. A Kanban board for watching agent work. A marketplace for managing plugins. A cost dashboard. A memory explorer. Each one is its own &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;npx&lt;/code&gt; command and its own browser tab, and at some point I got tired of juggling four terminals and four tabs every time I sat down to work.&lt;/p&gt;
+
+&lt;p&gt;So I wrote a hub that runs them all behind one command.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx claude-code-hub &lt;span class=&quot;nt&quot;&gt;--open&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;One process spawns four servers, opens a browser, done. The tools live in iframes and you switch between them with keyboard shortcuts. No visible chrome, no tabs.&lt;/p&gt;
+
+&lt;h2 id=&quot;whats-inside&quot;&gt;What’s inside&lt;/h2&gt;
+
+&lt;h3 id=&quot;kanban&quot;&gt;Kanban&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/claude-code-hub/cck.png&quot; alt=&quot;Kanban&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A real-time task board for Claude Code sessions. It shows tasks, agents, and subagent teams as Claude works. State comes from JSONL files written by lightweight hooks (more on that below).&lt;/p&gt;
+
+&lt;h3 id=&quot;marketplace&quot;&gt;Marketplace&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/claude-code-hub/marketplace.png&quot; alt=&quot;Marketplace&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Browse and install Claude Code plugins across local, user, and project scopes. Basically an app store for skills and MCP servers.&lt;/p&gt;
+
+&lt;h3 id=&quot;cost&quot;&gt;Cost&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/claude-code-hub/cost.png&quot; alt=&quot;Cost&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Token usage and cost breakdowns. Drill from totals down to projects, then to individual sessions. I check this more often than I’d like to admit.&lt;/p&gt;
+
+&lt;h3 id=&quot;memory&quot;&gt;Memory&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/claude-code-hub/memory.png&quot; alt=&quot;Memory&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Shows all memory sources that feed into Claude Code: CLAUDE.md files, rules, auto memory, import chains. Really helpful when Claude does something unexpected and you want to figure out which instruction is responsible.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-it-actually-works&quot;&gt;How it actually works&lt;/h2&gt;
+
+&lt;p&gt;The hub server spawns each sub-app as a child process on its own port. If a port is busy, the tool picks a random free one. The hub reads stdout to detect the actual port each tool landed on, then serves a shell page that embeds them as iframes.&lt;/p&gt;
+
+&lt;p&gt;Switching is keyboard-only:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Shortcut&lt;/th&gt;
+      &lt;th&gt;Action&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Alt+1&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Kanban&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Alt+2&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Marketplace&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Alt+3&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Cost&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Alt+4&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Memory&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Ctrl+Alt+Arrow&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Next / previous tool&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Tools can also deep-link to each other via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;postMessage&lt;/code&gt;. Click a session in Cost and it can jump you straight to that session’s Kanban board.&lt;/p&gt;
+
+&lt;p&gt;You can install it as a PWA for a standalone window with no browser UI. That’s the way I use it, honestly. It feels like its own app.&lt;/p&gt;
+
+&lt;p&gt;The whole thing is vanilla JS and Express. No bundler, no build step, works on Node 18+.&lt;/p&gt;
+
+&lt;h2 id=&quot;setup&quot;&gt;Setup&lt;/h2&gt;
+
+&lt;h3 id=&quot;1-install-hooks-once&quot;&gt;1. Install hooks (once)&lt;/h3&gt;
+
+&lt;p&gt;For the full Kanban experience, you need to install hooks that log agent activity:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx claude-code-kanban &lt;span class=&quot;nt&quot;&gt;--install&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;These are small shell scripts that append to JSONL files. Negligible overhead. Without them you still get the task board, just no live agent indicators.&lt;/p&gt;
+
+&lt;h3 id=&quot;2-launch&quot;&gt;2. Launch&lt;/h3&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx claude-code-hub &lt;span class=&quot;nt&quot;&gt;--open&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;3-use-claude-code-normally&quot;&gt;3. Use Claude Code normally&lt;/h3&gt;
+
+&lt;p&gt;The hub updates live. Switch tools with the keyboard while Claude works.&lt;/p&gt;
+
+&lt;h2 id=&quot;standalone-mode&quot;&gt;Standalone mode&lt;/h2&gt;
+
+&lt;p&gt;Each tool also works on its own if you only want one:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx claude-code-kanban          &lt;span class=&quot;c&quot;&gt;# task board&lt;/span&gt;
+npx claude-code-marketplace     &lt;span class=&quot;c&quot;&gt;# plugin manager&lt;/span&gt;
+npx claude-code-cost            &lt;span class=&quot;c&quot;&gt;# cost dashboard&lt;/span&gt;
+npx claude-code-memory-explorer &lt;span class=&quot;c&quot;&gt;# memory explorer&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Claude Code doesn’t need to be running either. You can browse past sessions and costs anytime; live updates just appear when Claude starts.&lt;/p&gt;
+
+&lt;h2 id=&quot;links&quot;&gt;Links&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/claude-code-hub&quot;&gt;GitHub&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.npmjs.com/package/claude-code-hub&quot;&gt;npm&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.blog/claude-code-hub/&quot;&gt;Landing page&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Wed, 08 Apr 2026 00:00:00 +0300</pubDate>
+				<link>http://localhost:4000/productivity/ai/2026/04/08/claude-code-hub.html</link>
+				<guid isPermaLink="true">http://localhost:4000/productivity/ai/2026/04/08/claude-code-hub.html</guid>
+			</item>
+		
+			<item>
 				<title>What&apos;s new in Keycloak.AuthServices v2.9.0</title>
 				<description>&lt;h2 id=&quot;whats-new&quot;&gt;What’s new&lt;/h2&gt;
 
@@ -3008,83 +3135,6 @@ graph LR
 				<pubDate>Sun, 21 Dec 2025 00:00:00 +0200</pubDate>
 				<link>http://localhost:4000/ai/2025/12/21/lazyclaude-0-12-0.html</link>
 				<guid isPermaLink="true">http://localhost:4000/ai/2025/12/21/lazyclaude-0-12-0.html</guid>
-			</item>
-		
-			<item>
-				<title>LazyClaude: Explore Your Claude Code Setup Without Breaking Flow</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;Claude Code’s customization system is powerful but scattered across multiple files and configuration levels. &lt;strong&gt;LazyClaude&lt;/strong&gt; is a lazygit-inspired terminal UI that lets you explore all your customizations—slash commands, agents, skills, MCPs, hooks, and memory files—in one place. Filter by level (user/project/plugin), search by name, and navigate with vim-style keybindings.&lt;/p&gt;
-
-&lt;div style=&quot;display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 1rem 0;&quot;&gt;
-&lt;img src=&quot;/assets/lazyclaude/logo.png&quot; alt=&quot;LazyClaude logo&quot; width=&quot;60&quot; /&gt;
-&lt;div&gt;
-&lt;p style=&quot;margin: 0; padding: 0.5rem 0;&quot;&gt;&lt;strong&gt;Source:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/lazyclaude&quot;&gt;github.com/NikiforovAll/lazyclaude&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot;margin: 0; padding: 0.5rem 0;&quot;&gt;&lt;strong&gt;Install:&lt;/strong&gt; &lt;code&gt;uvx lazyclaude&lt;/code&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;Claude Code has a rich customization system. You can define custom slash commands, create specialized agents, configure MCP servers, set up hooks, and write memory files that shape how Claude understands your project. The problem? These customizations live in different places:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.claude/&lt;/code&gt; for user-level configuration&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.claude/&lt;/code&gt; for project-specific settings&lt;/li&gt;
-  &lt;li&gt;Plugin directories for third-party extensions&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;When you need to find a specific command or understand what’s available, you’re left running &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/help&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mcp&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/agents&lt;/code&gt;, or opening files one by one. Each lookup interrupts your flow.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;LazyClaude&lt;/strong&gt; solves this by providing a dedicated terminal UI where you can browse all your Claude Code customizations without leaving your workflow.&lt;/p&gt;
-
-&lt;center&gt;
-&lt;img src=&quot;/assets/lazyclaude/demo.png&quot; alt=&quot;LazyClaude main interface&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;what-is-lazyclaude&quot;&gt;What is LazyClaude?&lt;/h2&gt;
-
-&lt;p&gt;LazyClaude is a terminal user interface that follows the design philosophy of &lt;a href=&quot;https://github.com/jesseduffield/lazygit&quot;&gt;lazygit&lt;/a&gt;: keyboard-driven, panel-based, and focused on getting information quickly.&lt;/p&gt;
-
-&lt;center&gt;
-&lt;img src=&quot;/assets/lazyclaude/demo.gif&quot; alt=&quot;LazyClaude demo showing terminal UI&quot; /&gt;
-&lt;/center&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;See &lt;a href=&quot;https://github.com/NikiforovAll/lazyclaude#readme&quot;&gt;README&lt;/a&gt; for more details.&lt;/p&gt;
-
-&lt;h2 id=&quot;getting-started&quot;&gt;Getting Started&lt;/h2&gt;
-
-&lt;p&gt;Install with &lt;a href=&quot;https://docs.astral.sh/uv/&quot;&gt;uv&lt;/a&gt;:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;uvx lazyclaude
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;LazyClaude brings visibility to Claude Code’s configuration system. Instead of hunting through files or interrupting your workflow with help commands, you get a dedicated window showing everything at a glance.&lt;/p&gt;
-
-&lt;p&gt;It’s keyboard-first, fast, and stays out of your way—exactly what a developer tool should be.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/lazyclaude&quot;&gt;https://github.com/NikiforovAll/lazyclaude&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Contributions welcome. Try it, break it, and let me know what customizations you discover.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/lazyclaude&quot;&gt;LazyClaude - GitHub Repository&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://textual.textualize.io/&quot;&gt;Textual - Python TUI Framework&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/jesseduffield/lazygit&quot;&gt;lazygit - Terminal UI for git&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://code.claude.com/docs&quot;&gt;Claude Code Documentation&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sun, 07 Dec 2025 00:00:00 +0200</pubDate>
-				<link>http://localhost:4000/ai/2025/12/07/lazyclaude.html</link>
-				<guid isPermaLink="true">http://localhost:4000/ai/2025/12/07/lazyclaude.html</guid>
 			</item>
 		
 	</channel>
