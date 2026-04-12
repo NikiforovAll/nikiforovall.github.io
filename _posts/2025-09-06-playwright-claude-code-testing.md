@@ -235,3 +235,57 @@ Try it out on your next web application - you might be surprised at what Claude 
 - <https://github.com/debs-obrien/debbie.codes/tree/main/.github/prompts>
 - [CommitQuality - Playwright Test](https://www.youtube.com/playlist?list=PLXgRgGX8-5UVm9yioRY329rfcfy3MusiY)
 - [Playwright MCP Server by Debbie O'Brien](https://www.youtube.com/playlist?list=PLtIMuymsF0jf9dnJNrNCE3mIl9_ekaXiw)
+
+---
+
+> **Update (April 2026):** Since this post was written, Microsoft released [Playwright CLI](https://github.com/microsoft/playwright-cli) — a CLI-first tool for browser automation designed specifically for coding agents. **It replaces the MCP approach entirely** and is the recommended way to use Playwright with Claude Code going forward.
+
+## Use Playwright CLI Instead of MCP
+
+The MCP-based approach described above works, but [Playwright CLI](https://github.com/microsoft/playwright-cli) is a better alternative in every way.
+
+### Why Playwright CLI is Better
+
+| | MCP Server | Playwright CLI |
+|---|---|---|
+| **Token efficiency** | Loads large tool schemas and accessibility trees into context | CLI invocations are lightweight — no schema overhead |
+| **Setup** | Requires `.mcp.json`, permissions config, MCP server management | `playwright-cli install --skills` — done |
+| **Agent integration** | Manual tool configuration per project | Agents discover commands via `--help` automatically |
+| **Capabilities** | Basic browser automation | Tab management, network inspection, tracing, video recording, state save/restore, visual dashboard |
+
+### Quick Setup
+
+```bash
+npm install -g @playwright/cli@latest
+playwright-cli install --skills
+```
+
+That's it. Claude Code automatically discovers available Playwright commands through the installed skill.
+
+### Updated Slash Command
+
+The manual testing slash command becomes simpler since Claude Code uses CLI commands directly instead of MCP tools:
+
+```markdown
+---
+description: Manually test a site and create a report
+---
+
+### Manual Testing Instructions
+
+1. Use the Playwright CLI to manually test the scenario provided by the user. If no scenario is provided, ask the user to provide one.
+2. Navigate to the url provided by the user and perform the described interactions. If no url is provided, ask the user to provide one.
+3. Observe and verify the expected behavior, focusing on accessibility, UI structure, and user experience.
+4. Use `playwright-cli screenshot` to capture evidence and `playwright-cli network` to inspect API calls.
+5. Report back in clear, natural language:
+   - What steps you performed (navigation, interactions, assertions).
+   - What you observed (outcomes, UI changes, accessibility results).
+   - Any issues, unexpected behaviors, or accessibility concerns found.
+   - Reference URLs, element roles, and relevant details to support your findings.
+
+Generate a .md file with the report in the `manual-tests` directory and include any relevant screenshots.
+
+Close the browser after completing the manual test.
+```
+
+For more details, see the [Playwright CLI repository](https://github.com/microsoft/playwright-cli).
