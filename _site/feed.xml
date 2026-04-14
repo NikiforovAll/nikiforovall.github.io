@@ -7,6 +7,332 @@
 		<atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>User-Managed Access (UMA) 2.0 Resource Sharing with Keycloak and .NET</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;UMA 2.0 lets resource owners control access to their stuff. Think Google Drive sharing, but wired into your authorization server.&lt;/li&gt;
+  &lt;li&gt;Keycloak.AuthServices now supports the challenge-response flow (automatic ticket-for-RPT exchange) and async approval (request, wait for owner, get in).&lt;/li&gt;
+  &lt;li&gt;A Blazor Server + Minimal API sample shows the full flow. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;UmaTokenHandler&lt;/code&gt; handles the UMA dance behind the scenes.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IKeycloakProtectionClient&lt;/code&gt; covers the permission ticket lifecycle: create, list, approve, deny.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code&lt;/strong&gt;: &lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/samples/UmaResourceSharing&quot;&gt;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/samples/UmaResourceSharing&lt;/a&gt;&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/keycloak-uma/banner-v2.png&quot; style=&quot;margin: 15px;&quot; width=&quot;70%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;what-is-uma&quot;&gt;What is UMA?&lt;/h2&gt;
+
+&lt;p&gt;Most authorization systems work the same way: the resource server decides who gets access based on roles, claims, or policies that an admin defined. But what if the &lt;em&gt;resource owner&lt;/em&gt;, not the admin, should make that call?&lt;/p&gt;
+
+&lt;p&gt;User-Managed Access (UMA) is an OAuth 2.0 extension that flips this. Alice can grant or revoke access to her resources for bob, without an admin involved, and without needing to be online when bob asks.&lt;/p&gt;
+
+&lt;p&gt;You’ve seen this pattern before:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Sharing a Google Doc with specific people&lt;/li&gt;
+  &lt;li&gt;Granting a colleague access to a private GitHub repo&lt;/li&gt;
+  &lt;li&gt;Approving a permission request in a cloud console&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;What makes UMA different from regular OAuth is the asynchronous approval step. Bob requests access, alice reviews it later, and only then does bob get in.&lt;/p&gt;
+
+&lt;h3 id=&quot;key-concepts&quot;&gt;Key concepts&lt;/h3&gt;
+
+&lt;table class=&quot;table table-sm table-responsive table-striped table-hover&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Concept&lt;/th&gt;
+      &lt;th&gt;Description&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;strong&gt;Resource Owner&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;The user who owns the protected resource&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;strong&gt;Requesting Party&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;A user who wants access to someone else&apos;s resource&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;strong&gt;Permission Ticket&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;A one-time challenge token representing an access request&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;strong&gt;RPT (Requesting Party Token)&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;An access token enriched with specific resource permissions&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;strong&gt;Protection API&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;Keycloak API for managing resources, permissions, and tickets&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;demo&quot;&gt;Demo&lt;/h2&gt;
+
+&lt;p&gt;Here’s what this looks like in the Blazor sample.&lt;/p&gt;
+
+&lt;h3 id=&quot;alice-resource-owner-instant-access&quot;&gt;alice (resource owner), instant access&lt;/h3&gt;
+
+&lt;p&gt;Alice owns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;shared-document&lt;/code&gt;, so authorization succeeds right away:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;img src=&quot;/assets/keycloak-uma/uma-resource-sharing-login.gif&quot; alt=&quot;Login and Resource Owner Access&quot; /&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;bob-requests-access-alice-approves&quot;&gt;bob requests access, alice approves&lt;/h3&gt;
+
+&lt;p&gt;Bob has no permission. He submits a request, alice approves it, then bob retries and gets in:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;img src=&quot;/assets/keycloak-uma/uma-resource-sharing-approve.gif&quot; alt=&quot;Request Access and Owner Approval&quot; /&gt;
+&lt;/p&gt;
+
+&lt;h3 id=&quot;bob-no-permission-access-denied&quot;&gt;bob (no permission), access denied&lt;/h3&gt;
+
+&lt;p&gt;Without approval, bob gets a clear “Access Denied”:&lt;/p&gt;
+
+&lt;p align=&quot;center&quot;&gt;
+  &lt;img src=&quot;/assets/keycloak-uma/uma-resource-sharing-denied.gif&quot; alt=&quot;Access Denied&quot; /&gt;
+&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;how-the-uma-flow-works&quot;&gt;How the UMA flow works&lt;/h2&gt;
+
+&lt;p&gt;Two flows, working together.&lt;/p&gt;
+
+&lt;h3 id=&quot;challenge-response-instant-access&quot;&gt;Challenge-response (instant access)&lt;/h3&gt;
+
+&lt;p&gt;When a user already has permission, the client handles the exchange automatically:&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot;&gt;
+sequenceDiagram
+    participant User as User (Browser)
+    participant Client as Client App
+    participant RS as Resource Server
+    participant KC as Keycloak
+
+    User-&amp;gt;&amp;gt;Client: Access protected resource
+    Client-&amp;gt;&amp;gt;RS: GET /resource (Bearer token)
+    RS-&amp;gt;&amp;gt;KC: Evaluate permissions
+    KC--&amp;gt;&amp;gt;RS: 403 (no permission yet)
+    RS-&amp;gt;&amp;gt;KC: Create permission ticket
+    KC--&amp;gt;&amp;gt;RS: ticket=&quot;abc123...&quot;
+    RS--&amp;gt;&amp;gt;Client: 401 WWW-Authenticate: UMA ticket=&quot;abc123...&quot;
+    Client-&amp;gt;&amp;gt;KC: Exchange ticket for RPT
+    KC--&amp;gt;&amp;gt;Client: RPT (with permissions)
+    Client-&amp;gt;&amp;gt;RS: GET /resource (Bearer RPT)
+    RS--&amp;gt;&amp;gt;Client: 200 OK — resource content
+&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;UmaTokenHandler&lt;/code&gt; handles steps 6-9. Your code just makes HTTP calls as usual.&lt;/p&gt;
+
+&lt;h3 id=&quot;async-approval-request-approve-access&quot;&gt;Async approval (request, approve, access)&lt;/h3&gt;
+
+&lt;p&gt;When a user has no permission, they submit a request. The resource owner reviews it later:&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot;&gt;
+sequenceDiagram
+    participant Bob as Bob
+    participant App as Application
+    participant KC as Keycloak
+    participant Alice as Alice (Owner)
+
+    Bob-&amp;gt;&amp;gt;App: Request access to resource
+    App-&amp;gt;&amp;gt;KC: Create permission ticket (granted=false)
+    KC--&amp;gt;&amp;gt;App: 201 Created
+    App--&amp;gt;&amp;gt;Bob: &quot;Request submitted&quot;
+
+    Note over Alice: Alice logs in later
+
+    Alice-&amp;gt;&amp;gt;App: View pending requests
+    App-&amp;gt;&amp;gt;KC: GET permission tickets (granted=false)
+    KC--&amp;gt;&amp;gt;App: Pending tickets list
+    Alice-&amp;gt;&amp;gt;App: Approve bob&apos;s request
+    App-&amp;gt;&amp;gt;KC: Update ticket (granted=true)
+
+    Note over Bob: Bob retries
+
+    Bob-&amp;gt;&amp;gt;App: Access resource
+    App-&amp;gt;&amp;gt;KC: Evaluate permissions
+    KC--&amp;gt;&amp;gt;App: Permitted
+    App--&amp;gt;&amp;gt;Bob: Resource content
+&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;architecture&quot;&gt;Architecture&lt;/h2&gt;
+
+&lt;p&gt;Two projects: a Blazor Server client talks to a Minimal API resource server. Keycloak sits in the middle, handling authorization decisions and permission tickets.&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot; style=&quot;text-align: center;&quot;&gt;
+graph LR
+    subgraph Aspire AppHost
+        KC[Keycloak&lt;br /&gt;Authorization Server]
+        RS[Resource Server&lt;br /&gt;Minimal API]
+        CA[Client App&lt;br /&gt;Blazor Server]
+    end
+
+    CA --&amp;gt;|HTTP + Bearer Token| RS
+    RS --&amp;gt;|Authorization Check| KC
+    RS --&amp;gt;|Permission Ticket Creation| KC
+    CA --&amp;gt;|Ticket → RPT Exchange| KC
+&lt;/div&gt;
+
+&lt;h3 id=&quot;resource-server&quot;&gt;Resource server&lt;/h3&gt;
+
+&lt;p&gt;The resource server protects endpoints with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RequireProtectedResource()&lt;/code&gt; and returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WWW-Authenticate: UMA&lt;/code&gt; challenges on authorization failure via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddUmaPermissionTicketChallenge()&lt;/code&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAuthentication&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;JwtBearerDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AuthenticationScheme&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakWebApi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Audience&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;uma-resource-server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RequireHttpsMetadata&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// Authorization + UMA challenge handler&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddUmaPermissionTicketChallenge&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAuthorizationServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddStandardResilienceHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// Protection API for ticket management&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakProtectionHttpClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddClientCredentialsTokenHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tokenClientName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// Protected endpoints&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/documents/{name}&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;DocumentResponse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&quot;Content of &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireProtectedResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;shared-document&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;read&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/documents/{name}/details&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;DocumentResponse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;$&quot;Detailed content of &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireProtectedResource&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;shared-document&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;write&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It also exposes permission ticket management endpoints:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// Bob submits an access request&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapPost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/permissions/request&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ticket&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PermissionTicket&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;Resource&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resourceId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Requester&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userId&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;ScopeName&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;read&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Granted&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;protectionClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;CreatePermissionTicketWithResponseAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;realm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ticket&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// Alice lists pending requests&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapGet&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/permissions/pending&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;protectionClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetPermissionTicketsAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;realm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GetPermissionTicketsRequestParameters&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Granted&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ReturnNames&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// Alice approves&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapPut&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/permissions/{id}/approve&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(...)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;protectionClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;UpdatePermissionTicketAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;realm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PermissionTicket&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Id&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Granted&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;client-app-blazor-server&quot;&gt;Client app (Blazor Server)&lt;/h3&gt;
+
+&lt;p&gt;The Blazor client registers &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;UmaTokenHandler&lt;/code&gt; from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keycloak.AuthServices.Authorization.Uma&lt;/code&gt;. It’s a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DelegatingHandler&lt;/code&gt; that intercepts 401+UMA responses and handles the ticket exchange:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// UMA ticket exchange client&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddKeycloakUmaTicketExchangeHttpClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;configuration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// HTTP client with UMA handling&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddHttpClient&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;ResourceServer&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;GetRequiredService&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IConfiguration&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;baseUrl&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;services:resource-server:http:0&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BaseAddress&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Uri&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;baseUrl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddUmaTokenHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;What &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;UmaTokenHandler&lt;/code&gt; does:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Attaches the user’s access token to outgoing requests&lt;/li&gt;
+  &lt;li&gt;On &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;401&lt;/code&gt; with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;WWW-Authenticate: UMA&lt;/code&gt;, extracts the permission ticket&lt;/li&gt;
+  &lt;li&gt;Exchanges the ticket for an RPT at Keycloak’s token endpoint&lt;/li&gt;
+  &lt;li&gt;Retries the original request with the RPT&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;From the Blazor component side, none of this is visible. You just make HTTP calls:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Http&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;GetAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;$&quot;/documents/&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;documentName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;IsSuccessStatusCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;document&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;await&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ReadFromJsonAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Document&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;keycloak-setup&quot;&gt;Keycloak setup&lt;/h2&gt;
+
+&lt;p&gt;UMA needs a few things configured in Keycloak:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;A confidential client with Authorization Services enabled (the resource server)&lt;/li&gt;
+  &lt;li&gt;A resource with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ownerManagedAccess: true&lt;/code&gt; and scopes like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;read&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;write&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;An owner policy that grants the resource owner access&lt;/li&gt;
+  &lt;li&gt;An OIDC client for user login, with an audience mapper pointing to the resource server&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The &lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/samples/UmaResourceSharing&quot;&gt;sample&lt;/a&gt; ships with pre-configured Keycloak realm exports, so you can just run it:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet run &lt;span class=&quot;nt&quot;&gt;--project&lt;/span&gt; samples/UmaResourceSharing/AppHost
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Aspire opens the dashboard automatically with Keycloak, the resource server, and the Blazor app.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;Role-based access control doesn’t cover the case where users share resources with each other. UMA does.&lt;/p&gt;
+
+&lt;p&gt;With Keycloak.AuthServices you get &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;UmaTokenHandler&lt;/code&gt; for the challenge-response dance, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddUmaPermissionTicketChallenge()&lt;/code&gt; for resource servers, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IKeycloakProtectionClient&lt;/code&gt; for managing permission tickets. The sample runs with a single &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dotnet run&lt;/code&gt; via Aspire.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/keycloak-authorization-services-dotnet/protection-api/uma&quot;&gt;Documentation: UMA 2.0&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://nikiforovall.github.io/keycloak-authorization-services-dotnet/examples/uma-resource-sharing&quot;&gt;Documentation: UMA Examples&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/samples/UmaResourceSharing&quot;&gt;Sample source code&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.keycloak.org/docs/latest/authorization_services/index.html&quot;&gt;Keycloak Authorization Services Guide&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html&quot;&gt;UMA 2.0 Specification&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Join us on Discord: &lt;a href=&quot;https://discord.gg/jdYFw2xq&quot;&gt;&lt;img src=&quot;https://img.shields.io/discord/1236946465318768670?color=blue&amp;amp;label=Chat%20on%20Discord&quot; alt=&quot;Discord&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+				<pubDate>Wed, 15 Apr 2026 00:00:00 +0300</pubDate>
+				<link>http://localhost:4000/dotnet/keycloak/2026/04/15/keycloak-uma-resource-sharing.html</link>
+				<guid isPermaLink="true">http://localhost:4000/dotnet/keycloak/2026/04/15/keycloak-uma-resource-sharing.html</guid>
+			</item>
+		
+			<item>
 				<title>Claude Code Hub: Kanban, Marketplace, Cost, and Memory in One Place</title>
 				<description>&lt;h2 id=&quot;too-many-tabs&quot;&gt;Too many tabs&lt;/h2&gt;
 
@@ -2980,161 +3306,6 @@ graph LR
 				<pubDate>Sat, 07 Feb 2026 00:00:00 +0200</pubDate>
 				<link>http://localhost:4000/ai/productivity/2026/02/07/claude-code-kanban.html</link>
 				<guid isPermaLink="true">http://localhost:4000/ai/productivity/2026/02/07/claude-code-kanban.html</guid>
-			</item>
-		
-			<item>
-				<title>LazyClaude 0.12.0: Marketplace Plugin Management</title>
-				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;LazyClaude is a keyboard-driven TUI for managing Claude Code customizations (slash commands, subagents, skills, MCPs, hooks). Version 0.12.0 introduces a built-in marketplace browser that lets you discover, preview, and install plugins without leaving the terminal. If you’re new to LazyClaude, check out the &lt;a href=&quot;/ai/2025/12/07/lazyclaude&quot;&gt;original announcement&lt;/a&gt; for a full introduction.&lt;/p&gt;
-
-&lt;div style=&quot;display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 1rem 0;&quot;&gt;
-&lt;img src=&quot;/assets/lazyclaude/logo.png&quot; alt=&quot;LazyClaude logo&quot; width=&quot;60&quot; /&gt;
-&lt;div&gt;
-&lt;p style=&quot;margin: 0; padding: 0.5rem 0;&quot;&gt;&lt;strong&gt;Source:&lt;/strong&gt; &lt;a href=&quot;https://github.com/NikiforovAll/lazyclaude&quot;&gt;github.com/NikiforovAll/lazyclaude&lt;/a&gt;&lt;/p&gt;
-&lt;p style=&quot;margin: 0; padding: 0.5rem 0;&quot;&gt;&lt;strong&gt;Install:&lt;/strong&gt; &lt;code&gt;uvx lazyclaude&lt;/code&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;h2 id=&quot;why-lazyclaude&quot;&gt;Why LazyClaude?&lt;/h2&gt;
-
-&lt;p&gt;Managing Claude Code customizations means navigating multiple configuration directories (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.claude/&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;./.claude/&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.claude/plugins/&lt;/code&gt;) and understanding what’s defined at each level. LazyClaude gives you a visual, keyboard-driven interface that shows everything in one place.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Key Benefits:&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Visual Exploration&lt;/strong&gt;: See all customizations organized by type (slash commands, subagents, skills, memory files, MCPs, hooks)&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Multi-Level Management&lt;/strong&gt;: Understand and manage configurations across user, project, and plugin levels&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Keyboard-Driven Workflow&lt;/strong&gt;: Navigate with vim-style keys (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;j&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;), no mouse required&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Copy/Move Between Levels&lt;/strong&gt;: Easily share personal configs with your team or customize plugin content&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Integrated Marketplace&lt;/strong&gt;: Discover and install plugins without leaving the terminal (new in 0.12.0!)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;getting-started&quot;&gt;Getting Started&lt;/h2&gt;
-
-&lt;p&gt;Launch with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uvx lazyclaude&lt;/code&gt; and you’ll see a multi-panel interface inspired by lazygit:&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;video src=&quot;https://github.com/user-attachments/assets/58d74db8-cb5e-4a56-881f-9f3c4ace011d&quot; controls=&quot;controls&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;&lt;strong&gt;Interface Overview:&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Left Sidebar&lt;/strong&gt;: Panels for each customization type (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[1]&lt;/code&gt; Slash Commands, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[2]&lt;/code&gt; Subagents, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[3]&lt;/code&gt; Skills, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[4]&lt;/code&gt; Memory, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[5]&lt;/code&gt; MCPs, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[6]&lt;/code&gt; Hooks)&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Right Pane&lt;/strong&gt;: Content and metadata view for the selected item&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Status Bar&lt;/strong&gt;: Shows current path and active filter&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Footer&lt;/strong&gt;: Keyboard shortcuts reference&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Quick Navigation:&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1-6&lt;/code&gt; or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Tab&lt;/code&gt; - Switch between panels&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;j&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt; or arrow keys - Navigate items&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;]&lt;/code&gt; - Toggle between content and metadata views&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;?&lt;/code&gt; - Show help, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;q&lt;/code&gt; - Quit&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;core-workflows&quot;&gt;Core Workflows&lt;/h2&gt;
-
-&lt;h3 id=&quot;filtering-and-viewing-configurations&quot;&gt;Filtering and Viewing Configurations&lt;/h3&gt;
-
-&lt;p&gt;LazyClaude helps you understand where customizations are defined. Use filters to narrow your view:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;a&lt;/code&gt; - Show All levels&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;u&lt;/code&gt; - Show only User level (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.claude/&lt;/code&gt;)&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p&lt;/code&gt; - Show only Project level (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;./.claude/&lt;/code&gt;)&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;P&lt;/code&gt; - Show only Plugin level (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.claude/plugins/&lt;/code&gt;)&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;D&lt;/code&gt; - Toggle visibility of disabled plugins&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;center&gt;
-  &lt;video src=&quot;https://github.com/user-attachments/assets/c53f6acf-0f8d-426e-b26b-68bdab487c1d&quot; controls=&quot;controls&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;This makes it easy to:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;See what’s personal vs. shared with your team&lt;/li&gt;
-  &lt;li&gt;Understand what comes from installed plugins&lt;/li&gt;
-  &lt;li&gt;Find where a specific customization is defined&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;editing-and-managing-configurations&quot;&gt;Editing and Managing Configurations&lt;/h3&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; - Open in your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$EDITOR&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;c&lt;/code&gt; - Copy to another level (e.g., copy plugin config to user level to customize)&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;m&lt;/code&gt; - Move to another level&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;C&lt;/code&gt; - Copy file path to clipboard&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Common Patterns:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Customize a Plugin:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[P]lugin → navigate → [c]opy → User → [e]dit
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;&lt;strong&gt;Share with Team:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[u]ser → navigate → [c]opy → Project → git commit
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;whats-new-in-0120-marketplace-browser&quot;&gt;What’s New in 0.12.0: Marketplace Browser&lt;/h2&gt;
-
-&lt;p&gt;Version 0.12.0 adds integrated marketplace support. Press &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;M&lt;/code&gt; to open the marketplace browser:&lt;/p&gt;
-
-&lt;h3 id=&quot;browse-and-install-plugins&quot;&gt;Browse and Install Plugins&lt;/h3&gt;
-
-&lt;p&gt;Navigate available plugins with vim-style keys (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;j&lt;/code&gt;/&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;), expand marketplace trees with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;l&lt;/code&gt;, and install plugins with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;i&lt;/code&gt;.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;video src=&quot;https://github.com/user-attachments/assets/44ff0440-ad0c-46be-9ce6-38aefe12143d&quot; controls=&quot;controls&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;&lt;strong&gt;Marketplace Actions:&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;i&lt;/code&gt; - Install plugin (or enable if disabled)&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;d&lt;/code&gt; - Uninstall plugin&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;e&lt;/code&gt; - Open plugin folder in file manager&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/&lt;/code&gt; - Search within marketplace&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;preview-before-installing&quot;&gt;Preview Before Installing&lt;/h3&gt;
-
-&lt;p&gt;Press &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p&lt;/code&gt; on any plugin to enter preview mode. The marketplace closes and the main interface shows you all the plugin’s contents (slash commands, skills, etc.) in read-only mode. Explore what you’re getting before you install it.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;video src=&quot;https://github.com/user-attachments/assets/f9687c51-ab86-488c-9471-89a4a22e6e90&quot; controls=&quot;controls&quot; style=&quot;margin: 15px;&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;&lt;strong&gt;Preview Mode Benefits:&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;View all customizations included in a plugin&lt;/li&gt;
-  &lt;li&gt;Read content and metadata without installing&lt;/li&gt;
-  &lt;li&gt;Understand plugin structure and capabilities&lt;/li&gt;
-  &lt;li&gt;Navigate as if the plugin were installed (read-only)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Press &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Esc&lt;/code&gt; to exit preview mode and return to the normal view.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;LazyClaude 0.12.0 makes managing Claude Code customizations visual, keyboard-driven, and efficient. The new marketplace browser brings plugin discovery and installation directly into the terminal, completing the workflow. Whether you’re exploring your existing setup, customizing plugins, or sharing configurations with your team, LazyClaude provides the tools you need without leaving the command line.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Get Started:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;uvx lazyclaude
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;For complete documentation on all features and workflows, check out the &lt;a href=&quot;https://github.com/NikiforovAll/lazyclaude/blob/main/docs/user-guide.md&quot;&gt;user guide&lt;/a&gt;.&lt;/p&gt;
-
-</description>
-				<pubDate>Sun, 21 Dec 2025 00:00:00 +0200</pubDate>
-				<link>http://localhost:4000/ai/2025/12/21/lazyclaude-0-12-0.html</link>
-				<guid isPermaLink="true">http://localhost:4000/ai/2025/12/21/lazyclaude-0-12-0.html</guid>
 			</item>
 		
 	</channel>
