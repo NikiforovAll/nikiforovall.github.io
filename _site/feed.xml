@@ -7,6 +7,275 @@
 		<atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>Hangfire as an MCP Operations Pane for AI Agents</title>
+				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#1-why-an-operations-pane&quot;&gt;1. Why an Operations Pane&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#aspire-bonus-&quot;&gt;Aspire bonus 🎁&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#2-getting-started&quot;&gt;2. Getting started&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#21-how-a-job-gets-discovered&quot;&gt;2.1 How a job gets discovered&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#22-decorating-jobs-with-description&quot;&gt;2.2 Decorating jobs with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Description]&lt;/code&gt;&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#3-demo-mcp-inspector&quot;&gt;3. Demo: MCP Inspector&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#4-authentication-and-authorization&quot;&gt;4. Authentication and authorization&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#authentication&quot;&gt;Authentication&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#per-job-authorization&quot;&gt;Per-job authorization&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#summary&quot;&gt;Summary&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#reference&quot;&gt;Reference&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.Hangfire.Mcp&lt;/code&gt; is an in-process library. It exposes your Hangfire jobs at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mcp&lt;/code&gt; as MCP tools, and ships a built-in maintenance toolset and a few prompts on the side. Call &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddHangfireMcp()&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MapHangfireMcp(&quot;/mcp&quot;)&lt;/code&gt; inside the same ASP.NET Core host that already runs Hangfire, and the schemas, descriptions, auth hook, and maintenance tools come with it.&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;img src=&quot;/assets/hangfire-mcp-operations-pane/cover.png&quot; style=&quot;margin: 15px;&quot; width=&quot;70%&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;📖 &lt;strong&gt;Documentation:&lt;/strong&gt; &lt;a href=&quot;https://nikiforovall.github.io/hangfire-mcp-dotnet/&quot;&gt;https://nikiforovall.github.io/hangfire-mcp-dotnet/&lt;/a&gt;&lt;/p&gt;
+
+&lt;table style=&quot;width:100%; border-collapse:collapse;&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&quot;border-bottom:2px solid #ddd;&quot;&gt;
+      &lt;th style=&quot;text-align:left; padding:8px;&quot;&gt;Package&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:8px;&quot;&gt;Version&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:8px;&quot;&gt;Source&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:8px;&quot;&gt;Description&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr style=&quot;border-bottom:1px solid #eee;&quot;&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;&lt;code&gt;Nall.Hangfire.Mcp&lt;/code&gt;&lt;/td&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;
+        &lt;a href=&quot;https://nuget.org/packages/Nall.Hangfire.Mcp&quot;&gt;
+          &lt;img src=&quot;https://img.shields.io/nuget/v/Nall.Hangfire.Mcp.svg&quot; alt=&quot;Nuget&quot; /&gt;
+        &lt;/a&gt;
+      &lt;/td&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;
+        &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp-dotnet&quot;&gt;hangfire-mcp-dotnet&lt;/a&gt;
+      &lt;/td&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;In-process MCP server for Hangfire jobs and queue maintenance.&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;&lt;code&gt;Nall.Hangfire.Mcp.Generator&lt;/code&gt;&lt;/td&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;
+        &lt;a href=&quot;https://nuget.org/packages/Nall.Hangfire.Mcp.Generator&quot;&gt;
+          &lt;img src=&quot;https://img.shields.io/nuget/v/Nall.Hangfire.Mcp.Generator.svg&quot; alt=&quot;Nuget&quot; /&gt;
+        &lt;/a&gt;
+      &lt;/td&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;
+        &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp-dotnet&quot;&gt;hangfire-mcp-dotnet&lt;/a&gt;
+      &lt;/td&gt;
+      &lt;td style=&quot;padding:8px;&quot;&gt;Roslyn source generator for compile-time job discovery.&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;1-why-an-operations-pane&quot;&gt;1. Why an Operations Pane&lt;/h2&gt;
+
+&lt;p&gt;Hangfire’s dashboard is a fine UI for humans. It’s a poor surface for agents. Two specific things are missing.&lt;/p&gt;
+
+&lt;p&gt;1️⃣ The first is parameterized job invocation. The dashboard is built around retrying and inspecting jobs that already exist. It doesn’t give you a clean way to say “run a job for me with parameters” from chat or a copilot.&lt;/p&gt;
+
+&lt;p&gt;2️⃣ The second is operational workflows. “Show me the current backlog.” “List failures from the last hour grouped by exception type.” “Requeue the timeouts, but only the ones older than five minutes.” Most teams end up writing these as one-off scripts.&lt;/p&gt;
+
+&lt;p&gt;MCP is a good fit for both. It standardizes how a client discovers tools, inspects schemas, and invokes them. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.Hangfire.Mcp&lt;/code&gt; puts two kinds of tools on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mcp&lt;/code&gt;: job tools, one &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Run_&amp;lt;jobId&amp;gt;&lt;/code&gt; per discovered Hangfire job; and maintenance tools (statistics, queue listing, get/delete/requeue with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dryRun&lt;/code&gt;), plus three orchestration prompts (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hangfire_health_check&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hangfire_triage_failures&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hangfire_discover&lt;/code&gt;).&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;💡 That mix is what I’m calling an &lt;em&gt;Operations Pane&lt;/em&gt;. Hangfire is the system of record. MCP is the discovery and invocation channel. The operator on the other end is whatever you want it to be: Claude, Copilot, MCP Inspector, your own client.&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot;&gt;
+flowchart LR
+  agent[&quot;AI Agent&quot;] --&amp;gt;|MCP| mcp[/&quot;/mcp endpoint&quot;/]
+  mcp --&amp;gt; dispatch{Tool kind?}
+  dispatch --&amp;gt;|Run_jobId| sched[HangfireDynamicScheduler]
+  dispatch --&amp;gt;|hangfire_*| maint[MaintenanceDispatcher]
+  sched --&amp;gt; client[IBackgroundJobClient]
+  maint --&amp;gt; storage[(Hangfire JobStorage)]
+  client --&amp;gt; storage
+  storage --&amp;gt; worker[Hangfire Server&lt;br /&gt;executes job]
+&lt;/div&gt;
+
+&lt;h3 id=&quot;aspire-bonus-&quot;&gt;Aspire bonus 🎁&lt;/h3&gt;
+
+&lt;p&gt;Aspire 13.x knows about MCP, so the AppHost wiring is short. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.WithMcpServer(&quot;/mcp&quot;)&lt;/code&gt; declares an MCP endpoint on a project resource, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddMcpInspector(...)&lt;/code&gt; from &lt;a href=&quot;https://github.com/CommunityToolkit/Aspire&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CommunityToolkit.Aspire.Hosting.McpInspector&lt;/code&gt;&lt;/a&gt; deploys the official &lt;a href=&quot;https://github.com/modelcontextprotocol/inspector&quot;&gt;MCP Inspector&lt;/a&gt; as a companion service pointed at your server.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;web&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AddProject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Projects&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Web&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;server&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/mcp&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddMcpInspector&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;inspector&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;WithMcpServer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;web&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Two lines of AppHost code, and the Inspector boots up alongside your app pointed at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mcp&lt;/code&gt;. External clients (Claude Desktop, VS Code Copilot, an SDK) get the same endpoint without any tool authoring on your side.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;2-getting-started&quot;&gt;2. Getting started&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dotnet add package Nall.Hangfire.Mcp
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The minimal wire-up on top of an existing Hangfire host is two lines:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;builder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Services&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddHangfireMcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapHangfireMcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/mcp&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Every recurring job in Hangfire’s storage now shows up as a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Run_&amp;lt;jobId&amp;gt;&lt;/code&gt; MCP tool, and the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hangfire_*&lt;/code&gt; maintenance tools and prompts are wired up. To pick up &lt;em&gt;one-shot&lt;/em&gt; enqueue sites too, opt into the source generator with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;o.Sources = JobDiscoverySources.All&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;21-how-a-job-gets-discovered&quot;&gt;2.1 How a job gets discovered&lt;/h3&gt;
+
+&lt;p&gt;There are two discovery sources, controlled by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HangfireMcpOptions.Sources&lt;/code&gt;. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RecurringStorage&lt;/code&gt; (the default) reads &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RecurringJobDto.Job&lt;/code&gt; entries from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;JobStorage&lt;/code&gt; at startup. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;StaticManifest&lt;/code&gt; runs at compile time: a Roslyn source generator walks &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddOrUpdate&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Enqueue&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Schedule&lt;/code&gt; call sites and emits a manifest the runtime consumes — that’s how one-shot enqueues that never live in recurring storage end up in the catalog.&lt;/p&gt;
+
+&lt;p&gt;Both feed a single &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;JobCatalog&lt;/code&gt;, deduped by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(DeclaringType, MethodInfo)&lt;/code&gt;. Schemas are generated once per method and respect both C# defaults and nullable annotations.&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot;&gt;
+flowchart LR
+  subgraph compile [Compile time]
+    src[AddOrUpdate / Enqueue /&lt;br /&gt;Schedule call sites] --&amp;gt;|Roslyn| gen[Source generator]
+    gen --&amp;gt; manifest[Static manifest]
+  end
+  subgraph runtime [Runtime]
+    rec[(JobStorage&lt;br /&gt;recurring)] --&amp;gt; catalog
+    manifest --&amp;gt; catalog[JobCatalog]
+    catalog --&amp;gt;|reflection| schema[JSON Schema&lt;br /&gt;per method]
+    schema --&amp;gt; tools[&quot;MCP tools&lt;br /&gt;Run_jobId&quot;]
+  end
+&lt;/div&gt;
+
+&lt;h3 id=&quot;22-decorating-jobs-with-description&quot;&gt;2.2 Decorating jobs with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Description]&lt;/code&gt;&lt;/h3&gt;
+
+&lt;p&gt;Tool selection in agents lives or dies by description quality. Generic auto-generated descriptions and an agent will pick the wrong tool or fill arguments badly. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.Hangfire.Mcp&lt;/code&gt; honors the standard &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;System.ComponentModel.DescriptionAttribute&lt;/code&gt; at both the method and parameter level — no custom attribute types.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;interface&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;IReportJob&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Generate the annual financial report and persist it.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;GenerateAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Calendar year of the report (e.g. 2026).&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;year&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Output format. Supported: pdf, html, csv.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;format&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;pdf&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Optional cutoff timestamp.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DateTimeOffset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;since&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The method &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Description]&lt;/code&gt; becomes the tool’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;description&lt;/code&gt;. Each parameter &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Description]&lt;/code&gt; becomes the JSON Schema &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;description&lt;/code&gt; for that property. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;format&lt;/code&gt; is optional because of the C# default; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;since&lt;/code&gt; is optional because of the nullable annotation. Only &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;year&lt;/code&gt; ends up in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;required&lt;/code&gt;.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;3-demo-mcp-inspector&quot;&gt;3. Demo: MCP Inspector&lt;/h2&gt;
+
+&lt;p&gt;End-to-end, with the Aspire AppHost running, the loop is: list the tools on &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mcp&lt;/code&gt;, fill in parameters in MCP Inspector, hit &lt;strong&gt;Run Tool&lt;/strong&gt;, and see the same enqueue land in the Hangfire dashboard.&lt;/p&gt;
+
+&lt;figure style=&quot;margin:1.5rem 0; text-align:center;&quot;&gt;
+  &lt;img src=&quot;/assets/hangfire-mcp-operations-pane/inspector-invoke.png&quot; alt=&quot;MCP Inspector — invoking a job with parameters&quot; style=&quot;width:75%; border:1px solid #eee; border-radius:4px;&quot; /&gt;
+  &lt;figcaption style=&quot;font-size:0.9em; margin-top:6px;&quot;&gt;1. Invoking with parameters — JSON Schema rendered as a form.&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;figure style=&quot;margin:1.5rem 0; text-align:center;&quot;&gt;
+  &lt;img src=&quot;/assets/hangfire-mcp-operations-pane/inspector-result.png&quot; alt=&quot;MCP Inspector — tool result with Hangfire job ID&quot; style=&quot;width:75%; border:1px solid #eee; border-radius:4px;&quot; /&gt;
+  &lt;figcaption style=&quot;font-size:0.9em; margin-top:6px;&quot;&gt;2. Result in the Inspector — Hangfire job ID and state.&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;figure style=&quot;margin:1.5rem 0; text-align:center;&quot;&gt;
+  &lt;img src=&quot;/assets/hangfire-mcp-operations-pane/hangfire-dashboard.png&quot; alt=&quot;Hangfire dashboard — succeeded job from MCP&quot; style=&quot;width:75%; border:1px solid #eee; border-radius:4px;&quot; /&gt;
+  &lt;figcaption style=&quot;font-size:0.9em; margin-top:6px;&quot;&gt;3. Same job in the Hangfire dashboard — exact args, real queue.&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;The point: the agent didn’t need to know anything about Hangfire. It saw a tool, filled in the schema, and the queue did its usual thing.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;4-authentication-and-authorization&quot;&gt;4. Authentication and authorization&lt;/h2&gt;
+
+&lt;p&gt;The library is auth-agnostic on purpose. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MapHangfireMcp(&quot;/mcp&quot;)&lt;/code&gt; returns &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IEndpointConventionBuilder&lt;/code&gt;, so you layer ASP.NET Core auth on top with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.RequireAuthorization(...)&lt;/code&gt; like any other endpoint.&lt;/p&gt;
+
+&lt;p&gt;The full picture for a tool call looks like this:&lt;/p&gt;
+
+&lt;div class=&quot;mermaid&quot;&gt;
+sequenceDiagram
+  autonumber
+  participant Agent as AI Agent
+  participant MCP as /mcp
+  participant Auth as ASP.NET Core auth
+  participant Pipe as JobInvocationPipeline
+  participant HF as Hangfire
+  Agent-&amp;gt;&amp;gt;MCP: CallTool (no token)
+  MCP--&amp;gt;&amp;gt;Agent: 401 + WWW-Authenticate (RFC 9728)
+  Agent-&amp;gt;&amp;gt;Agent: discover OAuth metadata, obtain JWT
+  Agent-&amp;gt;&amp;gt;MCP: CallTool (Bearer JWT)
+  MCP-&amp;gt;&amp;gt;Auth: validate token, RequireAuthorization
+  Auth-&amp;gt;&amp;gt;Pipe: invoke tool
+  Pipe-&amp;gt;&amp;gt;Pipe: evaluate [Authorize] on job
+  alt allowed
+    Pipe-&amp;gt;&amp;gt;HF: Enqueue job
+    HF--&amp;gt;&amp;gt;Agent: tool result
+  else denied
+    Pipe--&amp;gt;&amp;gt;Agent: MCP error (Forbidden)
+  end
+&lt;/div&gt;
+
+&lt;h3 id=&quot;authentication&quot;&gt;Authentication&lt;/h3&gt;
+
+&lt;p&gt;The sample uses Keycloak as the OAuth 2.0 / OIDC authorization server, JWT bearer for token validation, and the MCP-spec &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;McpAuthenticationHandler&lt;/code&gt; to emit RFC 9728 challenges. That last bit matters: it lets MCP clients self-discover the protected-resource metadata at &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/.well-known/oauth-protected-resource/mcp&lt;/code&gt;, which is how you avoid hardcoding auth server URLs into clients.&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;MapHangfireMcp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/mcp&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthorization&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;RequireAuthenticatedUser&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;AddAuthenticationSchemes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;McpAuthenticationDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AuthenticationScheme&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The full setup (Keycloak realm import, JWT + &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddMcp(...)&lt;/code&gt; resource metadata, the container-vs-host issuer URL caveat that bit me twice) is in the repo at &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp-dotnet/blob/main/docs/authentication.md&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;docs/authentication.md&lt;/code&gt;&lt;/a&gt;. Other ASP.NET Core schemes work the same way: Entra ID, Auth0, custom JWT — nothing about the library cares which one you pick.&lt;/p&gt;
+
+&lt;h3 id=&quot;per-job-authorization&quot;&gt;Per-job authorization&lt;/h3&gt;
+
+&lt;p&gt;Endpoint auth is necessary but not enough. Once a client is past the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mcp&lt;/code&gt; gate it can list every tool, and you usually want different jobs guarded by different policies. So &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.Hangfire.Mcp&lt;/code&gt; honors the standard &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Authorize]&lt;/code&gt; attribute on job methods — opt in with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddJobAuthorization()&lt;/code&gt;, then decorate:&lt;/p&gt;
+
+&lt;div class=&quot;language-csharp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;Authorize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Policy&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;jobs:run&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Task&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;GenerateAsync&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;year&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;string&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;format&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;pdf&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DateTimeOffset&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;since&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Under the hood, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddJobAuthorization()&lt;/code&gt; registers an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AuthorizeAttributeFilter&lt;/code&gt; into the job invocation pipeline. When a tool call hits &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HangfireMcpHandlers&lt;/code&gt;, the pipeline collects &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Authorize]&lt;/code&gt; attributes from the method and its declaring type, evaluates them against the current &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ClaimsPrincipal&lt;/code&gt; via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;IAuthorizationService&lt;/code&gt;, and short-circuits to an MCP error if any check fails. No Hangfire shim, no custom attribute. It’s the same &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Authorize]&lt;/code&gt; you’d put on a controller action.&lt;/p&gt;
+
+&lt;p&gt;That keeps the threat model boring, which is what you want. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mcp&lt;/code&gt; endpoint is gated by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RequireAuthorization()&lt;/code&gt;. Per-job access is gated by ordinary ASP.NET Core policies. Catalog visibility and execution rights are separate concerns: an agent that lacks the right claims still sees jobs in the catalog it can’t run, and the call returns Forbidden when it tries.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Nall.Hangfire.Mcp&lt;/code&gt; collapses the “expose Hangfire to an MCP client” problem into a couple of lines of host code. Discovery comes from two sources (recurring storage at runtime, a Roslyn source generator at compile time). Schemas come from method signatures, with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Description]&lt;/code&gt; doing the heavy lifting. Auth and authorization reuse the standard ASP.NET Core stack: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;RequireAuthorization()&lt;/code&gt; on the endpoint, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[Authorize(Policy = ...)]&lt;/code&gt; on the job.&lt;/p&gt;
+
+&lt;p&gt;Inside an Aspire AppHost, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.WithMcpServer&lt;/code&gt; plus &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AddMcpInspector&lt;/code&gt; is most of the integration work. What you end up with is what I keep calling an Operations Pane: one surface where agents can run jobs &lt;em&gt;and&lt;/em&gt; operate the queue, and where the security model is the same one you already use for the rest of the app.&lt;/p&gt;
+
+&lt;h3 id=&quot;reference&quot;&gt;Reference&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Repo: &lt;a href=&quot;https://github.com/NikiforovAll/hangfire-mcp-dotnet&quot;&gt;https://github.com/NikiforovAll/hangfire-mcp-dotnet&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;NuGet: &lt;a href=&quot;https://www.nuget.org/packages/Nall.Hangfire.Mcp&quot;&gt;https://www.nuget.org/packages/Nall.Hangfire.Mcp&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Documentation: &lt;a href=&quot;https://nikiforovall.github.io/hangfire-mcp-dotnet/&quot;&gt;https://nikiforovall.github.io/hangfire-mcp-dotnet/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://modelcontextprotocol.io/&quot;&gt;Model Context Protocol&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/modelcontextprotocol/inspector&quot;&gt;MCP Inspector&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/CommunityToolkit/Aspire&quot;&gt;CommunityToolkit.Aspire McpInspector hosting integration&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://datatracker.ietf.org/doc/rfc9728/&quot;&gt;RFC 9728, OAuth 2.0 Protected Resource Metadata&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 02 May 2026 00:00:00 +0300</pubDate>
+				<link>http://localhost:4000/dotnet/ai/2026/05/02/hangfire-mcp-operations-pane.html</link>
+				<guid isPermaLink="true">http://localhost:4000/dotnet/ai/2026/05/02/hangfire-mcp-operations-pane.html</guid>
+			</item>
+		
+			<item>
 				<title>User-Managed Access (UMA) 2.0 Resource Sharing with Keycloak and .NET</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -3236,76 +3505,6 @@ graph LR
 				<pubDate>Sun, 15 Feb 2026 00:00:00 +0200</pubDate>
 				<link>http://localhost:4000/ai/2026/02/15/risks-of-ai-assisted-development.html</link>
 				<guid isPermaLink="true">http://localhost:4000/ai/2026/02/15/risks-of-ai-assisted-development.html</guid>
-			</item>
-		
-			<item>
-				<title> Observing Claude Code Task Orchestration in Real Time using &apos;claude-code-kanban&apos;</title>
-				<description>&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;claude-code-kanban&lt;/code&gt; is a real-time Kanban dashboard for Claude Code teams. Tasks flow through Pending → In Progress → Completed in your browser.&lt;/p&gt;
-
-&lt;p&gt;One command: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;npx claude-code-kanban&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Source code&lt;/strong&gt;: &lt;a href=&quot;https://github.com/NikiforovAll/claude-task-viewer&quot;&gt;github.com/NikiforovAll/claude-task-viewer&lt;/a&gt;&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;why-i-built-this&quot;&gt;Why I built this&lt;/h2&gt;
-
-&lt;p&gt;I was running a Claude Code team, a lead agent coordinating three specialists to implement an auth module. Around minute five I realized I had no idea what was happening. One agent was blocked, another had finished, the lead was assigning new work.&lt;/p&gt;
-
-&lt;p&gt;Claude Code has a built-in task list, but it’s limited. You see a flat list of tasks in the terminal. No visual grouping by status, no dependency graph, no way to track multiple agents at a glance. When you have four agents working in parallel, that’s not enough.&lt;/p&gt;
-
-&lt;p&gt;I wanted to glance at something and immediately know: what’s done, what’s stuck, what’s next. So I built a Kanban board that watches Claude Code’s task files and streams updates to a browser.&lt;/p&gt;
-
-&lt;h2 id=&quot;what-it-looks-like&quot;&gt;What it looks like&lt;/h2&gt;
-
-&lt;p&gt;Three columns: Pending, In Progress, Completed. Each task card shows its assigned agent (color-coded), a short description, and which tasks it’s waiting on.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/claude-code-kanban/dark-mode.png&quot; alt=&quot;claude-code-kanban dark mode — Kanban board with team tasks&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;p&gt;The sidebar lists sessions with progress bars. A live feed shows what agents are doing right now. You can filter by project, search by name, or toggle between active and all sessions.&lt;/p&gt;
-
-&lt;p&gt;Clicking a task opens the detail panel: full description, dependencies, and a note field. The notes are readable by Claude too, so you can leave instructions mid-session.&lt;/p&gt;
-
-&lt;center&gt;
-  &lt;img src=&quot;/assets/claude-code-kanban/light-mode.png&quot; alt=&quot;claude-code-kanban light mode — task detail panel&quot; width=&quot;100%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;what-you-actually-get&quot;&gt;What you actually get&lt;/h2&gt;
-
-&lt;p&gt;The dashboard auto-detects team sessions. Each agent gets a consistent color across the board. You can filter by owner to isolate one agent’s work or see everything at once. Session cards show team member count and names.&lt;/p&gt;
-
-&lt;p&gt;Blocked tasks show “Waiting on #X, #Y” labels. If you try to delete a task that blocks others, the dashboard stops you and shows which tasks would break. This is how you find bottlenecks: three tasks all waiting on one means that’s your critical path.&lt;/p&gt;
-
-&lt;p&gt;Press &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;P&lt;/code&gt; to view the session plan with syntax-highlighted code blocks. Press &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;I&lt;/code&gt; for session info: team members, project path, git branch. I check these first when coming back to a session.&lt;/p&gt;
-
-&lt;p&gt;The whole thing is keyboard-driven. Arrow keys navigate tasks, Tab switches between sidebar and board, Enter opens details, Esc closes panels. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;?&lt;/code&gt; shows all shortcuts.&lt;/p&gt;
-
-&lt;p&gt;Dark and light themes. The dark one has a “Terminal Luxe” aesthetic. Preference sticks across sessions.&lt;/p&gt;
-
-&lt;h2 id=&quot;getting-started&quot;&gt;Getting started&lt;/h2&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npx claude-code-kanban
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;That’s it. The server starts on port 3456 and opens your browser. Start a Claude Code session with teams and the dashboard picks it up automatically, no configuration needed.&lt;/p&gt;
-
-&lt;h2 id=&quot;whats-next&quot;&gt;What’s next&lt;/h2&gt;
-
-&lt;p&gt;The tool is observation-only by design. Claude Code owns the task state and I want to keep that boundary clean. But the observation side has room to grow: timeline views, session comparison, maybe export for sharing with people who aren’t staring at the terminal.&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/claude-task-viewer&quot;&gt;Source Code — GitHub&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.npmjs.com/package/claude-code-kanban&quot;&gt;npm Package — claude-code-kanban&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://docs.anthropic.com/en/docs/claude-code&quot;&gt;Claude Code Documentation&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sat, 07 Feb 2026 00:00:00 +0200</pubDate>
-				<link>http://localhost:4000/ai/productivity/2026/02/07/claude-code-kanban.html</link>
-				<guid isPermaLink="true">http://localhost:4000/ai/productivity/2026/02/07/claude-code-kanban.html</guid>
 			</item>
 		
 	</channel>

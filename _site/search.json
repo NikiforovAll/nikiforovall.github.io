@@ -2,6 +2,17 @@
   
     {
       "id": "0",
+      "title": "Hangfire as an MCP Operations Pane for AI Agents",
+      "url": "/dotnet/ai/2026/05/02/hangfire-mcp-operations-pane.html",
+      "date": "May 02, 2026",
+      "categories": ["dotnet","ai"],
+      "tags": ["dotnet","ai","hangfire","mcp","mcp-server","aspire","agents"],
+      "shortinfo": "Expose Hangfire jobs and maintenance tools as MCP capabilities, so AI agents can run jobs and operate the queue. Aspire integration is a bonus.",
+      "content": "TL;DR  TL;DR  1. Why an Operations Pane          Aspire bonus 🎁        2. Getting started          2.1 How a job gets discovered      2.2 Decorating jobs with [Description]        3. Demo: MCP Inspector  4. Authentication and authorization          Authentication      Per-job authorization        Summary          Reference      Nall.Hangfire.Mcp is an in-process library. It exposes your Hangfire jobs at /mcp as MCP tools, and ships a built-in maintenance toolset and a few prompts on the side. Call AddHangfireMcp() and MapHangfireMcp(\"/mcp\") inside the same ASP.NET Core host that already runs Hangfire, and the schemas, descriptions, auth hook, and maintenance tools come with it.    📖 Documentation: https://nikiforovall.github.io/hangfire-mcp-dotnet/            Package      Version      Source      Description                  Nall.Hangfire.Mcp                                                    hangfire-mcp-dotnet            In-process MCP server for Hangfire jobs and queue maintenance.              Nall.Hangfire.Mcp.Generator                                                    hangfire-mcp-dotnet            Roslyn source generator for compile-time job discovery.      1. Why an Operations PaneHangfire’s dashboard is a fine UI for humans. It’s a poor surface for agents. Two specific things are missing.1️⃣ The first is parameterized job invocation. The dashboard is built around retrying and inspecting jobs that already exist. It doesn’t give you a clean way to say “run a job for me with parameters” from chat or a copilot.2️⃣ The second is operational workflows. “Show me the current backlog.” “List failures from the last hour grouped by exception type.” “Requeue the timeouts, but only the ones older than five minutes.” Most teams end up writing these as one-off scripts.MCP is a good fit for both. It standardizes how a client discovers tools, inspects schemas, and invokes them. Nall.Hangfire.Mcp puts two kinds of tools on /mcp: job tools, one Run_&lt;jobId&gt; per discovered Hangfire job; and maintenance tools (statistics, queue listing, get/delete/requeue with dryRun), plus three orchestration prompts (hangfire_health_check, hangfire_triage_failures, hangfire_discover).💡 That mix is what I’m calling an Operations Pane. Hangfire is the system of record. MCP is the discovery and invocation channel. The operator on the other end is whatever you want it to be: Claude, Copilot, MCP Inspector, your own client.flowchart LR  agent[\"AI Agent\"] --&gt;|MCP| mcp[/\"/mcp endpoint\"/]  mcp --&gt; dispatch{Tool kind?}  dispatch --&gt;|Run_jobId| sched[HangfireDynamicScheduler]  dispatch --&gt;|hangfire_*| maint[MaintenanceDispatcher]  sched --&gt; client[IBackgroundJobClient]  maint --&gt; storage[(Hangfire JobStorage)]  client --&gt; storage  storage --&gt; worker[Hangfire Serverexecutes job]Aspire bonus 🎁Aspire 13.x knows about MCP, so the AppHost wiring is short. .WithMcpServer(\"/mcp\") declares an MCP endpoint on a project resource, and AddMcpInspector(...) from CommunityToolkit.Aspire.Hosting.McpInspector deploys the official MCP Inspector as a companion service pointed at your server.var web = builder.AddProject&lt;Projects.Web&gt;(\"server\").WithMcpServer(\"/mcp\");builder.AddMcpInspector(\"inspector\").WithMcpServer(web);Two lines of AppHost code, and the Inspector boots up alongside your app pointed at /mcp. External clients (Claude Desktop, VS Code Copilot, an SDK) get the same endpoint without any tool authoring on your side.2. Getting starteddotnet add package Nall.Hangfire.McpThe minimal wire-up on top of an existing Hangfire host is two lines:builder.Services.AddHangfireMcp();app.MapHangfireMcp(\"/mcp\");Every recurring job in Hangfire’s storage now shows up as a Run_&lt;jobId&gt; MCP tool, and the hangfire_* maintenance tools and prompts are wired up. To pick up one-shot enqueue sites too, opt into the source generator with o.Sources = JobDiscoverySources.All.2.1 How a job gets discoveredThere are two discovery sources, controlled by HangfireMcpOptions.Sources. RecurringStorage (the default) reads RecurringJobDto.Job entries from JobStorage at startup. StaticManifest runs at compile time: a Roslyn source generator walks AddOrUpdate / Enqueue / Schedule call sites and emits a manifest the runtime consumes — that’s how one-shot enqueues that never live in recurring storage end up in the catalog.Both feed a single JobCatalog, deduped by (DeclaringType, MethodInfo). Schemas are generated once per method and respect both C# defaults and nullable annotations.flowchart LR  subgraph compile [Compile time]    src[AddOrUpdate / Enqueue /Schedule call sites] --&gt;|Roslyn| gen[Source generator]    gen --&gt; manifest[Static manifest]  end  subgraph runtime [Runtime]    rec[(JobStoragerecurring)] --&gt; catalog    manifest --&gt; catalog[JobCatalog]    catalog --&gt;|reflection| schema[JSON Schemaper method]    schema --&gt; tools[\"MCP toolsRun_jobId\"]  end2.2 Decorating jobs with [Description]Tool selection in agents lives or dies by description quality. Generic auto-generated descriptions and an agent will pick the wrong tool or fill arguments badly. Nall.Hangfire.Mcp honors the standard System.ComponentModel.DescriptionAttribute at both the method and parameter level — no custom attribute types.public interface IReportJob{    [Description(\"Generate the annual financial report and persist it.\")]    Task GenerateAsync(        [Description(\"Calendar year of the report (e.g. 2026).\")] int year,        [Description(\"Output format. Supported: pdf, html, csv.\")] string format = \"pdf\",        [Description(\"Optional cutoff timestamp.\")] DateTimeOffset? since = null);}The method [Description] becomes the tool’s description. Each parameter [Description] becomes the JSON Schema description for that property. format is optional because of the C# default; since is optional because of the nullable annotation. Only year ends up in required.3. Demo: MCP InspectorEnd-to-end, with the Aspire AppHost running, the loop is: list the tools on /mcp, fill in parameters in MCP Inspector, hit Run Tool, and see the same enqueue land in the Hangfire dashboard.    1. Invoking with parameters — JSON Schema rendered as a form.    2. Result in the Inspector — Hangfire job ID and state.    3. Same job in the Hangfire dashboard — exact args, real queue.The point: the agent didn’t need to know anything about Hangfire. It saw a tool, filled in the schema, and the queue did its usual thing.4. Authentication and authorizationThe library is auth-agnostic on purpose. MapHangfireMcp(\"/mcp\") returns IEndpointConventionBuilder, so you layer ASP.NET Core auth on top with .RequireAuthorization(...) like any other endpoint.The full picture for a tool call looks like this:sequenceDiagram  autonumber  participant Agent as AI Agent  participant MCP as /mcp  participant Auth as ASP.NET Core auth  participant Pipe as JobInvocationPipeline  participant HF as Hangfire  Agent-&gt;&gt;MCP: CallTool (no token)  MCP--&gt;&gt;Agent: 401 + WWW-Authenticate (RFC 9728)  Agent-&gt;&gt;Agent: discover OAuth metadata, obtain JWT  Agent-&gt;&gt;MCP: CallTool (Bearer JWT)  MCP-&gt;&gt;Auth: validate token, RequireAuthorization  Auth-&gt;&gt;Pipe: invoke tool  Pipe-&gt;&gt;Pipe: evaluate [Authorize] on job  alt allowed    Pipe-&gt;&gt;HF: Enqueue job    HF--&gt;&gt;Agent: tool result  else denied    Pipe--&gt;&gt;Agent: MCP error (Forbidden)  endAuthenticationThe sample uses Keycloak as the OAuth 2.0 / OIDC authorization server, JWT bearer for token validation, and the MCP-spec McpAuthenticationHandler to emit RFC 9728 challenges. That last bit matters: it lets MCP clients self-discover the protected-resource metadata at /.well-known/oauth-protected-resource/mcp, which is how you avoid hardcoding auth server URLs into clients.app.MapHangfireMcp(\"/mcp\")    .RequireAuthorization(p =&gt; p        .RequireAuthenticatedUser()        .AddAuthenticationSchemes(McpAuthenticationDefaults.AuthenticationScheme));The full setup (Keycloak realm import, JWT + AddMcp(...) resource metadata, the container-vs-host issuer URL caveat that bit me twice) is in the repo at docs/authentication.md. Other ASP.NET Core schemes work the same way: Entra ID, Auth0, custom JWT — nothing about the library cares which one you pick.Per-job authorizationEndpoint auth is necessary but not enough. Once a client is past the /mcp gate it can list every tool, and you usually want different jobs guarded by different policies. So Nall.Hangfire.Mcp honors the standard [Authorize] attribute on job methods — opt in with AddJobAuthorization(), then decorate:[Authorize(Policy = \"jobs:run\")]Task GenerateAsync(int year, string format = \"pdf\", DateTimeOffset? since = null);Under the hood, AddJobAuthorization() registers an AuthorizeAttributeFilter into the job invocation pipeline. When a tool call hits HangfireMcpHandlers, the pipeline collects [Authorize] attributes from the method and its declaring type, evaluates them against the current ClaimsPrincipal via IAuthorizationService, and short-circuits to an MCP error if any check fails. No Hangfire shim, no custom attribute. It’s the same [Authorize] you’d put on a controller action.That keeps the threat model boring, which is what you want. The /mcp endpoint is gated by RequireAuthorization(). Per-job access is gated by ordinary ASP.NET Core policies. Catalog visibility and execution rights are separate concerns: an agent that lacks the right claims still sees jobs in the catalog it can’t run, and the call returns Forbidden when it tries.SummaryNall.Hangfire.Mcp collapses the “expose Hangfire to an MCP client” problem into a couple of lines of host code. Discovery comes from two sources (recurring storage at runtime, a Roslyn source generator at compile time). Schemas come from method signatures, with [Description] doing the heavy lifting. Auth and authorization reuse the standard ASP.NET Core stack: RequireAuthorization() on the endpoint, [Authorize(Policy = ...)] on the job.Inside an Aspire AppHost, .WithMcpServer plus AddMcpInspector is most of the integration work. What you end up with is what I keep calling an Operations Pane: one surface where agents can run jobs and operate the queue, and where the security model is the same one you already use for the rest of the app.Reference  Repo: https://github.com/NikiforovAll/hangfire-mcp-dotnet  NuGet: https://www.nuget.org/packages/Nall.Hangfire.Mcp  Documentation: https://nikiforovall.github.io/hangfire-mcp-dotnet/  Model Context Protocol  MCP Inspector  CommunityToolkit.Aspire McpInspector hosting integration  RFC 9728, OAuth 2.0 Protected Resource Metadata"
+    },
+  
+    {
+      "id": "1",
       "title": "User-Managed Access (UMA) 2.0 Resource Sharing with Keycloak and .NET",
       "url": "/dotnet/keycloak/2026/04/15/keycloak-uma-resource-sharing.html",
       "date": "April 15, 2026",
@@ -12,7 +23,7 @@
     },
   
     {
-      "id": "1",
+      "id": "2",
       "title": "Claude Code Hub: Kanban, Marketplace, Cost, and Memory in One Place",
       "url": "/productivity/ai/2026/04/08/claude-code-hub.html",
       "date": "April 08, 2026",
@@ -23,7 +34,7 @@
     },
   
     {
-      "id": "2",
+      "id": "3",
       "title": "What's new in Keycloak.AuthServices v2.9.0",
       "url": "/dotnet/keycloak/2026/03/27/keycloak-authservices-2026.html",
       "date": "March 27, 2026",
@@ -34,7 +45,7 @@
     },
   
     {
-      "id": "3",
+      "id": "4",
       "title": "Microsoft Agent Framework — Azure AI Foundry",
       "url": "/dotnet/ai/2026/03/24/microsoft-agent-framework-azure-ai-foundry.html",
       "date": "March 24, 2026",
@@ -45,7 +56,7 @@
     },
   
     {
-      "id": "4",
+      "id": "5",
       "title": "Microsoft Agent Framework — Workflows, MCP, A2A & AG-UI",
       "url": "/dotnet/ai/2026/03/07/microsoft-agent-framework-workflows-mcp-a2a-agui.html",
       "date": "March 07, 2026",
@@ -56,7 +67,7 @@
     },
   
     {
-      "id": "5",
+      "id": "6",
       "title": "Microsoft Agent Framework — Foundations",
       "url": "/dotnet/ai/2026/03/02/microsoft-agent-framework-foundations.html",
       "date": "March 02, 2026",
@@ -67,7 +78,7 @@
     },
   
     {
-      "id": "6",
+      "id": "7",
       "title": "Building RAG with .NET AI Building Blocks - Microsoft.Extensions.AI",
       "url": "/dotnet/ai/2026/02/28/building-rag-with-dotnet-ai-building-blocks.html",
       "date": "February 28, 2026",
@@ -78,7 +89,7 @@
     },
   
     {
-      "id": "7",
+      "id": "8",
       "title": "Building RAG with .NET Aspire and Python",
       "url": "/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html",
       "date": "February 22, 2026",
@@ -89,7 +100,7 @@
     },
   
     {
-      "id": "8",
+      "id": "9",
       "title": "Risks of AI-Assisted Development",
       "url": "/ai/2026/02/15/risks-of-ai-assisted-development.html",
       "date": "February 15, 2026",
@@ -100,7 +111,7 @@
     },
   
     {
-      "id": "9",
+      "id": "10",
       "title": " Observing Claude Code Task Orchestration in Real Time using 'claude-code-kanban'",
       "url": "/ai/productivity/2026/02/07/claude-code-kanban.html",
       "date": "February 07, 2026",
@@ -111,7 +122,7 @@
     },
   
     {
-      "id": "10",
+      "id": "11",
       "title": "LazyClaude 0.12.0: Marketplace Plugin Management",
       "url": "/ai/2025/12/21/lazyclaude-0-12-0.html",
       "date": "December 21, 2025",
@@ -122,7 +133,7 @@
     },
   
     {
-      "id": "11",
+      "id": "12",
       "title": "LazyClaude: Explore Your Claude Code Setup Without Breaking Flow",
       "url": "/ai/2025/12/07/lazyclaude.html",
       "date": "December 07, 2025",
@@ -133,7 +144,7 @@
     },
   
     {
-      "id": "12",
+      "id": "13",
       "title": "VSCode Morph Agent: Let AI Control Your Workspace",
       "url": "/ai/2025/12/01/vscode-morph-agent.html",
       "date": "December 01, 2025",
@@ -144,7 +155,7 @@
     },
   
     {
-      "id": "13",
+      "id": "14",
       "title": "Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK",
       "url": "/dotnet/ai/2025/11/11/dotnet-format-agent.html",
       "date": "November 11, 2025",
@@ -155,7 +166,7 @@
     },
   
     {
-      "id": "14",
+      "id": "15",
       "title": "Claude Code Handbook: Best Practices and Recommendations",
       "url": "/productivity/2025/10/05/claude-code-handbook.html",
       "date": "October 05, 2025",
@@ -166,7 +177,7 @@
     },
   
     {
-      "id": "15",
+      "id": "16",
       "title": "MCP Landscape for .NET Developers",
       "url": "/ai/mcp/2025/10/03/mcp-landscape.html",
       "date": "October 03, 2025",
@@ -177,7 +188,7 @@
     },
   
     {
-      "id": "16",
+      "id": "17",
       "title": "Testing with Playwright and Claude Code",
       "url": "/ai/2025/09/06/playwright-claude-code-testing.html",
       "date": "September 06, 2025",
@@ -188,7 +199,7 @@
     },
   
     {
-      "id": "17",
+      "id": "18",
       "title": "Add Authentication to MCP Servers using Microsoft Entra ID",
       "url": "/dotnet/2025/09/02/mcp-auth.html",
       "date": "September 02, 2025",
@@ -199,7 +210,7 @@
     },
   
     {
-      "id": "18",
+      "id": "19",
       "title": "Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs",
       "url": "/ai/2025/08/09/tech-debt-master.html",
       "date": "August 09, 2025",
@@ -210,7 +221,7 @@
     },
   
     {
-      "id": "19",
+      "id": "20",
       "title": "Monitoring Claude Code with .NET Aspire Dashboard",
       "url": "/productivity/2025/06/14/claude-code-telemetry-aspire.html",
       "date": "June 14, 2025",
@@ -221,7 +232,7 @@
     },
   
     {
-      "id": "20",
+      "id": "21",
       "title": "My Claude Code Usage Best Practices and Recommendations",
       "url": "/productivity/2025/06/13/claude-code-rules.html",
       "date": "June 13, 2025",
@@ -232,7 +243,7 @@
     },
   
     {
-      "id": "21",
+      "id": "22",
       "title": "Hangfire MCP Server in Standalone Mode",
       "url": "/dotnet/2025/05/29/hangfire-mcp-standalone.html",
       "date": "May 29, 2025",
@@ -243,7 +254,7 @@
     },
   
     {
-      "id": "22",
+      "id": "23",
       "title": "Background Job Scheduling Using Hangfire MCP Server",
       "url": "/dotnet/2025/05/25/hangfire-mcp.html",
       "date": "May 25, 2025",
@@ -254,7 +265,7 @@
     },
   
     {
-      "id": "23",
+      "id": "24",
       "title": "Code Review with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/05/03/github-copilot-prompt-engineering-code-review.html",
       "date": "May 03, 2025",
@@ -265,7 +276,7 @@
     },
   
     {
-      "id": "24",
+      "id": "25",
       "title": "Prompt Engineering with GitHub Copilot in Visual Studio Code",
       "url": "/productivity/2025/04/19/github-copilot-prompt-engineering.html",
       "date": "April 19, 2025",
@@ -276,7 +287,7 @@
     },
   
     {
-      "id": "25",
+      "id": "26",
       "title": "Composable AI with .NET Aspire: Extending DIAL Assistants with Add-Ons",
       "url": "/dotnet/ai/2025/04/18/introduction-to-dial-addons.html",
       "date": "April 18, 2025",
@@ -287,7 +298,7 @@
     },
   
     {
-      "id": "26",
+      "id": "27",
       "title": "Learn how to use Model Context Protocol (MCP) Server Template in Hybrid Mode",
       "url": "/dotnet/2025/04/08/hybrid-mcp-template.html",
       "date": "April 08, 2025",
@@ -298,7 +309,7 @@
     },
   
     {
-      "id": "27",
+      "id": "28",
       "title": "Simplifying Model Context Protocol (MCP) Server Development with Aspire",
       "url": "/dotnet/2025/04/04/mcp-template-and-aspire.html",
       "date": "April 04, 2025",
@@ -309,7 +320,7 @@
     },
   
     {
-      "id": "28",
+      "id": "29",
       "title": "Simplifying Model Context Protocol (MCP) Server Distribution with .NET Global Tools",
       "url": "/dotnet/2025/04/02/mcp-template-getting-started.html",
       "date": "April 02, 2025",
@@ -320,7 +331,7 @@
     },
   
     {
-      "id": "29",
+      "id": "30",
       "title": "Introducing AI DIAL: The Open-Source AI Orchestration Platform",
       "url": "/dotnet/ai/2025/03/30/introduction-to-dial.html",
       "date": "March 30, 2025",
@@ -331,7 +342,7 @@
     },
   
     {
-      "id": "30",
+      "id": "31",
       "title": "Enforcing .NET Coding Guidelines with GitHub Copilot Custom Instructions",
       "url": "/productivity/2025/03/08/github-copilot-instructions-for-dotnet.html",
       "date": "March 08, 2025",
@@ -342,7 +353,7 @@
     },
   
     {
-      "id": "31",
+      "id": "32",
       "title": "Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd)",
       "url": "/dotnet/2024/12/22/azd-bot-service.html",
       "date": "December 22, 2024",
@@ -353,7 +364,7 @@
     },
   
     {
-      "id": "32",
+      "id": "33",
       "title": "Hybrid Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/11/02/elastic-hybrid-search.html",
       "date": "November 02, 2024",
@@ -364,7 +375,7 @@
     },
   
     {
-      "id": "33",
+      "id": "34",
       "title": "Querying and Filtering via Elastic.Clients.Elasticsearch in .NET",
       "url": "/dotnet/2024/10/20/querying-and-filtering-elastic-dotnet.html",
       "date": "October 20, 2024",
@@ -375,7 +386,7 @@
     },
   
     {
-      "id": "34",
+      "id": "35",
       "title": "Semantic Search with Elasticsearch in .NET",
       "url": "/dotnet/2024/10/19/semantic-search-via-elastic-dotnet.html",
       "date": "October 19, 2024",
@@ -386,7 +397,7 @@
     },
   
     {
-      "id": "35",
+      "id": "36",
       "title": "10 Lessons I Learned from Using Aspire in Production",
       "url": "/dotnet/aspire/2024/09/30/aspire-lessons-learned.html",
       "date": "September 30, 2024",
@@ -397,7 +408,7 @@
     },
   
     {
-      "id": "36",
+      "id": "37",
       "title": "A Tyrant Guide to Code Quality Gates featuring CSharpier, Husky.NET, and SonarCloud",
       "url": "/dotnet/2024/09/14/quality-gates-dotnet.html",
       "date": "September 14, 2024",
@@ -408,7 +419,7 @@
     },
   
     {
-      "id": "37",
+      "id": "38",
       "title": "Using Polyglot Notebooks and Kernel Memory in Your Day-to-Day Tasks",
       "url": "/dotnet/ai/2024/09/11/notebook-agent.html",
       "date": "September 11, 2024",
@@ -419,7 +430,7 @@
     },
   
     {
-      "id": "38",
+      "id": "39",
       "title": "Typical RAG Implementation Using Semantic Kernel, Kernel Memory, and Aspire in .NET",
       "url": "/dotnet/ai/2024/09/04/typical-rag-dotnet.html",
       "date": "September 04, 2024",
@@ -430,7 +441,7 @@
     },
   
     {
-      "id": "39",
+      "id": "40",
       "title": "Building pipelines with IAsyncEnumerable in .NET",
       "url": "/dotnet/2024/08/22/async-enumerable-pipelines.html",
       "date": "August 22, 2024",
@@ -441,7 +452,7 @@
     },
   
     {
-      "id": "40",
+      "id": "41",
       "title": "Unlocking the Power of TypedResults in Endpoints: A Consistent Approach to Strongly Typed APIs in .NET",
       "url": "/dotnet/2024/08/17/result-endpoints.html",
       "date": "August 17, 2024",
@@ -452,7 +463,7 @@
     },
   
     {
-      "id": "41",
+      "id": "42",
       "title": "Supercharge your Dependify tool with AI chat assistant",
       "url": "/dotnet/2024/08/09/dependify-ai.html",
       "date": "August 09, 2024",
@@ -463,7 +474,7 @@
     },
   
     {
-      "id": "42",
+      "id": "43",
       "title": "Explore .NET application dependencies by using Dependify tool",
       "url": "/dotnet/2024/08/03/dependify.html",
       "date": "August 03, 2024",
@@ -474,7 +485,7 @@
     },
   
     {
-      "id": "43",
+      "id": "44",
       "title": "Managing Startup Dependencies in .NET Aspire",
       "url": "/dotnet/aspire/2024/06/28/startup-dependencies-aspire.html",
       "date": "June 28, 2024",
@@ -485,7 +496,7 @@
     },
   
     {
-      "id": "44",
+      "id": "45",
       "title": "Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch",
       "url": "/dotnet/aspire/2024/06/18/polyglot-persistance-with-aspire.html",
       "date": "June 18, 2024",
@@ -496,7 +507,7 @@
     },
   
     {
-      "id": "45",
+      "id": "46",
       "title": "A .NET Developer Guide to XUnit Test Instrumentation with OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/12/developer-guide-to-xunit-otel.html",
       "date": "June 12, 2024",
@@ -507,7 +518,7 @@
     },
   
     {
-      "id": "46",
+      "id": "47",
       "title": "Automated Tests instrumentation via OpenTelemetry and Aspire Dashboard",
       "url": "/dotnet/opentelemetry/2024/06/07/test-instrumentation-with-otel-aspire.html",
       "date": "June 07, 2024",
@@ -518,7 +529,7 @@
     },
   
     {
-      "id": "47",
+      "id": "48",
       "title": "Using Keycloak in .NET Aspire projects",
       "url": "/dotnet/keycloak/2024/06/02/aspire-support-for-keycloak.html",
       "date": "June 02, 2024",
@@ -529,7 +540,7 @@
     },
   
     {
-      "id": "48",
+      "id": "49",
       "title": "Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire",
       "url": "/dotnet/aws/2024/05/27/aws-claim-check-dotnet.html",
       "date": "May 27, 2024",
@@ -540,7 +551,7 @@
     },
   
     {
-      "id": "49",
+      "id": "50",
       "title": "Mastering AWS Batch: A .NET Developer Guide to Batch File Processing",
       "url": "/dotnet/aws/2024/05/26/aws-batch-dotnet.html",
       "date": "May 26, 2024",
@@ -551,7 +562,7 @@
     },
   
     {
-      "id": "50",
+      "id": "51",
       "title": "Announcement - Keycloak.AuthServices v2.3.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/10/keycloak-v2-3-0.html",
       "date": "May 10, 2024",
@@ -562,7 +573,7 @@
     },
   
     {
-      "id": "51",
+      "id": "52",
       "title": "Announcement - Keycloak.AuthServices v2.0.0 is out 🎉!",
       "url": "/dotnet/keycloak/2024/05/05/keycloak-v2-0-0.html",
       "date": "May 05, 2024",
@@ -573,7 +584,7 @@
     },
   
     {
-      "id": "52",
+      "id": "53",
       "title": "Job Offloading Pattern with System.Threading.Channels. A way to deal with long-running tasks in .NET",
       "url": "/dotnet/async/2024/04/21/job-offloading-pattern.html",
       "date": "April 21, 2024",
@@ -584,7 +595,7 @@
     },
   
     {
-      "id": "53",
+      "id": "54",
       "title": "Building pipelines with System.Threading.Channels",
       "url": "/dotnet/async/2024/04/21/channels-composition.html",
       "date": "April 21, 2024",
@@ -595,7 +606,7 @@
     },
   
     {
-      "id": "54",
+      "id": "55",
       "title": "Polymorphic serialization via System.Text.Json in ASP.NET Core Minimal API",
       "url": "/dotnet/aspnetcore/2024/04/06/openapi-polymorphism.html",
       "date": "April 06, 2024",
@@ -606,7 +617,7 @@
     },
   
     {
-      "id": "55",
+      "id": "56",
       "title": "Transactional Outbox in .NET Cloud Native Development via Aspire",
       "url": "/dotnet/aspnetcore/aspire/2024/03/30/aspire-cap.html",
       "date": "March 30, 2024",
@@ -617,7 +628,7 @@
     },
   
     {
-      "id": "56",
+      "id": "57",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Deep dive (Part 2)",
       "url": "/dotnet/aspnetcore/2024/03/24/kiota-guide-deep-dive.html",
       "date": "March 24, 2024",
@@ -628,7 +639,7 @@
     },
   
     {
-      "id": "57",
+      "id": "58",
       "title": "A Guide to OpenAPI Client Generation with Kiota. Introduction (Part 1)",
       "url": "/dotnet/aspnetcore/2024/03/22/kiota-guide-introduction.html",
       "date": "March 22, 2024",
@@ -639,7 +650,7 @@
     },
   
     {
-      "id": "58",
+      "id": "59",
       "title": "Building a federated search engine from scratch. An introduction.",
       "url": "/dotnet/2023/05/19/federated-search-intro.html",
       "date": "May 19, 2023",
@@ -650,7 +661,7 @@
     },
   
     {
-      "id": "59",
+      "id": "60",
       "title": "Introduction to JMESPath - JSON processor you should definitely know",
       "url": "/dotnet/2023/01/08/jmespath-intro.html",
       "date": "January 08, 2023",
@@ -661,7 +672,7 @@
     },
   
     {
-      "id": "60",
+      "id": "61",
       "title": "Keycloak as Authorization Server in .NET",
       "url": "/dotnet/keycloak/2022/12/28/keycloak-authorization-server.html",
       "date": "December 28, 2022",
@@ -672,7 +683,7 @@
     },
   
     {
-      "id": "61",
+      "id": "62",
       "title": "Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications",
       "url": "/blazor/dotnet/2022/12/08/dotnet-keycloak-blazorwasm-auth.html",
       "date": "December 08, 2022",
@@ -683,7 +694,7 @@
     },
   
     {
-      "id": "62",
+      "id": "63",
       "title": "Add persisted parameters to CLI applications in .NET",
       "url": "/dotnet/2022/08/26/persisted-parameters-in-dotnet-cli.html",
       "date": "August 26, 2022",
@@ -694,7 +705,7 @@
     },
   
     {
-      "id": "63",
+      "id": "64",
       "title": "Use Keycloak as Identity Provider in ASP.NET Core 6",
       "url": "/aspnetcore/dotnet/2022/08/24/dotnet-keycloak-auth.html",
       "date": "August 24, 2022",
@@ -705,7 +716,7 @@
     },
   
     {
-      "id": "64",
+      "id": "65",
       "title": "Dev Environment as a Code (DEaaC) with DevContainers, Dotfiles, and GitHub Codespaces",
       "url": "/productivity/devcontainers/2022/08/13/deaac.html",
       "date": "August 13, 2022",
@@ -716,7 +727,7 @@
     },
   
     {
-      "id": "65",
+      "id": "66",
       "title": "Creating and Using HTTP Client SDKs in .NET 6",
       "url": "/dotnet/aspnetcore/microservices/2022/04/04/creating-and-using-http-sdks.html",
       "date": "April 04, 2022",
@@ -727,7 +738,7 @@
     },
   
     {
-      "id": "66",
+      "id": "67",
       "title": "Creating and Using HTTP Client SDKs in .NET 6. (Announcement)",
       "url": "/dotnet/aspnetcore/microservices/2022/02/06/http-sdks.html",
       "date": "February 06, 2022",
@@ -738,7 +749,7 @@
     },
   
     {
-      "id": "67",
+      "id": "68",
       "title": "Console applications with Spectre.Console",
       "url": "/dotnet/2022/01/22/building-console-application-with-spectre-console.html",
       "date": "January 22, 2022",
@@ -749,7 +760,7 @@
     },
   
     {
-      "id": "68",
+      "id": "69",
       "title": "Use System.CommandLine to write .NET global tools. Copy-paste-driven development with copy-paster.",
       "url": "/dotnet/2021/12/20/dotnet-global-tool-copy-paster.html",
       "date": "December 20, 2021",
@@ -760,7 +771,7 @@
     },
   
     {
-      "id": "69",
+      "id": "70",
       "title": "A developer guide to automated testing with Postman. Run postman collections inside Docker via newman CLI.",
       "url": "/dotnet/docker/testing/2021/11/27/testing-with-newman.html",
       "date": "November 27, 2021",
@@ -771,7 +782,7 @@
     },
   
     {
-      "id": "70",
+      "id": "71",
       "title": "Rapid Microservices Development in .NET. An introduction.",
       "url": "/dotnet/microservices/csharp/2021/11/06/rapid-microservices-development-part1-build-project.html",
       "date": "November 06, 2021",
@@ -782,7 +793,7 @@
     },
   
     {
-      "id": "71",
+      "id": "72",
       "title": "What's new in .NET 6 and C# 10. Everything you wanted to know.",
       "url": "/dotnet/csharp/coding-stories/2021/10/29/whats-new-in-dotnet6.html",
       "date": "October 29, 2021",
@@ -793,7 +804,7 @@
     },
   
     {
-      "id": "72",
+      "id": "73",
       "title": "Try out .NET 6 inside your own development environment built with devcontainers, docker, and vscode",
       "url": "/productivity/devcontainers/2021/10/14/devcontainer-for-dotnet6.html",
       "date": "October 14, 2021",
@@ -804,7 +815,7 @@
     },
   
     {
-      "id": "73",
+      "id": "74",
       "title": "An opinionated look at Minimal API in .NET 6",
       "url": "/dotnet/aspnetcore/2021/09/10/opinionated-minimal-api.html",
       "date": "September 10, 2021",
@@ -815,7 +826,7 @@
     },
   
     {
-      "id": "74",
+      "id": "75",
       "title": "How to add Health Checks to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/07/25/add-health-checks-to-aspnetcore.html",
       "date": "July 25, 2021",
@@ -826,7 +837,7 @@
     },
   
     {
-      "id": "75",
+      "id": "76",
       "title": "How to add OpenAPI to ASP.NET Core project. A coding story.",
       "url": "/dotnet/aspnetcore/coding-stories/2021/06/13/add-openapi-to-aspnetcore.html",
       "date": "June 13, 2021",
@@ -837,7 +848,7 @@
     },
   
     {
-      "id": "76",
+      "id": "77",
       "title": "Develop Clean Command Line Applications with System.CommandLine. Clean CLI.",
       "url": "/dotnet/cli/2021/06/06/clean-cli.html",
       "date": "June 06, 2021",
@@ -848,7 +859,7 @@
     },
   
     {
-      "id": "77",
+      "id": "78",
       "title": "Publish NuGet packages via Docker Release Container",
       "url": "/dotnet/nuget/docker/2021/05/09/nuget-release-container.html",
       "date": "May 09, 2021",
@@ -859,7 +870,7 @@
     },
   
     {
-      "id": "78",
+      "id": "79",
       "title": "ASP.NET Core Endpoints. Add endpoint-enabled middleware by using IEndpointRouteBuilder extension method",
       "url": "/dotnet/aspnetcore/2021/03/23/endpoint-route-builder-extension-pattern.html",
       "date": "March 23, 2021",
@@ -870,7 +881,7 @@
     },
   
     {
-      "id": "79",
+      "id": "80",
       "title": "Advance the practical side of your coding skills with CodingStories",
       "url": "/dotnet/coding-stories/2021/03/14/coding-story.html",
       "date": "March 14, 2021",
@@ -881,7 +892,7 @@
     },
   
     {
-      "id": "80",
+      "id": "81",
       "title": "Task-based asynchronous Pattern and Composition (aka Task Combinators)",
       "url": "/dotnet/async/2021/02/26/tap-composition.html",
       "date": "February 26, 2021",
@@ -892,7 +903,7 @@
     },
   
     {
-      "id": "81",
+      "id": "82",
       "title": "Awaitable/awaiter pattern and logical micro-threading in C#",
       "url": "/csharp/compcsi/dotnet/2020/10/20/awaitable-pattern.html",
       "date": "October 20, 2020",
@@ -903,7 +914,7 @@
     },
   
     {
-      "id": "82",
+      "id": "83",
       "title": "Publish images to GitHub Container Registry (ghcr)",
       "url": "/docker/2020/09/19/publish-package-to-ghcr.html",
       "date": "September 19, 2020",
@@ -914,7 +925,7 @@
     },
   
     {
-      "id": "83",
+      "id": "84",
       "title": "Bringing \"surround with\" functionality to vscode. Check out this extension.",
       "url": "/productivity/csharp/vscode/2020/08/21/surround-with-csharp.html",
       "date": "August 21, 2020",
@@ -925,7 +936,7 @@
     },
   
     {
-      "id": "84",
+      "id": "85",
       "title": "How to organize learning process with mindmaps, spreadsheets and .NET Core",
       "url": "/productivity/2020/05/03/how-to-organize-your-learning-process-with-xmind.html",
       "date": "May 03, 2020",
@@ -936,7 +947,7 @@
     },
   
     {
-      "id": "85",
+      "id": "86",
       "title": "Catch up with .NET Core - System.Text.JSON",
       "url": "/dotnet-core/2020/04/27/catch-dotnetcore-json.html",
       "date": "April 27, 2020",
@@ -947,7 +958,7 @@
     },
   
     {
-      "id": "86",
+      "id": "87",
       "title": "Catch up with .NET Core - System.IO.Pipelines",
       "url": "/dotnet-core/2020/04/24/catch-dotnetcore-piepelines.html",
       "date": "April 24, 2020",
@@ -958,7 +969,7 @@
     },
   
     {
-      "id": "87",
+      "id": "88",
       "title": "Sorting algorithms with C# 8, Span{T} and Try .NET",
       "url": "/algorithms/2020/04/15/dotnet-try-and-sorting-algorithms.html",
       "date": "April 15, 2020",
@@ -969,7 +980,7 @@
     },
   
     {
-      "id": "88",
+      "id": "89",
       "title": "Development environment based on Windows Terminal + WSL + ZSH + dotfiles",
       "url": "/productivity/2019/11/30/nikiforovall-setup.html",
       "date": "November 30, 2019",
@@ -980,7 +991,7 @@
     },
   
     {
-      "id": "89",
+      "id": "90",
       "title": "Design Patterns. Behavioral Patterns. Part I",
       "url": "/design-patterns/2019/06/09/design-patterns-first-part.html",
       "date": "June 09, 2019",
