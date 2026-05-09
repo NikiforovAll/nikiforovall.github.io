@@ -7,6 +7,175 @@
 		<atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>pi-kanban: A Workspace for the Pi Coding Agent</title>
+				<description>&lt;p&gt;&lt;strong&gt;TL;DR&lt;/strong&gt;: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pi-kanban&lt;/code&gt; is a read-only observability dashboard for the &lt;a href=&quot;https://pi.dev&quot;&gt;pi coding agent&lt;/a&gt;. It watches &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.pi/agent/sessions&lt;/code&gt; and renders sessions, todos, messages, and subagents in real time. Install with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pi install npm:pi-kanban&lt;/code&gt;, then run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban start&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Source code&lt;/strong&gt;: &lt;a href=&quot;https://github.com/NikiforovAll/pi-kanban&quot;&gt;github.com/NikiforovAll/pi-kanban&lt;/a&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;why-agent-observability-matters&quot;&gt;Why agent observability matters&lt;/h2&gt;
+
+&lt;p&gt;Working with a coding agent is not the same as writing code yourself. The agent makes decisions, calls tools, spawns subagents, and produces artifacts faster than you can read. Without a way to see what’s happening, you end up babysitting a terminal or trusting the output blindly.&lt;/p&gt;
+
+&lt;p&gt;A proper observability surface changes a few things:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Reduced cognitive load.&lt;/strong&gt; You glance, not read. Status, progress, and what the agent is doing right now are visible without scrolling logs.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Better alignment.&lt;/strong&gt; Plan, todos, and messages sit side by side, so course-correction is cheap. You catch drift early instead of after the fact.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;A workspace, not a viewer.&lt;/strong&gt; Pinned sessions, pinned messages, linked docs, markdown previews. The work lives in the dashboard, not just a window into it.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;That last one is the part I care about most. pi-kanban is read-only against pi’s session state, but the workspace around it is not.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-it-looks-like&quot;&gt;What it looks like&lt;/h2&gt;
+
+&lt;center&gt;
+    &lt;video src=&quot;https://github.com/user-attachments/assets/4b41e568-1d3d-4f7d-9ebb-dd3f1c2db955&quot; width=&quot;90%&quot; controls=&quot;controls&quot; /&gt;
+&lt;/center&gt;
+
+&lt;p&gt;Three panes:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Left&lt;/strong&gt; — sessions grouped by project, with progress, age, and pin state.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Center&lt;/strong&gt; — kanban board (Pending / In Progress / Completed) for the selected session.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Right&lt;/strong&gt; — Session Log: messages, tool calls, subagent activity.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;A bottom strip shows recent subagent runs across all sessions.&lt;/p&gt;
+
+&lt;h2 id=&quot;feature-coverage&quot;&gt;Feature coverage&lt;/h2&gt;
+
+&lt;h3 id=&quot;sessions-and-projects&quot;&gt;Sessions and projects&lt;/h3&gt;
+
+&lt;p&gt;pi-kanban reads &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.pi/agent/sessions/&amp;lt;encoded-cwd&amp;gt;/&amp;lt;timestamp&amp;gt;_&amp;lt;id&amp;gt;.jsonl&lt;/code&gt; and groups sessions by working directory. No daemon, no database — just file watching.&lt;/p&gt;
+
+&lt;h3 id=&quot;pinning-sessions&quot;&gt;Pinning sessions&lt;/h3&gt;
+
+&lt;p&gt;Long-running work doesn’t fit one session. Pinning lifts a session out of the auto-sort so it stays at the top. It’s how you keep the thing you’re actually working on in front of you while exploratory sessions come and go.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/kanban pin &amp;lt;session-id&amp;gt;
+/kanban sticky-pin &amp;lt;session-id&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;pinning-messages-and-linking-documents&quot;&gt;Pinning messages and linking documents&lt;/h3&gt;
+
+&lt;p&gt;Inside a session, you can pin individual messages. Useful for the assistant message that contains the answer, or the user message that defined the task. Linked documents and the scratchpad let you attach context that isn’t part of the conversation but should travel with it.&lt;/p&gt;
+
+&lt;p&gt;This is what turns the dashboard into a workspace. The things you care about stay anchored even as the session log scrolls past them.&lt;/p&gt;
+
+&lt;h3 id=&quot;subagents&quot;&gt;Subagents&lt;/h3&gt;
+
+&lt;p&gt;When &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pi-subagents&lt;/code&gt; spawns a child session, pi-kanban nests it under the parent.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/NikiforovAll/pi-kanban/main/assets/pi-subagent.png&quot; alt=&quot;Subagent view&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;session-info&quot;&gt;Session info&lt;/h3&gt;
+
+&lt;p&gt;The info modal shows model, token usage, cache hit rate, cost, duration, and paths. The things you check before deciding whether a session is worth resuming.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/NikiforovAll/pi-kanban/main/assets/pi-info.png&quot; alt=&quot;Session info modal&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;storage-manager&quot;&gt;Storage manager&lt;/h3&gt;
+
+&lt;p&gt;Lists sessions, scratchpads, and linked docs with size accounting. Used to clean orphaned docs and unlink stale references.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/NikiforovAll/pi-kanban/main/assets/pi-storage-explorer.png&quot; alt=&quot;Storage manager&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;follow-last-message&quot;&gt;Follow last message&lt;/h3&gt;
+
+&lt;p&gt;Pop the latest assistant message into a floating window.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/NikiforovAll/pi-kanban/main/assets/pi-follow-last-message.png&quot; alt=&quot;Follow last message&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;themes&quot;&gt;Themes&lt;/h3&gt;
+
+&lt;p&gt;Four built-in themes (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pi-light&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pi-dark&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kanban-default&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;kanban-dark-default&lt;/code&gt;) and user-defined themes via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.pi/agent/kanban/settings.json&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://raw.githubusercontent.com/NikiforovAll/pi-kanban/main/assets/pi-kanban-poster-light.png&quot; alt=&quot;Light theme&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;slash-commands&quot;&gt;Slash commands&lt;/h2&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Command&lt;/th&gt;
+      &lt;th&gt;What it does&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban start&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Start the local server (port 3460) in the background&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban stop&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Stop the running server&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban open&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Open the dashboard in the default browser&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban app&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Open in a standalone PWA window (if installed)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban pin &amp;lt;id&amp;gt;&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Pin a session to the top of the sidebar&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban sticky-pin &amp;lt;id&amp;gt;&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Pin and keep across restarts&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban preview &amp;lt;path&amp;gt;&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Render a markdown file in the dashboard preview pane&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/kanban link &amp;lt;id&amp;gt;&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Links files to a session&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;getting-started&quot;&gt;Getting started&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pi &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;npm:pi-kanban
+&lt;span class=&quot;c&quot;&gt;# inside pi:&lt;/span&gt;
+/kanban start
+/kanban open
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here is a live demo of pi-kanban running on synthetic data:&lt;/p&gt;
+
+&lt;center&gt;
+    &lt;iframe src=&quot;https://nikiforovall.blog/pi-kanban&quot; width=&quot;100%&quot; height=&quot;600&quot; frameborder=&quot;0&quot; loading=&quot;lazy&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
+&lt;/center&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;If you use pi and want a dashboard that turns sessions into a workspace, give pi-kanban a try. Questions and feedback welcome on GitHub.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;🙌 I hope you found it helpful. If you have any questions, please feel free to reach out. If you’d like to support my work, a star on GitHub would be greatly appreciated! 🙏&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/pi-kanban&quot;&gt;pi-kanban on GitHub&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://pi.dev&quot;&gt;pi.dev&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/pi-kanban/blob/main/docs/user-guide.md&quot;&gt;User guide&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/NikiforovAll/pi-kanban/blob/main/docs/theming.md&quot;&gt;Theming&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 09 May 2026 00:00:00 +0300</pubDate>
+				<link>http://localhost:4000/ai/productivity/2026/05/09/pi-kanban.html</link>
+				<guid isPermaLink="true">http://localhost:4000/ai/productivity/2026/05/09/pi-kanban.html</guid>
+			</item>
+		
+			<item>
 				<title>Hangfire as an MCP Operations Pane for AI Agents</title>
 				<description>&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
 
@@ -3382,129 +3551,6 @@ graph LR
 				<pubDate>Sun, 22 Feb 2026 00:00:00 +0200</pubDate>
 				<link>http://localhost:4000/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html</link>
 				<guid isPermaLink="true">http://localhost:4000/dotnet/ai/2026/02/22/building-rag-with-aspire-and-python.html</guid>
-			</item>
-		
-			<item>
-				<title>Risks of AI-Assisted Development</title>
-				<description>&lt;center&gt;
-&lt;img src=&quot;/assets/risks-of-ai-assisted-development/cover.png&quot; alt=&quot;cover&quot; width=&quot;80%&quot; /&gt;
-&lt;/center&gt;
-
-&lt;h2 id=&quot;tldr&quot;&gt;TL;DR&lt;/h2&gt;
-
-&lt;p&gt;AI coding tools are powerful but come with real risks: unsolved prompt injection vulnerabilities, subtle bugs that pass review because they “look right,” cognitive shifts from writing to reading code, measurable skill degradation, and unclear ROI. None of these mean you should stop using AI — they mean you should use it with open eyes. Review AI-generated code harder, write code by hand regularly, and make sure fundamentals come before delegation.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;#tldr&quot;&gt;TL;DR&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#introduction&quot;&gt;Introduction&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#1️⃣-security-prompt-injection-is-unsolved&quot;&gt;1️⃣ Security: prompt injection is unsolved&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#2️⃣-subtle-bugs-the-looks-right-problem&quot;&gt;2️⃣ Subtle bugs: the “looks right” problem&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#3️⃣-cognitive-shift-reading-vs-writing-code&quot;&gt;3️⃣ Cognitive shift: reading vs. writing code&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#4️⃣-skill-degradation-knowing-when-to-learn&quot;&gt;4️⃣ Skill degradation: knowing when to learn&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#5️⃣-cost-the-enterprise-pricing-question&quot;&gt;5️⃣ Cost: the enterprise pricing question&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#what-to-do-about-all-this&quot;&gt;What to do about all this&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;AI coding tools are useful. They’re also new enough that we’re still figuring out what goes wrong when you lean on them too hard. This post covers the real risks — not to scare anyone off, but because using a power tool without understanding its failure modes is how you lose a finger.&lt;/p&gt;
-
-&lt;p&gt;AI is a tool. Treat it like one. A table saw doesn’t care about your fingers, and a language model doesn’t care about your codebase.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;1️⃣-security-prompt-injection-is-unsolved&quot;&gt;1️⃣ Security: prompt injection is unsolved&lt;/h2&gt;
-
-&lt;p&gt;Every AI tool that processes external input is vulnerable to &lt;strong&gt;prompt injection&lt;/strong&gt;. This is not a theoretical concern — it’s a known, actively exploited class of vulnerability with no general solution today.&lt;/p&gt;
-
-&lt;p&gt;The core problem: language models can’t reliably distinguish between &lt;em&gt;instructions&lt;/em&gt; and &lt;em&gt;data&lt;/em&gt;. If your application feeds user input into a prompt, an attacker can hijack the model’s behavior. Filters and guardrails help, but they’re mitigations, not fixes. Researchers keep finding bypasses.&lt;/p&gt;
-
-&lt;p&gt;What this means in practice:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Code that calls AI APIs with user-supplied content needs the same scrutiny as code that builds SQL queries from user input&lt;/li&gt;
-  &lt;li&gt;AI-generated code may introduce vulnerabilities the model doesn’t flag — it optimizes for “looks correct,” not “is secure”&lt;/li&gt;
-  &lt;li&gt;Supply chain concerns multiply when AI suggests dependencies it was trained on but hasn’t vetted&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Until prompt injection has a real solution (and there’s no timeline for that), treat AI-touching-external-input as a threat surface.&lt;/p&gt;
-
-&lt;h2 id=&quot;2️⃣-subtle-bugs-the-looks-right-problem&quot;&gt;2️⃣ Subtle bugs: the “looks right” problem&lt;/h2&gt;
-
-&lt;p&gt;AI-generated bugs are different. The code reads clean. Variable names are reasonable. The structure follows conventions. Everything looks right. And buried inside is a logic error that won’t surface until production — a race condition, an off-by-one in business logic, a null check that misses an edge case.&lt;/p&gt;
-
-&lt;p&gt;This is genuinely dangerous. Code review relies partly on pattern recognition — reviewers notice when something “feels off.” AI-generated code doesn’t trigger that instinct because it’s optimized for readability, not correctness. The model produces text that &lt;em&gt;looks like&lt;/em&gt; working code based on statistical patterns. Sometimes that’s working code. Sometimes it’s convincingly wrong.&lt;/p&gt;
-
-&lt;p&gt;The defense is old-fashioned: &lt;strong&gt;tests, assertions, thorough reviews, and healthy skepticism&lt;/strong&gt;. Don’t trust code more because it reads well. Read it harder &lt;em&gt;because&lt;/em&gt; it reads well.&lt;/p&gt;
-
-&lt;h2 id=&quot;3️⃣-cognitive-shift-reading-vs-writing-code&quot;&gt;3️⃣ Cognitive shift: reading vs. writing code&lt;/h2&gt;
-
-&lt;p&gt;Writing code and reading code use different parts of your brain. Writing forces you to think through logic step by step — you’re constructing. Reading is pattern matching — you’re recognizing.&lt;/p&gt;
-
-&lt;p&gt;Neuroscience calls this the &lt;strong&gt;“generation effect”&lt;/strong&gt; (documented since 1978): you need to &lt;em&gt;do&lt;/em&gt; something to truly know it. Flash card experiments showed that generating a word from a partial cue created dramatically better recall than just reading the complete word. Brain scans confirm it — generating thoughts from scratch lights up multiple brain regions simultaneously. Reading or hearing information barely registers by comparison.&lt;/p&gt;
-
-&lt;p&gt;When AI writes the code and you review it, you’re always in reading mode. You lose the constructive thinking that comes from writing. Over months and years, that changes how you relate to code. You get better at skimming and approving, worse at building from scratch.&lt;/p&gt;
-
-&lt;p&gt;An MIT study put numbers on this. Researchers monitored brain activity (EEG) while students wrote essays under three conditions: unassisted, AI-assisted, and AI-after-outlining. The AI-assisted group showed &lt;strong&gt;significantly lower brain activity and neural connectivity&lt;/strong&gt; while working. And here’s the telling part: &lt;strong&gt;83% of the ChatGPT group couldn’t recall a single sentence from their own essay&lt;/strong&gt; minutes after finishing. The essays were technically fine — grammatically correct, well-structured — but evaluators consistently called them “hollow” and “soulless.” The students produced text without thinking. It showed.&lt;/p&gt;
-
-&lt;p&gt;This isn’t hypothetical. Developers who rely heavily on autocomplete and generation tools report feeling less confident writing code without them. The skill atrophies like any unused muscle.&lt;/p&gt;
-
-&lt;p&gt;The risk isn’t that AI makes you a worse developer tomorrow. It’s that two years from now, you can’t write a moderately complex function without reaching for a tool. And when the tool is wrong (see previous section), you can’t tell.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Deliberate practice matters.&lt;/strong&gt; Write code by hand regularly. Solve problems without AI assistance. Keep the muscle working.&lt;/p&gt;
-
-&lt;h2 id=&quot;4️⃣-skill-degradation-knowing-when-to-learn&quot;&gt;4️⃣ Skill degradation: knowing when to learn&lt;/h2&gt;
-
-&lt;p&gt;There’s a difference between delegating a task you understand and delegating a task you’ve never learned. AI blurs this line.&lt;/p&gt;
-
-&lt;p&gt;If a senior developer uses AI to generate boilerplate they’ve written hundreds of times — fine. They know what correct looks like. They’ll spot problems. But if a junior developer uses AI to skip learning how authentication works, or how database transactions behave, they’re building on a foundation they don’t have.&lt;/p&gt;
-
-&lt;p&gt;The evidence from other fields is blunt:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;London taxi drivers&lt;/strong&gt; — who navigate from memory — had physically larger brain regions for spatial reasoning than average. Drivers who switched to GPS experienced measurable gray matter shrinkage in those same regions.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Doctors&lt;/strong&gt; who used AI diagnostic assistance for just four months showed weakened ability to spot cancer independently afterward.&lt;/li&gt;
-  &lt;li&gt;In a study by &lt;strong&gt;Christof Van Nimwegen&lt;/strong&gt;, participants who solved logic puzzles with software assistance collapsed when the software was taken away — they “aimlessly clicked around” while the unassisted group kept improving.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;The pattern repeats: outsource a cognitive function to a tool, and the brain physically downsizes for that function. There’s no reason to think coding is exempt.&lt;/p&gt;
-
-&lt;p&gt;The uncomfortable truth: AI makes it easy to produce code you don’t understand. And for a while, that works. You ship features, hit deadlines, look productive. The gap shows up when something breaks in an unfamiliar way, or when you need to design something the model hasn’t seen, or when you’re in a meeting and can’t explain your own system.&lt;/p&gt;
-
-&lt;p&gt;Know the difference between &lt;em&gt;“I’m using AI to go faster at something I know”&lt;/em&gt; and &lt;em&gt;“I’m using AI to avoid learning something I should know.”&lt;/em&gt; The second one has a cost, and you pay it later.&lt;/p&gt;
-
-&lt;h2 id=&quot;5️⃣-cost-the-enterprise-pricing-question&quot;&gt;5️⃣ Cost: the enterprise pricing question&lt;/h2&gt;
-
-&lt;p&gt;AI tooling isn’t cheap. Enterprise tiers, additional API usage for agentic workflows, premium models — the bill adds up. For a team of 100 developers, you’re looking at $25-50K/year just for Copilot licenses, potentially much more with heavy agentic usage.&lt;/p&gt;
-
-&lt;p&gt;The ROI question remains genuinely open. Vendors cite productivity studies, but most of those measure speed on isolated tasks, not long-term codebase quality or maintenance costs. Nobody has strong longitudinal data yet.&lt;/p&gt;
-
-&lt;p&gt;Meanwhile, pricing models keep changing. What costs $19/month today might cost $39 tomorrow if vendors decide the market will bear it. Or it might get cheaper as competition increases. Nobody knows, and that uncertainty makes long-term budgeting harder than anyone admits.&lt;/p&gt;
-
-&lt;p&gt;Organizations should treat AI tool spend like any other infrastructure cost: measure what you can, set budgets, and be honest about what you don’t know yet. &lt;em&gt;“Everyone else is paying for it”&lt;/em&gt; is not a strategy.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;what-to-do-about-all-this&quot;&gt;What to do about all this&lt;/h2&gt;
-
-&lt;p&gt;None of these risks mean you should avoid AI tools. They mean you should use them with open eyes.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Review AI-generated code with &lt;em&gt;more&lt;/em&gt; scrutiny, not less&lt;/li&gt;
-  &lt;li&gt;Maintain security practices around any AI-facing surface&lt;/li&gt;
-  &lt;li&gt;Write code by hand regularly to keep your skills sharp&lt;/li&gt;
-  &lt;li&gt;Make sure junior developers learn fundamentals before leaning on generation&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Think first, then delegate&lt;/strong&gt; — outline your approach before handing work to AI (the MIT study found this group had &lt;em&gt;higher&lt;/em&gt; brain connectivity than even the unassisted group)&lt;/li&gt;
-  &lt;li&gt;Track your AI tool costs and measure outcomes honestly&lt;/li&gt;
-  &lt;li&gt;Stay current on prompt injection research — the landscape changes fast&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;The developers who’ll get the most from AI tools long-term are the ones who understand both the capabilities and the failure modes. Blind trust and blind rejection are equally wasteful.&lt;/p&gt;
-
-</description>
-				<pubDate>Sun, 15 Feb 2026 00:00:00 +0200</pubDate>
-				<link>http://localhost:4000/ai/2026/02/15/risks-of-ai-assisted-development.html</link>
-				<guid isPermaLink="true">http://localhost:4000/ai/2026/02/15/risks-of-ai-assisted-development.html</guid>
 			</item>
 		
 	</channel>
