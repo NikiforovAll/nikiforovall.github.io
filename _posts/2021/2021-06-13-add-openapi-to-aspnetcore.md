@@ -23,7 +23,7 @@ OpenAPI is great and you should definitely consider it. From this point, please 
 
 > https://gitlab.com/codingstories/how-to-add-openapi-to-aspnetcore
 
-![openapi-banner](/assets/add-openapi/copding-story-openapi-banner.png)
+![openapi-banner](/assets/2021/add-openapi/copding-story-openapi-banner.png)
 
 ### Sneak peek the result
 

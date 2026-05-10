@@ -96,13 +96,13 @@ azd up
 Here is the output of the deployment (it took me less than 5 minutes to deploy the bot 🤯):
 
 <center>
-  <img src="/assets/azd-bot-service-starter/azd-up.png" style="margin: 15px;" />
+  <img src="/assets/2024/azd-bot-service-starter/azd-up.png" style="margin: 15px;" />
 </center>
 
 The `azd` CLI outputs the URL of the deployed bot. You can test it by sending a message to the bot.
 
 <center>
-  <img src="/assets/azd-bot-service-starter/test-chat.png" style="margin: 15px;" />
+  <img src="/assets/2024/azd-bot-service-starter/test-chat.png" style="margin: 15px;" />
 </center>
 
 The benefit of using `azd` template is that it automatically creates a new **resource group**, app **service plan**, **application insights**, **vault**, and **app service** for you. You don't need to worry about the infrastructure, just focus on your code.
@@ -110,7 +110,7 @@ The benefit of using `azd` template is that it automatically creates a new **res
 For example, here is an application insights dashboard for the bot:
 
 <center>
-  <img src="/assets/azd-bot-service-starter/app-insights.png" style="margin: 15px;" />
+  <img src="/assets/2024/azd-bot-service-starter/app-insights.png" style="margin: 15px;" />
 </center>
 
 ## Teardown
@@ -124,7 +124,7 @@ azd down
 This command will delete all the resources created by the `azd up` command.
 
 <center>
-  <img src="/assets/azd-bot-service-starter/azd-down.png" style="margin: 15px;" />
+  <img src="/assets/2024/azd-bot-service-starter/azd-down.png" style="margin: 15px;" />
 </center>
 
 ## Conclusion

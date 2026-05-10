@@ -12,7 +12,7 @@ related: true
 ---
 
 <center>
-<img src="/assets/risks-of-ai-assisted-development/cover.png" alt="cover" width="80%"/>
+<img src="/assets/2026/risks-of-ai-assisted-development/cover.png" alt="cover" width="80%"/>
 </center>
 
 ## TL;DR

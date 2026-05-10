@@ -63,7 +63,7 @@ Think about this code in terms of the quote below:
 
 In software development, a pipeline is a sequence of steps or stages through which data or tasks flow. Each step in the pipeline performs a specific operation on the data or tasks and passes the result to the next step. Pipelines are commonly used to process data or perform a series of operations in a structured and efficient manner.
 
-<img src="/assets/channels-composition/producer-consumer.png"/>
+<img src="/assets/2024/channels-composition/producer-consumer.png"/>
 
 While the [Open.ChannelExtensions](https://github.com/Open-NET-Libraries/Open.ChannelExtensions) library already contains the necessary components for building concurrent pipelines, we will be building a **naive** implementation from scratch for *learning purposes*. This will allow us to gain a deeper understanding of the underlying concepts and mechanisms.
 

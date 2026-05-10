@@ -80,7 +80,7 @@ $ tree -L 3
 A home page doesn't require user to be authenticated and looks like this:
 
 <center>
- <img src="/assets/keycloak-blazor/app-home.png" alt="app-home.png">
+ <img src="/assets/2022/keycloak-blazor/app-home.png" alt="app-home.png">
 </center>
 
 Before we look at BlazorWASM (aka client-side), we need to add authentication to a backend.
@@ -126,7 +126,7 @@ To create a Realm:
 You should see something like that:
 
 <center>
- <img src="/assets/keycloak-blazor/create-test-realm.png" alt="create-test-realm.png">
+ <img src="/assets/2022/keycloak-blazor/create-test-realm.png" alt="create-test-realm.png">
 </center>
 
 ---
@@ -153,7 +153,7 @@ To Create a user in the "Test" Realm:
 You should see something like that:
 
 <center>
- <img src="/assets/keycloak-blazor/create-user.png" alt="create-user.png">
+ <img src="/assets/2022/keycloak-blazor/create-user.png" alt="create-user.png">
 </center>
 
 ---
@@ -161,7 +161,7 @@ You should see something like that:
 Keycloak, by default, provides user account management functionality. It is available through the inherited role in "Role Mapping" tab in the user account.
 
 <center>
- <img src="/assets/keycloak-blazor/user-role-mapping.png" alt="user-role-mapping.png">
+ <img src="/assets/2022/keycloak-blazor/user-role-mapping.png" alt="user-role-mapping.png">
 </center>
 <br/>
 
@@ -174,7 +174,7 @@ To see a user account:
 Here is what I see on my screen:
 
 <center>
- <img src="/assets/keycloak-blazor/user-info.png" alt="user-info.png">
+ <img src="/assets/2022/keycloak-blazor/user-info.png" alt="user-info.png">
 </center>
 
 ### Add Keycloak to backend
@@ -217,7 +217,7 @@ To create a client:
 Now, we can download something called adapter config. On the top-right click "Action" dropdown and select "Download adapter config" option. Like this:
 
 <center>
- <img src="/assets/keycloak-blazor/test-client-config.png" alt="test-client-config.png">
+ <img src="/assets/2022/keycloak-blazor/test-client-config.png" alt="test-client-config.png">
 </center>
 <br/>
 
@@ -256,7 +256,7 @@ Let's see how to add an audience to a client by using client scopes. Client scop
 Here is the result:
 
 <center>
- <img src="/assets/keycloak-blazor/test-client-mapper.png" alt="test-client-mapper.png">
+ <img src="/assets/2022/keycloak-blazor/test-client-mapper.png" alt="test-client-mapper.png">
 </center>
 
 ---
@@ -355,7 +355,7 @@ For Swagger UI, I tend to use an "Implicit Flow", therefore, we need to configur
 6. Click "Save"
 
 <center>
- <img src="/assets/keycloak-blazor/swagger-redirect-url.png" alt="swagger-redirect-url.png">
+ <img src="/assets/2022/keycloak-blazor/swagger-redirect-url.png" alt="swagger-redirect-url.png">
 </center>
 
 ---
@@ -367,7 +367,7 @@ For Swagger UI, I tend to use an "Implicit Flow", therefore, we need to configur
 5. You will be redirected to Keycloak to enter the credentials  (user:user)
 
 <center>
- <img src="/assets/keycloak-blazor/access-token-from-swagger.png" alt="access-token-from-swagger.png">
+ <img src="/assets/2022/keycloak-blazor/access-token-from-swagger.png" alt="access-token-from-swagger.png">
 </center>
 
 ---
@@ -375,7 +375,7 @@ For Swagger UI, I tend to use an "Implicit Flow", therefore, we need to configur
 Now, we can test the API from Swagger UI:
 
 <center>
- <img src="/assets/keycloak-blazor/api-from-swagger.png" alt="api-from-swagger.png">
+ <img src="/assets/2022/keycloak-blazor/api-from-swagger.png" alt="api-from-swagger.png">
 </center>
 
 ## Frontend. Blazor WASM
@@ -387,7 +387,7 @@ To get an access token securely, we need to consider various characteristics of 
 See: <https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce>
 
 <center>
- <img src="/assets/keycloak-blazor/auth-sequence-auth-code-pkce.png" alt="auth-sequence-auth-code-pkce">
+ <img src="/assets/2022/keycloak-blazor/auth-sequence-auth-code-pkce.png" alt="auth-sequence-auth-code-pkce">
 </center>
 
 ### Integrate with Keycloak from the frontend. Overview
@@ -515,7 +515,7 @@ Now, we want to be able to use "client roles" as roles in ASP.NET Core Identity 
    1. specify Role name: User
 
 <center>
- <img src="/assets/keycloak-blazor/test-client-roles.png" alt="test-client-roles.png">
+ <img src="/assets/2022/keycloak-blazor/test-client-roles.png" alt="test-client-roles.png">
 </center>
 <br/>
 
@@ -573,7 +573,7 @@ Note, the "test-client" roles are duplicated into separate claim that can be use
 From "Home" page click "Fetch Data" tab. You will be presented with the next error:
 
 <center>
- <img src="/assets/keycloak-blazor/demo-redirect-error.png" alt="demo-redirect-error.png">
+ <img src="/assets/2022/keycloak-blazor/demo-redirect-error.png" alt="demo-redirect-error.png">
 </center>
 <br/>
 
@@ -588,7 +588,7 @@ As you might have already guessed, we need to specify Blazor WASM application UR
 Now, we you can try again. This time you might see the next expected error:
 
 <center>
- <img src="/assets/keycloak-blazor/demo-no-access-token-error.png" alt="demo-no-access-token-error.png">
+ <img src="/assets/2022/keycloak-blazor/demo-no-access-token-error.png" alt="demo-no-access-token-error.png">
 </center>
 <br/>
 
@@ -610,7 +610,7 @@ static void RegisterHttpClient(WebAssemblyHostBuilder builder, IServiceCollectio
 ```
 
 <center>
- <img src="/assets/keycloak-blazor/demo-success.png" alt="demo-success.png">
+ <img src="/assets/2022/keycloak-blazor/demo-success.png" alt="demo-success.png">
 </center>
 
 🎉 Hooray. We have successfully integrated Keycloak with Blazor WebAssembly application.

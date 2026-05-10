@@ -40,13 +40,13 @@ With AWS Batch, you can easily parallelize the processing of your files, signifi
 *AWS Batch* helps you to run batch computing workloads on the AWS Cloud. Batch computing is a common way for developers, scientists, and engineers to access large amounts of compute resources. *AWS Batch* removes the undifferentiated heavy lifting of configuring and managing the required infrastructure, similar to traditional batch computing software. This service can efficiently provision resources in response to jobs submitted in order to, you can easily parallelize the processing of your files, which can significantly reduce the overall processing time. Additionally, *AWS Batch* integrates seamlessly with other AWS services, such as *Amazon S3*, allowing you to easily access and process your files stored in the cloud.
 
 <center>
-    <img src="/assets/aws-batch/aws-batch-service.png" alt="aws-batch-service" width="10%" style="margin: 15px;">
+    <img src="/assets/2024/aws-batch/aws-batch-service.png" alt="aws-batch-service" width="10%" style="margin: 15px;">
 </center>
 
 For more information on how to use *AWS Batch* you can refer to the [AWS Batch documentation](https://docs.aws.amazon.com/batch/).
 
 <center>
-    <img src="/assets/aws-batch/batch-arch.png" alt="batch-arch" width="75%" style="margin: 15px;">
+    <img src="/assets/2024/aws-batch/batch-arch.png" alt="batch-arch" width="75%" style="margin: 15px;">
 </center>
 
 #### Components of AWS Batch
@@ -99,7 +99,7 @@ aws batch submit-job --job-name jobB --job-queue myQueue --job-definition jdB --
 ```
 
 <center>
-    <img src="/assets/aws-batch/job-states.gif" alt="job-states" width="75%" style="margin: 15px;">
+    <img src="/assets/2024/aws-batch/job-states.gif" alt="job-states" width="75%" style="margin: 15px;">
 </center>
 
 ##### Job Definitions
@@ -119,7 +119,7 @@ Job queues are mapped to one or more compute environments. Compute environments 
 Amazon Simple Storage Service (*Amazon S3*) is an object storage service that offers industry-leading scalability, data availability, security, and performance. Customers of all sizes and industries can use *Amazon S3* to store and protect any amount of data for a range of use cases, such as data lakes, websites, mobile applications, backup and restore, archive, enterprise applications, IoT devices, and big data analytics.
 
 <center>
-    <img src="/assets/aws-batch/aws-s3-service.png" alt="aws-s3-service" width="10%" style="margin: 15px;">
+    <img src="/assets/2024/aws-batch/aws-s3-service.png" alt="aws-s3-service" width="10%" style="margin: 15px;">
 </center>
 
 For more information on how to use *AWS S3* you can refer to the [AWS Batch documentation](https://docs.aws.amazon.com/s3/).
@@ -150,7 +150,7 @@ COMMANDS:
 ```
 
 <center>
-    <img src="/assets/aws-batch/stepfunctions_graph.png" alt="stepfunctions_graph" width="25%" style="margin: 15px;">
+    <img src="/assets/2024/aws-batch/stepfunctions_graph.png" alt="stepfunctions_graph" width="25%" style="margin: 15px;">
 </center>
 
 1. Initialize Migration Plan:
@@ -693,7 +693,7 @@ And here is the that was output to console:
 
 
 <center>
-    <img src="/assets/aws-batch/stepfunctions-console-execution.png" alt="stepfunctions-console-execution" style="margin: 15px;">
+    <img src="/assets/2024/aws-batch/stepfunctions-console-execution.png" alt="stepfunctions-console-execution" style="margin: 15px;">
 </center>
 
 ## Conclusion

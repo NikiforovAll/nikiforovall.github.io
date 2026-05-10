@@ -22,7 +22,7 @@ This article demonstrates how to utilize .NET Aspire as an orchestrator. You wil
 
 
 <center>
-    <img src="/assets/startup-dependencies-aspire/aspire-dependencies-banner.png" style="margin: 15px;" width="80%">
+    <img src="/assets/2024/startup-dependencies-aspire/aspire-dependencies-banner.png" style="margin: 15px;" width="80%">
 </center>
 
 ## Introduction

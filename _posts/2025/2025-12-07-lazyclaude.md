@@ -16,7 +16,7 @@ related: true
 Claude Code's customization system is powerful but scattered across multiple files and configuration levels. **LazyClaude** is a lazygit-inspired terminal UI that lets you explore all your customizations—slash commands, agents, skills, MCPs, hooks, and memory files—in one place. Filter by level (user/project/plugin), search by name, and navigate with vim-style keybindings.
 
 <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 1rem 0;">
-<img src="/assets/lazyclaude/logo.png" alt="LazyClaude logo" width="60"/>
+<img src="/assets/2025/lazyclaude/logo.png" alt="LazyClaude logo" width="60"/>
 <div>
 <p style="margin: 0; padding: 0.5rem 0;"><strong>Source:</strong> <a href="https://github.com/NikiforovAll/lazyclaude">github.com/NikiforovAll/lazyclaude</a></p>
 <p style="margin: 0; padding: 0.5rem 0;"><strong>Install:</strong> <code>uvx lazyclaude</code></p>
@@ -38,7 +38,7 @@ When you need to find a specific command or understand what's available, you're 
 **LazyClaude** solves this by providing a dedicated terminal UI where you can browse all your Claude Code customizations without leaving your workflow.
 
 <center>
-<img src="/assets/lazyclaude/demo.png" alt="LazyClaude main interface"/>
+<img src="/assets/2025/lazyclaude/demo.png" alt="LazyClaude main interface"/>
 </center>
 
 
@@ -47,7 +47,7 @@ When you need to find a specific command or understand what's available, you're 
 LazyClaude is a terminal user interface that follows the design philosophy of [lazygit](https://github.com/jesseduffield/lazygit): keyboard-driven, panel-based, and focused on getting information quickly.
 
 <center>
-<img src="/assets/lazyclaude/demo.gif" alt="LazyClaude demo showing terminal UI"/>
+<video src="/assets/2025/lazyclaude/demo.mp4" autoplay muted loop playsinline controls aria-label="LazyClaude demo showing terminal UI"></video>
 </center>
 
 ---

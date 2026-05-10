@@ -19,7 +19,7 @@ In this post, we'll look at how you can use [OpenTelemetry](https://opentelemetr
 **Source code**: <https://github.com/NikiforovAll/tests-instrumentation-with-otel-and-aspire>
 
 <center>
-    <img src="/assets/test-instrumentation/blog-cover.png" style="margin: 15px;">
+    <img src="/assets/2024/test-instrumentation/blog-cover.png" style="margin: 15px;">
 </center>
 
 
@@ -117,7 +117,7 @@ dotnet test --filter TodosTests --verbosity normal
 Here are output traces that can be found in Aspire Dashboard:
 
 <center>
-    <img src="/assets/test-instrumentation/overview.png" style="margin: 15px;">
+    <img src="/assets/2024/test-instrumentation/overview.png" style="margin: 15px;">
 </center>
 
 Open: <http://localhost:18888/> to see the results of Test Runs.
@@ -125,7 +125,7 @@ Open: <http://localhost:18888/> to see the results of Test Runs.
 The interesting part here is a "Warmup" and "TestRun" traces. "Warmup" traces shows us how much time it took to setup host `TestServer` for *TodoApi*, *PostgreSQL* container, and *Aspire Dashboard* as reusable container.
 
 <center>
-    <img src="/assets/test-instrumentation/warmup.png" style="margin: 15px;">
+    <img src="/assets/2024/test-instrumentation/warmup.png" style="margin: 15px;">
 </center>
 
 As you can see, we have a lot of thing going on during automatic database migration.
@@ -135,19 +135,19 @@ Let's open "TestRun" traces. I've prepared two ways you can run integration test
 Here is sequential version:
 
 <center>
-    <img src="/assets/test-instrumentation/seq-test-run.png" style="margin: 15px;">
+    <img src="/assets/2024/test-instrumentation/seq-test-run.png" style="margin: 15px;">
 </center>
 
 And here is parallel version:
 
 <center>
-    <img src="/assets/test-instrumentation/par-test-run.png" style="margin: 15px;">
+    <img src="/assets/2024/test-instrumentation/par-test-run.png" style="margin: 15px;">
 </center>
 
 💡Every test run is separated based on  `service.instance.id` with value assigned to `test.run_id` custom attribute. It is assigned to every trace to make test runs discoverable. `test.run_id` is generated as sequential guid to order the test runs in time. Basically, you can use Aspire Dashboard drop down for replica set to inspect every test run.
 
 <center>
-    <img src="/assets/test-instrumentation/replica-set.png" style="margin: 15px;">
+    <img src="/assets/2024/test-instrumentation/replica-set.png" style="margin: 15px;">
 </center>
 
 ## Code Explained

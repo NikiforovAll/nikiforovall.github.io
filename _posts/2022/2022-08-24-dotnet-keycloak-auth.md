@@ -160,7 +160,7 @@ Let’s create our first realm.
 - Click `Create`
 
 <center>
-    <img src="/assets/keycloak-authz/add-realm.png" alt="add-realm">
+    <img src="/assets/2022/keycloak-authz/add-realm.png" alt="add-realm">
 </center>
 
 Create a user
@@ -177,7 +177,7 @@ Initially, there are no users in a new realm, so let’s create one:
 - Click `Save`
 
 <center>
-    <img src="/assets/keycloak-authz/add-user.png" alt="add-user">
+    <img src="/assets/2022/keycloak-authz/add-user.png" alt="add-user">
 </center>
 
 Let’s try to secure our first application. The first step is to register this application with your Keycloak instance:
@@ -190,7 +190,7 @@ Let’s try to secure our first application. The first step is to register this 
 - Click `Save`
 
 <center>
-    <img src="/assets/keycloak-authz/add-client.png" alt="add-client">
+    <img src="/assets/2022/keycloak-authz/add-client.png" alt="add-client">
 </center>
 
 As mentioned above, Keycloak has a concept of adaptor config. It allows us to copy essential configurations. `Keycloak.AuthServices.Authentication` is deliberately designed to streamline the installation process, so the `KeycloakAuthenticationOptions` mimics the structure of the adapter config.
@@ -198,7 +198,7 @@ As mentioned above, Keycloak has a concept of adaptor config. It allows us to co
 Navigate the newly created client (top-right) and click "Action>Download adapter config"
 
 <center>
-    <img src="/assets/keycloak-authz/adapter-config.png" alt="adapter-config">
+    <img src="/assets/2022/keycloak-authz/adapter-config.png" alt="adapter-config">
 </center>
 
 Here is what it looks like:
@@ -272,7 +272,7 @@ app.Run();
 Now we need to obtain an access token and make a call via swagger-ui. There are various ways you can do it. In my case, I opened "test-client" and made it confidential, and enabled "Direct access grants". This way we can use a username and password. Please make sure you understand how to configure OAuth 2.0 and OpenId Connect before moving to production. In my case, it is just easy to demonstrate.
 
 <center>
-    <img src="/assets/keycloak-authz/confidential-client.png" alt="confidential-client">
+    <img src="/assets/2022/keycloak-authz/confidential-client.png" alt="confidential-client">
 </center>
 
 ```bash
@@ -281,13 +281,13 @@ curl --data "grant_type=password&client_id=test-client&username=test&password=te
 ```
 
 <center>
-    <img src="/assets/keycloak-authz/get-access-token.png" alt="get-access-token">
+    <img src="/assets/2022/keycloak-authz/get-access-token.png" alt="get-access-token">
 </center>
 
 Now, we can navigate swagger `https://localhost:5001/swagger` and make an authentication request by providing an access token.
 
 <center>
-    <img src="/assets/keycloak-authz/swagger-ok.png" alt="swagger-ok">
+    <img src="/assets/2022/keycloak-authz/swagger-ok.png" alt="swagger-ok">
 </center>
 
 ## Bonus - Adding Authorization
@@ -339,7 +339,7 @@ app.Run();
 Here is what the logs look like after a successful HTTP GET "/" request.
 
 <center>
-    <img src="/assets/keycloak-authz/terminal-ok.png" alt="terminal-ok">
+    <img src="/assets/2022/keycloak-authz/terminal-ok.png" alt="terminal-ok">
 </center>
 
 ## Summary

@@ -27,25 +27,25 @@ One process spawns four servers, opens a browser, done. The tools live in iframe
 
 ### Kanban
 
-![Kanban](/assets/claude-code-hub/cck.png)
+![Kanban](/assets/2026/claude-code-hub/cck.png)
 
 A real-time task board for Claude Code sessions. It shows tasks, agents, and subagent teams as Claude works. State comes from JSONL files written by lightweight hooks (more on that below).
 
 ### Marketplace
 
-![Marketplace](/assets/claude-code-hub/marketplace.png)
+![Marketplace](/assets/2026/claude-code-hub/marketplace.png)
 
 Browse and install Claude Code plugins across local, user, and project scopes. Basically an app store for skills and MCP servers.
 
 ### Cost
 
-![Cost](/assets/claude-code-hub/cost.png)
+![Cost](/assets/2026/claude-code-hub/cost.png)
 
 Token usage and cost breakdowns. Drill from totals down to projects, then to individual sessions. I check this more often than I'd like to admit.
 
 ### Memory
 
-![Memory](/assets/claude-code-hub/memory.png)
+![Memory](/assets/2026/claude-code-hub/memory.png)
 
 Shows all memory sources that feed into Claude Code: CLAUDE.md files, rules, auto memory, import chains. Really helpful when Claude does something unexpected and you want to figure out which instruction is responsible.
 

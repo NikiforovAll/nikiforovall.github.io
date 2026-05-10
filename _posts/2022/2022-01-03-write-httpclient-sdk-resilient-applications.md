@@ -23,7 +23,7 @@ For example, transient errors might be handled proactively by using *Retry* and 
 
 This is when *Circuit Breaker* pattern comes into play. It detects the level of faults and prevents calls to a downstream service when a fault threshold is exceeded. Use this pattern when there is no chance of succeeding - for example, where a subsystem is completely offline, or struggling under load. The idea behind *Circuit Breaker* is pretty straightforward, although, you might build something more complex on top of it. When faults exceed the threshold, calls placed through the circuit, so instead of processing of a request we practice [fail-fast](https://en.wikipedia.org/wiki/Fail-fast) approach, throwing an exception immediately.
 
-![http-client-sdk-polly](/assets/http-sdk/http-client-sdk-polly.png)
+![http-client-sdk-polly](/assets/2022/http-sdk/http-client-sdk-polly.png)
 
 Designing reliable systems could be challenging task, I suggest you to investigate the subject on your own. Here is a good read - [.NET microservices - Architecture e-book: Implement resilient applications](https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/).
 

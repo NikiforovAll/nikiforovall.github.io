@@ -74,7 +74,7 @@ dependify serve $dev/path-to-folder/
 You will see something like the following output in the terminal.
 
 <center>
-    <img src="/assets/dependify/serve-terminal.png" style="margin: 15px;" width="90%">
+    <img src="/assets/2024/dependify/serve-terminal.png" style="margin: 15px;" width="90%">
 </center>
 
 ## Features

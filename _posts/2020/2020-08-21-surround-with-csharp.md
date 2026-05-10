@@ -24,13 +24,13 @@ This extension supports different concepts to trigger functionally to surround y
 
 You can just simply hit `CTRL + SPACE` and if you have some code selected, you will get completion items that you can choose from by using arrow keys:
 
-![demo1](/assets/surround-with-csharp/surr-w-cs-d2.gif)
+![demo1](/assets/2020/surround-with-csharp/surr-w-cs-d2.gif)
 
 ## Commands
 
 If your favorite *command-pallette*. You can invoke command **"C#: Surround With"** (or `CTRL+SHIFT+S, CTRL+SHIFT+S`) and you will be prompted for a code snippet.
 
-![demo2](/assets/surround-with-csharp/surr-w-cs-d1.gif)
+![demo2](/assets/2020/surround-with-csharp/surr-w-cs-d1.gif)
 
 ### Customize Keybindings
 

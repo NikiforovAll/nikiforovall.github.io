@@ -15,7 +15,7 @@ related: true
 
 This blog post is a compilation of the latest and greatest additions from the .NET 6 release. Also, I've created a coding story that will help you to learn new improvements.
 
-![minimal-api-banner](/assets/minimal-api/minimal-api-fun.png)
+![minimal-api-banner](/assets/2021/minimal-api/minimal-api-fun.png)
 
 ---
 
@@ -23,7 +23,7 @@ This blog post is a compilation of the latest and greatest additions from the .N
 
 > https://codingstories.io/stories/6139f4a2f2cd3d0031cd8ef1/617b06b5d2ec28001acfe618
 
-![post-banner](/assets/whats-new-in-dotnet6-banner.png)
+![post-banner](/assets/2021/whats-new-in-dotnet6/whats-new-in-dotnet6-banner.png)
 Source code 👇:
 
 > https://github.com/NikiforovAll/whats-new-in-dotnet6

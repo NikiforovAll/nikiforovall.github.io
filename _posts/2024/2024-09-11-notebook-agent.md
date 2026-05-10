@@ -207,7 +207,7 @@ answer.Result.DisplayAs("text/markdown");
 Here is the output:
 
 <center>
-  <img src="/assets/notebook-agent/ask-release-notes-demo.png" style="margin: 15px;" width="100%">
+  <img src="/assets/2024/notebook-agent/ask-release-notes-demo.png" style="margin: 15px;" width="100%">
 </center>
 
 ## Conclusion

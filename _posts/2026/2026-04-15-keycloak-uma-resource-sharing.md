@@ -10,7 +10,7 @@ fullview: false
 comments: true
 related: true
 mermaid: true
-image: /assets/keycloak-uma/banner-v2.png
+image: /assets/2026/keycloak-uma/banner-v2.png
 ---
 
 ## TL;DR
@@ -81,7 +81,7 @@ Here's what this looks like in the Blazor sample.
 Alice owns `shared-document`, so authorization succeeds right away:
 
 <p align="center">
-  <img src="/assets/keycloak-uma/uma-resource-sharing-login.gif" alt="Login and Resource Owner Access"/>
+  <video src="/assets/2026/keycloak-uma/uma-resource-sharing-login.mp4" autoplay muted loop playsinline controls aria-label="Login and Resource Owner Access"></video>
 </p>
 
 ### bob requests access, alice approves
@@ -89,7 +89,7 @@ Alice owns `shared-document`, so authorization succeeds right away:
 Bob has no permission. He submits a request, alice approves it, then bob retries and gets in:
 
 <p align="center">
-  <img src="/assets/keycloak-uma/uma-resource-sharing-approve.gif" alt="Request Access and Owner Approval"/>
+  <video src="/assets/2026/keycloak-uma/uma-resource-sharing-approve.mp4" autoplay muted loop playsinline controls aria-label="Request Access and Owner Approval"></video>
 </p>
 
 ### bob (no permission), access denied
@@ -97,7 +97,7 @@ Bob has no permission. He submits a request, alice approves it, then bob retries
 Without approval, bob gets a clear "Access Denied":
 
 <p align="center">
-  <img src="/assets/keycloak-uma/uma-resource-sharing-denied.gif" alt="Access Denied"/>
+  <video src="/assets/2026/keycloak-uma/uma-resource-sharing-denied.mp4" autoplay muted loop playsinline controls aria-label="Access Denied"></video>
 </p>
 
 ---

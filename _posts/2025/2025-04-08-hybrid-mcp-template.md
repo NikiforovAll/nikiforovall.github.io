@@ -13,7 +13,7 @@ mermaid: true
 ---
 
 <center>
-  <img src="/assets/mcp/light.png" style="margin: 15px;" width="80%" />
+  <img src="/assets/2025/mcp/light.png" style="margin: 15px;" width="80%" />
 </center>
 
 ## TL;DR
@@ -206,7 +206,7 @@ builder.Build().Run();
 Here is how the Aspire Dashboard looks like:
 
 <center>
-  <img src="/assets/mcp/mcp-hybrid-aspire-dashboard.png" style="margin: 15px;" />
+  <img src="/assets/2025/mcp/mcp-hybrid-aspire-dashboard.png" style="margin: 15px;" />
 </center>
 
 And it works like a charm!

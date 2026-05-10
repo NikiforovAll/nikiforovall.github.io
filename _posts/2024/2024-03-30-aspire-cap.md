@@ -266,7 +266,7 @@ When `azd` targets a .NET Aspire application it starts the AppHost with a specia
 
 The manifest file is interrogated by the `azd provision` sub-command logic to generate Bicep files in-memory only (by default).
 
-![azd-internals](/assets/cap-aspire/azd-internals.png)
+![azd-internals](/assets/2024/cap-aspire/azd-internals.png)
 
 See <https://learn.microsoft.com/en-us/dotnet/aspire/deployment/azure/aca-deployment-azd-in-depth?tabs=linux#how-azure-developer-cli-integration-works> for more instructions.
 
@@ -278,7 +278,7 @@ Personally, I find it more convenient to generate Bicep files explicitly. This c
 
 Here is visualization of what would be provisioned:
 
-![resources](/assets/cap-aspire/resources.png)
+![resources](/assets/2024/cap-aspire/resources.png)
 
 To provision resources we need to run next command:
 
@@ -286,11 +286,11 @@ To provision resources we need to run next command:
 ❯ azd provision
 ```
 
-![provision](/assets/cap-aspire/provision.png)
+![provision](/assets/2024/cap-aspire/provision.png)
 
 Here is created resource group - `rg-cap-dev`:
 
-![az-resources](/assets/cap-aspire/az-resources.png)
+![az-resources](/assets/2024/cap-aspire/az-resources.png)
 
 ### Configure for Local Development
 
@@ -435,11 +435,11 @@ Navigate to Aspire Dashboard to see some traces:
 
 Here is the first request, as you can see, we need some time to establish initial connection with Azure Service Bus:
 
-![traces](/assets/cap-aspire/traces.png)
+![traces](/assets/2024/cap-aspire/traces.png)
 
 Subsequent requests take less time:
 
-![traces2](/assets/cap-aspire/traces2.png)
+![traces2](/assets/2024/cap-aspire/traces2.png)
 
 💡I recommend you to delve into the source code and trace examples to enhance your understanding of how the **Outbox Pattern** works.
 
@@ -447,7 +447,7 @@ Subsequent requests take less time:
 
 Let's deploy to Azure Container Apps by running `azd deploy`
 
-![deploy](/assets/cap-aspire/deploy.png)
+![deploy](/assets/2024/cap-aspire/deploy.png)
 
 During the initial configuration (`azd init`) I specified that I want a public address for the Producer. We can utilize it for dev testing:
 
@@ -461,7 +461,7 @@ Let's generate some load and see the metrics for Azure Service Bus.
 # }
 ```
 
-![metrics](/assets/cap-aspire/sb-metrics.png)
+![metrics](/assets/2024/cap-aspire/sb-metrics.png)
 
 #### Outbox Tables
 
@@ -473,7 +473,7 @@ In the **Outbox Pattern**, the Published and Received tables are used to manage 
 
 **Received Table**: The Received table is used to track the messages that have been received by the application from the external messaging system. When the application receives a message, it stores the necessary information about the message in the Received table. This information can include the message content, metadata, and any other relevant details. The Received table allows the application to keep a record of the messages it has processed, enabling it to handle duplicate messages.
 
-![outbox-tables](/assets/cap-aspire/outbox-tables.png)
+![outbox-tables](/assets/2024/cap-aspire/outbox-tables.png)
 
 ### Cleanup
 

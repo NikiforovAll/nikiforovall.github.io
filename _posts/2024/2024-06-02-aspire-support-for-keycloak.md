@@ -120,7 +120,7 @@ Here is what was generated:
 Here are resources from Aspire Dashboard:
 
 <center>
-    <img src="/assets/keycloak-aspire/dashboard-resources.png" style="margin: 15px;">
+    <img src="/assets/2024/keycloak-aspire/dashboard-resources.png" style="margin: 15px;">
 </center>
 
 As you can see, there is a `quay.io/keycloak/keycloak:24.0.3` container running. It is available on your local machine: <http://localhost:8080/>. Use `admin:admin` credentials.
@@ -128,13 +128,13 @@ As you can see, there is a `quay.io/keycloak/keycloak:24.0.3` container running.
 The template project was generated with exemplary import files. It imports *Test* realm, adds *workspaces-client*, and seeds test users:
 
 <center>
-    <img src="/assets/keycloak-aspire/test-realm.png" style="margin: 15px;">
+    <img src="/assets/2024/keycloak-aspire/test-realm.png" style="margin: 15px;">
 </center>
 
 Now, we can open Swagger UI and retrieve an access token. Note, imported realm is configured to support [Implicit Flow](https://oauth.net/2/grant-types/implicit/). We can use it during the development process as demonstrated below.
 
 <center>
-    <img src="/assets/keycloak-aspire/auth-swagger-ui.png" width="100%" style="margin: 15px;">
+    <img src="/assets/2024/keycloak-aspire/auth-swagger-ui.png" width="100%" style="margin: 15px;">
 </center>
 
 To invoke the API you can use Swagger UI or other HTTP tool of your choice. Here is an example of how to use `cURL`:

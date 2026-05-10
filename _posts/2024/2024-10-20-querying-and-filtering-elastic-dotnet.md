@@ -69,7 +69,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Match query</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q1.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q1.png" style="margin: 15px;" />
 </center>
 
 #### Multi-match query
@@ -93,7 +93,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Multi-match query</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q2.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q2.png" style="margin: 15px;" />
 </center>
 
 ➕ Individual fields can be boosted with the **caret (^) notation**. Note in the following query how the score of the results that have "JavaScript" in their title is multiplied.
@@ -113,7 +113,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Multi-match query with boost</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q3.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q3.png" style="margin: 15px;" />
 </center>
 
 ## Term-level Queries
@@ -139,7 +139,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Term search</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q4.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q4.png" style="margin: 15px;" />
 </center>
 
 #### Range search
@@ -162,7 +162,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Range search</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q5.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q5.png" style="margin: 15px;" />
 </center>
 
 #### Prefix search
@@ -186,7 +186,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Prefix search</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q6.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q6.png" style="margin: 15px;" />
 </center>
 
 #### Fuzzy search
@@ -219,7 +219,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Fuzzy search</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q7.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q7.png" style="margin: 15px;" />
 </center>
 
 ### Combining Query Conditions
@@ -254,7 +254,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>bool.must (AND)</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q8.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q8.png" style="margin: 15px;" />
 </center>
 
 #### bool.should (OR)
@@ -285,7 +285,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>bool.should (OR)</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q9.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q9.png" style="margin: 15px;" />
 </center>
 
 ## Filtering
@@ -321,7 +321,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>bool.filter</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q10.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q10.png" style="margin: 15px;" />
 </center>
 
 ### bool.must_not
@@ -344,7 +344,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>bool.must_not</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q11.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q11.png" style="margin: 15px;" />
 </center>
 
 ### Using Filters with Queries
@@ -374,7 +374,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Filters and Queries</b></center>
 
 <center>
-  <img src="/assets/querying-elastic/q12.png" style="margin: 15px;" />
+  <img src="/assets/2024/querying-elastic/q12.png" style="margin: 15px;" />
 </center>
 
 ## Conclusion

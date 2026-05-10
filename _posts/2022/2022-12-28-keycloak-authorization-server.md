@@ -430,13 +430,13 @@ Let's say the "user" has **realm-role**, but is not a member of **workspace** gr
 Here is how the permission evaluation is interpreted by Keycloak:
 
 <center>
- <img src="/assets/keycloak-authz-server/evaluate1.png" alt="evaluate1">
+ <img src="/assets/2022/keycloak-authz-server/evaluate1.png" alt="evaluate1">
 </center>
 
 And if we add the "user to **workspace** group:
 
 <center>
- <img src="/assets/keycloak-authz-server/evaluate2.png" alt="evaluate1">
+ <img src="/assets/2022/keycloak-authz-server/evaluate2.png" alt="evaluate1">
 </center>
 
 ### Demo
@@ -447,7 +447,7 @@ And if we add the "user to **workspace** group:
 4. Execute "/endpoint4"
 
 <center>
- <img src="/assets/keycloak-authz-server/authz-demo2.png" alt="authz-demo2">
+ <img src="/assets/2022/keycloak-authz-server/authz-demo2.png" alt="authz-demo2">
 </center>
 
 As you can see, the response is 200 OK. I suggest you to try removing "user" from the "workspace" group and see how it works.
@@ -469,7 +469,7 @@ As described above, the permission is evaluated by Keycloak therefore you can se
 ```
 
 <center>
- <img src="/assets/keycloak-authz-server/authz-demo1.png" alt="authz-demo1">
+ <img src="/assets/2022/keycloak-authz-server/authz-demo1.png" alt="authz-demo1">
 </center>
 
 ---

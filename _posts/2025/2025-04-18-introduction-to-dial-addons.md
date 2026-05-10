@@ -72,13 +72,13 @@ aspire run --project AppHost/AppHost.csproj
 ```
 
 <center>
-  <img src="/assets/dial/addon/aspire-cli-1.png" style="margin: 15px;" width="50%" />
+  <img src="/assets/2025/dial/addon/aspire-cli-1.png" style="margin: 15px;" width="50%" />
 </center>
 
 Here is the the Aspire Dashboard:
 
 <center>
-  <img src="/assets/dial/addon/app-host-1.png" style="margin: 15px;" />
+  <img src="/assets/2025/dial/addon/app-host-1.png" style="margin: 15px;" />
 </center>
 
 ### Add Assistant with Addon
@@ -157,19 +157,19 @@ aspire run --project AppHost/AppHost.csproj
 Here is the ouput of the Aspire CLI:
 
 <center>
-  <img src="/assets/dial/addon/app-cli-2.png" style="margin: 15px;" width="50%" />
+  <img src="/assets/2025/dial/addon/app-cli-2.png" style="margin: 15px;" width="50%" />
 </center>
 
 And here is the Aspire Dashboard:
 
 <center>
-  <img src="/assets/dial/addon/app-host-2.png" style="margin: 15px;" />
+  <img src="/assets/2025/dial/addon/app-host-2.png" style="margin: 15px;" />
 </center>
 
 If you open the Chat UI, you will see the TODO Assistant:
 
 <center>
-  <img src="/assets/dial/addon/assistant-chat-demo-no-model.png" style="margin: 15px;" />
+  <img src="/assets/2025/dial/addon/assistant-chat-demo-no-model.png" style="margin: 15px;" />
 </center>
 
 ☝️ But before we can use it, we need to deploy OpenAI model that supports Function Calling.
@@ -283,25 +283,25 @@ aspire run --project AppHost/AppHost.csproj
 Here is the output of the Aspire CLI:
 
 <center>
-  <img src="/assets/dial/addon/app-cli-3.png" style="margin: 15px;"  width="50%" />
+  <img src="/assets/2025/dial/addon/app-cli-3.png" style="margin: 15px;"  width="50%" />
 </center>
 
 And here is the the Aspire Dashboard:
 
 <center>
-  <img src="/assets/dial/addon/app-host-3.png" style="margin: 15px;" />
+  <img src="/assets/2025/dial/addon/app-host-3.png" style="margin: 15px;" />
 </center>
 
 ✨ Even more interesting is Aspire Graph Dashboard:
 
 <center>
-  <img src="/assets/dial/addon/app-host-graph-3.png" style="margin: 15px;" />
+  <img src="/assets/2025/dial/addon/app-host-graph-3.png" style="margin: 15px;" />
 </center>
 
 Now, if you open the Chat UI, you will see the TODO Assistant. Let's try to add some TODOs:
 
 <center>
-  <img src="/assets/dial/addon/assistant-chat-demo.png" style="margin: 15px;" />
+  <img src="/assets/2025/dial/addon/assistant-chat-demo.png" style="margin: 15px;" />
 </center>
 
 ## Conclusion

@@ -19,7 +19,7 @@ I have been using .NET Aspire for a while now and have learned a lot along the w
 > .NET Aspire version: **8.2.1**
 
 <center>
-  <img src="/assets/aspire-lessons-learned/aspire-brand.png" style="margin: 15px;" width="40%">
+  <img src="/assets/2024/aspire-lessons-learned/aspire-brand.png" style="margin: 15px;" width="40%">
 </center>
 
 

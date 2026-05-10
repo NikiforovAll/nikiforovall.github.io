@@ -48,7 +48,7 @@ You can find packaged [dotnet-script](https://github.com/filipw/dotnet-script) h
 <https://github.com/users/NikiforovAll/packages/container/package/dotnet-script>
 
 <center>
-    <img src="/assets/ghcr.png" alt="ghcr-example">
+    <img src="/assets/2020/publish-package-to-ghcr/ghcr.png" alt="ghcr-example">
 </center>
 
 🚀  Let's download and run it:

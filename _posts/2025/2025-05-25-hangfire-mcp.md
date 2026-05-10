@@ -82,7 +82,7 @@ aspire run --project ./samples/AppHost/AppHost.csproj
 
 Here is how the Aspire Dashboard looks:
 
-<center><img src="/assets/hangfire-mcp/aspire-dashboard.png" /></center>
+<center><img src="/assets/2025/hangfire-mcp/aspire-dashboard.png" /></center>
 
 ---
 
@@ -177,7 +177,7 @@ public interface ISendMessageJob
 
 Let's take a look at the MCP server from the MCP Inspector:
 
-<center><img src="/assets/hangfire-mcp/inspector.png" /></center>
+<center><img src="/assets/2025/hangfire-mcp/inspector.png" /></center>
 
 ---
 

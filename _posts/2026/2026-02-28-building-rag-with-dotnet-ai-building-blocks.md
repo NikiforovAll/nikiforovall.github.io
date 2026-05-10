@@ -383,13 +383,13 @@ Groundedness is the most interesting metric here. It checks whether every claim 
 The chat tab. Ask a question, get a grounded answer with citations:
 
 <center>
-    <img src="/assets/building-rag-dotnet-ai/chat.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-dotnet-ai/chat.png" style="margin: 15px;" width="100%">
 </center>
 
 The documents tab. Upload PDFs, see ingestion stats (pages, chunks, size):
 
 <center>
-    <img src="/assets/building-rag-dotnet-ai/ingestion.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-dotnet-ai/ingestion.png" style="margin: 15px;" width="100%">
 </center>
 
 ## Summary

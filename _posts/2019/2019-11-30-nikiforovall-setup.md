@@ -46,10 +46,10 @@ bash -c "$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/ws
 
 But first, let's see how we set up brand new WSL instance. Here I list available Linux distros and unregister ubuntu-18.04
 
-![setup-1](/assets/nikiforovall-setup/test1.gif)
+![setup-1](/assets/2019/nikiforovall-setup/test1.gif)
 
 Let's register new user in Ubuntu-18.04 LTS.
-![setup-2](/assets/nikiforovall-setup/test2.gif)
+![setup-2](/assets/2019/nikiforovall-setup/test2.gif)
 
 And set default distro *"Ubuntu-18.04"*
 
@@ -69,7 +69,7 @@ Let's see how the bash one-liner works:
 
 `bash -c "$(wget -qO - https://raw.github.com/nikiforovall/dotfiles/master/src/wsl/os/install.sh)"`
 
-![setup-3](/assets/nikiforovall-setup/test3.gif)
+<video src="/assets/2019/nikiforovall-setup/test3.mp4" autoplay muted loop playsinline controls aria-label="setup-3"></video>
 
 It installs a bunch of [essentials](https://github.com/NikiforovAll/dotfiles/blob/master/src/wsl/os/app_install.sh) for development environment: utils, tools, and [dotnet sdk](https://dotnet.microsoft.com/download). Also, it symlinks git and shell configs. So after reloading your shell, it is familiar and responsive working environment. The goal of dotfiles technique is to provide the way to manage various .* configuration files. The basic idea is to have git repository responsible for installing and managing configurations on a working machine so you don't need to worry about losing favorite aliases, programs, and configurations. Perfect! 🚀
 
@@ -77,7 +77,7 @@ It installs a bunch of [essentials](https://github.com/NikiforovAll/dotfiles/blo
 
 At the demonstration below I create a folder for the new *dotnet console* project. I slightly modify *Program.cs* and run the application inside WSL. There are a lot of details that make the process of development easier and promote productivity. I just mention a few of them: simplicity of setup, syntax and commands highlighting and autocompletion.
 
-![setup-4](/assets/nikiforovall-setup/test4.gif)
+![setup-4](/assets/2019/nikiforovall-setup/test4.gif)
 
 ## Summary
 

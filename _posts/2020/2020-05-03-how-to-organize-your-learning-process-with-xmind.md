@@ -87,7 +87,7 @@ Here is the the list of really good books to consider:
 </table>
 
 
-![input_1](/assets/edu-scope/input_1.png)
+![input_1](/assets/2020/edu-scope/input_1.png)
 
 ### Build mindmaps programmatically
 
@@ -113,16 +113,16 @@ To use it, run next command from project directory:
 $ dotnet run --path ./ouput --name test.xmind --source-path input/input.xlsx
 ```
 
-![output_1](/assets/edu-scope/example_output1.png)
+![output_1](/assets/2020/edu-scope/example_output1.png)
 
 Sometimes it is hard to pick a bite that I can chew on 😆.
 
-![output_2](/assets/edu-scope/output_2.png)
+![output_2](/assets/2020/edu-scope/output_2.png)
 
 ### Summary
 
 I've introduced lightweight approach to organize your learning process. Personally, I find it useful because learning is essential part of my craft and you better do it well 😉.
 
-If you want to organize your learning process the way I do, please feel free to use: [template.xlsx](https://github.com/NikiforovAll/nikiforovall.github.io/blob/master/assets/edu-scope/Template.xlsx) + [edu-scope-to-mindmap](https://github.com/NikiforovAll/edu-scope-to-mindmap)
+If you want to organize your learning process the way I do, please feel free to use: [template.xlsx](https://github.com/NikiforovAll/nikiforovall.github.io/blob/master/assets/2020/edu-scope/Template.xlsx) + [edu-scope-to-mindmap](https://github.com/NikiforovAll/edu-scope-to-mindmap)
 
 ---

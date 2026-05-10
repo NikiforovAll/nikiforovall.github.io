@@ -39,7 +39,7 @@ Furthermore, an agent should be able to produce additional tools or UI elements 
 For example, in [Claude Code](https://github.com/anthropics/claude-code), the user is presented with a special tool to clarify questions - `AskUserQuestion`. This tool opens a special input inside the terminal so that the user can provide input back to the agent. This is a great example of an agent manipulating the ambient environment to facilitate better interaction.
 
 <center>
-<img src="/assets/morph/AskUserQuestionExample.png" alt="AskUserQuestion tool example"/>
+<img src="/assets/2025/morph/AskUserQuestionExample.png" alt="AskUserQuestion tool example"/>
 </center>
 
 ## What is Morph Agent?
@@ -97,7 +97,7 @@ layout {
 Here is a demo showing different layout configurations being applied:
 
 <center>
-<img src="/assets/morph/demo.gif" alt="KDL layout examples with Apply Layout CodeLens"/>
+<video src="/assets/2025/morph/demo.mp4" autoplay muted loop playsinline controls aria-label="KDL layout examples with Apply Layout CodeLens"></video>
 </center>
 
 ## Scenario 1: Agentic Coding Layout
@@ -134,7 +134,7 @@ This layout gives me:
 Save this as `.layout.kdl` in your project, and you can restore it instantly next time you return to work on the same project. Your workspace becomes reproducible.
 
 <center>
-<img src="/assets/morph/demo3.gif" alt="Agentic coding layout with spec, plan, chat, and terminal"/>
+<video src="/assets/2025/morph/demo3.mp4" autoplay muted loop playsinline controls aria-label="Agentic coding layout with spec, plan, chat, and terminal"></video>
 </center>
 
 ## Scenario 2: Spec-Driven Development
@@ -222,7 +222,7 @@ Try it out:
 3. Watch your workspace transform
 
 <center>
-<img src="/assets/morph/demo2.gif" alt="Using @morph-layout in Copilot Chat"/>
+<video src="/assets/2025/morph/demo2.mp4" autoplay muted loop playsinline controls aria-label="Using @morph-layout in Copilot Chat"></video>
 </center>
 
 Or create a `.layout.kdl` file in your project and use the "Apply Layout" CodeLens to restore your preferred arrangement.

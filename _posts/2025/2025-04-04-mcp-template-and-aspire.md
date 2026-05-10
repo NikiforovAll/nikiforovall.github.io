@@ -13,7 +13,7 @@ mermaid: true
 ---
 
 <center>
-  <img src="/assets/mcp/light.png" style="margin: 15px;" width="80%" />
+  <img src="/assets/2025/mcp/light.png" style="margin: 15px;" width="80%" />
 </center>
 
 ## TL;DR
@@ -84,13 +84,13 @@ It runs [@modelcontextprotocol/inspector](https://www.npmjs.com/package/@modelco
 💡 **Note:** The *Inspector* is responsible for starting the .NET project. So, no corresponding Aspire Resource will be available on the dashboard for the 'Stdio' mode.
 
 <center>
-  <img src="/assets/mcp/stdio-demo-dashboard.png" style="margin: 15px;" />
+  <img src="/assets/2025/mcp/stdio-demo-dashboard.png" style="margin: 15px;" />
 </center>
 
 Open <http://127.0.0.1:6274> in your browser and click "Connect.". Now, you can test the server using the *Inspector* tool.
 
 <center>
-  <img src="/assets/mcp/stdio-demo-inspector.png" style="margin: 15px;" />
+  <img src="/assets/2025/mcp/stdio-demo-inspector.png" style="margin: 15px;" />
 </center>
 
 ## 'SSE' Mode
@@ -123,13 +123,13 @@ builder.Build().Run();
 The Aspire Dashboard looks slightly different for the `sse` mode. Because, this approach creates a separate `Aspire.Hosting.ApplicationModel.ProjectResource` with an exposed `/sse` endpoint. This endpoint allows you to seamlessly connect to the MCP server using the *Inspector* tool.
 
 <center>
-  <img src="/assets/mcp/sse-demo-dashboard.png" style="margin: 15px;" />
+  <img src="/assets/2025/mcp/sse-demo-dashboard.png" style="margin: 15px;" />
 </center>
 
 Open <http://127.0.0.1:6274> in your browser and click "Connect.". Now, you can test the server using the *Inspector* tool.
 
 <center>
-  <img src="/assets/mcp/sse-demo-inspector.png" style="margin: 15px;" />
+  <img src="/assets/2025/mcp/sse-demo-inspector.png" style="margin: 15px;" />
 </center>
 
 ⚠️ As for now, it is not possible to specify `sse` endpoint in the *Inspector* command line to automatically configure *MCP Inspector*. I plan to extend the Aspire integration when the feature will be implemented - [modelcontextprotocol/inspector/issues/239](https://github.com/modelcontextprotocol/inspector/issues/239). For now, you have to configure the *Inspector* manually if you divert from standard configuration.

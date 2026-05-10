@@ -15,7 +15,7 @@ related: true
 
 [Claude Code](https://www.anthropic.com/claude-code) is a powerful AI coding assistant that can help you with various development tasks. It support telemetry monitoring, so I thought it would be fun to set up a .NET Aspire dashboard to visualize my usage and see how claude operates under the hood.
 
-<center><img src="/assets/claude-code/logs-claude-code.png" /></center>
+<center><img src="/assets/2025/claude-code/logs-claude-code.png" /></center>
 
 ---
 

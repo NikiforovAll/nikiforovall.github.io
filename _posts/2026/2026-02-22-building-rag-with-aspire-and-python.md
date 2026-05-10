@@ -227,13 +227,13 @@ This gives you GenAI semantic conventions (token usage per LLM call) and HTTP cl
 Here's what a distributed trace looks like for a backoffice ingestion request. You can see every span: the agent run, scraping (Wikipedia, website, search), and the final ingestion into Qdrant:
 
 <center>
-    <img src="/assets/building-rag-aspire-python/backoffice_02.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-aspire-python/backoffice_02.png" style="margin: 15px;" width="100%">
 </center>
 
 And the metrics view, showing scraper page content size broken down by source type:
 
 <center>
-    <img src="/assets/building-rag-aspire-python/backoffice_03.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-aspire-python/backoffice_03.png" style="margin: 15px;" width="100%">
 </center>
 
 ## RAG evaluation with Aspire
@@ -281,23 +281,23 @@ Two metrics: **Hit Rate** (did at least one expected fact get retrieved?) and **
 The chat tab. Ask a question, get a grounded answer with citations from the knowledge base:
 
 <center>
-    <img src="/assets/building-rag-aspire-python/chat-01.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-aspire-python/chat-01.png" style="margin: 15px;" width="100%">
 </center>
 
 <center>
-    <img src="/assets/building-rag-aspire-python/chat-02.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-aspire-python/chat-02.png" style="margin: 15px;" width="100%">
 </center>
 
 Multi-company research with detailed, structured answers:
 
 <center>
-    <img src="/assets/building-rag-aspire-python/chat-03.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-aspire-python/chat-03.png" style="margin: 15px;" width="100%">
 </center>
 
 The backoffice tab. Tell it to gather data for a company, and it scrapes, chunks, embeds, and stores everything in the background:
 
 <center>
-    <img src="/assets/building-rag-aspire-python/backoffice_01.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2026/building-rag-aspire-python/backoffice_01.png" style="margin: 15px;" width="100%">
 </center>
 
 ## Summary

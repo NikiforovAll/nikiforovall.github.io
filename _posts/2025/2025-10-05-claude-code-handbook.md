@@ -17,6 +17,6 @@ Previously, I've shared my [Claude Code Usage Best Practices and Recommendations
 
 Since than, I've been using Claude Code extensively and have refined my practices further. In this post, I present an updated handbook of best practices and recommendations for using Claude Code for daily use.
 
-<center><img src="/assets/claude-code/handbook-demo.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/claude-code/handbook-demo.png" style="margin-bottom: 2rem;" /></center>
 
 ## See: [Claude Code Handbook](https://nikiforovall.blog/claude-code-rules/)

@@ -175,11 +175,11 @@ graph LR
     style BingApi fill:#ffff99
 </div>
 
-![demo2](/assets/kiota/demo2.png)
+![demo2](/assets/2024/kiota/demo2.png)
 
 And here is trace example from **Aspire.Dashboard**:
 
-![trace-example](/assets/kiota/trace-example.png)
+![trace-example](/assets/2024/kiota/trace-example.png)
 
 💡Note, Http instrumentation/tracing works only for clients resolved through DI container. Later, I will show you how to properly add `AppApiClient` so it uses `HttpClient` from `IHttpClientFactory`.
 

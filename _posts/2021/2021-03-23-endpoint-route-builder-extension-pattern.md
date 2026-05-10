@@ -108,7 +108,7 @@ public class Endpoint
 
 The big picture:
 
-![aspnet-core-pipeline](/assets/endpoint-route/aspnet-core-pipeline.png)
+![aspnet-core-pipeline](/assets/2021/endpoint-route/aspnet-core-pipeline.png)
 
 ## Practical Example
 
@@ -127,7 +127,7 @@ app.UseEndpoints(endpoints =>
 
 Here is an example output:
 
-![config-endpoint](/assets/endpoint-route/config-endpoint.png)
+![config-endpoint](/assets/2021/endpoint-route/config-endpoint.png)
 
 ### NikiforovAll.ConfigurationDebugViewEndpoint
 

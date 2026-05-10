@@ -14,7 +14,7 @@ mermaid: true
 
 
 <center>
-  <img src="/assets/mcp/light.png" style="margin: 15px;" width="80%" />
+  <img src="/assets/2025/mcp/light.png" style="margin: 15px;" width="80%" />
 </center>
 
 ## TL;DR
@@ -112,7 +112,7 @@ npx @modelcontextprotocol/inspector -e DOTNET_ENVIRONMENT=Production dotnet "$(P
 Open inspector in your browser and test the server:
 
 <center>
-  <img src="/assets/mcp/inspector-demo.png" style="margin: 15px;" />
+  <img src="/assets/2025/mcp/inspector-demo.png" style="margin: 15px;" />
 </center>
 
 ### Distribute as .NET Tool

@@ -244,7 +244,7 @@ dotnet run --project ./src/App
 curl -s http://localhost:5103/trending/US | jq '.value[].name' | head -3
 ```
 
-![demo1](/assets/kiota/demo1.png)
+![demo1](/assets/2024/kiota/demo1.png)
 
 The setup, as demonstrated, is quite straightforward. The hierarchical approach to the client builder is particularly commendable as it simplifies the discovery of REST APIs, making it intuitive and user-friendly.
 

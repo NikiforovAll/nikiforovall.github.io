@@ -10,7 +10,7 @@ fullview: false
 comments: true
 related: true
 mermaid: true
-image: /assets/hangfire-mcp-operations-pane/cover.png
+image: /assets/2026/hangfire-mcp-operations-pane/cover.png
 ---
 
 ## TL;DR
@@ -157,17 +157,17 @@ The method `[Description]` becomes the tool's `description`. Each parameter `[De
 End-to-end, with the Aspire AppHost running, the loop is: list the tools on `/mcp`, fill in parameters in MCP Inspector, hit **Run Tool**, and see the same enqueue land in the Hangfire dashboard.
 
 <figure style="margin:1.5rem 0; text-align:center;">
-  <img src="/assets/hangfire-mcp-operations-pane/inspector-invoke.png" alt="MCP Inspector — invoking a job with parameters" style="width:75%; border:1px solid #eee; border-radius:4px;" />
+  <img src="/assets/2026/hangfire-mcp-operations-pane/inspector-invoke.png" alt="MCP Inspector — invoking a job with parameters" style="width:75%; border:1px solid #eee; border-radius:4px;" />
   <figcaption style="font-size:0.9em; margin-top:6px;">1. Invoking with parameters — JSON Schema rendered as a form.</figcaption>
 </figure>
 
 <figure style="margin:1.5rem 0; text-align:center;">
-  <img src="/assets/hangfire-mcp-operations-pane/inspector-result.png" alt="MCP Inspector — tool result with Hangfire job ID" style="width:75%; border:1px solid #eee; border-radius:4px;" />
+  <img src="/assets/2026/hangfire-mcp-operations-pane/inspector-result.png" alt="MCP Inspector — tool result with Hangfire job ID" style="width:75%; border:1px solid #eee; border-radius:4px;" />
   <figcaption style="font-size:0.9em; margin-top:6px;">2. Result in the Inspector — Hangfire job ID and state.</figcaption>
 </figure>
 
 <figure style="margin:1.5rem 0; text-align:center;">
-  <img src="/assets/hangfire-mcp-operations-pane/hangfire-dashboard.png" alt="Hangfire dashboard — succeeded job from MCP" style="width:75%; border:1px solid #eee; border-radius:4px;" />
+  <img src="/assets/2026/hangfire-mcp-operations-pane/hangfire-dashboard.png" alt="Hangfire dashboard — succeeded job from MCP" style="width:75%; border:1px solid #eee; border-radius:4px;" />
   <figcaption style="font-size:0.9em; margin-top:6px;">3. Same job in the Hangfire dashboard — exact args, real queue.</figcaption>
 </figure>
 

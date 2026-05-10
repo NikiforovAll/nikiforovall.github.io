@@ -226,7 +226,7 @@ If we take a look from the different angle we can spot different states in which
 
 So, the idea is to move the window from left to right and calculate local product every time the window is "expanded" or "shifted".
 
-![state-machine](/assets/awaitable-pattern/state-machine.png)
+![state-machine](/assets/2020/awaitable-pattern/state-machine.png)
 
 ## Solution of the largest series product with awaitable/awaiter patten
 
@@ -355,7 +355,7 @@ That's a lot, I know. But, bare with me, I will show how it works:
 7. `stateMachine.MoveNext()` is invoked
 8. If `StrategyTask` is completed, the result is returned and control flow is resumed
 
-![awaitable-flow](/assets/awaitable-pattern/awaitable-flow.png)
+![awaitable-flow](/assets/2020/awaitable-pattern/awaitable-flow.png)
 
 I suggest you to spin up the debugger and investigate on your own 😉.
 
@@ -522,7 +522,7 @@ return strategy.Result;
 
 ```
 
-![simple-example](/assets/awaitable-pattern/awaitable-example1.png)
+![simple-example](/assets/2020/awaitable-pattern/awaitable-example1.png)
 
 Let's parallelize our solution by adding new strategy that will make use of existing building blocks:
 
@@ -553,7 +553,7 @@ protected StrategyTask WhenAll(params IStrategy[] strategies)
 }
 ```
 
-![simple-example](/assets/awaitable-pattern/awaitable-example2.png)
+![simple-example](/assets/2020/awaitable-pattern/awaitable-example2.png)
 
 We could take another route and parallelize based on "Driver"
 
@@ -572,7 +572,7 @@ solver.RunDriver<ChaosWindowStrategy, long>(strategies);
 return strategies.Select(s => s.Result).Max();
 ```
 
-![simple-example](/assets/awaitable-pattern/awaitable-example3.png)
+![simple-example](/assets/2020/awaitable-pattern/awaitable-example3.png)
 
 The beautiful thing is that we don't need to change the actual implementation of the algorithm to have control over execution and scheduling. Which you may or may not find useful, but I find the approach interesting.
 

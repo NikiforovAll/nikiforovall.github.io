@@ -272,7 +272,7 @@ Content-Type: application/json
 
 Here is the trace result for an operation:
 
-<img src="/assets/channels-composition/pipeline-trace.png"/>
+<img src="/assets/2024/channels-composition/pipeline-trace.png"/>
 
 The visualization shows the sequence and timing of each span in the trace, indicating the flow of the request through different components of the service. The longer bars represent spans that took more time to complete, and the gaps between bars indicate idle time or time spent waiting for a response from another service or component.
 
@@ -346,11 +346,11 @@ Here is an example of making additional 50 simultaneous requests via Bombardier 
 ./scripts/bombardier.sh 50
 ```
 
-<img src="/assets/channels-composition/metrics.png"/>
+<img src="/assets/2024/channels-composition/metrics.png"/>
 
 Also, I've changed the way we collect traces for the demo (using `ProcessorChannelSettings.UseUnifiedSpanForAllPipelines=true` parameter), the traces are collected under `ProcessorBackgroundService` root Span for visualization purposes. Please don't put huge number of traces under one Span in production scenarios.
 
-<img src="/assets/channels-composition/batch-trace.png"/>
+<img src="/assets/2024/channels-composition/batch-trace.png"/>
 
 In the image above, we can see how items are concurrently processed by the pipeline. It is interesting how various settings can impact the way our pipeline behaves.
 

@@ -140,7 +140,7 @@ Some of the popular tools are:
 Here is an example of a SonarCloud report:
 
 <center>
-  <img src="/assets/quality-gates/sonar.png" style="margin: 15px;" width="100%">
+  <img src="/assets/2024/quality-gates/sonar.png" style="margin: 15px;" width="100%">
 </center>
 
 💡 You can include `SonarCloud` check as part of a CI/CD pipeline. Use `/d:sonar.qualitygate.wait=true` option. Otherwise, the CI/CD pipeline will not wait for the SonarCloud analysis to finish.
@@ -148,7 +148,7 @@ Here is an example of a SonarCloud report:
 By default, Sonar configures pretty strict rules called "Sonar Way":
 
 <center>
-  <img src="/assets/quality-gates/sonar-way.png" style="margin: 15px;" width="100%">
+  <img src="/assets/2024/quality-gates/sonar-way.png" style="margin: 15px;" width="100%">
 </center>
 
 👎 The downside of using different code analysis tools is that you have to configure them separately. You have to configure the rules, the severity levels, and the exclusions. Ideally, I want to have a single configuration file (aka source of truth) that configures all the code quality checks.
@@ -172,7 +172,7 @@ Check out the example I've prepared - <https://github.com/NikiforovAll/quality-g
 Assume we have initial code that does not meet the quality standards.
 
 <center>
-  <img src="/assets/quality-gates/code-before.png" style="margin: 15px;" width="100%">
+  <img src="/assets/2024/quality-gates/code-before.png" style="margin: 15px;" width="100%">
 </center>
 
 1. First of all, the developer will receive feedback from the IDE and linter.
@@ -249,7 +249,7 @@ Now, assume the developer ignores the warning and somehow commits the code and c
 💡 I configured parallel execution for code quality gates, which helps to receive feedback faster.
 
 <center>
-  <img src="/assets/quality-gates/ci-cd-failed.png" style="margin: 15px;" width="100%">
+  <img src="/assets/2024/quality-gates/ci-cd-failed.png" style="margin: 15px;" width="100%">
 </center>
 
 Now let's fix the issues, by running "quick code fixes" (`ctrl + .`) in the IDE.
@@ -315,7 +315,7 @@ Formatted 1 files in 952ms.
 Now, we commit the changes and push them to the repository. The CI/CD pipeline will run the checks again, and if all checks pass, the pipeline will succeed.
 
 <center>
-  <img src="/assets/quality-gates/ci-cd-success.png" style="margin: 15px;" width="100%">
+  <img src="/assets/2024/quality-gates/ci-cd-success.png" style="margin: 15px;" width="100%">
 </center>
 
 ## Conclusion

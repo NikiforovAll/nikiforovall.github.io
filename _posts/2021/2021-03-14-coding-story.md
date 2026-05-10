@@ -22,7 +22,7 @@ Recently, I've discovered a new and practical way to hone my programming skills.
 
 If you think about the regular experience of learning something new and practical, you may find that it is hard to find a definitive guide. From time to time, I encounter tutorials and blog posts that resemble something like this:
 
-![draw-owl-meme](/assets/engx-coding-story/draw-an-owl.png)
+![draw-owl-meme](/assets/2021/engx-coding-story/draw-an-owl.png)
 
 Sometimes it is frustrating to find an interesting article, but not to be able to reproduce it or learn from it. But, It is nobody's fault 😉. It is hard to describe step-by-step code changes and stick to the topic. *CodingStories* solves the problem by introducing a useful medium to consume coding stories. From a user perspective, you have a nice and handy UI to go through coding stories and experience how to solve a particular task. Every coding story is based on a git repository. It is essential for a coding story to have a meaningful and clean git history. Additionally, you can always open a coding story locally and work with a git repository on your own.
 
@@ -42,7 +42,7 @@ I will not go through the details of the coding story (`discount-calculation-sto
 
 Source repository: <https://gitlab.com/NikiforovAll/discount-calculation-story-csharp>.
 
-![discount-calculation-example](/assets/engx-coding-story/discount-calculation-example.png)
+![discount-calculation-example](/assets/2021/engx-coding-story/discount-calculation-example.png)
 
 More coding stories: <https://codingstories.io/stories>
 
@@ -115,42 +115,6 @@ You can find it here:
 
 Source repository: <https://gitlab.com/NikiforovAll/coding-story-coding-story>
 
-### Generate a coding story link
-
-To check your coding story, you need to prepare the URL that is based on gitlab repository. Note, currently, CodingStories caches coding stories for two hours, so please make sure that you read.
-
-Down below you may find the form to generate a valid coding story link from gitlab repository link.
-
-
-<div class="jumbotron">
-  <div class="form-row align-items-center">
-    <div class="row">
-      <div class="col-md-8">
-        <input class="form-control" id="inputUrl" placeholder="E.g.: https://gitlab.com/NikiforovAll/discount-calculation-story-csharp" value="https://gitlab.com/NikiforovAll/discount-calculation-story-csharp">
-      </div>
-      <div class="col-md-2">
-        <button type="" class="btn btn-primary" id="generate-url">Generate CodingStory URL</button>
-      </div>
-    </div>
-  </div>
-  <div class="form-row">
-    <div class="row">
-      <div class="col-md-8">
-        <input type="text" class="form-control" id="out-url" readonly>
-      </div>
-    </div>
-  </div>
-</div>
-
 ## Summary
 
 I hope that I've intrigued you enough to write your first coding story. Let me know what you think!
-
----
-
-<script> 
-    var url = document.getElementById("inputUrl");
-    document.getElementById("generate-url").addEventListener("click", function() {
-        document.getElementById("out-url").value =  "https://codingstories.io/story/" + encodeURIComponent(url.value.trim());
-    });
-</script>

@@ -36,7 +36,7 @@ The AI chat feature enables you to inquire about dependencies. You can ask quest
 ](https://nikiforovall.github.io/dotnet/2024/08/03/dependify.html)
 
 <center>
-    <img src="/assets/dependify/ai-chat-0.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/dependify/ai-chat-0.png" style="margin: 15px;" width="100%">
 </center>
 
 ## Run

@@ -33,7 +33,7 @@ I wanted to glance at something and immediately know: what's done, what's stuck,
 Three columns: Pending, In Progress, Completed. Each task card shows its assigned agent (color-coded), a short description, and which tasks it's waiting on.
 
 <center>
-  <img src="/assets/claude-code-kanban/dark-mode.png" alt="claude-code-kanban dark mode — Kanban board with team tasks" width="100%"/>
+  <img src="/assets/2026/claude-code-kanban/dark-mode.png" alt="claude-code-kanban dark mode — Kanban board with team tasks" width="100%"/>
 </center>
 
 The sidebar lists sessions with progress bars. A live feed shows what agents are doing right now. You can filter by project, search by name, or toggle between active and all sessions.
@@ -41,7 +41,7 @@ The sidebar lists sessions with progress bars. A live feed shows what agents are
 Clicking a task opens the detail panel: full description, dependencies, and a note field. The notes are readable by Claude too, so you can leave instructions mid-session.
 
 <center>
-  <img src="/assets/claude-code-kanban/light-mode.png" alt="claude-code-kanban light mode — task detail panel" width="100%"/>
+  <img src="/assets/2026/claude-code-kanban/light-mode.png" alt="claude-code-kanban light mode — task detail panel" width="100%"/>
 </center>
 
 ## What you actually get

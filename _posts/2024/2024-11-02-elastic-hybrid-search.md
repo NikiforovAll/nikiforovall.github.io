@@ -111,7 +111,7 @@ PrettyPrint(searchResponse);
 <center>⚙️Output: <b>Hybrid Search</b></center>
 
 <center>
-  <img src="/assets/hybrid-search-elastic/hybrid-query.png" style="margin: 15px;" />
+  <img src="/assets/2024/hybrid-search-elastic/hybrid-query.png" style="margin: 15px;" />
 </center>
 
 ## Conclusion

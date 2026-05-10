@@ -26,7 +26,7 @@ AI **[DIAL](https://epam-rail.com/platform)** stands for **D**eterministic **I**
 See: [DIAL 2.0: The Open Source AI Orchestration Platform Overview - YouTube](https://www.youtube.com/watch?v=Ud2UyXjNK4I&list=PLhkKkML8gp_fNs5NQdztKwIr2yWnLoQfy&index=1)
 
 <center>
-  <img src="/assets/dial/arch.png" style="margin: 15px;" width="80%" />
+  <img src="/assets/2025/dial/arch.png" style="margin: 15px;" width="80%" />
 </center>
 
 ## Key Features
@@ -90,25 +90,25 @@ In the example above, we are adding the DIAL hosting integration to the `AppHost
 Now, we can open Aspire Dashboard and explore the component graph.
 
 <center>
-  <img src="/assets/dial/aspire-graph-demo.png" style="margin: 15px;" width="90%" />
+  <img src="/assets/2025/dial/aspire-graph-demo.png" style="margin: 15px;" width="90%" />
 </center>
 
 Let's open the DIAL Chat UI and navigate to the marketplace to see the available models.
 
 <center>
-  <img src="/assets/dial/dial-marketplace.png" style="margin: 15px;" width="90%" />
+  <img src="/assets/2025/dial/dial-marketplace.png" style="margin: 15px;" width="90%" />
 </center>
 
 Select the `deepseek` model and click on the "Use Model" button. You will be redirected to the chat UI, where you can interact with the model.
 
 <center>
-  <img src="/assets/dial/prompt-demo.png" style="margin: 15px;" width="90%" />
+  <img src="/assets/2025/dial/prompt-demo.png" style="margin: 15px;" width="90%" />
 </center>
 
 The *Chat UI* is pretty powerful. For example, you can compare the output of two models by using *Compare Mode*. Here you can see the output of `deepseek` and `phi3` models side by side.
 
 <center>
-  <img src="/assets/dial/compare-models-demo.png" style="margin: 15px;" width="90%" />
+  <img src="/assets/2025/dial/compare-models-demo.png" style="margin: 15px;" width="90%" />
 </center>
 
 ### Client Integration

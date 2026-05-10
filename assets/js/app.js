@@ -1,124 +1,171 @@
-(function($) {
+(function () {
+  'use strict';
 
- function init() {
-    /* Sidebar height set */
-    $sidebarStyles = $('.sidebar').attr('style') || "";
-    $sidebarStyles += ' min-height: ' + $(document).height() + 'px;';
-    $('.sidebar').attr('style', $sidebarStyles);
+  function ready(fn) {
+    if (document.readyState !== 'loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn);
+  }
 
-    /* Secondary contact links */
-    var $scontacts = $('#contact-list-secondary');
-    var $contactList = $('#contact-list');
+  function $$(sel, root) { return Array.from((root || document).querySelectorAll(sel)); }
+  function $1(sel, root) { return (root || document).querySelector(sel); }
+  function isVisible(el) { return el && el.offsetParent !== null; }
 
-    $scontacts.hide();
-    $contactList.mouseenter(function(){ $scontacts.fadeIn(); });
-    $contactList.mouseleave(function(){ $scontacts.fadeOut(); });
+  ready(function init() {
+    /* Sidebar min-height = full document height */
+    var sidebar = $1('.sidebar');
+    if (sidebar) {
+      sidebar.style.minHeight = document.documentElement.scrollHeight + 'px';
+    }
+
+    /* Secondary contact links: show on hover (no fade — minor regression vs jQuery fadeIn) */
+    var scontacts = $1('#contact-list-secondary');
+    var contactList = $1('#contact-list');
+    if (scontacts) scontacts.style.display = 'none';
+    if (contactList && scontacts) {
+      contactList.addEventListener('mouseenter', function () { scontacts.style.display = ''; });
+      contactList.addEventListener('mouseleave', function () { scontacts.style.display = 'none'; });
+    }
 
     /**
-     * Tags & categories tab activation based on hash value. If hash is undefined then first tab is activated.
+     * Vanilla replacement for Bootstrap's $.fn.tab('show'): toggles .active on the
+     * <li> and the matching .tab-pane. No fade transition.
      */
+    function showTab(a) {
+      if (!a) return;
+      var href = a.getAttribute('href');
+      if (!href || href.charAt(0) !== '#') return;
+      $$('.cat-tag-menu li.active').forEach(function (li) { li.classList.remove('active'); });
+      var li = a.parentElement;
+      if (li && li.tagName === 'LI') li.classList.add('active');
+      $$('.tab-pane.active').forEach(function (p) { p.classList.remove('active', 'in'); });
+      var pane = document.querySelector(href);
+      if (pane) pane.classList.add('active', 'in');
+    }
+
     function activateTab() {
-      if(['/tags.html', '/categories.html', '/topics.html'].indexOf(window.location.pathname) > -1) {
-        var hash = window.location.hash;
-        if(hash)
-          $('.tab-pane').length && $('a[href="' + hash + '"]').tab('show');
-        else
-          $('.tab-pane').length && $($('.cat-tag-menu li a')[0]).tab('show');
+      if (['/tags.html', '/categories.html', '/topics.html'].indexOf(window.location.pathname) === -1) return;
+      if (!$$('.tab-pane').length) return;
+      var hash = window.location.hash;
+      if (hash) {
+        showTab(document.querySelector('a[href="' + hash + '"]'));
+      } else {
+        showTab($1('.cat-tag-menu li a'));
       }
     }
 
-    // watch hash change and activate relevant tab
-    $(window).on('hashchange', activateTab);
-
-    // initial activation
-    activateTab();
-
-    /**
-     * Topics filter functionality - filters the list of topics as user types
-     */
-    function initTopicsFilter() {
-      var $filterInput = $('#topics-filter');
-      var $topicsMenu = $('#topics-menu');
-
-      if($filterInput.length === 0) return;
-
-      // Sort topics by count (descending) on page load
-      if($topicsMenu.data('sort-by-count')) {
-        // Separate "All" item from regular topics
-        var $allItem = $topicsMenu.find('li[data-topic-type="all"]');
-        var $items = $topicsMenu.find('li').not('[data-topic-type="all"]').get();
-
-        $items.sort(function(a, b) {
-          var countA = parseInt($(a).data('topic-count')) || 0;
-          var countB = parseInt($(b).data('topic-count')) || 0;
-          return countB - countA; // Descending order (highest first)
-        });
-
-        // Re-append "All" first, then sorted items
-        if($allItem.length) {
-          $topicsMenu.append($allItem);
-        }
-        $.each($items, function(index, item) {
-          $topicsMenu.append(item);
-        });
-      }
-
-      $filterInput.on('keyup', function() {
-        var filterValue = $(this).val().toLowerCase();
-
-        $topicsMenu.find('li').each(function() {
-          var $li = $(this);
-          var topicName = $li.data('topic-name');
-          var topicType = $li.data('topic-type');
-
-          // Always show "All" option
-          if(topicType === 'all') {
-            $li.show();
-            return;
-          }
-
-          if(topicName && topicName.indexOf(filterValue) > -1) {
-            $li.show();
-          } else {
-            $li.hide();
-          }
-        });
-
-        // If all regular items are hidden (excluding "All"), show a "no results" message
-        var visibleCount = $topicsMenu.find('li:visible').not('[data-topic-type="all"]').length;
-        $('#topics-no-results').remove();
-
-        if(visibleCount === 0 && filterValue !== '') {
-          $topicsMenu.after('<p id="topics-no-results" class="text-muted" style="padding: 10px;">No topics found</p>');
-        }
-      });
-    }
-
-    // Initialize topics filter
-    initTopicsFilter();
-
-    // Scroll to top when a topic in the sidebar is clicked
-    $(document).on('click', '.cat-tag-menu li a', function() {
-      $('html, body').animate({ scrollTop: 0 }, 200);
+    /* Tab menu click: switch tab without page reload */
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest('.cat-tag-menu li a[href^="#"]');
+      if (!a) return;
+      e.preventDefault();
+      showTab(a);
+      history.replaceState(null, '', a.getAttribute('href'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    /* Back-to-top button: show after scrolling, smooth-scroll on click */
-    var $backToTop = $('#back-to-top');
-    if ($backToTop.length) {
-      var toggleBackToTop = function() {
-        if ($(window).scrollTop() > 300) $backToTop.addClass('visible');
-        else $backToTop.removeClass('visible');
-      };
-      $(window).on('scroll', toggleBackToTop);
-      toggleBackToTop();
-      $backToTop.on('click', function(e) {
-        e.preventDefault();
-        $('html, body').animate({ scrollTop: 0 }, 300);
+    window.addEventListener('hashchange', activateTab);
+    activateTab();
+
+    /* Mobile navbar collapse */
+    var navToggle = $1('#navbar-collapse-toggle');
+    var navCollapse = $1('#bs-example-navbar-collapse-1');
+    if (navToggle && navCollapse) {
+      navToggle.addEventListener('click', function () {
+        var open = navCollapse.classList.toggle('in');
+        navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
     }
-  };
 
-  // run init on document ready
-  $(document).ready(init);
+    /* Dropdown menu (#nav-menu) */
+    var navMenu = $1('#nav-menu');
+    if (navMenu) {
+      var navMenuToggle = navMenu.querySelector('.dropdown-toggle');
+      navMenuToggle && navMenuToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var open = navMenu.classList.toggle('open');
+        navMenuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', function (e) {
+        if (navMenu.classList.contains('open') && !navMenu.contains(e.target)) {
+          navMenu.classList.remove('open');
+          navMenuToggle && navMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && navMenu.classList.contains('open')) {
+          navMenu.classList.remove('open');
+          navMenuToggle && navMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+      navMenu.addEventListener('click', function (e) {
+        if (e.target.closest('.dropdown-menu a')) {
+          navMenu.classList.remove('open');
+          navMenuToggle && navMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
 
-})(jQuery);
+    /* Topics filter: live-filter sidebar list as user types */
+    (function initTopicsFilter() {
+      var filterInput = $1('#topics-filter');
+      var topicsMenu = $1('#topics-menu');
+      if (!filterInput || !topicsMenu) return;
+
+      if (topicsMenu.dataset.sortByCount) {
+        var allItem = topicsMenu.querySelector('li[data-topic-type="all"]');
+        var items = Array.from(topicsMenu.querySelectorAll('li'))
+          .filter(function (li) { return li.getAttribute('data-topic-type') !== 'all'; });
+        items.sort(function (a, b) {
+          return (parseInt(b.dataset.topicCount, 10) || 0) - (parseInt(a.dataset.topicCount, 10) || 0);
+        });
+        if (allItem) topicsMenu.appendChild(allItem);
+        items.forEach(function (item) { topicsMenu.appendChild(item); });
+      }
+
+      filterInput.addEventListener('keyup', function () {
+        var filterValue = this.value.toLowerCase();
+        var lis = topicsMenu.querySelectorAll('li');
+        lis.forEach(function (li) {
+          if (li.getAttribute('data-topic-type') === 'all') {
+            li.style.display = '';
+            return;
+          }
+          var topicName = li.getAttribute('data-topic-name') || '';
+          li.style.display = (topicName && topicName.indexOf(filterValue) > -1) ? '' : 'none';
+        });
+
+        var visibleCount = Array.from(topicsMenu.querySelectorAll('li')).filter(function (li) {
+          return li.getAttribute('data-topic-type') !== 'all' && isVisible(li);
+        }).length;
+
+        var existing = $1('#topics-no-results');
+        if (existing) existing.remove();
+
+        if (visibleCount === 0 && filterValue !== '') {
+          var p = document.createElement('p');
+          p.id = 'topics-no-results';
+          p.className = 'text-muted';
+          p.style.padding = '10px';
+          p.textContent = 'No topics found';
+          topicsMenu.parentNode.insertBefore(p, topicsMenu.nextSibling);
+        }
+      });
+    })();
+
+    /* Back-to-top button: show after scrolling, smooth-scroll on click */
+    var backToTop = $1('#back-to-top');
+    if (backToTop) {
+      var toggleBackToTop = function () {
+        if (window.pageYOffset > 300) backToTop.classList.add('visible');
+        else backToTop.classList.remove('visible');
+      };
+      window.addEventListener('scroll', toggleBackToTop, { passive: true });
+      toggleBackToTop();
+      backToTop.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  });
+})();

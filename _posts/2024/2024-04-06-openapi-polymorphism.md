@@ -377,7 +377,7 @@ public static IEndpointRouteBuilder MapBasedOnAttribute(this IEndpointRouteBuild
 
 If we open a Swagger endpoint, we can see that the schema doesn't contain complete information about the model. That's a pity 🙂
 
-![without-openapi](/assets/openapi-polymorphism/without-openapi.png)
+![without-openapi](/assets/2024/openapi-polymorphism/without-openapi.png)
 
 ```jsonc
 // http://localhost:5077/swagger/v1/swagger.json
@@ -475,7 +475,7 @@ public static void UseAllOfForInheritance(this SwaggerGenOptions swaggerGenOptio
 ```
 
 
-![with-openapi](/assets/openapi-polymorphism/with-openapi.png)
+![with-openapi](/assets/2024/openapi-polymorphism/with-openapi.png)
 
 ```jsonc
 // http://localhost:5077/swagger/v1/swagger.json

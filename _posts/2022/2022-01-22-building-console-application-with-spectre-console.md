@@ -29,7 +29,7 @@ app.Configure(c =>
 await app.RunAsync(args);
 ```
 
-![help](/assets/spectre/help.png)
+![help](/assets/2022/spectre/help.png)
 
 Source code: <https://github.com/NikiforovAll/cli-with-spectre-console>.
 
@@ -47,8 +47,8 @@ You can use `Spectre.Console.AnsiConsole` to:
 * Interact with the user - prompt, selection
 * Render complex UI elements/widgets: tables, trees, ASCII images, status control, progress bars, etc.
 
-<img src="/assets/spectre/ui-kit.png" width="800" />
-<!-- ![ui-kit.png](/assets/spectre/ui-kit.png) -->
+<img src="/assets/2022/spectre/ui-kit.png" width="800" />
+<!-- ![ui-kit.png](/assets/2022/spectre/ui-kit.png) -->
 
 Credits: <https://spectreconsole.net/>
 
@@ -189,7 +189,7 @@ public class ExportBots : Command<ExportBotsSettings>
 * ➕ `AnsiConsole.WriteException` [prints](https://spectreconsole.net/exceptions) colored exceptions
 * ➕`AnsiConsole.Markup` [outputs](https://spectreconsole.net/markup) rich text to console.
 
-![scrape](/assets/spectre/scrape.png)
+![scrape](/assets/2022/spectre/scrape.png)
 
 ### List bots - `ListBots.cs`
 
@@ -237,7 +237,7 @@ public class ListBots : Command<ListBotsSettings>
 * ➕ `Spectre.Console.FigletText` [renders](https://spectreconsole.net/widgets/figlet) FIGlet text.
 * ➕ `Spectre.Console.Extensions.Table.FromDataSet` and `Spectre.Console.Extensions.Table.FromDataTable` [displays](https://github.com/nikiforovall/Spectre.Console.Extensions#spectreconsoleextensionstable-) tabular data as *Spectre.Console* tables.
 
-![list](/assets/spectre/bot-list.png)
+![list](/assets/2022/spectre/bot-list.png)
 
 ### Download and display a bot - `DownloadBot.cs`
 
@@ -345,7 +345,7 @@ public override async Task<int> ExecuteAsync(CommandContext context, DownloadBot
 * ➕ `Spectre.Console.Extensions.Progress.StartAsync` [adds](https://github.com/NikiforovAll/Spectre.Console.Extensions#reporting-for-httpclient) HttpClient reporting capabilities by using [Spectre.Console.Progress](https://spectreconsole.net/live/progress). ⚠ You might want to check the implementation before using it because it performs additional buffering to do the reporting trick.
 * ➕ `Spectre.Console.ImageSharp.CanvasImage` [displays](https://spectreconsole.net/widgets/canvas-image) ASCII images to console.
 
-![download](/assets/spectre/download-bot.png)
+![download](/assets/2022/spectre/download-bot.png)
 
 💡 For full-featured terminal UI applications (TUIs) you might want to try something like [Terminal.Gui](https://github.com/migueldeicaza/gui.cs)
 

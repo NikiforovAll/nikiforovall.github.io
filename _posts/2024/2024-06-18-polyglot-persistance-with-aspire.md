@@ -290,13 +290,13 @@ users
 Here is first hit to the API, it takes ~25ms:
 
 <center>
-    <img src="/assets/polyglot-persitance/get-users.png" style="margin: 15px;">
+    <img src="/assets/2024/polyglot-persitance/get-users.png" style="margin: 15px;">
 </center>
 
 And here is subsequent request, it takes ~6ms:
 
 <center>
-    <img src="/assets/polyglot-persitance/get-users-cached.png" style="margin: 15px;">
+    <img src="/assets/2024/polyglot-persitance/get-users-cached.png" style="margin: 15px;">
 </center>
 
 💡Note, in the real-world scenario, the latency reduction can be quite significant when using Redis as a caching layer. For instance, consider an application that initially takes around 120ms to fetch data directly from a traditional SQL database. After implementing Redis for caching, the same data retrieval operation might only take about 15ms. This represents a substantial decrease in latency, improving the application's responsiveness and overall user experience.
@@ -740,7 +740,7 @@ private static (List<Post>, List<IndexedLike>) GeneratePosts()
 The migration process is instrumented via OpenTelemetry and you can inspect how much it takes to execute the migration and seeding process per-database.
 
 <center>
-    <img src="/assets/polyglot-persitance/migration-trace.png" style="margin: 15px;">
+    <img src="/assets/2024/polyglot-persitance/migration-trace.png" style="margin: 15px;">
 </center>
 
 💡As you can see, it takes some time for Elasticsearch to boot up. This is one of the examples that demonstrate why it is important to use resiliency patterns to build more robust and reliable systems.

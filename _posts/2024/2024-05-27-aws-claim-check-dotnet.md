@@ -30,7 +30,7 @@ Traditional messaging systems are optimized to manage a high volume of small mes
 The solution to this problem is to use the Claim-Check pattern, and don't send large messages to the messaging system. Instead, send the payload to an external data store and generate a claim-check token for that payload. The messaging system sends a message with the claim-check token to receiving applications so these applications can retrieve the payload from the data store. The messaging system never sees or stores the payload.
 
 <center>
-    <img src="/assets/claim-check/claim-check-diagram.svg" width="70%" style="margin: 15px;">
+    <img src="/assets/2024/claim-check/claim-check-diagram.svg" width="70%" style="margin: 15px;">
 </center>
 
 1. Payload
@@ -83,7 +83,7 @@ Here's a step-by-step explanation of the process:
 This workflow allows for the asynchronous processing of documents at scale. The user gets a quick response when they submit a file, and the heavy processing is done in the background, allowing the system to handle a large number of file submissions.
 
 <center>
-    <img src="/assets/claim-check/sd-aws.png" width="90%" style="margin: 15px;">
+    <img src="/assets/2024/claim-check/sd-aws.png" width="90%" style="margin: 15px;">
 </center>
 
 ❗🤔 Arguably, in the world of AWS, there are cloud-native alternatives to the canonical claim check pattern. For example, you can subscribe to S3 events from a lambda function, but my goal is to demonstrate how to use AWS.Messaging and Claim-Check pattern implementation, and not to provide reference solution to this problem.
@@ -357,7 +357,7 @@ public static IHostApplicationBuilder ConfigureOpenTelemetry(
 The result of file upload from Aspire Dashboard:
 
 <center>
-    <img src="/assets/claim-check/trace-claim-check.png" style="margin: 15px;">
+    <img src="/assets/2024/claim-check/trace-claim-check.png" style="margin: 15px;">
 </center>
 
 💡 `Aspire` is great for investigating how distributed systems work. We can use it to deepen our understanding of Claim-Check pattern in our case.

@@ -217,7 +217,7 @@ searchResponse.Documents.Select(x => x.Title).DisplayTable();
 ⚙️Output:
 
 <center>
-  <img src="/assets/semantic-search-elastic/q1.png" style="margin: 15px;" width="80%">
+  <img src="/assets/2024/semantic-search-elastic/q1.png" style="margin: 15px;" width="80%">
 </center>
 
 ### Semantic Search
@@ -248,7 +248,7 @@ searchResponse.Hits
 ⚙️Output:
 
 <center>
-  <img src="/assets/semantic-search-elastic/q2.png" style="margin: 15px;" width="80%">
+  <img src="/assets/2024/semantic-search-elastic/q2.png" style="margin: 15px;" width="80%">
 </center>
 
 ### Semantic Search and Filtering
@@ -286,7 +286,7 @@ searchResponse.Hits
 ⚙️Output:
 
 <center>
-  <img src="/assets/semantic-search-elastic/q3.png" style="margin: 15px;" width="80%">
+  <img src="/assets/2024/semantic-search-elastic/q3.png" style="margin: 15px;" width="80%">
 </center>
 
 ## Conclusion

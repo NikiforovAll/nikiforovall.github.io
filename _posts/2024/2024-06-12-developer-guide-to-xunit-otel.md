@@ -19,7 +19,7 @@ In this guide, we will explored how to leverage XUnit and OpenTelemetry to instr
 **Source code**: <https://github.com/NikiforovAll/xunit-instrumentation-otel-template>
 
 <center>
-    <img src="/assets/xunit-otel/blog-cover.png" style="margin: 15px;">
+    <img src="/assets/2024/xunit-otel/blog-cover.png" style="margin: 15px;">
 </center>
 
 
@@ -68,7 +68,7 @@ Let's navigate to <http://localhost:18888/traces> to see the results of test exe
 ☝️ Aspire Dashboard is automatically started based on [Testcontainers](https://dotnet.testcontainers.org/) setup as part of `BaseFixture`.
 
 <center>
-    <img src="/assets/xunit-otel/initial-traces.png" style="margin: 15px;">
+    <img src="/assets/2024/xunit-otel/initial-traces.png" style="margin: 15px;">
 </center>
 
 As you can see, there are two traces one for test run and one for warmup.
@@ -169,19 +169,19 @@ public async Task WaitRandomTime_AsyncWait_Success()
 Here is the result of trace output, as you can see, every test has it's own trace and we can see how tests are executed sequentially by XUnit:
 
 <center>
-    <img src="/assets/xunit-otel/test-run.png" style="margin: 15px;">
+    <img src="/assets/2024/xunit-otel/test-run.png" style="margin: 15px;">
 </center>
 
 Now, let's modify the `WaitRandomTime_AsyncWait_Success` test to intentionally cause it to fail. This will allow us to observe how the test framework displays failed tests:
 
 <center>
-    <img src="/assets/xunit-otel/trace-with-error.png" style="margin: 15px;">
+    <img src="/assets/2024/xunit-otel/trace-with-error.png" style="margin: 15px;">
 </center>
 
 Below are the details of the test run. Failed tests are readily identifiable on the Aspire Dashboard, where each failed test is accompanied by an *Trace Event* with exception details. This event provides detailed insights into the reasons behind the test failure.
 
 <center>
-    <img src="/assets/xunit-otel/trace-with-error-details.png" style="margin: 15px;">
+    <img src="/assets/2024/xunit-otel/trace-with-error-details.png" style="margin: 15px;">
 </center>
 
 ### Metrics
@@ -189,7 +189,7 @@ Below are the details of the test run. Failed tests are readily identifiable on 
 These metrics highlight the execution time on a per-test and per-class basis, categorized by tags.
 
 <center>
-    <img src="/assets/xunit-otel/metrics.png" style="margin: 15px;">
+    <img src="/assets/2024/xunit-otel/metrics.png" style="margin: 15px;">
 </center>
 
 The P50 percentile, also known as the median, represents the **middle value** of a dataset when it's sorted in ascending order. In the context of test execution, the P50 percentile for execution time tells you that:

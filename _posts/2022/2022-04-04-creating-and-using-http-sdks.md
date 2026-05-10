@@ -161,7 +161,7 @@ Each time you get an `HttpClient` object from the `IHttpClientFactory`, a new in
 
 Down below you can see how `HttpClientFactory` comes into play when using `HttpClient` managed by DI.
 
-![http-factory](/assets/http-sdk/http-factory.png)
+![http-factory](/assets/2022/http-sdk/http-factory.png)
 
 ## Consuming API Clients
 
@@ -210,7 +210,7 @@ var joke = await client.GetRandomJokeAsync();
 Console.WriteLine($"{joke.Setup} {joke.Punchline}");
 ```
 
-![manual-client-console-host](/assets/http-sdk/manual-client-console-host.png)
+![manual-client-console-host](/assets/2022/http-sdk/manual-client-console-host.png)
 
 ### Consuming API Clients. HttpClientFactory
 
@@ -261,7 +261,7 @@ As you see, you can use `IHttpClientFactory` outside of ASP.NET Core. For exampl
 
 Let's see it running:
 
-![manual-client-console-di-host](/assets/http-sdk/manual-client-console-di-host.png)
+![manual-client-console-di-host](/assets/2022/http-sdk/manual-client-console-di-host.png)
 
 The interesting part here is that clients created by DI automatically logs outgoing requests. It makes development and troubleshooting so much easier.
 
@@ -295,7 +295,7 @@ app.MapGet("/", async (IDadJokesApiClient client) => await client.GetRandomJokeA
 app.Run();
 ```
 
-![manual-client-api-host](/assets/http-sdk/manual-client-api-host.png)
+![manual-client-api-host](/assets/2022/http-sdk/manual-client-api-host.png)
 
 ```json
 {
@@ -318,7 +318,7 @@ public abstract class DelegatingHandler : HttpMessageHandler
 {}
 ```
 
-![delegating-handler](/assets/http-sdk/delegating-handler.png)
+![delegating-handler](/assets/2022/http-sdk/delegating-handler.png)
 
 **Task**. Assume you need to copy a list of headers from ASP.NET Core `HttpContext` and pass them to all outgoing requests made by *Dad Jokes API* client.
 
@@ -477,7 +477,7 @@ Polly is really powerful and it provides a way to combine resilience strategies.
 
 Here is a classification of the strategies you might want to use:
 
-![http-client-sdk-polly](/assets/http-sdk/http-client-sdk-polly.png)
+![http-client-sdk-polly](/assets/2022/http-sdk/http-client-sdk-polly.png)
 
 Designing reliable systems could be a challenging task, I suggest you investigate the subject on your own. Here is a good introduction - [.NET microservices - Architecture e-book: Implement resilient applications](https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/)
 
@@ -723,7 +723,7 @@ Note, since the contract of the generated client should match the underlying dat
 
 Let's see how the code above works in practice. The output of MinimalAPI example is different because I've added Serilog logging.
 
-![declarative-client-api-host](/assets/http-sdk/declarative-client-api-host.png)
+![declarative-client-api-host](/assets/2022/http-sdk/declarative-client-api-host.png)
 
 ```json
 {
@@ -836,7 +836,7 @@ components:
 
 Now, we want to generate HTTP Client SDK automatically. Let's use [NSwagStudio](https://github.com/RicoSuter/NSwag/wiki/NSwagStudio).
 
-![nswag-example](/assets/http-sdk/nswag-example.png)
+![nswag-example](/assets/2022/http-sdk/nswag-example.png)
 
 Here is how the generated `IDadJokesApiClient` looks like (XML comments are deleted for brevity):
 
@@ -939,7 +939,7 @@ Use an automated approach.
 
 Decision chart:
 
-![decision-chart](/assets/http-sdk/http-client-sdk-design-decision-chart.png)
+![decision-chart](/assets/2022/http-sdk/http-client-sdk-design-decision-chart.png)
 
 ---
 

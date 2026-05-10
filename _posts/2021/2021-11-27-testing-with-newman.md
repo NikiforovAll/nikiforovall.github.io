@@ -34,8 +34,8 @@ Use cases:
 2. As a user I want to close order
 3. As a user I expect order status to be completed when someone successfully pays for it.
 
-<img src="/assets/testing-with-newman/program-cs-code-snap.png" width="600" />
-<img src="/assets/testing-with-newman/routes-overview.png" width="600" />
+<img src="/assets/2021/testing-with-newman/program-cs-code-snap.png" width="600" />
+<img src="/assets/2021/testing-with-newman/routes-overview.png" width="600" />
 
 ```csharp
 public static class OrderApiRoutes
@@ -109,11 +109,11 @@ I will keep it straightforward and will show you how to create order in the syst
    1. Create "testing-with-newman" collection
    2. Add folder "main-flow"
 2. Create environment "testing-with-newman" and add `base-url` and `rabbitmq-host` variables. Select newly created environment on the top-right.
-![postman-env](/assets/testing-with-newman/postman-env.png)
+![postman-env](/assets/2021/testing-with-newman/postman-env.png)
 3. Add "Create Order" request to the main-flow folder. As you can see, we want to send HTTP POST to `{base-url}/orders` with the JSON body. Now, we are ready [to send](https://learning.postman.com/docs/getting-started/sending-the-first-request/) the request and see how it works.
-![postman-create-order](/assets/testing-with-newman/postman-create-order.png)
+![postman-create-order](/assets/2021/testing-with-newman/postman-create-order.png)
 4. Start the server `cd ./src/OrderService && dotnet run` and send HTTP request through Postman UI. It looks like the order has been accepted and ["201 CREATED"](https://httpstatuses.com/201) was returned. You can check the "Location" header to see the address of the created resource.<br/>
-![postman-create-order](/assets/testing-with-newman/create-order-response.png)
+![postman-create-order](/assets/2021/testing-with-newman/create-order-response.png)
 5. Once we are comfortable with Postman and "Order Service" we can start writing "Postman Tests" to verify expected behavior. Tests are written based on JavaScript. Postman UI helps you to write tests by providing tons of examples, see the right sidebar. Down below, we make sure that the order request return status is 201 and the customer field contains "John Doe". As you can see, we also writing "orderId" into the environment variable to use it in the next requests.
 
 ```js
@@ -228,8 +228,8 @@ docker compose -f docker-compose.postman.yml up main-flow
 docker compose -f docker-compose.postman.yml up cancel-flow
 ```
 
-![main-flow-run-demo](/assets/testing-with-newman/main-flow-run-demo.png)
-![cancel-flow-run-demo](/assets/testing-with-newman/cancel-flow-run-demo.png)
+![main-flow-run-demo](/assets/2021/testing-with-newman/main-flow-run-demo.png)
+![cancel-flow-run-demo](/assets/2021/testing-with-newman/cancel-flow-run-demo.png)
 
 ### Running newman as part of the continuous integration process. GitHub Actions example
 
@@ -261,7 +261,7 @@ jobs:
 
 💡 Hint: to run github actions locally use <https://github.com/nektos/act>
 
-![github-action](/assets/testing-with-newman/github-testing-with-newman.png)
+![github-action](/assets/2021/testing-with-newman/github-testing-with-newman.png)
 
 ---
 

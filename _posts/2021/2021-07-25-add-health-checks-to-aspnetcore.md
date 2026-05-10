@@ -24,7 +24,7 @@ Below, you can find a coding story that describes the process of adding health c
 > https://codingstories.io/stories/6139f4a2f2cd3d0031cd8ef1/6103bf8972273c2133d37ce6
 > https://gitlab.com/codingstories/how-to-add-health-checks-to-aspnetcore
 
-![healthchecks-banner](/assets/add-health-check/healh-checks-coding-story.png)
+![healthchecks-banner](/assets/2021/add-health-check/healh-checks-coding-story.png)
 
 ### Sneak peek the result
 

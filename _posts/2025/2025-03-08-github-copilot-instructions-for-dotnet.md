@@ -18,7 +18,7 @@ Using GitHub Copilot with custom instructions can improve the quality of generat
 **Source code:** <https://github.com/NikiforovAll/dotnet-copilot-rules>
 
 <center>
-  <img src="/assets/github-copilot-instructions-for-dotnet/dotnet-copilot-rules-repo.png" style="margin: 15px;" width="60%" />
+  <img src="/assets/2025/github-copilot-instructions-for-dotnet/dotnet-copilot-rules-repo.png" style="margin: 15px;" width="60%" />
 </center>
 
 ## Introduction
@@ -116,7 +116,7 @@ C# code should be written to maximize readability, maintainability, and correctn
 🤖 Let's see how it works in practice. Here is a result of simple prompt: *"Generate FizzBuzz"*:
 
 <center>
-  <img src="/assets/github-copilot-instructions-for-dotnet/example-code-gen.png" style="margin: 15px;" width="90%" />
+  <img src="/assets/2025/github-copilot-instructions-for-dotnet/example-code-gen.png" style="margin: 15px;" width="90%" />
 </center>
 
 As you can see, two additional files were used to generate the code:

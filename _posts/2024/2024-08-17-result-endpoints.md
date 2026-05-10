@@ -189,7 +189,7 @@ public class HelloWorld : EndpointBaseSync.WithRequest<string>.WithResult<Ok<str
 ```
 
 <center>
-    <img src="/assets/result-endpoints/validation-demo.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/result-endpoints/validation-demo.png" style="margin: 15px;" width="100%">
 </center>
 
 And here is the response:
@@ -309,7 +309,7 @@ dotnet new result-endpoints-api
 ```
 
 <center>
-    <img src="/assets/result-endpoints/swagger.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/result-endpoints/swagger.png" style="margin: 15px;" width="100%">
 </center>
 
 Here are some of the endpoints that you can find in the template:

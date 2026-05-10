@@ -16,7 +16,7 @@ mermaid: true
 
 
 <center>
-    <img src="/assets/typical-rag-dotnet/banner.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/typical-rag-dotnet/banner.png" style="margin: 15px;" width="100%">
 </center>
 
 **Source code:** <https://github.com/NikiforovAll/typical-rag-dotnet>
@@ -84,7 +84,7 @@ app.Run();
 As a result, you will get the following endpoints:
 
 <center>
-    <img src="/assets/typical-rag-dotnet/webrag-swagger.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/typical-rag-dotnet/webrag-swagger.png" style="margin: 15px;" width="100%">
 </center>
 
 Let's see how to actually make it work by adding essential components, such as LLM, Vector Database, and Content Storage.
@@ -237,13 +237,13 @@ Response:
 It took about 1 minute to process the document. As you can see below, multiple calls were made to the OpenAI service to generate an embedding for each partition.
 
 <center>
-    <img src="/assets/typical-rag-dotnet/upload-pipeline.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/typical-rag-dotnet/upload-pipeline.png" style="margin: 15px;" width="100%">
 </center>
 
 And about 133 partitions/embeddings were created for a single document (8 MB/500 pages).
 
 <center>
-    <img src="/assets/typical-rag-dotnet/embeddings.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/typical-rag-dotnet/embeddings.png" style="margin: 15px;" width="100%">
 </center>
 
 > 💡Note that the way you chunk your data is important and can impact the way RAG works. For example, you may want to make your chunks bigger and apply summarization to get more abstract answers.
@@ -346,7 +346,7 @@ public static IHostApplicationBuilder ConfigureOpenTelemetry(
 ```
 
 <center>
-    <img src="/assets/typical-rag-dotnet/ask-demo.png" style="margin: 15px;" width="100%">
+    <img src="/assets/2024/typical-rag-dotnet/ask-demo.png" style="margin: 15px;" width="100%">
 </center>
 
 *Semantic Kernel* instrumentation adds a lot of interesting information that can help you to understand how the interaction with LLM works:

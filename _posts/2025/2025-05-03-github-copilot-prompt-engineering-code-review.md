@@ -181,7 +181,7 @@ We can attach the prompt by `CTRL + ALT + /` and select the `code-review.prompt.
 ✅ And here is the result of the code review:
 
 <center>
-  <img src="/assets/github-copilot-instructions-for-dotnet/custom-code-review-demo.png" />
+  <img src="/assets/2025/github-copilot-instructions-for-dotnet/custom-code-review-demo.png" />
 </center>
 
 ---

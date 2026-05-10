@@ -119,7 +119,7 @@ Now, we can run it using [Aspire CLI](https://learn.microsoft.com/en-us/dotnet/a
 aspire run
 ```
 
-<center><img src="/assets/tdm/aspire-dashboard.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/tdm/aspire-dashboard.png" style="margin-bottom: 2rem;" /></center>
 
 Now we can configure `tdm`:
 
@@ -170,17 +170,17 @@ Now we are ready to perform technical debt analysis for the configured prompt us
 tdm debt analyze
 ```
 
-<center><img src="/assets/tdm/tdm-analyze.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/tdm/tdm-analyze.png" style="margin-bottom: 2rem;" /></center>
 
 Here is an example of data we can find in the Aspire Dashboard, each command has a separate trace:
 
-<center><img src="/assets/tdm/tdm-traces-1.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/tdm/tdm-traces-1.png" style="margin-bottom: 2rem;" /></center>
 💡 Each command has a separate trace
 
-<center><img src="/assets/tdm/tdm-traces-2.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/tdm/tdm-traces-2.png" style="margin-bottom: 2rem;" /></center>
 💡 You can drill down to see individual traces for find per-file analysis traces.
 
-<center><img src="/assets/tdm/tdm-metrics.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/tdm/tdm-metrics.png" style="margin-bottom: 2rem;" /></center>
 💡 Metrics give you insights into the overall LLM usage.
 
 Once we have a backlog of technical debt identified, we can prioritize and address it effectively.
@@ -195,7 +195,7 @@ Use `tdm debt show` to get a tree view of technical debt items:
 tdm debt show
 ```
 
-<center><img src="/assets/tdm/tdm-debt-show.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/tdm/tdm-debt-show.png" style="margin-bottom: 2rem;" /></center>
 
 You can work with items using `tdm debt view --interactive` command:
 
@@ -227,7 +227,7 @@ tdm debt report -o report.html --open
 
 💡 Use `tdm debt import report.html --apply` to export modified report back to `tdm`.
 
-<center><img src="/assets/tdm/tdm-debt-report.png" style="margin-bottom: 2rem;" /></center>
+<center><img src="/assets/2025/tdm/tdm-debt-report.png" style="margin-bottom: 2rem;" /></center>
 
 ## Technical Debt Resolution
 

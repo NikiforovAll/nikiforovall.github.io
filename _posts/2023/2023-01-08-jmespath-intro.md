@@ -97,7 +97,7 @@ foreach (var (exampleName, expression) in expressions)
 }
 ```
 <center>
- <img src="/assets/jmespath-intro/output.png">
+ <img src="/assets/2023/jmespath-intro/output.png">
 </center>
 
 ## Extensibility

@@ -20,6 +20,6 @@ dotnet try
 
 On the demo below you can find implementation of standard sorting algorithms with C# 8 and `Span<T>`.
 
-![demo](/assets/try-dotnet-and-sorting/demo.gif)
+<video src="/assets/2020/try-dotnet-and-sorting/demo.mp4" autoplay muted loop playsinline controls aria-label="demo"></video>
 
 Non-interactive version: <https://github.com/NikiforovAll/intro-to-algorithms/blob/master/docs/Sorting.md>

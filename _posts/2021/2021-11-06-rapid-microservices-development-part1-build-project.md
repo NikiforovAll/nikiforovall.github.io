@@ -245,7 +245,7 @@ For log info: run-services.sh info
 
 The system is up and running (screenshot from awesome <https://github.com/jesseduffield/lazydocker>)
 
-![rmd-dashboard](/assets/rmd/na-bu-up-and-running.png)
+![rmd-dashboard](/assets/2021/rmd/na-bu-up-and-running.png)
 
 Now we can use code from *assets* folder to test things out:
 
@@ -279,7 +279,7 @@ Content-Type: application/json
 GET http://localhost:3000/es/projects/
 ```
 
-![rmd-dashboard](/assets/rmd/na-bu-running-demo.png)
+![rmd-dashboard](/assets/2021/rmd/na-bu-running-demo.png)
 
 ## Summary
 

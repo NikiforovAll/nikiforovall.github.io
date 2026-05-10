@@ -32,7 +32,7 @@ In general case Pattern Strategy doesn't restrict the number of operations in de
 
 **Diagram**
 
-![strategy-diagram](/assets/design-patterns/strategy-1.png)
+![strategy-diagram](/assets/2019/design-patterns/strategy-1.png)
 
 **Examples in .NET**
 
@@ -85,7 +85,7 @@ It is possible to use .NET specific implementation that relies on extension meth
 
 **Diagram**
 
-![template-method](/assets/design-patterns/template-method-1.png)
+![template-method](/assets/2019/design-patterns/template-method-1.png)
 
 **Examples in .NET**
 
@@ -148,7 +148,7 @@ Represent an operation to be performed on the elements of an object structure. V
 
 **Diagram**
 
-![visitor-diagram](/assets/design-patterns/visitor-1.png)
+![visitor-diagram](/assets/2019/design-patterns/visitor-1.png)
 
 
 **Examples in .NET**
@@ -221,7 +221,7 @@ Allow an object to alter its behavior when its internal state changes. StateClie
 
 **Diagram**
 
-![state](/assets/design-patterns/state-1.png)
+![state](/assets/2019/design-patterns/state-1.png)
 
 **Example in .NET**
 
@@ -293,7 +293,7 @@ Mediator could be used at different level of application. It could be class as m
 
 **Diagram**
 
-![mediator](/assets/design-patterns/mediator-1.png)
+![mediator](/assets/2019/design-patterns/mediator-1.png)
 
 **Examples in .NET**
 
@@ -346,7 +346,7 @@ It is hard to find classic interface based implementation of Observer in .NET be
 
 **Diagram**
 
-![observer](/assets/design-patterns/observer-1.gif)
+![observer](/assets/2019/design-patterns/observer-1.gif)
 
 **Examples in .NET**
 
@@ -395,7 +395,7 @@ Without violating encapsulation, capture and externalize an object's internal st
 
 **Diagram**
 
-![memento](/assets/design-patterns/memento-1.png)
+![memento](/assets/2019/design-patterns/memento-1.png)
 
 ---
 
@@ -445,7 +445,7 @@ Iterators in .NET are unidirectional and lazy, every time you invoke *GetEnumera
 
 **Diagram**
 
-![iterator](/assets/design-patterns/iterator-1.png)
+![iterator](/assets/2019/design-patterns/iterator-1.png)
 
 **Examples in .NET**
 
@@ -493,7 +493,7 @@ Given a language, define a representation for its grammar along with an interpre
 
 **Diagram**
 
-![iterator](/assets/design-patterns/interpreter-1.png)
+![iterator](/assets/2019/design-patterns/interpreter-1.png)
 
 ---
 
@@ -542,7 +542,7 @@ Encapsulate a request as an object, thereby letting you parameterize clients wit
 
 **Diagram**
 
-![command](/assets/design-patterns/command-1.png)
+![command](/assets/2019/design-patterns/command-1.png)
 
 **Examples in .NET**
 
@@ -590,7 +590,7 @@ Avoid coupling between the sender of a request to its receiver by giving more th
 
 **Diagram**
 
-![chain-of-responsibility](/assets/design-patterns/chain-of-responsibility-1.png)
+![chain-of-responsibility](/assets/2019/design-patterns/chain-of-responsibility-1.png)
 
 **Examples in .NET**
 

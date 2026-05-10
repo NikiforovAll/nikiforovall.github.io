@@ -39,7 +39,7 @@ I've prepared a demo application. I strongly recommend checking it before you mo
 
 Source code can be found at GitHub: [NikiforovAll/minimal-api-example](https://github.com/NikiforovAll/minimal-api-example)
 
-![minimal-api-banner](/assets/minimal-api/minimal-api-blogpost-cover.png)
+![minimal-api-banner](/assets/2021/minimal-api/minimal-api-blogpost-cover.png)
 
 ## Recommendations
 
