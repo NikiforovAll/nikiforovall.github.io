@@ -1,30 +1,21 @@
 # Nikiforov Oleksii. Blog
 
-## Getting Started
+Source for [nikiforovall.blog](https://nikiforovall.blog) — a Jekyll site deployed via GitHub Actions to GitHub Pages.
 
-``` bash
-bundle exec jekyll serve
-# OR
-jekyll serve --force_polling
-bundle exec jekyll serve --force_polling
-
-sudo su
-```
-
-Cleanup: `rm Gemfile.lock`
-
-### Docker
+## Local development
 
 ```bash
-export JEKYLL_VERSION=3.8
-# docker in wsl2 can't handle paths properly atm
-docker run --rm  -P  --volume="C:\Nikiforov\dev\nikiforovall-blog:/srv/jekyll" -it jekyll/jekyll:$JEKYLL_VERSION jekyll build
-# OR
-docker run -P --name jekyll-blog -it --volume="C:\Nikiforov\dev\nikiforovall-blog:/srv/jekyll" -it jekyll/:$JEKYLL_VERSION jekyll serve --force_polling
+bundle install
+bundle exec jekyll serve
+# add --force_polling if file watching fails on Windows/WSL
 ```
 
-## Reference & Sources
+## Deployment
 
-* Repository is based on: <https://github.com/dbtek/dbyll>
-* <https://northstack.com/create-static-blog-jekyll/>
-* Related posts: <https://blog.webjeda.com/jekyll-related-posts/>
+Pushes to `master` trigger `.github/workflows/pages.yml`, which builds with `JEKYLL_ENV=production` and publishes via `actions/deploy-pages`.
+
+## Repo notes
+
+See [`CLAUDE.md`](./CLAUDE.md) for architecture and conventions.
+
+Theme originally based on [dbtek/dbyll](https://github.com/dbtek/dbyll).
