@@ -11,18 +11,6 @@ related: true
 mermaid: true
 ---
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Example Overview](#example-overview)
-  - [Configure Keycloak](#configure-keycloak)
-  - [Authorization based on ASP.NET Core Identity roles](#authorization-based-on-aspnet-core-identity-roles)
-  - [Authorization based on Keycloak realm and client roles](#authorization-based-on-keycloak-realm-and-client-roles)
-  - [Authorization based on Authorization Server permissions](#authorization-based-on-authorization-server-permissions)
-- [The power of Authorization Server - define policies and permissions](#the-power-of-authorization-server---define-policies-and-permissions)
-  - [Evaluate permissions](#evaluate-permissions)
-  - [Demo](#demo)
-- [Summary](#summary)
-- [References](#references)
 
 ## TL;DR
 

@@ -15,27 +15,6 @@ mermaid: true
 
 **Source code:** <https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/01-keyword-querying-filtering.ipynb>
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Hands-on](#hands-on)
-- [Querying](#querying)
-  - [Full text queries](#full-text-queries)
-    - [Match query](#match-query)
-    - [Multi-match query](#multi-match-query)
-- [Term-level Queries](#term-level-queries)
-  - [Term search](#term-search)
-    - [Range search](#range-search)
-    - [Prefix search](#prefix-search)
-    - [Fuzzy search](#fuzzy-search)
-  - [Combining Query Conditions](#combining-query-conditions)
-    - [bool.must (AND)](#boolmust-and)
-    - [bool.should (OR)](#boolshould-or)
-- [Filtering](#filtering)
-  - [bool.filter](#boolfilter)
-  - [bool.must\_not](#boolmust_not)
-  - [Using Filters with Queries](#using-filters-with-queries)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

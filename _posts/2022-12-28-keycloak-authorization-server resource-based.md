@@ -11,15 +11,6 @@ related: true
 mermaid: true
 ---
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Example Overview](#example-overview)
-  - [Define protected resources](#define-protected-resources)
-  - [Create protected resource programmatically](#create-protected-resource-programmatically)
-  - [Write custom policies in Java](#write-custom-policies-in-java)
-- [Authorize an access to protected resource](#authorize-an-access-to-protected-resource)
-- [Summary](#summary)
-- [References](#references)
 
 ## TL;DR
 

@@ -2,7 +2,7 @@
 layout: post
 title: "LazyClaude: Explore Your Claude Code Setup Without Breaking Flow"
 categories: [ ai ]
-tags: [ ai, claude, python, productivity, developer-tools, tui ]
+tags: [ai, claude, python, productivity, developer-tools]
 published: true
 shortinfo: "A lazygit-inspired TUI to browse all your Claude Code customizations"
 fullview: false

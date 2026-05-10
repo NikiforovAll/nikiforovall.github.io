@@ -5,48 +5,45 @@ header: Browse by Topic
 group: navigation
 ---
 
-{% capture site_tags %}{% for tag in site.tags %}{{ tag | first }}{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
-{% assign tag_words = site_tags | split:',' | sort %}
+{%- capture all_names -%}
+{%- for c in site.categories -%}{{ c[0] | strip_newlines }},{%- endfor -%}
+{%- for t in site.tags -%}{{ t[0] | strip_newlines }},{%- endfor -%}
+{%- endcapture -%}
+{% assign topic_names = all_names | split:',' | uniq | sort_natural %}
 
-{% capture site_categories %}{% for category in site.categories %}{{ category | first }}{% unless forloop.last %},{% endunless %}{% endfor %}{% endcapture %}
-{% assign category_words = site_categories | split:',' | sort %}
-
-<div class="col-sm-3 col-xs-6">
-    <div class="topics-filter-container" style="margin-bottom: 15px;">
-        <input type="text" id="topics-filter" class="form-control" placeholder="Filter topics..." />
-    </div>
-    <ul class="nav nav-tabs-vertical cat-tag-menu" id="topics-menu" data-sort-by-count="true">
-      <li data-topic-name="all" data-topic-type="all" data-topic-count="{{ site.posts.size }}" style="border-bottom: 1px solid #ddd; margin-bottom: 10px; padding-bottom: 10px;">
+<div class="col-sm-3 col-xs-6 col-sm-push-9" style="padding-left: 20px;">
+    <ul class="nav nav-tabs-vertical cat-tag-menu" id="topics-menu-all" style="margin-bottom: 10px;">
+      <li data-topic-name="all" data-topic-type="all" data-topic-count="{{ site.posts.size }}">
           <a href="#all-ref">
             <i class="fa fa-th-list" style="color: #666; margin-right: 6px;"></i>
             All Posts
             <span class="badge pull-right">{{ site.posts.size }}</span>
          </a>
       </li>
-      {% for category in category_words %}
-        {% capture this_word %}{{ category | strip_newlines }}{% endcapture %}
-        <li data-topic-name="{{ this_word | downcase }}" data-topic-type="category" data-topic-count="{{ site.categories[this_word].size }}">
-            <a href="#{{ this_word | replace:' ','-' }}-cat-ref">
-              <i class="fa fa-folder-open topic-icon-category"></i>
-              {{ this_word }}
-              <span class="badge pull-right">{{ site.categories[this_word].size }}</span>
-           </a>
-        </li>
-      {% endfor %}
-      {% for tag in tag_words %}
-        {% capture this_word %}{{ tag | strip_newlines }}{% endcapture %}
-        <li data-topic-name="{{ this_word | downcase }}" data-topic-type="tag" data-topic-count="{{ site.tags[this_word].size }}">
-            <a href="#{{ this_word | replace:' ','-' }}-tag-ref">
+    </ul>
+    <div class="topics-filter-container" style="margin-bottom: 15px;">
+        <input type="text" id="topics-filter" class="form-control" placeholder="Filter topics..." />
+    </div>
+    <ul class="nav nav-tabs-vertical cat-tag-menu" id="topics-menu" data-sort-by-count="true">
+      {% for name in topic_names %}
+        {% assign this_word = name | strip %}
+        {% if this_word == "" %}{% continue %}{% endif %}
+        {% assign merged = "" | split: "" %}
+        {% if site.categories[this_word] %}{% assign merged = merged | concat: site.categories[this_word] %}{% endif %}
+        {% if site.tags[this_word] %}{% assign merged = merged | concat: site.tags[this_word] %}{% endif %}
+        {% assign merged = merged | uniq %}
+        <li data-topic-name="{{ this_word | downcase }}" data-topic-type="topic" data-topic-count="{{ merged.size }}">
+            <a href="#{{ this_word | replace:' ','-' }}-topic-ref">
               <i class="fa fa-tag topic-icon-tag"></i>
               {{ this_word }}
-              <span class="badge pull-right">{{ site.tags[this_word].size }}</span>
+              <span class="badge pull-right">{{ merged.size }}</span>
            </a>
         </li>
       {% endfor %}
     </ul>
 </div>
 <!-- Tab panes -->
-<div class="tab-content col-sm-9 col-xs-6">
+<div class="tab-content col-sm-9 col-xs-6 col-sm-pull-3" style="padding-right: 20px; padding-left: 30px;">
   <div class="tab-pane" id="all-ref">
     <h2 style="margin-top: 0px">
       <i class="fa fa-th-list" style="color: #666;"></i>
@@ -70,40 +67,19 @@ group: navigation
       </ul>
     {% endfor %}
   </div>
-  {% for category in site.categories %}
-    {% capture this_word %}{{ category[0] | strip_newlines }}{% endcapture %}
-    <div class="tab-pane" id="{{ this_word | replace:' ','-' }}-cat-ref">
-      <h2 style="margin-top: 0px">
-        <i class="fa fa-folder-open topic-icon-category"></i>
-        Posts in {{ this_word }}
-      </h2>
-      {% assign postsByYear = category[1] | group_by_exp: "post", "post.date | date: '%Y'" %}
-      {% for year in postsByYear %}
-        <h3 style="color: #e74c3c; margin-top: 30px; margin-bottom: 15px; font-size: 24px; border-bottom: 2px solid #e74c3c; padding-bottom: 5px;">
-          {{ year.name }}
-          <span style="font-size: 16px; color: #999; font-weight: normal;">({{ year.items | size }} posts)</span>
-        </h3>
-        <ul class="list-unstyled">
-          {% for post in year.items %}
-            {% if post.title != null %}
-              <li style="line-height: 35px;">
-                <span class="text-muted" style="display: inline-block; width: 100px;">{{ post.date | date: "%b %d" }}</span>
-                <a href="{{ post.url | relative_url }}">{{post.title}}</a>
-              </li>
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% endfor %}
-    </div>
-  {% endfor %}
-  {% for tag in site.tags %}
-    {% capture this_word %}{{ tag[0] | strip_newlines }}{% endcapture %}
-    <div class="tab-pane" id="{{ this_word | replace:' ','-' }}-tag-ref">
+  {% for name in topic_names %}
+    {% assign this_word = name | strip %}
+    {% if this_word == "" %}{% continue %}{% endif %}
+    {% assign merged = "" | split: "" %}
+    {% if site.categories[this_word] %}{% assign merged = merged | concat: site.categories[this_word] %}{% endif %}
+    {% if site.tags[this_word] %}{% assign merged = merged | concat: site.tags[this_word] %}{% endif %}
+    {% assign merged = merged | uniq | sort: 'date' | reverse %}
+    <div class="tab-pane" id="{{ this_word | replace:' ','-' }}-topic-ref">
       <h2 style="margin-top: 0px">
         <i class="fa fa-tag topic-icon-tag"></i>
         Posts tagged with {{ this_word }}
       </h2>
-      {% assign postsByYear = tag[1] | group_by_exp: "post", "post.date | date: '%Y'" %}
+      {% assign postsByYear = merged | group_by_exp: "post", "post.date | date: '%Y'" %}
       {% for year in postsByYear %}
         <h3 style="color: #e74c3c; margin-top: 30px; margin-bottom: 15px; font-size: 24px; border-bottom: 2px solid #e74c3c; padding-bottom: 5px;">
           {{ year.name }}

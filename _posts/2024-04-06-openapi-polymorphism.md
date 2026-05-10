@@ -11,16 +11,6 @@ related: true
 mermaid: true
 ---
 
-*Table of Contents*:
-
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Serialization via `System.Text.Json`](#serialization-via-systemtextjson)
-  - [Use `JsonDerivedTypeAttribute`](#use-jsonderivedtypeattribute)
-  - [Use `DefaultJsonTypeInfoResolver` in situations when you can't apply attributes](#use-defaultjsontypeinforesolver-in-situations-when-you-cant-apply-attributes)
-- [Configure OpenAPI](#configure-openapi)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## TL;DR
 

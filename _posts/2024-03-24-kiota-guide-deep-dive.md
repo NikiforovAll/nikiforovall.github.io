@@ -14,19 +14,6 @@ mermaid: true
 > Source code: <https://github.com/NikiforovAll/kiota-getting-started>
 
 ---
-*Table of Contents*:
-
-- [Introduction](#introduction)
-- [Setup](#setup)
-- [Generate HTTP Client for ASP.NET Core applications](#generate-http-client-for-aspnet-core-applications)
-  - [Generate OpenAPI specification automatically](#generate-openapi-specification-automatically)
-  - [Use OpenAPI Specification](#use-openapi-specification)
-  - [Demo](#demo)
-- [Dependency Injection, Typed HTTP Clients, and `IHttpClientFactory`](#dependency-injection-typed-http-clients-and-ihttpclientfactory)
-- [Cross-Cutting Concerns and Resilience](#cross-cutting-concerns-and-resilience)
-- [Testing](#testing)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

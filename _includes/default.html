@@ -54,15 +54,12 @@
 
 	<!-- Search Feature Styles -->
 	<style>
-		.layout-page .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; height: 34px; box-sizing: border-box; }
-		.layout-post .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 0; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; width: 34px; height: 34px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; box-sizing: border-box; }
+		.search-trigger { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; height: 34px; box-sizing: border-box; }
 		.search-trigger:hover { background: #ebebeb; border-color: #c0c0c0; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
 		.search-icon { color: #666; font-size: 14px; display: flex; align-items: center; }
 		.search-placeholder { flex: 1; color: #999; font-size: 14px; user-select: none; }
 		.search-keybind { display: flex; gap: 4px; align-items: center; }
 		.search-key { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 6px; background: #e0e0e0; border: 1px solid #ccc; border-bottom: 2px solid #bbb; border-radius: 3px; color: #333; line-height: 1.2; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-		.layout-post .search-placeholder { display: none; }
-		.layout-post .search-keybind { display: none; }
 		.search-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; display: none; align-items: flex-start; justify-content: center; padding-top: 10vh; }
 		.search-modal.open { display: flex; animation: fadeIn 0.2s ease; }
 		@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -81,7 +78,7 @@
 		.search-result-item.selected { background: #e8f4f8; border-color: #4a90e2; }
 		.search-footer { display: flex; justify-content: center; gap: 20px; padding: 12px 20px; border-top: 1px solid #e0e0e0; background: #fafafa; font-size: 12px; color: #666; }
 		.search-footer kbd { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 5px; background: white; border: 1px solid #ddd; border-radius: 3px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-		@media (max-width: 768px) { .layout-page .search-trigger, .layout-post .search-trigger { display: none; } .search-modal { padding-top: 5vh; } .search-modal-container { width: 95%; max-width: none; margin: 0 10px; } .search-results { max-height: 50vh; } .search-footer { flex-wrap: wrap; gap: 10px; } }
+		@media (max-width: 768px) { .search-trigger { display: none; } .search-modal { padding-top: 5vh; } .search-modal-container { width: 95%; max-width: none; margin: 0 10px; } .search-results { max-height: 50vh; } .search-footer { flex-wrap: wrap; gap: 10px; } }
 	</style>
 
 	<!-- Le fav and touch icons -->
@@ -96,6 +93,17 @@
 	<link rel="alternate" type="application/rss+xml" title="{{ site.name }}" href="{{ '/feed.xml' | absolute_url }}">
 
 	{% include schema.html %}
+
+	<script>
+		(function() {
+			try {
+				if (localStorage.getItem('sidebarCollapsed') === '1') {
+					document.documentElement.classList.add('sidebar-collapsed-init');
+				}
+			} catch (e) {}
+		})();
+	</script>
+	<style>html.sidebar-collapsed-init body { } </style>
 </head>
 
 <body class="layout-{{ page.layout }}">
@@ -139,28 +147,9 @@
 		</div><!-- /.navbar-collapse -->
 	</nav>
 
-	<!-- nav-menu-dropdown -->
-	<div class="btn-group hidden-xs" id="nav-menu">
-		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-			<i class="fa-solid fa-bars"></i>
-		</button>
-		<ul class="dropdown-menu" role="menu">
-			<li><a href="{{ '/' | relative_url }}"><i class="fa-solid fa-home"></i>Home</a></li>
-			<li><a href="{{ site.topics_path | relative_url }}"><i class="fa-solid fa-bookmark"></i>Topics</a></li>
-			<li><a href="{{ site.about_page_path | relative_url }}"><i class="fa-solid fa-pencil"></i>About</a></li>
-			<li class="divider"></li>
-			<li><a href="#"><i class="fa-solid fa-arrow-up"></i>Top of Page</a></li>
-		</ul>
-	</div>
-
-	<!-- Search Control -->
-	<button id="search-trigger" class="search-trigger" type="button" aria-label="Open search">
-		<span class="search-icon"><i class="fa-solid fa-search"></i></span>
-		<span class="search-placeholder">Search</span>
-		<div class="search-keybind">
-			<kbd class="search-key" id="search-modifier">ctrl</kbd>
-			<kbd class="search-key">K</kbd>
-		</div>
+	<!-- back-to-top floating button -->
+	<button type="button" id="back-to-top" class="hidden-xs" aria-label="Back to top" title="Back to top">
+		<i class="fa-solid fa-arrow-up"></i>
 	</button>
 
 	<!-- Search Modal -->
@@ -187,25 +176,39 @@
 
 	<div class="col-sm-3 sidebar hidden-xs" style="{% if site.sidebar_background_image %}background: url({{site.sidebar_background_image}}) no-repeat !important;{% endif %}">
 		{% include sidebar.html %}
+		<button id="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+			<i class="fa-solid fa-chevron-left sidebar-toggle-icon"></i>
+		</button>
 	</div>
 
-	<div class="col-sm-9 col-sm-offset-3">
+	<div class="col-sm-9 col-sm-offset-3 main-content">
 		{{ content }}
-
-		<footer>
-			<hr/>
-			<p>
-				&copy; {{ site.time | date: '%Y' }} {{ site.author.name }} with <a href="http://jekyllrb.com/">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll">dbyll</a> by dbtek.
-			</p>
-		</footer>
 	</div>
 
+	<script>
+		(function() {
+			var body = document.body;
+			if (document.documentElement.classList.contains('sidebar-collapsed-init')) {
+				body.classList.add('sidebar-collapsed');
+				document.documentElement.classList.remove('sidebar-collapsed-init');
+			}
+			var btn = document.getElementById('sidebar-toggle');
+			if (!btn) return;
+			btn.setAttribute('aria-expanded', body.classList.contains('sidebar-collapsed') ? 'false' : 'true');
+			btn.addEventListener('click', function() {
+				var collapsed = body.classList.toggle('sidebar-collapsed');
+				btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+				try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+			});
+		})();
+	</script>
 	<script type="text/javascript" src="{{ '/assets/resources/jquery/jquery.min.js' | relative_url }}"></script>
 	<script type="text/javascript" src="{{ '/assets/resources/bootstrap/js/bootstrap.min.js' | relative_url }}"></script>
 	<script type="text/javascript" src="{{ '/assets/js/app.js' | relative_url }}"></script>
 	<script src="https://unpkg.com/lunr/lunr.js"></script>
 	<script type="text/javascript" src="{{ '/assets/js/search.js' | relative_url }}"></script>
 	<script type="text/javascript" src="{{ '/assets/js/copy-code.js' | relative_url }}"></script>
+	<script type="text/javascript" src="{{ '/assets/js/toc.js' | relative_url }}"></script>
 	{% if page.mermaid %}
 		{% include mermaid.html %}
 	{% endif %}

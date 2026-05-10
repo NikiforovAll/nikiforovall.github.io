@@ -2,7 +2,7 @@
 layout: post
 title: "Claude Code Hub: Kanban, Marketplace, Cost, and Memory in One Place"
 categories: [ productivity, ai ]
-tags: [ claude-code, developer-tools, kanban, marketplace, cost, memory ]
+tags: [developer-tools]
 published: true
 shortinfo: "A launcher that bundles Kanban, Marketplace, Cost, and Memory into a single chromeless PWA for Claude Code."
 fullview: false

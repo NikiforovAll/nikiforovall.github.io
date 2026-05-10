@@ -31,26 +31,6 @@ Also, see my blog post. It explains how to run .NET 6 inside devcontainer: <http
 
 ---
 
-- [Part 1. C# 10](#part-1-c-10)
-  - [Global usings](#global-usings)
-    - [Reference](#reference)
-  - [File-scoped namespaces](#file-scoped-namespaces)
-    - [Reference](#reference-1)
-  - [Record structs](#record-structs)
-    - [Reference](#reference-2)
-- [Part 2. .NET API](#part-2-net-api)
-  - [Minimal API](#minimal-api)
-    - [Reference](#reference-3)
-  - [LINQ Improvements](#linq-improvements)
-    - [Reference](#reference-4)
-  - [Parallel.ForEachAsync](#parallelforeachasync)
-    - [Reference](#reference-5)
-  - [PeriodicTimer](#periodictimer)
-  - [Priority Queue](#priority-queue)
-    - [Reference](#reference-6)
-  - [DateOnly and TimeOnly](#dateonly-and-timeonly)
-  - [System.Text.Json](#systemtextjson)
-- [Summary](#summary)
 
 ⚠👀 Please note that the content below consists of excerpts from the actual coding story. Please check the coding story if you haven't already.
 

@@ -13,18 +13,6 @@ mermaid: true
 
 ## TL;DR
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-  - [Motivation](#motivation)
-- [Solution - use `TypedResults`](#solution---use-typedresults)
-  - [Example](#example)
-    - [Adding OpenAPI metadata](#adding-openapi-metadata)
-    - [Automatic model validation](#automatic-model-validation)
-    - [Exception handling](#exception-handling)
-  - [Control the serialization via `JsonSerializerOptions`](#control-the-serialization-via-jsonserializeroptions)
-- [Bonus: `Nall.ResultEndpoints.Template` template](#bonus-nallresultendpointstemplate-template)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 This blog post explores the use of `TypedResults` in .NET endpoints to achieve a consistent and strongly typed API development approach. We discuss the benefits of `TypedResults` over traditional `ActionResult`, emphasizing how they enhance type safety and API consistency.
 

@@ -21,13 +21,6 @@ In this post, we'll look at how you can use [OpenTelemetry](https://opentelemetr
     <img src="/assets/test-instrumentation/blog-cover.png" style="margin: 15px;">
 </center>
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Running Integration Tests](#running-integration-tests)
-- [Code Explained](#code-explained)
-  - [Instrumenting Tests](#instrumenting-tests)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

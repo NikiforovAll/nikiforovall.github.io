@@ -2,7 +2,7 @@
 layout: post
 title: A developer guide to automated testing with Postman. Run postman collections inside Docker via newman CLI.
 categories: [ dotnet, docker, testing ]
-tags: [ dotnet, docker, testing, postman, cli ]
+tags: [dotnet, docker, testing, cli]
 published: true
 shortinfo: See a practical example of how to organize automated postman collection execution.
 fullview: false

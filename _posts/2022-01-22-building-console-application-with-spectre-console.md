@@ -2,7 +2,7 @@
 layout: post
 title: Console applications with Spectre.Console
 categories: [ dotnet ]
-tags: [ dotnet, cli, console ]
+tags: [dotnet, cli]
 published: true
 shortinfo: Learn an easy way to develop CLI applications
 fullview: false

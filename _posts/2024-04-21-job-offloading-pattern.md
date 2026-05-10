@@ -11,18 +11,6 @@ related: true
 mermaid: true
 ---
 
-*Table of Contents*:
-
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Defining Pipeline](#defining-pipeline)
-- [Adding OpenTelemetry](#adding-opentelemetry)
-- [Demo](#demo)
-  - [Running single request](#running-single-request)
-  - [Adding custom metrics and using Bombardier](#adding-custom-metrics-and-using-bombardier)
-  - [Running multiple requests](#running-multiple-requests)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## TL;DR
 

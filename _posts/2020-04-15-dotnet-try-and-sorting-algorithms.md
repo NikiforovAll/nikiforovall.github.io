@@ -1,8 +1,8 @@
 ---
 layout: post
 title: "Sorting algorithms with C# 8, Span{T} and Try .NET"
-categories: [ algorithms ]
-tags: [ dotnet, algorithms ]
+categories: [ dotnet ]
+tags: [dotnet]
 fullview: false
 published: true
 comments: true

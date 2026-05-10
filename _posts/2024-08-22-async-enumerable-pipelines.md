@@ -13,15 +13,6 @@ mermaid: true
 
 ## TL;DR
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Examples](#examples)
-  - [Using `System.Linq.Async` operators to build a pipeline](#using-systemlinqasync-operators-to-build-a-pipeline)
-  - [Combining `IAsyncEnumerable` with `IObservable`](#combining-iasyncenumerable-with-iobservable)
-  - [Implementing reusable operators - `Batch`](#implementing-reusable-operators---batch)
-  - [Implementing reusable domain-specific operators - `TextSummarization` with Semantic Kernel](#implementing-reusable-domain-specific-operators---textsummarization-with-semantic-kernel)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 This article demonstrates how to use `IAsyncEnumerable` and `System.Linq.Async` to build pipelines in C#.
 
@@ -280,7 +271,7 @@ The `Summarize` method is implemented as follows:
 async ValueTask<SummarizationPayload> Summarize(FilePayload file)
 {
     var prompt = """
-        {{$input}}
+        {{input}}
         Please summarize the content above in 20 words or less:
 
         The output format should be: [title]: [summary]

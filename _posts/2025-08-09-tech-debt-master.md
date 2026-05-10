@@ -2,7 +2,7 @@
 layout: post
 title: "Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs"
 categories: [ ai ]
-tags: [ ai, cli, agents, aspire, otel, developer-tools ]
+tags: [ ai, cli, agents, aspire, developer-tools ]
 published: true
 shortinfo: "An AI-based CLI tool that automates technical debt discovery, triage, and resolution. It transforms technical debt management into a proactive and automated process"
 fullview: false
@@ -16,17 +16,6 @@ mermaid: true
 Introducing `tdm`, a CLI tool that automates technical debt discovery, triage, and resolution. `tdm` transforms technical debt management into a proactive, automated process that works seamlessly with your existing development tools through MCP integration.
 
 **Source code:** <https://github.com/NikiforovAll/tech-debt-master>
-
-- [TL;DR](#tldr)
-- [Motivation](#motivation)
-- [`tdm` workflow](#tdm-workflow)
-- [Let's Get Started](#lets-get-started)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-- [Technical Debt Discovery](#technical-debt-discovery)
-- [Triaging Technical Debt](#triaging-technical-debt)
-- [Technical Debt Resolution](#technical-debt-resolution)
-- [References](#references)
 
 
 ## Motivation

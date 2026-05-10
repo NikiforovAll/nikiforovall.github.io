@@ -13,17 +13,6 @@ mermaid: true
 
 ## TL;DR
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Code](#code)
-  - [Set up Aspire](#set-up-aspire)
-  - [Set up Kernel Memory](#set-up-kernel-memory)
-- [Demo](#demo)
-  - [Upload a Document](#upload-a-document)
-  - [Ask a Question](#ask-a-question)
-  - [Observability](#observability)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 <center>
     <img src="/assets/typical-rag-dotnet/banner.png" style="margin: 15px;" width="100%">

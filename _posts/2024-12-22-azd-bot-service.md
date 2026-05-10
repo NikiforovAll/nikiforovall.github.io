@@ -2,7 +2,7 @@
 layout: post
 title: "Deploy Your Bot to Azure in 5 Minutes with Azure Developer CLI (azd)"
 categories: [ dotnet ]
-tags: [ dotnet, azure, bot ]
+tags: [dotnet, azure]
 published: true
 shortinfo: "Learn how to use a starter template to deploy a bot to Azure with Azure Bot Service and Azure Developer CLI (azd)"
 fullview: false

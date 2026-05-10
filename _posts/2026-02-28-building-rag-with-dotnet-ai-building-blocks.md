@@ -2,7 +2,7 @@
 layout: post
 title: "Building RAG with .NET AI Building Blocks - Microsoft.Extensions.AI"
 categories: [ dotnet, ai ]
-tags: [ dotnet, aspire, meai, rag, qdrant, ollama, vector-data, ai-evaluation ]
+tags: [dotnet, aspire, microsoft-extensions-ai, rag, qdrant, ollama]
 published: true
 shortinfo: "How to build a provider-agnostic RAG system in .NET using Microsoft.Extensions.AI, VectorData, and Aspire for orchestration, testing, and evaluation."
 fullview: false
@@ -15,21 +15,6 @@ mermaid: true
 
 I built a RAG-based document intelligence assistant in .NET using `IChatClient` and `IEmbeddingGenerator` from `Microsoft.Extensions.AI`, `VectorStoreCollection` from `Microsoft.Extensions.VectorData`, Qdrant for vector search, Ollama for local inference, and .NET Aspire to wire it all together. The result is a provider-agnostic RAG app where switching from Ollama to OpenAI means changing one line of DI registration. This post walks through the abstractions, the pipeline, and how Aspire enables LLM-as-Judge evaluation in integration tests.
 
-
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [The building blocks](#the-building-blocks)
-  - [IChatClient and IEmbeddingGenerator](#ichatclient-and-iembeddinggenerator)
-  - [DelegatingChatClient: middleware for AI](#delegatingchatclient-middleware-for-ai)
-  - [VectorData with auto-embedding](#vectordata-with-auto-embedding)
-- [The RAG pipeline](#the-rag-pipeline)
-  - [Ingestion](#ingestion)
-  - [Query](#query)
-- [Aspire orchestration](#aspire-orchestration)
-- [RAG evaluation with LLM-as-Judge](#rag-evaluation-with-llm-as-judge)
-- [Demo](#demo)
-- [Summary](#summary)
-- [References](#references)
 
 
 **Source code:** <https://github.com/NikiforovAll/company-intel-dotnet>

@@ -2,7 +2,7 @@
 layout: post
 title: Creating and Using HTTP Client SDKs in .NET 6
 categories: [ dotnet, aspnetcore, microservices ]
-tags: [ dotnet, microservices, aspnetcore, api ]
+tags: [dotnet, microservices, aspnetcore]
 published: true
 shortinfo: There are many ways of developing HTTP Client SDKs. This article helps you to choose the right one according to your scenario.
 fullview: false
@@ -14,22 +14,6 @@ related: false
 
 Learn three ways you can develop HTTP Client SDKs in .NET. Source code: <https://github.com/NikiforovAll/http-sdk-guide>
 
-- [TL;DR](#tldr)
-- [Key Takeaways](#key-takeaways)
-- [Introduction](#introduction)
-- [Writing HTTP Client SDK](#writing-http-client-sdk)
-  - [Client Lifetime](#client-lifetime)
-- [Consuming API Clients](#consuming-api-clients)
-  - [Consuming API Clients. HttpClientFactory](#consuming-api-clients-httpclientfactory)
-- [Extending HTTP Client SDKs. Adding cross-cutting concerns via DelegatingHandler](#extending-http-client-sdks-adding-cross-cutting-concerns-via-delegatinghandler)
-  - [Third-Party Extensions](#third-party-extensions)
-- [Testing HTTP Client SDKs](#testing-http-client-sdks)
-- [Writing HTTP Client SDK. Declarative approach](#writing-http-client-sdk-declarative-approach)
-- [Consuming API Clients. Refit](#consuming-api-clients-refit)
-- [Writing HTTP Client SDK. Automated approach](#writing-http-client-sdk-automated-approach)
-- [Choosing the right approach](#choosing-the-right-approach)
-- [Summary](#summary)
-- [Reference](#reference)
 
 ## Key Takeaways
 

@@ -17,17 +17,6 @@ In this post, we will explore how to perform Semantic Search in .NET.
 
 **Source code:** <https://github.com/NikiforovAll/elasticsearch-dotnet-playground/blob/main/src/elasticsearch-getting-started/00-quick-start.ipynb>
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Getting Started](#getting-started)
-- [Initialize the Elasticsearch Client](#initialize-the-elasticsearch-client)
-- [Generate Embeddings](#generate-embeddings)
-- [Index Data](#index-data)
-- [Making queries](#making-queries)
-  - [Semantic Search](#semantic-search)
-  - [Semantic Search and Filtering](#semantic-search-and-filtering)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

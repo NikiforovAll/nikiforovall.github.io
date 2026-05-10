@@ -2,7 +2,7 @@
 layout: post
 title: "Simplifying Model Context Protocol (MCP) Server Development with Aspire"
 categories: [ dotnet ]
-tags: [ dotnet, ai, aspire, mcp, mcp-server, developer-tools ]
+tags: [ dotnet, ai, aspire, mcp, developer-tools ]
 published: true
 shortinfo: "Learn how to develop MCP servers with Aspire."
 fullview: false
@@ -17,13 +17,6 @@ mermaid: true
 
 ## TL;DR
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- ['Stdio' Mode](#stdio-mode)
-- ['SSE' Mode](#sse-mode)
-- [Stdio vs SSE](#stdio-vs-sse)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 You can use `Nall.ModelContextProtocol.Inspector.Aspire.Hosting` hosting integration to run *MCP Inspector* and integrate it with your MCP Servers using Aspire.
 

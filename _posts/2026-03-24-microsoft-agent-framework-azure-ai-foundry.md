@@ -2,7 +2,7 @@
 layout: post
 title: "Microsoft Agent Framework — Azure AI Foundry"
 categories: [ dotnet, ai ]
-tags: [ dotnet, maf, agents, microsoft-extensions-ai, microsoft-agent-framework, azure-ai-foundry ]
+tags: [dotnet, microsoft-agent-framework, agents, microsoft-extensions-ai, azure]
 published: true
 shortinfo: "Move agents to the cloud — server-managed lifecycle, hosted tools, RAG, declarative workflows, and evaluations with Azure AI Foundry."
 fullview: false
@@ -15,21 +15,6 @@ mermaid: true
 
 This is Part 3 of the Microsoft Agent Framework series. [Part 1](/dotnet/ai/2026/03/02/microsoft-agent-framework-foundations.html) built agents locally with tools, sessions, and memory. [Part 2](/dotnet/ai/2026/03/07/microsoft-agent-framework-workflows-mcp-a2a-agui.html) wired them into workflow graphs, MCP servers, and AG-UI frontends. This post moves everything to Azure AI Foundry — same `AIAgent` / `RunAsync()` API, but now the agents live server-side with managed lifecycle, hosted tools (code interpreter, web search, file search), declarative workflows, and built-in evaluations.
 
-- [TL;DR](#tldr)
-- [Introduction - Why Foundry?](#introduction---why-foundry)
-- [First Foundry agent](#first-foundry-agent)
-- [Observability - OpenTelemetry + Foundry traces](#observability---opentelemetry--foundry-traces)
-- [Persistent sessions](#persistent-sessions)
-- [Function tools](#function-tools)
-- [Hosted tools - Code Interpreter and Web Search](#hosted-tools---code-interpreter-and-web-search)
-  - [Code Interpreter](#code-interpreter)
-  - [Web Search](#web-search)
-- [RAG via Foundry](#rag-via-foundry)
-- [Foundry workflows](#foundry-workflows)
-- [Evaluations](#evaluations)
-- [Key takeaways](#key-takeaways)
-- [Presentation](#presentation)
-- [References](#references)
 
 **Source code:** <https://github.com/NikiforovAll/maf-getting-started>
 

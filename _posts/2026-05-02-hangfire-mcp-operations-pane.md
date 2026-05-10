@@ -2,7 +2,7 @@
 layout: post
 title: "Hangfire as an MCP Operations Pane for AI Agents"
 categories: [ dotnet, ai ]
-tags: [ dotnet, ai, hangfire, mcp, mcp-server, aspire, agents ]
+tags: [ dotnet, ai, hangfire, mcp, aspire, agents ]
 published: true
 shortinfo: "Expose Hangfire jobs and maintenance tools as MCP capabilities, so AI agents can run jobs and operate the queue. Aspire integration is a bonus."
 fullview: false
@@ -13,19 +13,6 @@ image: /assets/hangfire-mcp-operations-pane/cover.png
 ---
 
 ## TL;DR
-
-- [TL;DR](#tldr)
-- [1. Why an Operations Pane](#1-why-an-operations-pane)
-  - [Aspire bonus 🎁](#aspire-bonus-)
-- [2. Getting started](#2-getting-started)
-  - [2.1 How a job gets discovered](#21-how-a-job-gets-discovered)
-  - [2.2 Decorating jobs with `[Description]`](#22-decorating-jobs-with-description)
-- [3. Demo: MCP Inspector](#3-demo-mcp-inspector)
-- [4. Authentication and authorization](#4-authentication-and-authorization)
-  - [Authentication](#authentication)
-  - [Per-job authorization](#per-job-authorization)
-- [Summary](#summary)
-  - [Reference](#reference)
 
 `Nall.Hangfire.Mcp` is an in-process library. It exposes your Hangfire jobs at `/mcp` as MCP tools, and ships a built-in maintenance toolset and a few prompts on the side. Call `AddHangfireMcp()` and `MapHangfireMcp("/mcp")` inside the same ASP.NET Core host that already runs Hangfire, and the schemas, descriptions, auth hook, and maintenance tools come with it.
 

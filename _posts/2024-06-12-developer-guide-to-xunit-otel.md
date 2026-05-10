@@ -21,17 +21,6 @@ In this guide, we will explored how to leverage XUnit and OpenTelemetry to instr
     <img src="/assets/xunit-otel/blog-cover.png" style="margin: 15px;">
 </center>
 
-*Table of Contents:*
-
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Run Tests](#run-tests)
-  - [Explore the code](#explore-the-code)
-  - [Results of Test Run](#results-of-test-run)
-  - [Metrics](#metrics)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

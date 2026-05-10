@@ -21,19 +21,6 @@ I have been using .NET Aspire for a while now and have learned a lot along the w
   <img src="/assets/aspire-lessons-learned/aspire-brand.png" style="margin: 15px;" width="40%">
 </center>
 
-- [TL;DR](#tldr)
-- [Case Study](#case-study)
-- [Lesson 1. Adding Aspire is quite straightforward and incremental](#lesson-1-adding-aspire-is-quite-straightforward-and-incremental)
-- [Lesson 2. Be ready to write custom integrations](#lesson-2-be-ready-to-write-custom-integrations)
-- [Lesson 3. Aspire workload should be installed every time you run the CI/CD pipeline](#lesson-3-aspire-workload-should-be-installed-every-time-you-run-the-cicd-pipeline)
-- [Lesson 4. Managing Startup Dependencies is a must have](#lesson-4-managing-startup-dependencies-is-a-must-have)
-- [Lesson 5. Aspire project can take some time to boot up](#lesson-5-aspire-project-can-take-some-time-to-boot-up)
-- [Lesson 6. It can be challenging to run things without Aspire](#lesson-6-it-can-be-challenging-to-run-things-without-aspire)
-- [Lesson 7. There is no easy way to run a partial setup](#lesson-7-there-is-no-easy-way-to-run-a-partial-setup)
-- [Lesson 8. Using Podman instead of Docker can be troublesome](#lesson-8-using-podman-instead-of-docker-can-be-troublesome)
-- [Lesson 9. Aspire client integrations require IHostApplicationBuilder](#lesson-9-aspire-client-integrations-require-ihostapplicationbuilder)
-- [Lesson 10. Learn by example](#lesson-10-learn-by-example)
-- [Conclusion](#conclusion)
 
 ## Case Study
 

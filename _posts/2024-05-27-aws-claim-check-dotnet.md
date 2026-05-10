@@ -2,7 +2,7 @@
 layout: post
 title: "Claim-Check Pattern with AWS Message Processing Framework for .NET and Aspire"
 categories: [ dotnet, aws ]
-tags: [ dotnet, aspnetcore, aws, cloud, aws-s3, aws-sns, aws-sqs, aspire ]
+tags: [dotnet, aspnetcore, aws, cloud, aspire]
 published: true
 shortinfo: "Learn how to use AWS.Messaging and Aspire to implement the Claim-Check pattern"
 fullview: false
@@ -19,18 +19,6 @@ Learn how to use [AWS.Messaging](https://www.nuget.org/packages/AWS.Messaging/) 
 
 Source code: <https://github.com/NikiforovAll/aws-claim-check-dotnet>
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-  - [When to use Claim-Check pattern?](#when-to-use-claim-check-pattern)
-- [What is AWS.Messaging?](#what-is-awsmessaging)
-- [Implementation](#implementation)
-  - [Goal](#goal)
-  - [Code](#code)
-    - [File Upload via API](#file-upload-via-api)
-    - [File Processing via Worker](#file-processing-via-worker)
-    - [OpenTelemetry support](#opentelemetry-support)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

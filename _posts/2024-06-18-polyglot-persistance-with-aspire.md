@@ -2,7 +2,7 @@
 layout: post
 title: "Learn .NET Aspire by example: Polyglot persistence featuring PostgreSQL, Redis, MongoDB, and Elasticsearch"
 categories: [ dotnet, aspire ]
-tags: [ dotnet, aspnetcore, aspire, databases ]
+tags: [dotnet, aspnetcore, aspire]
 published: true
 shortinfo: "Learn how to set up various databases using Aspire by building a simple social media application."
 fullview: false
@@ -17,24 +17,6 @@ Learn how to set up various databases using Aspire by building a simple social m
 
 **Source code**: <https://github.com/NikiforovAll/social-media-app-aspire>
 
-*Table of Contents:*
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-  - [Case Study - Social Media App](#case-study---social-media-app)
-- [Application Design. Add PostgreSQL](#application-design-add-postgresql)
-  - [Code](#code)
-- [Application Design. Add Redis](#application-design-add-redis)
-  - [Code](#code-1)
-- [Application Design. Add MongoDb](#application-design-add-mongodb)
-  - [Code](#code-2)
-- [Application Design. Add Elasticsearch](#application-design-add-elasticsearch)
-  - [Code](#code-3)
-    - [Search](#search)
-    - [Analytics](#analytics)
-- [Putting everything together. Migration](#putting-everything-together-migration)
-  - [Migration](#migration)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

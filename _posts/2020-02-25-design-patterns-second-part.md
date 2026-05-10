@@ -2,7 +2,7 @@
 layout: post
 title: Design Patterns. Creational Patterns. Part II.
 categories: [general]
-tags: [dotnet, csharp, design-patterns]
+tags: [dotnet, csharp]
 fullview: false
 published: false
 comments: true
@@ -12,13 +12,6 @@ link-list: https://www.theurlist.com/design-patterns
 
 The goal of this post is to figure out in what cases a developer should apply design patterns and try to outline practical usage of creational patterns in common scenarios.
 
-<h1> TOC </h1>
-
-- [Singleton](#singleton)
-  - [Use case](#use-case)
-  - [Tradeoffs](#tradeoffs)
-  - [Recommendations](#recommendations)
-- [Factory Method](#factory-method)
 
 ## Singleton
 
