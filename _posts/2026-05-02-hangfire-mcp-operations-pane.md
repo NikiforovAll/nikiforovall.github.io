@@ -16,10 +16,6 @@ image: /assets/hangfire-mcp-operations-pane/cover.png
 
 `Nall.Hangfire.Mcp` is an in-process library. It exposes your Hangfire jobs at `/mcp` as MCP tools, and ships a built-in maintenance toolset and a few prompts on the side. Call `AddHangfireMcp()` and `MapHangfireMcp("/mcp")` inside the same ASP.NET Core host that already runs Hangfire, and the schemas, descriptions, auth hook, and maintenance tools come with it.
 
-<center>
-    <img src="/assets/hangfire-mcp-operations-pane/cover.png" style="margin: 15px;" width="70%">
-</center>
-
 📖 **Documentation:** <https://nikiforovall.github.io/hangfire-mcp-dotnet/>
 
 <table style="width:100%; border-collapse:collapse;">
