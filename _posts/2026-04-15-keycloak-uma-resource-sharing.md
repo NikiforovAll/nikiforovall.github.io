@@ -21,10 +21,6 @@ image: /assets/keycloak-uma/banner-v2.png
 
 **Source code**: <https://github.com/NikiforovAll/keycloak-authorization-services-dotnet/tree/main/samples/UmaResourceSharing>
 
-<center>
-    <img src="/assets/keycloak-uma/banner-v2.png" style="margin: 15px;" width="70%">
-</center>
-
 ---
 
 ## What is UMA?
