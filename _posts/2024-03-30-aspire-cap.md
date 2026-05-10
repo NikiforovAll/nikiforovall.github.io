@@ -11,22 +11,6 @@ related: false
 mermaid: true
 ---
 
-*Table of Contents*:
-- [TL;DR](#tldr)
-- [Introduction to Outbox Pattern](#introduction-to-outbox-pattern)
-- [Implementation of the Outbox Pattern](#implementation-of-the-outbox-pattern)
-  - [Introduction to `DotNetCore.CAP`](#introduction-to-dotnetcorecap)
-  - [Example](#example)
-- [Adding `Aspire`](#adding-aspire)
-  - [Provision Infrastructure](#provision-infrastructure)
-  - [Configure for Local Development](#configure-for-local-development)
-- [Demo](#demo)
-  - [Locally](#locally)
-  - [Azure](#azure)
-    - [Outbox Tables](#outbox-tables)
-  - [Cleanup](#cleanup)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## TL;DR
 

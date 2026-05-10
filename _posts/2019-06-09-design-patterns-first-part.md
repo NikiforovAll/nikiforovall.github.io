@@ -1,8 +1,8 @@
 ---
 layout: post
 title: Design Patterns. Behavioral Patterns. Part I
-categories: [design-patterns]
-tags: [dotnet, csharp, design-patterns ]
+categories: [ dotnet ]
+tags: [dotnet, csharp]
 shortinfo: Overview of behavioral patterns with Try.NET
 fullview: false
 comments: true
@@ -11,20 +11,7 @@ link-list: https://www.theurlist.com/design-patterns
 
 Yes, you might say that blogging about design patterns is boring. But what about interactive version with live examples and  [Try .NET](https://github.com/dotnet/try)? Let's delve into it.
 
-<h1> TOC </h1>
 
-- [Strategy](#strategy)
-- [Template Method](#template-method)
-- [Visitor](#visitor)
-- [State](#state)
-- [Mediator](#mediator)
-- [Observer](#observer)
-- [Memento](#memento)
-- [Iterator](#iterator)
-- [Interpreter](#interpreter)
-- [Command](#command)
-- [ChainOfResponsibility](#chainofresponsibility)
-- [Wrapping up](#wrapping-up)
 <!-- - [Wrapping up](#wrapping-up) -->
 
 ## Strategy

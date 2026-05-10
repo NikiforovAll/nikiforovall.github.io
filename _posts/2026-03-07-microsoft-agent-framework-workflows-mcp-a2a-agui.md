@@ -2,7 +2,7 @@
 layout: post
 title: "Microsoft Agent Framework — Workflows, MCP, A2A & AG-UI"
 categories: [ dotnet, ai ]
-tags: [ dotnet, maf, agents, microsoft-extensions-ai, microsoft-agent-framework, mcp, agui, a2a ]
+tags: [dotnet, microsoft-agent-framework, agents, microsoft-extensions-ai, mcp]
 published: true
 shortinfo: "Chain agents into workflow graphs, turn them into MCP servers, wire up A2A discovery, and stream to frontends via AG-UI."
 fullview: false
@@ -15,24 +15,6 @@ mermaid: true
 
 This is Part 2 of the Microsoft Agent Framework series. [Part 1](/dotnet/ai/2026/03/02/microsoft-agent-framework-foundations.html) covered the basics — creating agents, tools, multi-turn conversations, and memory. This post goes further: orchestrating agents into workflow graphs, exposing them as MCP servers, enabling agent-to-agent communication via A2A, and streaming to frontends with AG-UI. All samples run as single-file C# scripts with `dotnet run`.
 
-- [TL;DR](#tldr)
-- [Introduction — From agents to systems](#introduction--from-agents-to-systems)
-- [Workflows — Orchestrating agents as graphs](#workflows--orchestrating-agents-as-graphs)
-  - [Function workflow](#function-workflow)
-  - [Agent workflow](#agent-workflow)
-  - [Composed workflow](#composed-workflow)
-- [MCP Integration — Agents as servers and clients](#mcp-integration--agents-as-servers-and-clients)
-  - [MCP Server](#mcp-server)
-  - [MCP Client](#mcp-client)
-- [A2A — Agent-to-agent communication](#a2a--agent-to-agent-communication)
-  - [A2A Server](#a2a-server)
-  - [A2A Client](#a2a-client)
-- [AG-UI — Exposing agents to web UIs](#ag-ui--exposing-agents-to-web-uis)
-  - [AG-UI Server](#ag-ui-server)
-  - [AG-UI Client](#ag-ui-client)
-- [Key takeaways](#key-takeaways)
-- [Presentation](#presentation)
-- [References](#references)
 
 **Source code:** <https://github.com/NikiforovAll/maf-getting-started>
 

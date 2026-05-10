@@ -13,14 +13,6 @@ mermaid: true
 
 ## TL;DR
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Code Review Custom Instructions](#code-review-custom-instructions)
-- [Code Review in Agent Mode](#code-review-in-agent-mode)
-  - [Crafting the Review Prompt](#crafting-the-review-prompt)
-  - [Demo](#demo)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 In this blog post, I will show you how to leverage GitHub Copilot's code review capabilities in Visual Studio Code. In addition to the built-in features, I'll introduce my own agent-based code review workflow using a custom prompt. This approach leverages Copilot's flexibility to tailor the review process to your team's needs.
 

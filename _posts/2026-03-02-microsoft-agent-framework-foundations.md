@@ -2,7 +2,7 @@
 layout: post
 title: "Microsoft Agent Framework — Foundations"
 categories: [ dotnet, ai ]
-tags: [ dotnet, maf, agents, microsoft-extensions-ai, microsoft-agent-framework ]
+tags: [dotnet, microsoft-agent-framework, agents, microsoft-extensions-ai]
 published: true
 shortinfo: "Build your first AI agents in .NET with MAF — from hello-world to tools, multi-turn conversations, and persistent memory."
 fullview: false
@@ -15,21 +15,6 @@ mermaid: true
 
 Microsoft Agent Framework (MAF) merges Semantic Kernel and AutoGen into a single, production-ready agent runtime built on `Microsoft.Extensions.AI`. This post walks through five progressive samples — creating your first agent, adding tools, composing agents, multi-turn conversations, and persistent memory — all running as single-file C# scripts with `dotnet run`.
 
-- [TL;DR](#tldr)
-- [Introduction — What is MAF?](#introduction--what-is-maf)
-- [Your first agent](#your-first-agent)
-- [Tools — Giving agents the ability to act](#tools--giving-agents-the-ability-to-act)
-  - [Function tools](#function-tools)
-  - [Agent-as-tool](#agent-as-tool)
-- [Multi-turn conversations](#multi-turn-conversations)
-- [Memory and persistence](#memory-and-persistence)
-  - [In-memory and serialization](#in-memory-and-serialization)
-  - [Custom ChatHistoryProvider](#custom-chathistoryprovider)
-  - [Session-aware ChatHistoryProvider](#session-aware-chathistoryprovider)
-- [Key takeaways](#key-takeaways)
-- [What's next](#whats-next)
-- [Presentation](#presentation)
-- [References](#references)
 
 **Source code:** <https://github.com/NikiforovAll/maf-getting-started>
 

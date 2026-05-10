@@ -19,16 +19,6 @@ This article demonstrates how to utilize .NET Aspire as an orchestrator. You wil
 
 **Example**: <https://github.com/NikiforovAll/aspire-depends-on/tree/main/samples/Todo>
 
-*Table of Contents:*
-
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Using docker-compose 🐳](#using-docker-compose-)
-- [Why .NET Aspire? 🚀](#why-net-aspire-)
-- [Using Aspire](#using-aspire)
-  - [Writing Custom Health Checks for Aspire](#writing-custom-health-checks-for-aspire)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 <center>
     <img src="/assets/startup-dependencies-aspire/aspire-dependencies-banner.png" style="margin: 15px;" width="80%">

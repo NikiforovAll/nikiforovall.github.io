@@ -2,7 +2,7 @@
 layout: post
 title: "Hangfire MCP Server in Standalone Mode"
 categories: [ dotnet ]
-tags: [ dotnet, ai, hangfire, mcp, mcp-server ]
+tags: [ dotnet, ai, hangfire, mcp ]
 published: true
 shortinfo: "Enqueue background jobs using the Standalone Hangfire MCP server."
 fullview: false

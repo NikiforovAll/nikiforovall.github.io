@@ -2,7 +2,7 @@
 layout: post
 title: "Risks of AI-Assisted Development"
 categories: [ ai ]
-tags: [ ai, productivity, software-engineering ]
+tags: [ai, productivity]
 published: true
 shortinfo: AI coding tools are useful, but understanding their failure modes — from prompt injection to skill degradation — is essential for using them responsibly.
 fullview: false
@@ -17,15 +17,6 @@ related: true
 ## TL;DR
 
 AI coding tools are powerful but come with real risks: unsolved prompt injection vulnerabilities, subtle bugs that pass review because they "look right," cognitive shifts from writing to reading code, measurable skill degradation, and unclear ROI. None of these mean you should stop using AI — they mean you should use it with open eyes. Review AI-generated code harder, write code by hand regularly, and make sure fundamentals come before delegation.
-
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [1️⃣ Security: prompt injection is unsolved](#1️⃣-security-prompt-injection-is-unsolved)
-- [2️⃣ Subtle bugs: the "looks right" problem](#2️⃣-subtle-bugs-the-looks-right-problem)
-- [3️⃣ Cognitive shift: reading vs. writing code](#3️⃣-cognitive-shift-reading-vs-writing-code)
-- [4️⃣ Skill degradation: knowing when to learn](#4️⃣-skill-degradation-knowing-when-to-learn)
-- [5️⃣ Cost: the enterprise pricing question](#5️⃣-cost-the-enterprise-pricing-question)
-- [What to do about all this](#what-to-do-about-all-this)
 
 
 ## Introduction

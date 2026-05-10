@@ -17,17 +17,6 @@ mermaid: true
 
 **Source code:** <https://github.com/NikiforovAll/ai-dial-dotnet>
 
-**Table of Contents**:
-
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Build the Assistant from Scratch](#build-the-assistant-from-scratch)
-  - [Add DIAL Core](#add-dial-core)
-  - [Add Assistant with Addon](#add-assistant-with-addon)
-  - [Deploy OpenAI Model - GPT-4o](#deploy-openai-model---gpt-4o)
-  - [Run Everything Together](#run-everything-together)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

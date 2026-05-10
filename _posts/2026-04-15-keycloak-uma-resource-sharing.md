@@ -2,7 +2,7 @@
 layout: post
 title: "User-Managed Access (UMA) 2.0 Resource Sharing with Keycloak and .NET"
 categories: [ dotnet, keycloak ]
-tags: [ aspnetcore, dotnet, keycloak, auth, uma ]
+tags: [ aspnetcore, dotnet, keycloak, auth ]
 published: true
 shortinfo: "User-managed access control with Keycloak UMA 2.0: let resource owners decide who gets access, with a Blazor Server + Minimal API sample."
 fullview: false

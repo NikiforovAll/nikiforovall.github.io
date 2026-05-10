@@ -2,7 +2,7 @@
 layout: post
 title: "Mastering AWS Batch: A .NET Developer Guide to Batch File Processing"
 categories: [ dotnet, aws ]
-tags: [ dotnet, aws, cloud, aws-s3, aws-batch]
+tags: [dotnet, aws, cloud]
 published: true
 shortinfo: "Learn how to leverage AWS Batch to efficiently process files in S3 using .NET"
 fullview: false
@@ -17,24 +17,6 @@ In this blog post, we will explore how to leverage AWS Batch and Amazon S3 to ef
 
 Source code: <https://github.com/NikiforovAll/aws-batch-dotnet>
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Part 1: Understanding AWS Batch and S3](#part-1-understanding-aws-batch-and-s3)
-  - [AWS Batch](#aws-batch)
-    - [Components of AWS Batch](#components-of-aws-batch)
-      - [Jobs](#jobs)
-      - [Job Definitions](#job-definitions)
-      - [Job Queues](#job-queues)
-      - [Compute Environments](#compute-environments)
-  - [S3](#s3)
-- [Part 2: Building a .NET CLI for AWS Batch operations](#part-2-building-a-net-cli-for-aws-batch-operations)
-  - [Building the CLI](#building-the-cli)
-    - [Define Commands](#define-commands)
-  - [Creating a Docker Image](#creating-a-docker-image)
-- [Part 3: Setting up AWS with Terraform IaC](#part-3-setting-up-aws-with-terraform-iac)
-- [Part 4: Running AWS Batch Jobs with CLI Commands](#part-4-running-aws-batch-jobs-with-cli-commands)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

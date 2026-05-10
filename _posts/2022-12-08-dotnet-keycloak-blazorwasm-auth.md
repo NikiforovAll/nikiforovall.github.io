@@ -1,8 +1,8 @@
 ---
 layout: post
 title: Use Keycloak as Identity Provider from Blazor WebAssembly (WASM) applications
-categories: [ blazor, dotnet ]
-tags: [ aspnetcore, dotnet, auth, keycloak, blazor ]
+categories: [ dotnet ]
+tags: [aspnetcore, dotnet, auth, keycloak]
 published: true
 shortinfo: Learn how to integrate with Keycloak from Blazor WASM. Create a public client and use built-in capabilities of Microsoft.AspNetCore.Components.WebAssembly.Authentication that integrates with OpenId Connect compliant providers.
 fullview: false
@@ -11,20 +11,6 @@ related: true
 mermaid: true
 ---
 
-- [TL;DR](#tldr)
-- [Example overview](#example-overview)
-- [Backend. Configure Keycloak. Add Authentication](#backend-configure-keycloak-add-authentication)
-  - [Start Keycloak in a development mode](#start-keycloak-in-a-development-mode)
-  - [Configure Realm](#configure-realm)
-  - [Add Keycloak to backend](#add-keycloak-to-backend)
-  - [Get access token from Swagger UI](#get-access-token-from-swagger-ui)
-- [Frontend. Blazor WASM](#frontend-blazor-wasm)
-  - [Integrate with Keycloak from the frontend. Overview](#integrate-with-keycloak-from-the-frontend-overview)
-  - [`Authentication` component](#authentication-component)
-  - [`App` Component](#app-component)
-  - [Configure `AuthenticationService`](#configure-authenticationservice)
-  - [Demo](#demo)
-- [Reference](#reference)
 
 ## TL;DR
 

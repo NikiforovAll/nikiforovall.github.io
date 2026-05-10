@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Catch up with .NET Core - System.IO.Pipelines
-categories: [dotnet-core]
+categories: [ dotnet ]
 tags: [dotnet, pipelines]
 shortinfo: Introduction to <b>System.IO.Pipelines</b>.
 fullview: false

@@ -15,17 +15,6 @@ mermaid: true
 
 Learn how to enforce code quality gates in your .NET projects.
 
-- [TL;DR](#tldr)
-- [Motivation](#motivation)
-  - [Developer Feedback Loop](#developer-feedback-loop)
-- [Code Quality Aspects](#code-quality-aspects)
-  - [Code Formatting](#code-formatting)
-  - [Spelling](#spelling)
-  - [Coding Style and Code Analysis](#coding-style-and-code-analysis)
-  - [Code Analysis Tools](#code-analysis-tools)
-- [Demo](#demo)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 **Source code:** <https://github.com/NikiforovAll/quality-gateways-demo-dotnet> [![Build](https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/build.yml) [![SonarCloud](https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/sonar.yml/badge.svg)](https://github.com/NikiforovAll/quality-gateways-demo-dotnet/actions/workflows/sonar.yml)[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=NikiforovAll_quality-gateways-demo-dotnet&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=NikiforovAll_quality-gateways-demo-dotnet)
 

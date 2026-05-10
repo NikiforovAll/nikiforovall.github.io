@@ -2,7 +2,7 @@
 layout: post
 title: "Building RAG with .NET Aspire and Python"
 categories: [ dotnet, ai ]
-tags: [ dotnet, aspire, python, pydantic-ai, rag, opentelemetry, qdrant, ollama ]
+tags: [dotnet, aspire, python, rag, opentelemetry, qdrant, ollama]
 published: true
 shortinfo: "How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability."
 fullview: false
@@ -19,20 +19,6 @@ I built a RAG-based company research assistant where **.NET Aspire** orchestrate
 
 <iframe src="https://nikiforovall.blog/company_intel/rag-pydantic-ai-example" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Architecture overview](#architecture-overview)
-- [Aspire as the orchestrator](#aspire-as-the-orchestrator)
-  - [Connection strings flow to Python](#connection-strings-flow-to-python)
-- [The RAG pipeline](#the-rag-pipeline)
-  - [Ingestion](#ingestion)
-  - [Hybrid retrieval](#hybrid-retrieval)
-  - [Streaming to the frontend](#streaming-to-the-frontend)
-- [Observability](#observability)
-- [RAG evaluation with Aspire](#rag-evaluation-with-aspire)
-- [Demo](#demo)
-- [Summary](#summary)
-- [References](#references)
 
 ## Introduction
 

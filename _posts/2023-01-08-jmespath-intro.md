@@ -2,7 +2,7 @@
 layout: post
 title: Introduction to JMESPath - JSON processor you should definitely know
 categories: [ dotnet ]
-tags: [ dotnet, json ]
+tags: [dotnet]
 published: true
 shortinfo: JMESPath is a powerful query language that enables processing of JSON payloads.
 fullview: false
@@ -11,12 +11,6 @@ related: false
 mermaid: false
 ---
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Demo](#demo)
-- [Extensibility](#extensibility)
-- [Summary](#summary)
-- [References](#references)
 
 ## TL;DR
 

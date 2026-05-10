@@ -11,13 +11,6 @@ related: true
 mermaid: true
 ---
 
-- [TL;DR](#tldr)
-- [Introduction to Keycloak](#introduction-to-keycloak)
-- [Ideas behind Keycloak.AuthServices.Authentication](#ideas-behind-keycloakauthservicesauthentication)
-  - [Configure KeycloakAuthenticationOptions](#configure-keycloakauthenticationoptions)
-- [Demo](#demo)
-- [Bonus - Adding Authorization](#bonus---adding-authorization)
-- [Summary](#summary)
 
 ## TL;DR
 

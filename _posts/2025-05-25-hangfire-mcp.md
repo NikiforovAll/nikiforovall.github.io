@@ -2,7 +2,7 @@
 layout: post
 title: "Background Job Scheduling Using Hangfire MCP Server"
 categories: [ dotnet ]
-tags: [ dotnet, ai, hangfire, mcp, mcp-server ]
+tags: [ dotnet, ai, hangfire, mcp ]
 published: true
 shortinfo: "Enqueue background jobs using Hangfire MCP server."
 fullview: false

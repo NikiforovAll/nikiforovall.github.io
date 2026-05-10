@@ -15,14 +15,6 @@ mermaid: true
 
 Learn how to use Polyglot Notebooks and Kernel Memory together to enhance your day-to-day tasks with the power of AI.
 
-- [TL;DR](#tldr)
-- [Motivation](#motivation)
-- [Example - 'Generate a summary of a blog'](#example---generate-a-summary-of-a-blog)
-  - [Demo](#demo)
-- [Anatomy of the Setup (aka `notebook-agent`)](#anatomy-of-the-setup-aka-notebook-agent)
-  - [Another Example - 'Ask .NET 9 Release Notes'](#another-example---ask-net-9-release-notes)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 **Source code:** <https://github.com/NikiforovAll/notebook-agent>
 

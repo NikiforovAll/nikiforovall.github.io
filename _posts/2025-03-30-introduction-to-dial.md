@@ -17,16 +17,6 @@ Use [AI DIAL](https://epam-rail.com/) to streamline and orchestrate Software Dev
 
 **Source code:** <https://github.com/NikiforovAll/ai-dial-dotnet>
 
-**Table of Contents**:
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Key Features](#key-features)
-- [Getting Started via .NET Aspire](#getting-started-via-net-aspire)
-  - [Hosting Integration](#hosting-integration)
-  - [Client Integration](#client-integration)
-  - [Demo](#demo)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

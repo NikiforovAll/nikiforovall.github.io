@@ -2,7 +2,7 @@
 layout: post
 title: A comprehensive guide on how to develop and use HTTP Client SDKs in .NET. Part 2. Resilient and robust applications
 categories: [ dotnet ]
-tags: [ dotnet, openapi, http ]
+tags: [dotnet, openapi]
 published: false
 shortinfo: 
 fullview: false

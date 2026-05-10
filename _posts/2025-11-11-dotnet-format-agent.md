@@ -2,7 +2,7 @@
 layout: post
 title: "Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK"
 categories: [ dotnet, ai ]
-tags: [ dotnet, ai, agents, claude, cli, code-quality, mcp, developer-tools ]
+tags: [dotnet, ai, agents, claude, cli, mcp, developer-tools]
 published: true
 shortinfo: "Learn how to build specialized AI agents that transform CLI tools into conversational interfaces using Claude Agent SDK and dotnet format as a practical example."
 fullview: false
@@ -17,17 +17,6 @@ Transform `dotnet format` from a CLI tool into a conversational AI agent that he
 
 > **Note:** You could use a general-purpose AI agent to analyze `dotnet format` output by copying and pasting JSON reports. However, a specialized agent offers significant advantages: it automates tool execution, maintains context across multiple queries, provides domain-specific insights, and creates a streamlined workflow. This post shows you how to build one. Also, it is kind of fun! 🎉
 
-- [TL;DR](#tldr)
-- [Why Build Specialized Agents?](#why-build-specialized-agents)
-- [Architecture Overview](#architecture-overview)
-- [Building with Claude Agent SDK](#building-with-claude-agent-sdk)
-  - [Tool Layer: Wrapping `dotnet format`](#tool-layer-wrapping-dotnet-format)
-  - [Agent Layer: MCP Integration](#agent-layer-mcp-integration)
-  - [Making It Conversational](#making-it-conversational)
-- [Demo: Interactive Code Quality](#demo-interactive-code-quality)
-- [The Pattern: Reusable Building Blocks](#the-pattern-reusable-building-blocks)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 **Source code:** <https://github.com/NikiforovAll/dotnet-format-agent>
 
@@ -67,7 +56,7 @@ That's what specialized agents enable - they transform CLI tools into conversati
 
 A specialized agent has three layers:
 
-<div class="mermaid" style="margin-left:20%; margin-right:20%">
+<div class="mermaid">
 graph TD
     A[Conversational Interface] -->|Natural language| B[Agent + Harness]
     B -->|Tool calls| C[Tool Layer]

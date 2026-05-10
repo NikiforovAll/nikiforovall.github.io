@@ -1,5 +1,6 @@
 <div class="page-header">
 	<h1>{{ page.title }} {% if page.tagline %}<small>{{page.tagline}}</small>{% endif %}</h1>
+	{% include page-controls.html %}
 </div>
 <article>
 
@@ -17,16 +18,24 @@
 			{{ page.date | date: "%Y" }}
 		</span>
 
+	<div class="article_body" style="margin-top: 30px;">
+		{{ content }}
+	</div>
+
+	{% if page["link-list"] %}
+	<h3 style="margin-top: 30px;">Reference</h3>
+	<a href="{{ page["link-list"] }}" target="_blank">{{ page["link-list"] }}</a>
+	<div class="col-sm-12" style="margin-bottom: 30px;"></div>
+	{% endif %}
+
 	{% if page.related %}
 	{% assign maxRelated = 4 %}
 	{% assign minCommonTags =  3 %}
 	{% assign maxRelatedCounter = 0 %}
-
+	{% capture relatedMarkup %}
 	{% for post in site.posts %}
-
 	{% assign sameTagCount = 0 %}
 	{% assign commonTags = '' %}
-
 	{% for tag in post.tags %}
 	{% if post.url != page.url %}
 	{% if page.tags contains tag %}
@@ -36,28 +45,22 @@
 	{% endif %}
 	{% endif %}
 	{% endfor %}
-
 	{% if sameTagCount >= minCommonTags %}
 	<div>
 		<h5><a href="{{ post.url | relative_url }}">{{ post.title }}{{ commonTags }}</a></h5>
 	</div>
 	{% assign maxRelatedCounter = maxRelatedCounter | plus: 1 %}
-	{% if maxRelatedCounter >= maxRelated %}
-	{% break %}
+	{% if maxRelatedCounter >= maxRelated %}{% break %}{% endif %}
 	{% endif %}
-	{% endif %}
-
 	{% endfor %}
+	{% endcapture %}
+	{% if maxRelatedCounter > 0 %}
+	<section class="related-posts" style="margin-top: 40px; margin-bottom: 32px;">
+		<h4 class="section-title">Related posts</h4>
+		{{ relatedMarkup }}
+	</section>
+	<hr style="margin: 0 0 24px;">
 	{% endif %}
-
-	<div class="article_body" style="margin-top: 30px;">
-		{{ content }}
-	</div>
-
-	{% if page["link-list"] %}
-	<h3 style="margin-top: 30px;">Reference</h3>
-	<a href="{{ page["link-list"] }}" target="_blank">{{ page["link-list"] }}</a>
-	<div class="col-sm-12" style="margin-bottom: 30px;"></div>
 	{% endif %}
 
 	{% if page.categories != empty or page.tags != empty %}
@@ -148,7 +151,13 @@
 	</div>
 
 	<div class="col-sm-2 sidebar-2">
-
+		<nav id="post-toc" class="post-toc" aria-label="Table of contents" hidden>
+			<div class="toc-header">
+				<span class="toc-index">§</span>
+				<span class="toc-title">On this page</span>
+			</div>
+			<ol class="toc-list"></ol>
+		</nav>
 	</div>
 
 </article>

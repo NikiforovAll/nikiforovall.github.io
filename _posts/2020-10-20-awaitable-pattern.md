@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Awaitable/awaiter pattern and logical micro-threading in C#
-categories: [ csharp, compcsi, dotnet ]
+categories: [ dotnet ]
 tags: [ csharp, dotnet, async ]
 published: true
 shortinfo: Let's build a state machine based on awaitable/awaiter pattern.

@@ -48,15 +48,12 @@
 
 	<!-- Search Feature Styles -->
 	<style>
-		.layout-page .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; height: 34px; box-sizing: border-box; }
-		.layout-post .search-trigger { position: fixed; top: 45px; right: 100px; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 0; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; width: 34px; height: 34px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; box-sizing: border-box; }
+		.search-trigger { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; min-width: 220px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.15s ease; height: 34px; box-sizing: border-box; }
 		.search-trigger:hover { background: #ebebeb; border-color: #c0c0c0; box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
 		.search-icon { color: #666; font-size: 14px; display: flex; align-items: center; }
 		.search-placeholder { flex: 1; color: #999; font-size: 14px; user-select: none; }
 		.search-keybind { display: flex; gap: 4px; align-items: center; }
 		.search-key { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 6px; background: #e0e0e0; border: 1px solid #ccc; border-bottom: 2px solid #bbb; border-radius: 3px; color: #333; line-height: 1.2; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-		.layout-post .search-placeholder { display: none; }
-		.layout-post .search-keybind { display: none; }
 		.search-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; display: none; align-items: flex-start; justify-content: center; padding-top: 10vh; }
 		.search-modal.open { display: flex; animation: fadeIn 0.2s ease; }
 		@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -75,7 +72,7 @@
 		.search-result-item.selected { background: #e8f4f8; border-color: #4a90e2; }
 		.search-footer { display: flex; justify-content: center; gap: 20px; padding: 12px 20px; border-top: 1px solid #e0e0e0; background: #fafafa; font-size: 12px; color: #666; }
 		.search-footer kbd { font-family: 'Courier New', monospace; font-size: 11px; padding: 2px 5px; background: white; border: 1px solid #ddd; border-radius: 3px; color: #333; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-		@media (max-width: 768px) { .layout-page .search-trigger, .layout-post .search-trigger { display: none; } .search-modal { padding-top: 5vh; } .search-modal-container { width: 95%; max-width: none; margin: 0 10px; } .search-results { max-height: 50vh; } .search-footer { flex-wrap: wrap; gap: 10px; } }
+		@media (max-width: 768px) { .search-trigger { display: none; } .search-modal { padding-top: 5vh; } .search-modal-container { width: 95%; max-width: none; margin: 0 10px; } .search-results { max-height: 50vh; } .search-footer { flex-wrap: wrap; gap: 10px; } }
 	</style>
 
 	<!-- Le fav and touch icons -->
@@ -129,13 +126,24 @@
   "articleSection": "dotnet",
   
   
-  "keywords": "dotnet, ai, aspire, mcp, mcp-server, developer-tools",
+  "keywords": "dotnet, ai, aspire, mcp, developer-tools",
   
   "inLanguage": "en-US"
 }
 </script>
 
 
+
+	<script>
+		(function() {
+			try {
+				if (localStorage.getItem('sidebarCollapsed') === '1') {
+					document.documentElement.classList.add('sidebar-collapsed-init');
+				}
+			} catch (e) {}
+		})();
+	</script>
+	<style>html.sidebar-collapsed-init body { } </style>
 </head>
 
 <body class="layout-post">
@@ -180,28 +188,9 @@
 <!-- /.navbar-collapse -->
 	</nav>
 
-	<!-- nav-menu-dropdown -->
-	<div class="btn-group hidden-xs" id="nav-menu">
-		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-			<i class="fa-solid fa-bars"></i>
-		</button>
-		<ul class="dropdown-menu" role="menu">
-			<li><a href="/"><i class="fa-solid fa-home"></i>Home</a></li>
-			<li><a href="/topics.html"><i class="fa-solid fa-bookmark"></i>Topics</a></li>
-			<li><a href="/about.html"><i class="fa-solid fa-pencil"></i>About</a></li>
-			<li class="divider">
-			<li><a href="#"><i class="fa-solid fa-arrow-up"></i>Top of Page</a></li>
-		</ul>
-	</div>
-
-	<!-- Search Control -->
-	<button id="search-trigger" class="search-trigger" type="button" aria-label="Open search">
-		<span class="search-icon"><i class="fa-solid fa-search"></i></span>
-		<span class="search-placeholder">Search</span>
-		<div class="search-keybind">
-			<kbd class="search-key" id="search-modifier">ctrl</kbd>
-			<kbd class="search-key">K</kbd>
-		</div>
+	<!-- back-to-top floating button -->
+	<button type="button" id="back-to-top" class="hidden-xs" aria-label="Back to top" title="Back to top">
+		<i class="fa-solid fa-arrow-up"></i>
 	</button>
 
 	<!-- Search Modal -->
@@ -230,73 +219,101 @@
 		<!-- sidebar.html -->
 <header class="sidebar-header" role="banner">
 	<a href="/" class="profile-link">
-		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=150" class="img-circle profile-image">
-		<div class="profile-accent"></div>
+		<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011?s=320" class="img-circle profile-image">
 	</a>
-	<h3 class="title">
-        <a href="/">N+1 Blog</a>
-    </h3>
+	<h1 class="author-name">
+		<a href="/">Oleksii Nikiforov</a>
+	</h1>
 </header>
 
 
-<div id="bio" class="text-center">
-	Jibber-jabbering about programming and IT.
-</div>
+<p id="bio" class="bio-v2">Pragmatic AI-assisted engineering, with care for the craft.</p>
 
 
-<div id="contact-list" class="text-center">
-	<ul class="list-unstyled list-inline">
-		
+<nav id="sidebar-nav" role="navigation">
+	<ul class="list-unstyled">
 		<li>
-			<a class="btn btn-default btn-sm" href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer">
-				<i class="fa-brands fa-github fa-xl"></i>
+			<a href="/">
+				<span class="nav-short">P</span>
+				<span class="nav-label">Posts</span>
 			</a>
 		</li>
-		
-		
 		<li>
-			<a class="btn btn-default btn-sm" href="https://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer">
-				<i class="fa-brands fa-x-twitter fa-xl"></i>
+			<a href="/topics.html">
+				<span class="nav-short">T</span>
+				<span class="nav-label">Topics</span>
 			</a>
 		</li>
-		
-		
 		<li>
-			<a class="btn btn-default btn-sm" href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer noopener noreferrer">
-				<i class="fa-brands fa-telegram fa-xl"></i>
+			<a href="/projects">
+				<span class="nav-short">P</span>
+				<span class="nav-label">Projects</span>
 			</a>
 		</li>
-		
-		
 		<li>
-			<a class="btn btn-default btn-sm" href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer noopener noreferrer">
-				<i class="fa-brands fa-linkedin fa-xl"></i>
-			</a>
-		</li>
-		
-	</ul>
-	<ul id="contact-list-secondary" class="list-unstyled list-inline">
-		
-		<li>
-			<a class="btn btn-default btn-sm" href="mailto:alexey.nikiforovall@gmail.com">
-				<i class="fa-solid fa-envelope fa-xl"></i>
-			</a>
-		</li>
-		
-		<li>
-			<a class="btn btn-default btn-sm" href="/feed.xml" target="_blank" rel="noopener noreferrer">
-				<i class="fa-solid fa-rss fa-xl"></i>
+			<a href="/about.html">
+				<span class="nav-short">A</span>
+				<span class="nav-label">About</span>
 			</a>
 		</li>
 	</ul>
+</nav>
+
+<div id="contact-list">
+	<ul class="list-unstyled">
+		
+		<li><a href="https://github.com/nikiforovAll" target="_blank" rel="noopener noreferrer noopener noreferrer" aria-label="GitHub"><i class="fa-brands fa-github"></i></a></li>
+		
+		
+		<li><a href="https://x.com/nikiforovall" target="_blank" rel="noopener noreferrer noopener noreferrer" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a></li>
+		
+		
+		<li><a href="https://linkedin.com/in/nikiforov-oleksii" target="_blank" rel="noopener noreferrer noopener noreferrer" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a></li>
+		
+		
+		<li><a href="https://t.me/nikiforovallblog" target="_blank" rel="noopener noreferrer noopener noreferrer" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a></li>
+		
+		
+		<li><a href="mailto:alexey.nikiforovall@gmail.com" aria-label="Email"><i class="fa-solid fa-envelope"></i></a></li>
+		
+		<li><a href="/feed.xml" target="_blank" rel="noopener noreferrer" aria-label="RSS"><i class="fa-solid fa-rss"></i></a></li>
+	</ul>
 </div>
+
 <!-- sidebar.html end -->
 
+		<button id="sidebar-toggle" type="button" aria-label="Toggle sidebar" aria-expanded="true">
+			<i class="fa-solid fa-chevron-left sidebar-toggle-icon"></i>
+		</button>
 	</div>
 
-	<div class="col-sm-9 col-sm-offset-3">
+	<div class="col-sm-9 col-sm-offset-3 main-content">
 		<div class="page-header">
 	<h1>Simplifying Model Context Protocol (MCP) Server Development with Aspire </h1>
+	<div class="page-controls">
+	<button id="search-trigger" class="search-trigger" type="button" aria-label="Open search">
+		<span class="search-icon"><i class="fa-solid fa-search"></i></span>
+		<span class="search-placeholder">Search</span>
+		<div class="search-keybind">
+			<kbd class="search-key" id="search-modifier">ctrl</kbd>
+			<kbd class="search-key">K</kbd>
+		</div>
+	</button>
+
+	<div class="btn-group hidden-xs" id="nav-menu">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			<i class="fa-solid fa-bars"></i>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+			<li><a href="/"><i class="fa-solid fa-home"></i>Home</a></li>
+			<li><a href="/topics.html"><i class="fa-solid fa-bookmark"></i>Topics</a></li>
+			<li><a href="/about.html"><i class="fa-solid fa-pencil"></i>About</a></li>
+			<li class="divider">
+			<li><a href="#"><i class="fa-solid fa-arrow-up"></i>Top of Page</a></li>
+		</ul>
+	</div>
+</div>
+
 </div>
 <article>
 
@@ -310,241 +327,12 @@
 			2025
 		</span>
 
-	
-	
-	
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-	<div>
-		<h5><a href="/dotnet/ai/2026/05/02/hangfire-mcp-operations-pane.html">Hangfire as an MCP Operations Pane for AI Agents <span class="label label-default">dotnet</span>  <span class="label label-default">ai</span>  <span class="label label-default">mcp</span>  <span class="label label-default">mcp-server</span>  <span class="label label-default">aspire</span> </a></h5>
-	</div>
-	
-	
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-	<div>
-		<h5><a href="/dotnet/ai/2025/11/11/dotnet-format-agent.html">Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK <span class="label label-default">dotnet</span>  <span class="label label-default">ai</span>  <span class="label label-default">mcp</span>  <span class="label label-default">developer-tools</span> </a></h5>
-	</div>
-	
-	
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-
-	
-
-	
-	
-
-	
-
-	
-	<div>
-		<h5><a href="/dotnet/2025/09/02/mcp-auth.html">Add Authentication to MCP Servers using Microsoft Entra ID <span class="label label-default">dotnet</span>  <span class="label label-default">ai</span>  <span class="label label-default">mcp</span>  <span class="label label-default">mcp-server</span> </a></h5>
-	</div>
-	
-	
-	
-
-	
-
-	
-	
-
-	
-
-	
-	<div>
-		<h5><a href="/ai/2025/08/09/tech-debt-master.html">Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs <span class="label label-default">ai</span>  <span class="label label-default">aspire</span>  <span class="label label-default">developer-tools</span> </a></h5>
-	</div>
-	
-	
-	
-	
-
 	<div class="article_body" style="margin-top: 30px;">
 		<center>
   <img src="/assets/mcp/light.png" style="margin: 15px;" width="80%">
 </center>
 
 <h2 id="tldr">TL;DR</h2>
-
-<ul>
-  <li><a href="#tldr">TL;DR</a></li>
-  <li><a href="#introduction">Introduction</a></li>
-  <li><a href="#stdio-mode">‘Stdio’ Mode</a></li>
-  <li><a href="#sse-mode">‘SSE’ Mode</a></li>
-  <li><a href="#stdio-vs-sse">Stdio vs SSE</a></li>
-  <li><a href="#conclusion">Conclusion</a></li>
-  <li><a href="#references">References</a></li>
-</ul>
 
 <p>You can use <code class="language-plaintext highlighter-rouge">Nall.ModelContextProtocol.Inspector.Aspire.Hosting</code> hosting integration to run <em>MCP Inspector</em> and integrate it with your MCP Servers using Aspire.</p>
 
@@ -677,6 +465,149 @@
 	
 
 	
+	
+	
+	
+	
+	
+	<section class="related-posts" style="margin-top: 40px; margin-bottom: 32px;">
+		<h4 class="section-title">Related posts</h4>
+		
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<div>
+		<h5><a href="/dotnet/ai/2026/05/02/hangfire-mcp-operations-pane.html">Hangfire as an MCP Operations Pane for AI Agents <span class="label label-default">dotnet</span>  <span class="label label-default">ai</span>  <span class="label label-default">mcp</span>  <span class="label label-default">aspire</span> </a></h5>
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<div>
+		<h5><a href="/dotnet/ai/2025/11/11/dotnet-format-agent.html">Transform .NET Diagnostics into a Specialized AI Agent with Claude Agent SDK <span class="label label-default">dotnet</span>  <span class="label label-default">ai</span>  <span class="label label-default">mcp</span>  <span class="label label-default">developer-tools</span> </a></h5>
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	<div>
+		<h5><a href="/dotnet/2025/09/02/mcp-auth.html">Add Authentication to MCP Servers using Microsoft Entra ID <span class="label label-default">dotnet</span>  <span class="label label-default">ai</span>  <span class="label label-default">mcp</span> </a></h5>
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	
+	<div>
+		<h5><a href="/ai/2025/08/09/tech-debt-master.html">Introducing Technical Debt Master: AI-Powered Code Analysis with Local LLMs <span class="label label-default">ai</span>  <span class="label label-default">aspire</span>  <span class="label label-default">developer-tools</span> </a></h5>
+	</div>
+	
+	
+	
+	</section>
+	<hr style="margin: 0 0 24px;">
+	
+	
+
+	
 	<ul class="list-inline">
 		<li>
 <i class="fa-solid fa-bookmark"></i> Topics:</li>
@@ -685,7 +616,7 @@
 		
 		<li>
 			<a href="/topics.html#dotnet-cat-ref">
-				dotnet <span>(66)</span>
+				dotnet <span>(70)</span>
 			</a>
 			 ·
 		</li>
@@ -723,13 +654,6 @@
 		</li>
 		
 		<li>
-			<a href="/topics.html#mcp-server-tag-ref">
-				mcp-server <span>(7)</span>
-			</a>
-			 ·
-		</li>
-		
-		<li>
 			<a href="/topics.html#developer-tools-tag-ref">
 				developer-tools <span>(10)</span>
 			</a>
@@ -755,7 +679,7 @@
 		<section class="col-sm-6 author">
 			<img src="//www.gravatar.com/avatar/e86fa0938976c38907a302ecb208f011" class="img-rounded author-image">
 			<h4 class="section-title author-name">Oleksii Nikiforov</h4>
-			<p class="author-bio">Jibber-jabbering about programming and IT.</p>
+			<p class="author-bio">Pragmatic AI-assisted engineering, with care for the craft.</p>
 		</section>
 	</div>
 
@@ -777,7 +701,13 @@
 	</div>
 
 	<div class="col-sm-2 sidebar-2">
-
+		<nav id="post-toc" class="post-toc" aria-label="Table of contents" hidden>
+			<div class="toc-header">
+				<span class="toc-index">§</span>
+				<span class="toc-title">On this page</span>
+			</div>
+			<ol class="toc-list"></ol>
+		</nav>
 	</div>
 
 </article>
@@ -792,21 +722,32 @@
 
 
 
-
-		<footer>
-			<hr>
-			<p>
-				© 2026 Oleksii Nikiforov with <a href="http://jekyllrb.com/" target="_blank" rel="noopener noreferrer">Jekyll</a>. Theme: <a href="https://github.com/dbtek/dbyll" target="_blank" rel="noopener noreferrer">dbyll</a> by dbtek.
-			</p>
-		</footer>
 	</div>
 
+	<script>
+		(function() {
+			var body = document.body;
+			if (document.documentElement.classList.contains('sidebar-collapsed-init')) {
+				body.classList.add('sidebar-collapsed');
+				document.documentElement.classList.remove('sidebar-collapsed-init');
+			}
+			var btn = document.getElementById('sidebar-toggle');
+			if (!btn) return;
+			btn.setAttribute('aria-expanded', body.classList.contains('sidebar-collapsed') ? 'false' : 'true');
+			btn.addEventListener('click', function() {
+				var collapsed = body.classList.toggle('sidebar-collapsed');
+				btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+				try { localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+			});
+		})();
+	</script>
 	<script type="text/javascript" src="/assets/resources/jquery/jquery.min.js"></script>
 	<script type="text/javascript" src="/assets/resources/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/assets/js/app.js"></script>
 	<script src="https://unpkg.com/lunr/lunr.js"></script>
 	<script type="text/javascript" src="/assets/js/search.js"></script>
 	<script type="text/javascript" src="/assets/js/copy-code.js"></script>
+	<script type="text/javascript" src="/assets/js/toc.js"></script>
 	
 		<script type="text/javascript" src="https://unpkg.com/mermaid@10.9.0/dist/mermaid.min.js">
 </script>

@@ -17,13 +17,6 @@ You can use [Keycloak.AuthServices.Templates](https://www.nuget.org/packages/Key
 
 Source code: <https://github.com/NikiforovAll/keycloak-aspire-starter-template>
 
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-  - [Scaffold a solution](#scaffold-a-solution)
-  - [Run it](#run-it)
-- [Code Explained](#code-explained)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## Introduction
 

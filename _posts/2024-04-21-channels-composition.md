@@ -11,16 +11,6 @@ related: true
 mermaid: true
 ---
 
-*Table of Contents*:
-- [TL;DR](#tldr)
-- [Introduction](#introduction)
-- [Building Pipeline. Pipeline Primitives](#building-pipeline-pipeline-primitives)
-  - [Generator aka Producer](#generator-aka-producer)
-  - [Transformer aka Producer/Consumer](#transformer-aka-producerconsumer)
-  - [Multiplexer and Demultiplexer](#multiplexer-and-demultiplexer)
-- [Use `Open.ChannelExtensions`](#use-openchannelextensions)
-- [Conclusion](#conclusion)
-- [References](#references)
 
 ## TL;DR
 

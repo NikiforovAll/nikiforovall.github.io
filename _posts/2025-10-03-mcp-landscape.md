@@ -2,7 +2,7 @@
 layout: post
 title: "MCP Landscape for .NET Developers"
 categories: [ ai, mcp ]
-tags: [ ai, mcp, resources, landscape ]
+tags: [ai, mcp]
 published: true
 shortinfo: "Explore the MCP ecosystem landscape"
 fullview: false

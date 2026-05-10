@@ -96,6 +96,26 @@
 
     // Initialize topics filter
     initTopicsFilter();
+
+    // Scroll to top when a topic in the sidebar is clicked
+    $(document).on('click', '.cat-tag-menu li a', function() {
+      $('html, body').animate({ scrollTop: 0 }, 200);
+    });
+
+    /* Back-to-top button: show after scrolling, smooth-scroll on click */
+    var $backToTop = $('#back-to-top');
+    if ($backToTop.length) {
+      var toggleBackToTop = function() {
+        if ($(window).scrollTop() > 300) $backToTop.addClass('visible');
+        else $backToTop.removeClass('visible');
+      };
+      $(window).on('scroll', toggleBackToTop);
+      toggleBackToTop();
+      $backToTop.on('click', function(e) {
+        e.preventDefault();
+        $('html, body').animate({ scrollTop: 0 }, 300);
+      });
+    }
   };
 
   // run init on document ready
