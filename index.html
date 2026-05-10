@@ -39,36 +39,53 @@ tagline:
 
 </article>
 {% endfor %}
-<hr/>
 
-<ul class="pager"> 
+<nav class="pagination-nav" aria-label="Pagination">
+  {% assign current = paginator.page %}
+  {% assign total = paginator.total_pages %}
 
   {% if paginator.previous_page %}
-  <li class="previous">
     {% if paginator.previous_page == 1 %}
-    <a href="{{ '/' | relative_url }}">&larr; Newer</a>
+      <a class="page-btn page-prev" href="{{ '/' | relative_url }}" rel="prev" aria-label="Previous page">←</a>
     {% else %}
-    <a href="{{ site.paginate_path | replace: ':num', paginator.previous_page | prepend: '/' | relative_url }}">&larr; Newer</a>
+      <a class="page-btn page-prev" href="{{ site.paginate_path | replace: ':num', paginator.previous_page | prepend: '/' | relative_url }}" rel="prev" aria-label="Previous page">←</a>
     {% endif %}
-  </li>
   {% else %}
-  <li class="previous disabled">
-    <a>&larr; Newer</a>
-  </li>
+    <span class="page-btn page-prev is-disabled" aria-hidden="true">←</span>
   {% endif %}
-  
-  <li>
-    <span class="page_number">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
-  </li>
+
+  <ol class="page-list">
+    {% for n in (1..total) %}
+      {% assign show = false %}
+      {% if n == 1 or n == total %}{% assign show = true %}{% endif %}
+      {% assign diff = n | minus: current %}
+      {% if diff < 0 %}{% assign diff = 0 | minus: diff %}{% endif %}
+      {% if diff <= 1 %}{% assign show = true %}{% endif %}
+
+      {% if show %}
+        <li>
+          {% if n == current %}
+            <span class="page-btn is-current" aria-current="page">{{ n }}</span>
+          {% elsif n == 1 %}
+            <a class="page-btn" href="{{ '/' | relative_url }}">{{ n }}</a>
+          {% else %}
+            <a class="page-btn" href="{{ site.paginate_path | replace: ':num', n | prepend: '/' | relative_url }}">{{ n }}</a>
+          {% endif %}
+        </li>
+      {% else %}
+        {% assign prev_n = n | minus: 1 %}
+        {% assign prev_diff = prev_n | minus: current %}
+        {% if prev_diff < 0 %}{% assign prev_diff = 0 | minus: prev_diff %}{% endif %}
+        {% if prev_n == 1 or prev_diff <= 1 %}
+          <li><span class="page-ellipsis" aria-hidden="true">…</span></li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </ol>
 
   {% if paginator.next_page %}
-  <li class="next">
-    <a href="{{ site.paginate_path | replace: ':num', paginator.next_page | prepend: '/' | relative_url }}">Older &rarr;</a>
-  </li>
+    <a class="page-btn page-next" href="{{ site.paginate_path | replace: ':num', paginator.next_page | prepend: '/' | relative_url }}" rel="next" aria-label="Next page">→</a>
   {% else %}
-  <li class="next disabled">
-    <a>Older &rarr;</a>        
-  </li>
+    <span class="page-btn page-next is-disabled" aria-hidden="true">→</span>
   {% endif %}
-
-</ul>
+</nav>
