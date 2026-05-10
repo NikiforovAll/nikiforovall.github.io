@@ -5,6 +5,7 @@ categories: [ ai ]
 tags: [ vscode, ai, agents, productivity, copilot, developer-tools ]
 published: true
 shortinfo: "Explore how AI agents can manipulate your IDE workspace to enhance agentic coding workflows"
+description: "Explore how AI agents can manipulate your IDE workspace to enhance agentic coding workflows"
 fullview: false
 comments: true
 related: true

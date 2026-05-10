@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [ dotnet, semantic-kernel, kernel-memory, opentelemetry, ai, aspire, rag ]
 published: true
 shortinfo: "Learn how to use the out-of-the-box solution provided by Kernel Memory to build a typical RAG in .NET."
+description: "Learn how to use the out-of-the-box solution provided by Kernel Memory to build a typical RAG in .NET."
 fullview: false
 comments: true
 related: true

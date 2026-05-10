@@ -5,6 +5,7 @@ categories: [  dotnet, coding-stories ]
 tags: [ dotnet, coding-stories ]
 published: true
 shortinfo: In this blog post, I share my experience of writing a coding story and give you instructions on how to get started.
+description: In this blog post, I share my experience of writing a coding story and give you instructions on how to get started.
 fullview: false
 comments: true
 related: false

@@ -5,6 +5,7 @@ categories: [ productivity, ai ]
 tags: [developer-tools]
 published: true
 shortinfo: "A launcher that bundles Kanban, Marketplace, Cost, and Memory into a single chromeless PWA for Claude Code."
+description: "A launcher that bundles Kanban, Marketplace, Cost, and Memory into a single chromeless PWA for Claude Code."
 fullview: false
 comments: true
 related: true

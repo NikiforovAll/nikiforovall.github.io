@@ -5,6 +5,7 @@ categories: [ ai ]
 tags: [ai, claude, python, productivity, developer-tools]
 published: true
 shortinfo: "A lazygit-inspired TUI to browse all your Claude Code customizations"
+description: "A lazygit-inspired TUI to browse all your Claude Code customizations"
 fullview: false
 comments: true
 related: true

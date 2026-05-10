@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, async, pipelines ]
 published: true
 shortinfo: "This article demonstrates how to use IAsyncEnumerable and System.Linq.Async to build pipelines in C#."
+description: "This article demonstrates how to use IAsyncEnumerable and System.Linq.Async to build pipelines in C#."
 fullview: false
 comments: true
 related: true

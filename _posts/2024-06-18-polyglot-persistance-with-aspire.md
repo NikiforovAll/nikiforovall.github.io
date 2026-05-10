@@ -5,6 +5,7 @@ categories: [ dotnet, aspire ]
 tags: [dotnet, aspnetcore, aspire]
 published: true
 shortinfo: "Learn how to set up various databases using Aspire by building a simple social media application."
+description: "Learn how to set up various databases using Aspire by building a simple social media application."
 fullview: false
 comments: true
 related: true

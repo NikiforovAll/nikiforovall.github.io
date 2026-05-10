@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [ dotnet, ai, hangfire, mcp, aspire, agents ]
 published: true
 shortinfo: "Expose Hangfire jobs and maintenance tools as MCP capabilities, so AI agents can run jobs and operate the queue. Aspire integration is a bonus."
+description: "Expose Hangfire jobs and maintenance tools as MCP capabilities, so AI agents can run jobs and operate the queue. Aspire integration is a bonus."
 fullview: false
 comments: true
 related: true

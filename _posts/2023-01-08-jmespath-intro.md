@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [dotnet]
 published: true
 shortinfo: JMESPath is a powerful query language that enables processing of JSON payloads.
+description: JMESPath is a powerful query language that enables processing of JSON payloads.
 fullview: false
 comments: true
 related: false

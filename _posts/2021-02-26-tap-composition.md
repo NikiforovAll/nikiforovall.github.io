@@ -5,6 +5,7 @@ categories: [  dotnet, async ]
 tags: [ dotnet, async ]
 published: true
 shortinfo: WhenAll, WhenAny, ForEachAsync, Throttling, Process as complete, etc.
+description: WhenAll, WhenAny, ForEachAsync, Throttling, Process as complete, etc.
 fullview: false
 comments: true
 related: true

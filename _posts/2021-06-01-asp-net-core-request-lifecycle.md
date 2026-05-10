@@ -5,6 +5,7 @@ categories: [ aspnetcore, dotnet ]
 tags: [ aspnetcore, aspnet, dotnet ]
 published: false
 shortinfo: Learn ASP.NET Core bread and butter - request lifecycle.
+description: Learn ASP.NET Core bread and butter - request lifecycle.
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ ai, mcp ]
 tags: [ai, mcp]
 published: true
 shortinfo: "Explore the MCP ecosystem landscape"
+description: "Explore the MCP ecosystem landscape"
 fullview: false
 comments: true
 related: true

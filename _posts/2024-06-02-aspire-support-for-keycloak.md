@@ -5,6 +5,7 @@ categories: [ dotnet, keycloak ]
 tags: [ dotnet, aspnetcore, keycloak, aspire ]
 published: true
 shortinfo: "Learn how to run Keycloak installation via Aspire"
+description: "Learn how to run Keycloak installation via Aspire"
 fullview: false
 comments: true
 related: true

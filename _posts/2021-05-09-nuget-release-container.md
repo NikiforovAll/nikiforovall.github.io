@@ -5,6 +5,7 @@ categories: [ dotnet, nuget, docker ]
 tags: [dotnet, docker, cicd]
 published: true
 shortinfo: Release container is a docker image that is used to distribute and release components.
+description: Release container is a docker image that is used to distribute and release components.
 fullview: false
 comments: true
 related: false

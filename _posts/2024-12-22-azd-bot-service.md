@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [dotnet, azure]
 published: true
 shortinfo: "Learn how to use a starter template to deploy a bot to Azure with Azure Bot Service and Azure Developer CLI (azd)"
+description: "Learn how to use a starter template to deploy a bot to Azure with Azure Bot Service and Azure Developer CLI (azd)"
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet, async ]
 tags: [ dotnet, aspnetcore, pipelines, async, opentelemetry]
 published: true
 shortinfo: This post shows you how to implement Job Offloading Pattern using a pipeline built with System.Threading.Channels
+description: This post shows you how to implement Job Offloading Pattern using a pipeline built with System.Threading.Channels
 fullview: false
 comments: true
 related: true

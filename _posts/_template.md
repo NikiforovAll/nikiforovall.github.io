@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, ]
 published: false
 shortinfo: 
+description: 
 fullview: false
 comments: true
 related: true

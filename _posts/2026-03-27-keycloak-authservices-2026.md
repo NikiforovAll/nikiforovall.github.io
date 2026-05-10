@@ -5,6 +5,7 @@ categories: [ dotnet, keycloak ]
 tags: [ aspnetcore, dotnet, keycloak, auth ]
 published: true
 shortinfo: "Organization authorization, token introspection for lightweight tokens, RFC 8414 metadata discovery, and more."
+description: "Organization authorization, token introspection for lightweight tokens, RFC 8414 metadata discovery, and more."
 fullview: false
 comments: true
 related: true

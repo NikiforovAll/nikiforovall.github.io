@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [dotnet, productivity, cli]
 published: true
 shortinfo: Learn how to create a .NET tool.
+description: Learn how to create a .NET tool.
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet, keycloak ]
 tags: [ aspnetcore, dotnet, auth, keycloak ]
 published: true
 shortinfo: Authorization Server is a powerful abstraction that allows to control authorization concerns. Learn how to implement it for .NET applications.
+description: Authorization Server is a powerful abstraction that allows to control authorization concerns. Learn how to implement it for .NET applications.
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [dotnet, cli]
 published: true
 shortinfo: Learn how to use System.CommandLine to implement persisted parameters in CLI/console applications.
+description: Learn how to use System.CommandLine to implement persisted parameters in CLI/console applications.
 fullview: false
 comments: true
 related: true

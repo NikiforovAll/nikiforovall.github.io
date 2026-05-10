@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [dotnet, cli]
 published: true
 shortinfo: Learn an easy way to develop CLI applications
+description: Learn an easy way to develop CLI applications
 fullview: false
 comments: true
 related: true

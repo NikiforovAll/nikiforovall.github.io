@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, ai, aspire, mcp, developer-tools ]
 published: true
 shortinfo: "Learn how to develop MCP servers with Aspire."
+description: "Learn how to develop MCP servers with Aspire."
 fullview: false
 comments: true
 related: true

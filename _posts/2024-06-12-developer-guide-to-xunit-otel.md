@@ -5,6 +5,7 @@ categories: [ dotnet, opentelemetry ]
 tags: [ dotnet, aspnetcore, opentelemetry, aspire ]
 published: true
 shortinfo: "In this guide, we will explored how to leverage XUnit and OpenTelemetry to instrument .NET test projects. The process of setting up the XUnit.Otel.Template demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard"
+description: "In this guide, we will explored how to leverage XUnit and OpenTelemetry to instrument .NET test projects. The process of setting up the XUnit.Otel.Template demonstrates the ease with which developers can start instrumenting their tests, making it accessible even for those new to OpenTelemetry or Aspire Dashboard"
 fullview: false
 comments: true
 related: true

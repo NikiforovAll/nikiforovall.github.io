@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, ai, hangfire, mcp ]
 published: true
 shortinfo: "Enqueue background jobs using the Standalone Hangfire MCP server."
+description: "Enqueue background jobs using the Standalone Hangfire MCP server."
 fullview: false
 comments: true
 related: true

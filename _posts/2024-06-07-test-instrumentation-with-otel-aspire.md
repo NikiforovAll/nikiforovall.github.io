@@ -5,6 +5,7 @@ categories: [ dotnet, opentelemetry ]
 tags: [ dotnet, aspnetcore, opentelemetry, aspire ]
 published: true
 shortinfo: "Learn how you can use OpenTelemetry to monitor your automated tests and send that data to the Aspire Dashboard for visualization."
+description: "Learn how you can use OpenTelemetry to monitor your automated tests and send that data to the Aspire Dashboard for visualization."
 fullview: false
 comments: true
 related: true

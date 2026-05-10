@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [dotnet, aspire, microsoft-extensions-ai, rag, qdrant, ollama]
 published: true
 shortinfo: "How to build a provider-agnostic RAG system in .NET using Microsoft.Extensions.AI, VectorData, and Aspire for orchestration, testing, and evaluation."
+description: "How to build a provider-agnostic RAG system in .NET using Microsoft.Extensions.AI, VectorData, and Aspire for orchestration, testing, and evaluation."
 fullview: false
 comments: true
 related: true

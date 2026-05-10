@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, elasticsearch, search, ai]
 published: true
 shortinfo: "Use the reciprocal rank fusion algorithm to combine the results of BM25 and kNN semantic search."
+description: "Use the reciprocal rank fusion algorithm to combine the results of BM25 and kNN semantic search."
 fullview: false
 comments: true
 related: true

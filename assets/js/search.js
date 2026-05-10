@@ -60,6 +60,13 @@
             searchDebounceTimer = setTimeout(performSearch, 150);
         });
 
+        // Lazy-load index on first focus (covers keyboard-only opens)
+        $searchInput.on('focus', function() {
+            if (!isIndexLoaded && !isLoading) {
+                loadSearchIndex();
+            }
+        });
+
         // Global keyboard shortcut: Ctrl+K / Cmd+K
         $(document).on('keydown', function(e) {
             // Check for Ctrl+K (Windows/Linux) or Cmd+K (Mac)
@@ -144,7 +151,25 @@
     }
 
     /**
-     * Load and build search index from search.json
+     * Lazy-load lunr.js once. Returns a promise.
+     */
+    let lunrPromise = null;
+    function loadLunr() {
+        if (window.lunr) return Promise.resolve(window.lunr);
+        if (lunrPromise) return lunrPromise;
+        lunrPromise = new Promise(function(resolve, reject) {
+            const s = document.createElement('script');
+            s.src = 'https://unpkg.com/lunr@2.3.9/lunr.min.js';
+            s.async = true;
+            s.onload = function() { resolve(window.lunr); };
+            s.onerror = function() { reject(new Error('Failed to load lunr.js')); };
+            document.head.appendChild(s);
+        });
+        return lunrPromise;
+    }
+
+    /**
+     * Load and build search index from search.json (lazy: lunr + data fetched in parallel)
      */
     function loadSearchIndex() {
         if (isLoading || isIndexLoaded) return;
@@ -152,21 +177,22 @@
         isLoading = true;
         $searchResults.html('<div class="search-loading"><i class="fa fa-spinner fa-spin"></i> Loading search index...</div>');
 
-        $.ajax({
-            url: window.location.origin + '/search.json',
-            dataType: 'json',
-            success: function(data) {
-                searchData = data;
-                buildSearchIndex(data);
-                isIndexLoaded = true;
-                isLoading = false;
-                $searchResults.html('<div class="search-hint">Type at least 2 characters to search...</div>');
-            },
-            error: function(xhr, status, error) {
-                isLoading = false;
-                $searchResults.html('<div class="search-no-results"><i class="fa fa-exclamation-triangle"></i><br>Failed to load search index.<br>Please try again later.</div>');
-                console.error('Failed to load search index:', error);
-            }
+        const dataPromise = fetch(window.location.origin + '/search.json').then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        });
+
+        Promise.all([loadLunr(), dataPromise]).then(function(results) {
+            const data = results[1];
+            searchData = data;
+            buildSearchIndex(data);
+            isIndexLoaded = true;
+            isLoading = false;
+            $searchResults.html('<div class="search-hint">Type at least 2 characters to search...</div>');
+        }).catch(function(error) {
+            isLoading = false;
+            $searchResults.html('<div class="search-no-results"><i class="fa fa-exclamation-triangle"></i><br>Failed to load search index.<br>Please try again later.</div>');
+            console.error('Failed to load search index:', error);
         });
     }
 

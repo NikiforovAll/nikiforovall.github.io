@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [dotnet, aspire, python, rag, opentelemetry, qdrant, ollama]
 published: true
 shortinfo: "How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability."
+description: "How .NET Aspire orchestrates a polyglot RAG system with Python agents, Qdrant vector store, and Ollama LLM, with one command and full observability."
 fullview: false
 comments: true
 related: true

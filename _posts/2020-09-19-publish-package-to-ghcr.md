@@ -4,6 +4,7 @@ title: Publish images to GitHub Container Registry (ghcr)
 categories: [ docker ]
 tags: [ docker ]
 shortinfo: Succinct post on how to get things going in ghcr.
+description: Succinct post on how to get things going in ghcr.
 fullview: false
 comments: true
 related: false

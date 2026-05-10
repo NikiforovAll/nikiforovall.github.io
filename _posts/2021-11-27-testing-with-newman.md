@@ -5,6 +5,7 @@ categories: [ dotnet, docker, testing ]
 tags: [dotnet, docker, testing, cli]
 published: true
 shortinfo: See a practical example of how to organize automated postman collection execution.
+description: See a practical example of how to organize automated postman collection execution.
 fullview: false
 comments: true
 related: true

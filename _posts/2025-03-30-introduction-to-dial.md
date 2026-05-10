@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [ ai, aspire, dial, llm-orchestration ]
 published: true
 shortinfo: "Use AI DIAL to streamline and orchestrate Software Development Lifecycle (SDLC) for enterprise Gen AI applications. In this post, I will introduce you to the platform and its capabilities and show you how to get started with it using .NET Aspire."
+description: "Use AI DIAL to streamline and orchestrate Software Development Lifecycle (SDLC) for enterprise Gen AI applications. In this post, I will introduce you to the platform and its capabilities and show you how to get started with it using .NET Aspire."
 fullview: false
 comments: true
 related: true

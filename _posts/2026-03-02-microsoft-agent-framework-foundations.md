@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [dotnet, microsoft-agent-framework, agents, microsoft-extensions-ai]
 published: true
 shortinfo: "Build your first AI agents in .NET with MAF — from hello-world to tools, multi-turn conversations, and persistent memory."
+description: "Build your first AI agents in .NET with MAF — from hello-world to tools, multi-turn conversations, and persistent memory."
 fullview: false
 comments: true
 related: true
