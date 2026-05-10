@@ -5,6 +5,7 @@ categories: [ dotnet, keycloak ]
 tags: [ aspnetcore, dotnet, keycloak, auth ]
 published: true
 shortinfo: "User-managed access control with Keycloak UMA 2.0: let resource owners decide who gets access, with a Blazor Server + Minimal API sample."
+description: "User-managed access control with Keycloak UMA 2.0: let resource owners decide who gets access, with a Blazor Server + Minimal API sample."
 fullview: false
 comments: true
 related: true

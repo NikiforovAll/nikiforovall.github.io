@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [ ai, aspire, dial, llm-orchestration ]
 published: true
 shortinfo: "Learn how to build composable AI applications with .NET Aspire and AI DIAL Addons."
+description: "Learn how to build composable AI applications with .NET Aspire and AI DIAL Addons."
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [dotnet, microsoft-agent-framework, agents, microsoft-extensions-ai, azure]
 published: true
 shortinfo: "Move agents to the cloud — server-managed lifecycle, hosted tools, RAG, declarative workflows, and evaluations with Azure AI Foundry."
+description: "Move agents to the cloud — server-managed lifecycle, hosted tools, RAG, declarative workflows, and evaluations with Azure AI Foundry."
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, aspire, dependify ]
 published: true
 shortinfo: "Use Dependify tool to navigate the dependency graph of your .NET application. You can use UI, CLI or API to explore the dependencies."
+description: "Use Dependify tool to navigate the dependency graph of your .NET application. You can use UI, CLI or API to explore the dependencies."
 fullview: false
 comments: true
 related: true

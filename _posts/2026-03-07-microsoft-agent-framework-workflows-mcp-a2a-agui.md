@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [dotnet, microsoft-agent-framework, agents, microsoft-extensions-ai, mcp]
 published: true
 shortinfo: "Chain agents into workflow graphs, turn them into MCP servers, wire up A2A discovery, and stream to frontends via AG-UI."
+description: "Chain agents into workflow graphs, turn them into MCP servers, wire up A2A discovery, and stream to frontends via AG-UI."
 fullview: false
 comments: true
 related: true

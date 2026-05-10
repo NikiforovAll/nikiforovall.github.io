@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ csharp, dotnet, async ]
 published: true
 shortinfo: Let's build a state machine based on awaitable/awaiter pattern.
+description: Let's build a state machine based on awaitable/awaiter pattern.
 fullview: false
 comments: true
 related: true

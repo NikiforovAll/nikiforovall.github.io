@@ -5,6 +5,7 @@ categories: [ dotnet, aspire ]
 tags: [ dotnet, aspire ]
 published: true
 shortinfo: "A collection of lessons learned from using .NET Aspire in production."
+description: "A collection of lessons learned from using .NET Aspire in production."
 fullview: false
 comments: true
 related: true

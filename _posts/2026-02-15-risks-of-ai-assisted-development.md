@@ -5,6 +5,7 @@ categories: [ ai ]
 tags: [ai, productivity]
 published: true
 shortinfo: AI coding tools are useful, but understanding their failure modes — from prompt injection to skill degradation — is essential for using them responsibly.
+description: AI coding tools are useful, but understanding their failure modes — from prompt injection to skill degradation — is essential for using them responsibly.
 fullview: false
 comments: true
 related: true

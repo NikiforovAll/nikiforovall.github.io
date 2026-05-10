@@ -5,6 +5,7 @@ categories: [ dotnet, aspnetcore, microservices ]
 tags: [dotnet, microservices, aspnetcore]
 published: true
 shortinfo: There are many ways of developing HTTP Client SDKs. This article helps you to choose the right one according to your scenario.
+description: There are many ways of developing HTTP Client SDKs. This article helps you to choose the right one according to your scenario.
 fullview: false
 comments: true
 related: false

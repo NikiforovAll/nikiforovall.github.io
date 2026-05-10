@@ -4,6 +4,7 @@ title: "Monitoring Claude Code with .NET Aspire Dashboard"
 categories: [ productivity ]
 tags: [productivity, ai, claude, agents, aspire, opentelemetry]
 shortinfo: "Learn how to monitor your Claude Code usage and performance with .NET Aspire dashboard."
+description: "Learn how to monitor your Claude Code usage and performance with .NET Aspire dashboard."
 published: true
 fullview: false
 comments: true

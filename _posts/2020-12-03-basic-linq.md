@@ -5,6 +5,7 @@ categories: [  dotnet, back-to-basics ]
 tags: [ dotnet, linq, back-to-basics ]
 published: false
 shortinfo: Let's explore LINQ together and get it right.
+description: Let's explore LINQ together and get it right.
 fullview: false
 comments: true
 related: true

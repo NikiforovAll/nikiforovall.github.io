@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, elasticsearch, search ]
 published: true
 shortinfo: "Learn how to query and filter documents in Elasticsearch using the Elastic.Clients.Elasticsearch NuGet package."
+description: "Learn how to query and filter documents in Elasticsearch using the Elastic.Clients.Elasticsearch NuGet package."
 fullview: false
 comments: true
 related: true

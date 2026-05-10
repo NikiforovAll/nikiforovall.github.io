@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, aspnetcore ]
 published: true
 shortinfo: "Explore the use of TypedResults in .NET endpoints to achieve a consistent and strongly typed APIs"
+description: "Explore the use of TypedResults in .NET endpoints to achieve a consistent and strongly typed APIs"
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet, aspnetcore ]
 tags: [ dotnet, aspnetcore, openapi, aspire, cli ]
 published: true
 shortinfo: Introduces Kiota, explaining its purpose and relevance in the context of OpenAPI client generation. Highlights its features and benefits.
+description: Introduces Kiota, explaining its purpose and relevance in the context of OpenAPI client generation. Highlights its features and benefits.
 fullview: false
 comments: true
 related: true

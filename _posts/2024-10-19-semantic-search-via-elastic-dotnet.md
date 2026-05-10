@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, elasticsearch, ai, rag, search ]
 published: true
 shortinfo: "This post demonstrates how to perform Semantic Search using Elasticsearch and Polyglot Notebooks"
+description: "This post demonstrates how to perform Semantic Search using Elasticsearch and Polyglot Notebooks"
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet, aspire ]
 tags: [ dotnet, aspnetcore, aspire ]
 published: true
 shortinfo: "This article demonstrates how to utilize .NET Aspire as an orchestrator. You will discover how effortless it is to define a dependency graph between components during startup."
+description: "This article demonstrates how to utilize .NET Aspire as an orchestrator. You will discover how effortless it is to define a dependency graph between components during startup."
 fullview: false
 comments: true
 related: true

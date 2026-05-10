@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, cicd ]
 published: true
 shortinfo: "Learn how to enforce code quality gates in your .NET projects."
+description: "Learn how to enforce code quality gates in your .NET projects."
 fullview: false
 comments: true
 related: true

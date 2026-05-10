@@ -5,6 +5,7 @@ categories: [ dotnet, ai ]
 tags: [dotnet, ai, agents, claude, cli, mcp, developer-tools]
 published: true
 shortinfo: "Learn how to build specialized AI agents that transform CLI tools into conversational interfaces using Claude Agent SDK and dotnet format as a practical example."
+description: "Learn how to build specialized AI agents that transform CLI tools into conversational interfaces using Claude Agent SDK and dotnet format as a practical example."
 fullview: false
 comments: true
 related: true

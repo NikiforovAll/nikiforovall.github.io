@@ -5,6 +5,7 @@ categories: [ dotnet, aws ]
 tags: [dotnet, aws, cloud]
 published: true
 shortinfo: "Learn how to leverage AWS Batch to efficiently process files in S3 using .NET"
+description: "Learn how to leverage AWS Batch to efficiently process files in S3 using .NET"
 fullview: false
 comments: true
 related: true

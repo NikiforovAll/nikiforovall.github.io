@@ -5,6 +5,7 @@ categories: [ productivity, devcontainers ]
 tags: [ dotnet, docker, dotfiles, vscode, deaac, devcontainers ]
 published: true
 shortinfo: See how you can set up your reproducible development environment based on devcontainers without extra hustle.
+description: See how you can set up your reproducible development environment based on devcontainers without extra hustle.
 fullview: false
 comments: true
 related: true

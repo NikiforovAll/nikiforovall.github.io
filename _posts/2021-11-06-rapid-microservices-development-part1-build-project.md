@@ -5,6 +5,7 @@ categories: [ dotnet, microservices, csharp ]
 tags: [ dotnet, microservices ]
 published: true
 shortinfo: Learn how to speed up microservices development process by using set of predefined templates and practices.
+description: Learn how to speed up microservices development process by using set of predefined templates and practices.
 fullview: false
 comments: true
 related: true

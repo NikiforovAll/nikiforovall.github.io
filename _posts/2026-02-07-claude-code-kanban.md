@@ -5,6 +5,7 @@ categories: [ ai, productivity ]
 tags: [ claude, ai, agents, developer-tools, cli, coding-stories ]
 published: true
 shortinfo: "A real-time Kanban dashboard for observing Claude Code agent tasks"
+description: "A real-time Kanban dashboard for observing Claude Code agent tasks"
 fullview: false
 comments: true
 related: true

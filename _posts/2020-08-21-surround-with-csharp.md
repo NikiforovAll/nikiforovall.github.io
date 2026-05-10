@@ -4,6 +4,7 @@ title: Bringing "surround with" functionality to vscode. Check out this extensio
 categories: [productivity, csharp, vscode]
 tags: [vscode, productivity]
 shortinfo: Quick overview of surround-with-csharp vscode extension.
+description: Quick overview of surround-with-csharp vscode extension.
 fullview: false
 comments: true
 related: false

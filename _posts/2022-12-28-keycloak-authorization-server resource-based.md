@@ -5,6 +5,7 @@ categories: [ dotnet, keycloak ]
 tags: [ aspnetcore, dotnet, auth, keycloak ]
 published: false
 shortinfo:
+description:
 fullview: false
 comments: true
 related: true

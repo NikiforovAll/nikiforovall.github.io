@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, aspire, dependify ]
 published: true
 shortinfo: "Discover how to leverage the new chat assistant in Dependify 1.5.1"
+description: "Discover how to leverage the new chat assistant in Dependify 1.5.1"
 fullview: false
 comments: true
 related: true

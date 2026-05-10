@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, ai, aspire, mcp ]
 published: true
 shortinfo: "Use the 'mcp-server-hybrid' template to be able to easily switch between stdio and sse transports."
+description: "Use the 'mcp-server-hybrid' template to be able to easily switch between stdio and sse transports."
 fullview: false
 comments: true
 related: true

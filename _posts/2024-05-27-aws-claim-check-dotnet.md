@@ -5,6 +5,7 @@ categories: [ dotnet, aws ]
 tags: [dotnet, aspnetcore, aws, cloud, aspire]
 published: true
 shortinfo: "Learn how to use AWS.Messaging and Aspire to implement the Claim-Check pattern"
+description: "Learn how to use AWS.Messaging and Aspire to implement the Claim-Check pattern"
 fullview: false
 comments: true
 related: true

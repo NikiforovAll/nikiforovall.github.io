@@ -5,6 +5,7 @@ categories: [ dotnet, aspnetcore ]
 tags: [ dotnet, aspnetcore, openapi, aspire, cli ]
 published: true
 shortinfo: This post provides a deep dive into OpenAPI client generation with Kiota, covering topics such as SDK generation, dependency injection, typed HTTP clients, cross-cutting concerns, and testing.
+description: This post provides a deep dive into OpenAPI client generation with Kiota, covering topics such as SDK generation, dependency injection, typed HTTP clients, cross-cutting concerns, and testing.
 fullview: false
 comments: true
 related: true

@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [dotnet]
 published: true
 shortinfo: Federated search, also known as distributed information retrieval, is the simultaneous search of multiple searchable resources. Learn more about it in this blog post.
+description: Federated search, also known as distributed information retrieval, is the simultaneous search of multiple searchable resources. Learn more about it in this blog post.
 fullview: false
 comments: true
 related: false

@@ -5,6 +5,7 @@ categories: [ dotnet ]
 tags: [ dotnet, ai, mcp ]
 published: true
 shortinfo: "In this post, I will show you how to use a simple template to create an MCP server that can be distributed as a global tool."
+description: "In this post, I will show you how to use a simple template to create an MCP server that can be distributed as a global tool."
 fullview: false
 comments: true
 related: true

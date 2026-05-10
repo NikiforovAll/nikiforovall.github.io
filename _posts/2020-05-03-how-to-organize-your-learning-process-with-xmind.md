@@ -4,6 +4,7 @@ title: How to organize learning process with mindmaps, spreadsheets and .NET Cor
 categories: [productivity]
 tags: [dotnet, productivity ]
 shortinfo: Visualization of current learning progress as mindmap. Solution is based on <a href="https://nikiforovall.github.io/xmindcsharp/">XMindCsharp</a>.
+description: Visualization of current learning progress as mindmap. Solution is based on <a href="https://nikiforovall.github.io/xmindcsharp/">XMindCsharp</a>.
 fullview: false
 comments: true
 related: false
