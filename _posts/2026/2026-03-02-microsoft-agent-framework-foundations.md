@@ -23,7 +23,7 @@ Microsoft Agent Framework (MAF) merges Semantic Kernel and AutoGen into a single
 
 .NET had two AI agent frameworks from Microsoft: **Semantic Kernel** for enterprise orchestration and **AutoGen** for multi-agent research. Two ecosystems, overlapping goals, confusion about which to pick. MAF unifies them into one framework.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr>
 <th>Before</th>
@@ -48,7 +48,7 @@ Microsoft Agent Framework (MAF) merges Semantic Kernel and AutoGen into a single
 
 1️⃣ The architecture is layered:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Layer</th><th>Components</th></tr>
 </thead>
@@ -62,7 +62,7 @@ Microsoft Agent Framework (MAF) merges Semantic Kernel and AutoGen into a single
 
 2️⃣ The core concepts:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Concept</th><th>Type</th><th>Purpose</th></tr>
 </thead>
@@ -128,7 +128,7 @@ await foreach (var update in agent.RunStreamingAsync("Tell me a one-sentence fun
 
 The pipeline is straightforward:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Step</th><th>Call</th><th>Role</th></tr>
 </thead>
@@ -255,7 +255,7 @@ Console.WriteLine(await agent.RunAsync("Suggest a hiking destination for me.", s
 
 Under the hood, the session accumulates the full conversation and sends it with each LLM call:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Turn</th><th>Input</th><th>ChatHistory contents</th></tr>
 </thead>

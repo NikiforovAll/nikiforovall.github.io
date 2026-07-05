@@ -351,7 +351,7 @@ public static IHostApplicationBuilder ConfigureOpenTelemetry(
 
 *Semantic Kernel* instrumentation adds a lot of interesting information that can help you to understand how the interaction with LLM works:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Key</th>

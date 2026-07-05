@@ -25,7 +25,7 @@ Parts 1 and 2 ran everything in-process. Your app created agents, held their sta
 
 Azure AI Foundry answers these by moving agent lifecycle, tool execution, and data storage to the cloud. The programming model stays the same -- you still call `RunAsync()` on an `AIAgent`. The difference is what happens behind the call.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th></th><th>MAF (local)</th><th>Azure AI Foundry</th></tr>
 </thead>
@@ -98,7 +98,7 @@ AIAgent latest = await aiProjectClient.GetAIAgentAsync(name: "MyAgent");
 
 With Foundry agents, traces show up in two places:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th></th><th>OTEL (client-side)</th><th>Server-side (Foundry)</th></tr>
 </thead>
@@ -209,7 +209,7 @@ When you retrieve an agent with `GetAIAgentAsync`, the server already knows the 
 
 So far, all tools ran in your process. Hosted tools flip that -- they run server-side in Foundry's infrastructure. No local dependencies, no sandbox to manage.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th></th><th>Client tools (Parts 1-2)</th><th>Hosted tools (Foundry)</th></tr>
 </thead>
@@ -297,7 +297,7 @@ foreach (var annotation in response.Messages
 
 Building RAG usually means picking an embedding model, setting up a vector database, writing a chunking pipeline, and wiring it all together. Foundry collapses that into a few API calls:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Step</th><th>API</th><th>What happens</th></tr>
 </thead>
@@ -430,7 +430,7 @@ flowchart LR
 
 Before shipping an agent to production, you want to know: are its answers grounded in the context you provided? Are they relevant? Coherent? Safe? Foundry's evaluation library runs all of these in a single pass.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Dimension</th><th>Evaluator</th><th>What it measures</th></tr>
 </thead>

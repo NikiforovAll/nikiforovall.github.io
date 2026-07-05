@@ -125,7 +125,7 @@ Basically, you want to configure the remote git repository as the source of `dot
 
 ### Anatomy - Summary
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>

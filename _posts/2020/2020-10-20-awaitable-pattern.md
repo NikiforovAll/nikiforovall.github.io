@@ -22,7 +22,7 @@ We’ll focus on the extensibility points of the C# compiler to customize the be
 
 Numerous *C#* features are based on [duck-typing](http://en.wikipedia.org/wiki/Duck_typing) and patterns inferred by the compiler. Basically, it means that a developer doesn't need to implement interfaces or inherit classes explicitly to achieve some pluggable behavior. Instead, we could follow some well-known conventions inferred by the compiler to plug or glue some functionality together. Duck-typing is great when strongly-typed approach impedes too many limitations or you want to keep your code clean and tidy. So if you've got a pattern right, than, the compiler will do its magic and generate some code for you. Let's see examples of such patterns in *C#*.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Pattern</th>

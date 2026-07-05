@@ -27,7 +27,7 @@ For the sake of simplicity, I use google spreadsheets as storage and [XMind](htt
 
 Here is the the list of really good books to consider:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Book</th>

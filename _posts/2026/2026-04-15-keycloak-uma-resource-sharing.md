@@ -39,7 +39,7 @@ What makes UMA different from regular OAuth is the asynchronous approval step. B
 
 ### Key concepts
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th>Concept</th>

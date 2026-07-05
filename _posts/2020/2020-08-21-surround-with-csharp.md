@@ -36,7 +36,7 @@ If your favorite *command-pallette*. You can invoke command **"C#: Surround With
 
 Here is a list of keybindings provided by extension for quicker access to commands to use a particular snippet. You can assign your own keybindings if you want to.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Snippet</th>

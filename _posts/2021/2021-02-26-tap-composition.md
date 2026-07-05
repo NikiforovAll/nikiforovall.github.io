@@ -48,7 +48,7 @@ Let's compare processing algorithms by the following qualities:
 
 When`Task.WhenAll` is used on a collection of tasks, all tasks are run to completion, i.e.: [Task.IsCompleted](https://docs.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.iscompleted) = `true`. Results could be unwrapped from `Task<TResult[]>`.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>
@@ -114,7 +114,7 @@ public async Task WhenAll_SharedCancellationToken_AllCancelled()
 
 Very simple implementation, just to demonstrate the different sides of the problem.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>
@@ -189,7 +189,7 @@ Can be described as following: ([ref](https://devblogs.microsoft.com/pfxteam/imp
 
 * As each task completes, run a second processing action over the results.  All of these actions must be run sequentially, but order doesn’t matter.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>
@@ -270,7 +270,7 @@ private static void Empty<T>(T source, T result) { }
 
 For those who don't like working with lambdas and `ForEach` LINQ operator. Personally, I really like this approach because it produces better stack traces.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>
@@ -365,7 +365,7 @@ public async Task ConcurrentInterleavedCombinator()
 
 Before this, we don't really have control over consumed resources. It is a common task to implement throttling, here is how you can do that.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>
@@ -439,7 +439,7 @@ You don't always need interleaving. Let's see the approach based on `System.Coll
 
 It limits the number of operations that are able to run in parallel. One way to achieve that is to partition the input data set into *N* partitions, where *N* is the desired maximum degree of parallelism, and schedule a separate task to begin the execution for each partition. [ref](https://devblogs.microsoft.com/pfxteam/implementing-a-simple-foreachasync-part-2/).
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>
@@ -502,7 +502,7 @@ public async Task ControlParallelismForEachAsync() =>
 
 Here is the final comparison table:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>

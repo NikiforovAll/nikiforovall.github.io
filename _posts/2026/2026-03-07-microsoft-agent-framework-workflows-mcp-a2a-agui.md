@@ -25,7 +25,7 @@ Part 1 built individual agents with tools, sessions, and memory. But real system
 
 MAF addresses this with three integration protocols:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Protocol</th><th>Who talks</th><th>Transport</th><th>Use case</th></tr>
 </thead>
@@ -43,7 +43,7 @@ MCP gives agents **tools** (both ways), A2A lets agents talk to **agents**, AG-U
 
 Workflows in MAF are **directed graphs** — nodes are executors (functions or agents), edges define data flow. Three patterns cover most use cases:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Pattern</th><th>Use Case</th><th>API</th></tr>
 </thead>
@@ -56,7 +56,7 @@ Workflows in MAF are **directed graphs** — nodes are executors (functions or a
 
 The building blocks:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Building Block</th><th>API</th><th>Description</th></tr>
 </thead>
@@ -108,7 +108,7 @@ graph LR
 </div>
 </div>
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Step</th><th>Executor</th><th>Output</th></tr>
 </thead>
@@ -194,7 +194,7 @@ Agent workflows use `StreamingRun` + `AgentResponseUpdateEvent` — not `Run`/`N
 
 Real pipelines mix deterministic and intelligent steps. Consider PII redaction:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Step</th><th>What</th><th>Why not just one?</th></tr>
 </thead>
@@ -303,7 +303,7 @@ CLEAN - no emails detected
 
 **Model Context Protocol** is an open standard for connecting AI models to external tools and data. The integration is **two-sided**:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Direction</th><th>Pattern</th><th>API</th></tr>
 </thead>
@@ -434,7 +434,7 @@ Console.WriteLine(await agent.RunAsync("What is Microsoft Agent Framework?"));
 
 **Agent-to-Agent Protocol** is an open standard for agents to discover and communicate with each other over HTTP.
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th></th><th>MCP</th><th>A2A</th></tr>
 </thead>
@@ -529,7 +529,7 @@ Console.WriteLine(await agent.RunAsync("What is the weather in Amsterdam?"));
 
 **Agent User Interface Protocol** connects agents to frontend UIs via HTTP POST + Server-Sent Events:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th></th><th>MCP</th><th>A2A</th><th>AG-UI</th></tr>
 </thead>
@@ -543,7 +543,7 @@ Console.WriteLine(await agent.RunAsync("What is the weather in Amsterdam?"));
 
 The client sends one HTTP POST, the server streams back typed SSE events:
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
 <thead>
 <tr><th>Phase</th><th>What happens</th><th>SSE Events</th></tr>
 </thead>

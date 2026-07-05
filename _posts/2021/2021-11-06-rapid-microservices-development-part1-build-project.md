@@ -63,7 +63,7 @@ $ dotnet new -l na-
 # Gateway Template             na-ga       [C#]      gateway/Template
 ```
 
-<table class="table table-sm table-responsive table-striped table-hover">
+<table>
   <thead>
     <tr>
       <th scope="col">Name</th>
