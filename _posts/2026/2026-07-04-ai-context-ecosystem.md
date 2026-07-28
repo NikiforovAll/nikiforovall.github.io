@@ -29,4 +29,4 @@ mermaid: false
 
 ## Why this report
 
-Every one of these tools claims to solve "the agent doesn't remember/see enough" problem, but they attack it from different layers — one CLI session, one agent's memory store, or an entire org's data warehouse. It wasn't obvious from the READMEs alone whether any of them actually compete with each other, so I put together a working scratchpad with the [`scratch`](/ai/2026/06/08/scratch/) CLI: one file per repo and per competitor category, a cross-cutting-gaps section, and a use-cases section built from web research rather than invented scenarios.
+Every one of these tools claims to solve "the agent doesn't remember/see enough" problem, but they attack it from different layers — one CLI session, one agent's memory store, or an entire org's data warehouse. It wasn't obvious from the READMEs alone whether any of them actually compete with each other, so I put together a working scratchpad with the [`scratch`](/ai/2026/06/08/scratch.html) CLI: one file per repo and per competitor category, a cross-cutting-gaps section, and a use-cases section built from web research rather than invented scenarios.

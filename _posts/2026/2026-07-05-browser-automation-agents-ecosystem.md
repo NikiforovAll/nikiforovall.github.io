@@ -18,7 +18,7 @@ mermaid: true
 
 ## Introduction
 
-My [previous post on Playwright + Claude Code](/ai/2025/09/06/playwright-claude-code-testing/) tracked one specific transition — Playwright's MCP server giving way to a CLI-first approach for coding agents. That was useful in isolation, but it's one tool in a much bigger space. Since then I kept running into adjacent tools solving overlapping problems: Vercel shipping their own browser CLI, Anthropic pushing Claude for Chrome to GA, and a wave of "AI-native" test reporting startups layering LLM analysis on top of Playwright/Cypress CI runs.
+My [previous post on Playwright + Claude Code](/ai/2025/09/06/playwright-claude-code-testing.html) tracked one specific transition — Playwright's MCP server giving way to a CLI-first approach for coding agents. That was useful in isolation, but it's one tool in a much bigger space. Since then I kept running into adjacent tools solving overlapping problems: Vercel shipping their own browser CLI, Anthropic pushing Claude for Chrome to GA, and a wave of "AI-native" test reporting startups layering LLM analysis on top of Playwright/Cypress CI runs.
 
 This post is a landscape map, not a tutorial. Three categories, what each tool actually is, and — because a lot of the marketing in this space overlaps — a decision guide for which one you actually reach for.
 
@@ -63,7 +63,7 @@ This is the layer your coding agent actually calls.
 
 ### Playwright CLI
 
-[Playwright CLI](https://github.com/microsoft/playwright-cli) — Microsoft's CLI-first tool, covered in depth in my [earlier post](/ai/2025/09/06/playwright-claude-code-testing/). Since then: `run-code` now accepts a file argument instead of only inline snippets, `show --annotate` adds visual/structural annotations for agents, a new `drop` command handles drag-and-drop, and the CLI self-checks for stale installed Skills. Worth correcting my own record here: Playwright's **MCP server is not deprecated** — Microsoft still recommends it for exploratory, self-healing, long-running agentic sessions that benefit from persistent state. CLI+Skills is the pick for high-throughput coding-agent workflows where token budget dominates. ~11.8k stars, 235 dependent projects — real adoption, still smaller than the OSS agent-browser frameworks below.
+[Playwright CLI](https://github.com/microsoft/playwright-cli) — Microsoft's CLI-first tool, covered in depth in my [earlier post](/ai/2025/09/06/playwright-claude-code-testing.html). Since then: `run-code` now accepts a file argument instead of only inline snippets, `show --annotate` adds visual/structural annotations for agents, a new `drop` command handles drag-and-drop, and the CLI self-checks for stale installed Skills. Worth correcting my own record here: Playwright's **MCP server is not deprecated** — Microsoft still recommends it for exploratory, self-healing, long-running agentic sessions that benefit from persistent state. CLI+Skills is the pick for high-throughput coding-agent workflows where token budget dominates. ~11.8k stars, 235 dependent projects — real adoption, still smaller than the OSS agent-browser frameworks below.
 
 #### What it actually feels like to use
 
@@ -133,7 +133,7 @@ test("can add and complete a todo", async ({ page }) => {
 });
 ```
 
-Same manual-exploration-then-generate-test shape as the MCP workflow in [my earlier post](/ai/2025/09/06/playwright-claude-code-testing/#from-manual-testing-to-automation) — the difference isn't the workflow, it's that every step along the way is a lightweight CLI call and a snapshot pointer instead of a tool-call response carrying the accessibility tree. If something misbehaves mid-run, `playwright-cli show` opens a live dashboard with a screencast of the session — useful for actually watching what the agent is doing rather than reading a wall of tool-call logs after the fact.
+Same manual-exploration-then-generate-test shape as the MCP workflow in [my earlier post](/ai/2025/09/06/playwright-claude-code-testing.html#from-manual-testing-to-automation) — the difference isn't the workflow, it's that every step along the way is a lightweight CLI call and a snapshot pointer instead of a tool-call response carrying the accessibility tree. If something misbehaves mid-run, `playwright-cli show` opens a live dashboard with a screencast of the session — useful for actually watching what the agent is doing rather than reading a wall of tool-call logs after the fact.
 
 ### agent-browser (Vercel Labs)
 
@@ -513,4 +513,4 @@ There's a second, almost inverse convergence in category 3: TestDino, Currents.d
 - <https://leaderboard.steel.dev/>
 - <https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool>
 - <https://cyberscoop.com/claude-chrome-extension-allows-plugins-to-hijack-ai/>
-- [My earlier post: Testing with Playwright and Claude Code](/ai/2025/09/06/playwright-claude-code-testing/)
+- [My earlier post: Testing with Playwright and Claude Code](/ai/2025/09/06/playwright-claude-code-testing.html)
