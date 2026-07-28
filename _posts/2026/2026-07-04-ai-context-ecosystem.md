@@ -9,6 +9,7 @@ description: "A competitive-landscape report comparing context-mode, graphify, c
 fullview: false
 comments: true
 related: true
+toc: false
 mermaid: false
 ---
 
@@ -17,9 +18,9 @@ mermaid: false
 <iframe
   src="/assets/ai-context-ecosystem/report.html"
   width="100%"
-  height="800px"
+  height="1100"
   frameborder="0"
-  style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;">
+  style="height: 88vh; min-height: 700px; border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;">
 </iframe>
 
 **Full report**: [ai-context-ecosystem report →](/assets/ai-context-ecosystem/report.html)
