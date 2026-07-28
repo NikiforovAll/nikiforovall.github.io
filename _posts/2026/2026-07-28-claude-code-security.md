@@ -1,11 +1,11 @@
 ---
 layout: post
-title: "Security Review in Claude Code - Lessons Leaned"
+title: "Security Review in Claude Code - Lessons Learned"
 categories: [ ai ]
 tags: [ai, agents, claude-code, security, prompt-engineering]
-published: false
-shortinfo: "Claude Code ships a built-in /security-review command and a claude-security plugin. They solve different problems. A browsable teardown of both."
-description: "Claude Code ships two security review tools: the built-in /security-review command (one prompt, your diff, cheap enough per-PR) and the claude-security plugin (7 agents, 6 phases, whole-repo, produces patch files). A browsable teardown of both, three ways each: user's guide, design lessons, full anatomy."
+published: true
+shortinfo: "A browsable teardown of Claude Code's two security tools, and the six design lessons underneath them."
+description: "A teardown of Claude Code's /security-review command and claude-security plugin, and six design lessons on keeping judgement outside the model."
 fullview: false
 comments: true
 related: true
