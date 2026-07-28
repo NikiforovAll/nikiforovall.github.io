@@ -171,8 +171,6 @@ Note that it's appended to every prompt, not written once at the top. Consistenc
 
 The field labels do work too. A finding handed to a verifier arrives as `severity as reported`, `evidence as cited by the reporter`, `sink line as quoted by the reporter` — the fence marks the span as data, and the labels mark each value as somebody's claim, to be checked against the file rather than believed.
 
-**The fence does not sanitize.** Values interpolated into it are only string-coerced. Control-character stripping lives on a different surface entirely — the helper that echoes the run's own scope arguments back into a prompt, paired with a truncator. Framing is what the fence buys you; these are two separate defenses, and writing the first does not give you the second.
-
 ### 6. This shape fits triage, not everything
 
 Everything above assumes one kind of work: a high noise floor, items judgeable independently of one another, and wrong answers that cost more than missed ones. Review, audit, triage, scanning. This is a scanning architecture, not a general way to run agents. Point it elsewhere and it stops paying — generative work gives the filter nothing to filter, and on "find every X" a confidence gate deletes exactly the results you asked for.
